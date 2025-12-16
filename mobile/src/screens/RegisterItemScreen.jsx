@@ -366,10 +366,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           {
             text: 'OK',
             onPress: () => {
-              // Voltar para o detalhe do item
-              if (route?.params?.onSave) {
-                route.params.onSave();
-              }
+              // Voltar para o detalhe do item; ItemDetail recarrega on-focus
               navigation.goBack();
             },
           },

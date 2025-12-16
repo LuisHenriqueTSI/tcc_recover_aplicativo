@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useFocusEffect } from '@react-navigation/native';
 import * as itemsService from '../services/items';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -27,7 +28,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    loadItemDetails();
     // Set up navigation options
     navigation.setOptions({
       title: 'Detalhes do Item',
@@ -40,6 +40,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
       },
     });
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadItemDetails();
+    }, [itemId])
+  );
 
   const loadItemDetails = async () => {
     try {
@@ -68,7 +74,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
     if (!item) return;
     navigation.navigate('RegisterItem', {
       editItem: item,
-      onSave: loadItemDetails, // Atualizar após salvar
     });
   };
 
