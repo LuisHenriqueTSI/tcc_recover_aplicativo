@@ -16,10 +16,12 @@ import SearchScreen from '../screens/SearchScreen';
 import RegisterItemScreen from '../screens/RegisterItemScreen';
 import ItemDetailScreen from '../screens/ItemDetailScreen';
 import ChatScreen from '../screens/ChatScreen';
+import InboxScreen from '../screens/InboxScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import MapScreen from '../screens/MapScreen';
 import AdminScreen from '../screens/AdminScreen';
+import NotificationBell from '../components/NotificationBell';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -68,6 +70,7 @@ const PublicAppTabs = ({ navigation }) => {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="home" size={size} color={color} />
           ),
+          headerRight: () => <NotificationBell />,
         }}
       />
       {/* Search removed from public tabs as requested */}
@@ -154,6 +157,7 @@ const MainAppTabs = () => {
         },
       }}
     >
+            {/* NotificationBell removido da tab bar */}
       <Tab.Screen
         name="HomeTab"
         component={HomeScreen}
@@ -164,6 +168,7 @@ const MainAppTabs = () => {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="home" size={size} color={color} />
           ),
+          headerRight: () => <NotificationBell />,
         }}
       />
       <Tab.Screen
@@ -175,17 +180,19 @@ const MainAppTabs = () => {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="add-circle" size={size} color={color} />
           ),
+          headerRight: () => <NotificationBell />,
         }}
       />
       <Tab.Screen
         name="ChatTab"
-        component={ChatScreen}
+        component={InboxScreen}
         options={{
           title: 'Chat',
           tabBarLabel: 'Chat',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="chat" size={size} color={color} />
           ),
+          headerRight: () => <NotificationBell />,
         }}
       />
       <Tab.Screen
@@ -197,6 +204,7 @@ const MainAppTabs = () => {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="person" size={size} color={color} />
           ),
+          headerRight: () => <NotificationBell />,
         }}
       />
       {isAdmin && (
@@ -239,6 +247,11 @@ const MainStack = () => {
         name="ItemDetail"
         component={ItemDetailScreen}
         options={{ title: 'Detalhes do Item' }}
+      />
+      <Stack.Screen
+        name="ChatScreen"
+        component={ChatScreen}
+        options={{ title: 'Chat' }}
       />
       <Stack.Screen
         name="RegisterItem"

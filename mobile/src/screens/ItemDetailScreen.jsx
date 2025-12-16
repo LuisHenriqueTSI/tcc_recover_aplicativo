@@ -131,7 +131,14 @@ const ItemDetailScreen = ({ route, navigation }) => {
       navigation.navigate('Login');
       return;
     }
-    navigation.navigate('ChatTab', { itemId, ownerId: item?.owner_id });
+    if (!item) return;
+    navigation.navigate('ChatScreen', {
+      conversation: {
+        otherId: item.owner_id,
+        itemId: itemId,
+        otherName: owner?.name || 'Usuário'
+      }
+    });
   };
 
   const handleReportSighting = () => {

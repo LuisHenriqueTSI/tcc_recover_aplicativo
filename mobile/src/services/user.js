@@ -2,11 +2,12 @@ import { supabase } from '../lib/supabase';
 
 export const getUser = async (userId) => {
   try {
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.log('[getUser] Error:', error.message);
@@ -22,11 +23,12 @@ export const getUser = async (userId) => {
 
 export const getUserById = async (userId) => {
   try {
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.log('[getUserById] Error:', error.message);

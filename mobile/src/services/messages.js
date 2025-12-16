@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { uploadMessagePhoto as uploadMessagePhotoFS } from './uploadMessagePhoto';
 
 export const sendMessage = async (messageData) => {
   try {
@@ -34,10 +35,7 @@ export const getConversations = async (userId) => {
   try {
     const { data, error } = await supabase
       .from('messages')
-      .select(`
-        *,
-        profiles(id, name, avatar_url)
-      `)
+      .select('*')
       .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
       .order('sent_at', { ascending: false })
       .limit(100);
@@ -77,10 +75,7 @@ export const getMessages = async (userId, otherUserId, limit = 50) => {
   try {
     const { data, error } = await supabase
       .from('messages')
-      .select(`
-        *,
-        profiles(id, name, avatar_url)
-      `)
+      .select('*')
       .or(`and(sender_id.eq.${userId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${userId})`)
       .order('sent_at', { ascending: false })
       .limit(limit);
@@ -140,36 +135,5 @@ export const getUnreadCount = async (userId) => {
   }
 };
 
-export const uploadMessagePhoto = async (messageId, photoUri) => {
-  try {
-    console.log('[uploadMessagePhoto] Enviando foto da mensagem...');
-
-    const filename = photoUri.split('/').pop();
-    const ext = filename.split('.').pop();
-    const filepath = `messages/${messageId}/${Date.now()}.${ext}`;
-
-    const response = await fetch(photoUri);
-    const blob = await response.blob();
-
-    const { data, error } = await supabase.storage
-      .from('messages')
-      .upload(filepath, blob, {
-        contentType: `image/${ext}`,
-      });
-
-    if (error) {
-      console.log('[uploadMessagePhoto] Upload error:', error.message);
-      throw error;
-    }
-
-    const { data: urlData } = supabase.storage
-      .from('messages')
-      .getPublicUrl(filepath);
-
-    console.log('[uploadMessagePhoto] Foto enviada com sucesso');
-    return urlData.publicUrl;
-  } catch (error) {
-    console.log('[uploadMessagePhoto] Exceção:', error.message);
-    throw error;
-  }
-};
+// Usa a versão confiável baseada em expo-file-system
+export const uploadMessagePhoto = uploadMessagePhotoFS;
