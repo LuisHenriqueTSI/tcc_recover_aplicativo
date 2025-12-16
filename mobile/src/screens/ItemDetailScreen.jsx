@@ -66,7 +66,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleEditItem = () => {
     if (!item) return;
-    navigation.navigate('RegisterItemTab', {
+    navigation.navigate('RegisterItem', {
       editItem: item,
       onSave: loadItemDetails, // Atualizar após salvar
     });

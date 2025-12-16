@@ -241,6 +241,11 @@ const MainStack = () => {
         options={{ title: 'Detalhes do Item' }}
       />
       <Stack.Screen
+        name="RegisterItem"
+        component={RegisterItemScreen}
+        options={{ title: 'Registrar/Editar Item' }}
+      />
+      <Stack.Screen
         name="Dashboard"
         component={DashboardScreen}
         options={{ title: 'Dashboard' }}

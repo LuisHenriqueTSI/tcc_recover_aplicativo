@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -158,6 +158,22 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [rewardAmount, setRewardAmount] = useState('');
   const [rewardDescription, setRewardDescription] = useState('');
 
+  // Carregar fotos e recompensa antigas quando editar item
+  useEffect(() => {
+    if (editItem) {
+      // Carregar fotos antigas
+      if (editItem.item_photos && editItem.item_photos.length > 0) {
+        const oldPhotos = editItem.item_photos.map(photo => ({
+          uri: photo.url,
+          type: 'image/jpeg',
+          name: photo.url.split('/').pop(),
+          id: photo.id, // Marcar como foto antiga
+        }));
+        setPhotos(oldPhotos);
+      }
+    }
+  }, [editItem]);
+
   if (!user) {
     return (
       <View style={styles.container}>
@@ -302,14 +318,17 @@ const RegisterItemScreen = ({ navigation, route }) => {
         // Modo de edição
         resultItem = await itemsService.updateItem(editItem.id, itemData);
 
-        // Upload novas fotos se houver
+        // Upload apenas de novas fotos (sem id)
         if (photos && photos.length > 0) {
-          console.log('[RegisterItem] Fazendo upload de', photos.length, 'novas fotos');
-          for (const photo of photos) {
-            try {
-              await itemsService.saveItemPhoto(editItem.id, photo);
-            } catch (err) {
-              console.error('[RegisterItem] Erro ao processar foto:', err);
+          const newPhotos = photos.filter(photo => !photo.id); // Fotos novas não têm id
+          if (newPhotos.length > 0) {
+            console.log('[RegisterItem] Fazendo upload de', newPhotos.length, 'novas fotos');
+            for (const photo of newPhotos) {
+              try {
+                await itemsService.saveItemPhoto(editItem.id, photo);
+              } catch (err) {
+                console.error('[RegisterItem] Erro ao processar foto:', err);
+              }
             }
           }
         }
@@ -318,7 +337,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
           {
             text: 'OK',
             onPress: () => {
-              navigation.navigate('HomeTab');
+              // Voltar para o detalhe do item
+              if (route?.params?.onSave) {
+                route.params.onSave();
+              }
+              navigation.goBack();
             },
           },
         ]);
