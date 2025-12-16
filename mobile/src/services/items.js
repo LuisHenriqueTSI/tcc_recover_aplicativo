@@ -207,22 +207,42 @@ export const deleteItem = async (itemId) => {
 
 export const getItemById = async (itemId) => {
   try {
-    const { data, error } = await supabase
+    console.log('[getItemById] Carregando item:', itemId);
+
+    // Get item data
+    const { data: itemData, error: itemError } = await supabase
       .from('items')
-      .select(`
-        *,
-        item_photos(id, url),
-        profiles(id, name, avatar_url, email)
-      `)
+      .select('*')
       .eq('id', itemId)
       .single();
 
-    if (error) {
-      console.log('[getItemById] Erro:', error.message);
+    if (itemError || !itemData) {
+      console.log('[getItemById] Erro ao carregar item:', itemError?.message);
       return null;
     }
 
-    return data;
+    // Get photos separately
+    const { data: photos } = await supabase
+      .from('item_photos')
+      .select('id, url')
+      .eq('item_id', itemId);
+
+    // Get owner profile separately
+    const { data: ownerProfile } = await supabase
+      .from('profiles')
+      .select('id, name, avatar_url, email')
+      .eq('id', itemData.owner_id)
+      .single();
+
+    // Combine data
+    const result = {
+      ...itemData,
+      item_photos: photos || [],
+      profiles: ownerProfile || null,
+    };
+
+    console.log('[getItemById] Item carregado com sucesso');
+    return result;
   } catch (error) {
     console.log('[getItemById] Exceção:', error.message);
     return null;

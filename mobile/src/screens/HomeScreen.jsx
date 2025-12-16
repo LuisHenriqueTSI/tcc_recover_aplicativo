@@ -225,148 +225,154 @@ const HomeScreen = ({ navigation }) => {
     );
   };
 
+  const handleOpenItemDetail = (itemId) => {
+    navigation.navigate('ItemDetail', { itemId });
+  };
+
   const renderItemCard = ({ item }) => {
     const isExpanded = expandedItem === item.id;
     const details = expandedItemDetails;
 
     return (
-      <Card style={styles.itemCard}>
-        {/* Thumbnail */}
-        {thumbnails[item.id] ? (
-          <Image
-            source={{ uri: thumbnails[item.id] }}
-            style={styles.itemImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={styles.itemImagePlaceholder}>
-            <Text style={styles.itemImagePlaceholderText}>Sem foto</Text>
+      <TouchableOpacity onPress={() => handleOpenItemDetail(item.id)} activeOpacity={0.7}>
+        <Card style={styles.itemCard}>
+          {/* Thumbnail */}
+          {thumbnails[item.id] ? (
+            <Image
+              source={{ uri: thumbnails[item.id] }}
+              style={styles.itemImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.itemImagePlaceholder}>
+              <Text style={styles.itemImagePlaceholderText}>Sem foto</Text>
+            </View>
+          )}
+          <View style={styles.itemHeader}>
+            <View style={styles.itemInfo}>
+              <Text style={styles.itemTitle} numberOfLines={1}>
+                {item.title}
+              </Text>
+              <Text style={styles.itemStatus}>
+                {item.status === 'lost' ? '🔴 Perdido' : '🟢 Encontrado'}
+              </Text>
+            </View>
           </View>
-        )}
-        <View style={styles.itemHeader}>
-          <View style={styles.itemInfo}>
-            <Text style={styles.itemTitle} numberOfLines={1}>
-              {item.title}
-            </Text>
-            <Text style={styles.itemStatus}>
-              {item.status === 'lost' ? '🔴 Perdido' : '🟢 Encontrado'}
-            </Text>
+
+          <Text style={styles.itemDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
+
+          <View style={styles.itemMeta}>
+            <Text style={styles.metaText}>📍 {item.location}</Text>
+            <Text style={styles.metaText}>📅 {new Date(item.date).toLocaleDateString()}</Text>
           </View>
-        </View>
 
-        <Text style={styles.itemDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
+          {isExpanded && (
+            <View style={styles.expandedContent}>
+              {loadingDetails ? (
+                <ActivityIndicator size="small" color="#4F46E5" />
+              ) : (
+                <>
+                  <Text style={styles.sectionTitle}>Detalhes Completos</Text>
+                  <Text style={styles.detailText}>{item.description}</Text>
 
-        <View style={styles.itemMeta}>
-          <Text style={styles.metaText}>📍 {item.location}</Text>
-          <Text style={styles.metaText}>📅 {new Date(item.date).toLocaleDateString()}</Text>
-        </View>
-
-        {isExpanded && (
-          <View style={styles.expandedContent}>
-            {loadingDetails ? (
-              <ActivityIndicator size="small" color="#4F46E5" />
-            ) : (
-              <>
-                <Text style={styles.sectionTitle}>Detalhes Completos</Text>
-                <Text style={styles.detailText}>{item.description}</Text>
-
-                {details?.profiles && (
-                  <View style={styles.ownerInfoExpanded}>
-                    <Text style={styles.sectionTitle}>Proprietário</Text>
-                    <Text style={styles.ownerName}>{details.profiles.name}</Text>
-                    <Text style={styles.ownerEmail}>{details.profiles.email}</Text>
-                  </View>
-                )}
-
-                {details?.rewards && details.rewards.length > 0 && (
-                  <View>
-                    <Text style={styles.sectionTitle}>Recompensa</Text>
-                    {details.rewards.map((reward) => (
-                      <Text key={reward.id} style={styles.detailText}>
-                        R$ {reward.amount} {reward.currency} - {reward.status}
-                      </Text>
-                    ))}
-                  </View>
-                )}
-
-                {item.extra_fields && Object.keys(item.extra_fields).length > 0 && (
-                  <View>
-                    <Text style={styles.sectionTitle}>Informações Adicionais</Text>
-                    {Object.entries(item.extra_fields).map(([key, value]) => (
-                      <Text key={key} style={styles.detailText}>
-                        {key}: {value}
-                      </Text>
-                    ))}
-                  </View>
-                )}
-
-                {details?.item_photos && details.item_photos.length > 0 && (
-                  <View>
-                    <Text style={styles.sectionTitle}>Fotos ({details.item_photos.length})</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
-                      {details.item_photos.map((p) => (
-                        <Image
-                          key={p.id}
-                          source={{ uri: p.url }}
-                          style={styles.photoThumb}
-                          resizeMode="cover"
-                        />
-                      ))}
-                    </ScrollView>
-                  </View>
-                )}
-
-                <View style={styles.actionButtons}>
-                  {user && item.owner_id === user.id ? (
-                    <>
-                      <Button
-                        title="Editar"
-                        onPress={() => handleEditItem(item)}
-                        style={{ flex: 1 }}
-                      />
-                      <Button
-                        title="Excluir"
-                        variant="danger"
-                        onPress={() => handleDeleteItem(item.id)}
-                        style={{ flex: 1, marginLeft: 8 }}
-                      />
-                      <Button
-                        title="Marcar como Resolvido"
-                        variant="secondary"
-                        onPress={() => handleMarkAsResolved(item.id)}
-                        style={{ flex: 1, marginLeft: 8 }}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        title="Enviar Mensagem"
-                        onPress={handleSendMessage}
-                        style={{ flex: 1 }}
-                      />
-                      <Button
-                        title="Reportar Avistamento"
-                        variant="secondary"
-                        onPress={handleReportSighting}
-                        style={{ flex: 1, marginLeft: 8 }}
-                      />
-                    </>
+                  {details?.profiles && (
+                    <View style={styles.ownerInfoExpanded}>
+                      <Text style={styles.sectionTitle}>Proprietário</Text>
+                      <Text style={styles.ownerName}>{details.profiles.name}</Text>
+                      <Text style={styles.ownerEmail}>{details.profiles.email}</Text>
+                    </View>
                   )}
-                </View>
-              </>
-            )}
-          </View>
-        )}
 
-        <Button
-          title={isExpanded ? 'Recolher' : 'Expandir'}
-          variant="secondary"
-          onPress={() => handleExpandItem(item.id)}
-          style={styles.expandButton}
-        />
-      </Card>
+                  {details?.rewards && details.rewards.length > 0 && (
+                    <View>
+                      <Text style={styles.sectionTitle}>Recompensa</Text>
+                      {details.rewards.map((reward) => (
+                        <Text key={reward.id} style={styles.detailText}>
+                          R$ {reward.amount} {reward.currency} - {reward.status}
+                        </Text>
+                      ))}
+                    </View>
+                  )}
+
+                  {item.extra_fields && Object.keys(item.extra_fields).length > 0 && (
+                    <View>
+                      <Text style={styles.sectionTitle}>Informações Adicionais</Text>
+                      {Object.entries(item.extra_fields).map(([key, value]) => (
+                        <Text key={key} style={styles.detailText}>
+                          {key}: {value}
+                        </Text>
+                      ))}
+                    </View>
+                  )}
+
+                  {details?.item_photos && details.item_photos.length > 0 && (
+                    <View>
+                      <Text style={styles.sectionTitle}>Fotos ({details.item_photos.length})</Text>
+                      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
+                        {details.item_photos.map((p) => (
+                          <Image
+                            key={p.id}
+                            source={{ uri: p.url }}
+                            style={styles.photoThumb}
+                            resizeMode="cover"
+                          />
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+
+                  <View style={styles.actionButtons}>
+                    {user && item.owner_id === user.id ? (
+                      <>
+                        <Button
+                          title="Editar"
+                          onPress={() => handleEditItem(item)}
+                          style={{ flex: 1 }}
+                        />
+                        <Button
+                          title="Excluir"
+                          variant="danger"
+                          onPress={() => handleDeleteItem(item.id)}
+                          style={{ flex: 1, marginLeft: 8 }}
+                        />
+                        <Button
+                          title="Marcar como Resolvido"
+                          variant="secondary"
+                          onPress={() => handleMarkAsResolved(item.id)}
+                          style={{ flex: 1, marginLeft: 8 }}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          title="Enviar Mensagem"
+                          onPress={handleSendMessage}
+                          style={{ flex: 1 }}
+                        />
+                        <Button
+                          title="Reportar Avistamento"
+                          variant="secondary"
+                          onPress={handleReportSighting}
+                          style={{ flex: 1, marginLeft: 8 }}
+                        />
+                      </>
+                    )}
+                  </View>
+                </>
+              )}
+            </View>
+          )}
+
+          <Button
+            title={isExpanded ? 'Recolher' : 'Expandir'}
+            variant="secondary"
+            onPress={() => handleExpandItem(item.id)}
+            style={styles.expandButton}
+          />
+        </Card>
+      </TouchableOpacity>
     );
   };
 

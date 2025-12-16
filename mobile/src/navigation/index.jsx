@@ -14,6 +14,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
 import SearchScreen from '../screens/SearchScreen';
 import RegisterItemScreen from '../screens/RegisterItemScreen';
+import ItemDetailScreen from '../screens/ItemDetailScreen';
 import ChatScreen from '../screens/ChatScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import DashboardScreen from '../screens/DashboardScreen';
@@ -233,6 +234,11 @@ const MainStack = () => {
         name="MainApp"
         component={MainAppTabs}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ItemDetail"
+        component={ItemDetailScreen}
+        options={{ title: 'Detalhes do Item' }}
       />
       <Stack.Screen
         name="Dashboard"

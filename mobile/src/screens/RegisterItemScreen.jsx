@@ -133,7 +133,7 @@ const ITEM_TYPES = {
 
 const RegisterItemScreen = ({ navigation, route }) => {
   const { user } = useAuth();
-  const editItem = route?.params?.editItem;
+  const editItem = route?.params?.editItem || null;
   const [step, setStep] = useState(editItem ? 2 : 1);
   const [itemType, setItemType] = useState(editItem?.category || null);
   const [status, setStatus] = useState(editItem?.status || 'lost');
@@ -200,7 +200,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
       console.log('[pickImage] Launching image picker...');
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: 'Images',
         allowsMultipleSelection: true,
         selectionLimit: 10,
         quality: 0.7,
@@ -453,6 +453,17 @@ const RegisterItemScreen = ({ navigation, route }) => {
   // Step 2: Detalhes do Item
   if (step === 2) {
     const config = ITEM_TYPES[itemType];
+    if (!config) {
+      return (
+        <ScrollView style={styles.container}>
+          <Card style={styles.card}>
+            <Text style={styles.title}>Erro ao carregar tipo de item</Text>
+            <Text>Por favor, selecione o tipo de item novamente.</Text>
+            <Button title="Voltar" onPress={() => setStep(1)} />
+          </Card>
+        </ScrollView>
+      );
+    }
     return (
       <ScrollView style={styles.container}>
         <Card style={styles.card}>
