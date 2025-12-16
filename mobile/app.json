@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "RECOVER",
+    "slug": "recover-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "recover",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#4F46E5"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permitir acesso às suas fotos para registrar itens",
+          "cameraPermission": "Permitir acesso à câmera para tirar fotos"
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.recover.app",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Permitir acesso às suas fotos para registrar itens",
+        "NSCameraUsageDescription": "Permitir acesso à câmera para tirar fotos"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#4F46E5"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.recover.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

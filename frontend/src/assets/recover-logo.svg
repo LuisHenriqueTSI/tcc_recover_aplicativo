@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- Magnifying glass (lupa) -->
+  <circle cx="28" cy="28" r="14" stroke="#1E90FF" stroke-width="3.5" fill="none"/>
+  <circle cx="28" cy="28" r="10" fill="#1E90FF" fill-opacity="0.12"/>
+  <path d="M38 38L50 50" stroke="#1E90FF" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Infinity symbol inside magnifier -->
+  <path d="M23 28c0-1.5 1-2.5 2.5-2.5 1 0 1.8.5 2.5 1.5.7-1 1.5-1.5 2.5-1.5 1.5 0 2.5 1 2.5 2.5s-1 2.5-2.5 2.5c-1 0-1.8-.5-2.5-1.5-.7 1-1.5 1.5-2.5 1.5-1.5 0-2.5-1-2.5-2.5z" fill="#1E90FF" opacity="0.9"/>
+  
+  <!-- Location pin marker -->
+  <path d="M56 12c-6.5 0-11.5 4.8-11.5 10.8 0 8 9.5 16 10.3 16.6.3.2.8.2 1.1 0 .8-.6 10.3-8.6 10.3-16.6C67.5 16.8 62.5 12 56 12z" fill="#00BFFF" stroke="#00BFFF" stroke-width="0.5"/>
+  <circle cx="56" cy="23" r="4" fill="#fff"/>
+  
+  <!-- Tag (etiqueta) with infinity -->
+  <rect x="44" y="48" width="16" height="22" rx="2" fill="#2563EB" stroke="#2563EB" stroke-width="0.5"/>
+  <circle cx="52" cy="53" r="1.5" fill="#00BFFF"/>
+  <path d="M48 60c0-1.2.8-2 2-2 .8 0 1.4.4 2 1.2.6-.8 1.2-1.2 2-1.2 1.2 0 2 .8 2 2s-.8 2-2 2c-.8 0-1.4-.4-2-1.2-.6.8-1.2 1.2-2 1.2-1.2 0-2-.8-2-2z" fill="#00BFFF" opacity="0.95"/>
+</svg>

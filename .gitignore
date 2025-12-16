@@ -1,0 +1,23 @@
+.env
+frontend/.env
+/venv
+frontend/src/supabaseClient.js
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+mobile/node_modules/
+
+# Expo
+.expo/
+.expo-shared/
+
+# Build outputs
+dist/
+build/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.log
