@@ -1,83 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import * as userService from '../services/user';
 import * as itemsService from '../services/items';
-import Button from '../components/Button';
-import Card from '../components/Card';
+// import { useNavigation } from '@react-navigation/native';
+
+const statIcons = {
+  Publicados: 'package',
+  Devolvidos: 'check-circle',
+  Ativos: 'clock',
+};
+
+const menuItems = [
+  { label: 'Meus Anúncios', icon: 'package', route: 'MeusAnuncios' },
+  { label: 'Configurações', icon: 'settings', route: 'Config' },
+  { label: 'Ajuda e Suporte', icon: 'help-circle', route: 'AjudaSuporte' },
+];
 
 const ProfileScreen = ({ navigation }) => {
-  const { user, userProfile, signOut, refreshProfile } = useAuth();
-  const [userItems, setUserItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('active');
+  const { userProfile, user, signOut, refreshProfile } = useAuth();
+  const [userItems, setUserItems] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
 
-  useEffect(() => {
-    loadUserData();
-  }, []);
-
-  const loadUserData = async () => {
-    try {
+  React.useEffect(() => {
+    (async () => {
       setLoading(true);
       if (user) {
         await refreshProfile();
         const items = await itemsService.getUserItems(user.id);
         setUserItems(items);
       }
-    } catch (error) {
-      console.log('Erro ao carregar dados do perfil:', error.message);
-    } finally {
       setLoading(false);
-    }
-  };
+    })();
+  }, []);
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.log('Erro ao fazer logout:', error.message);
-    }
-  };
-
-  const activeItems = userItems.filter(item => !item.resolved);
-  const historyItems = userItems.filter(item => item.resolved);
-
-  const renderItemCard = ({ item }) => (
-    <Card style={styles.itemCard}>
-      <View style={styles.itemHeader}>
-        <Text style={styles.itemTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <Text style={styles.itemStatus}>
-          {item.status === 'lost' ? '🔴' : '🟢'}
-        </Text>
-      </View>
-      <Text style={styles.itemDescription} numberOfLines={2}>
-        {item.description}
-      </Text>
-      <View style={styles.itemActions}>
-        <Button
-          title="Editar"
-          variant="secondary"
-          onPress={() => navigation.navigate('RegisterItemTab', { item })}
-          style={{ flex: 1 }}
-        />
-        <Button
-          title="Detalhes"
-          onPress={() => {}}
-          style={{ flex: 1, marginLeft: 8 }}
-        />
-      </View>
-    </Card>
-  );
+  const stats = [
+    { label: 'Publicados', value: userItems.length, icon: 'package' },
+    { label: 'Devolvidos', value: userItems.filter(i => i.resolved).length, icon: 'check-circle' },
+    { label: 'Ativos', value: userItems.filter(i => !i.resolved).length, icon: 'clock' },
+  ];
 
   if (loading) {
     return (
@@ -88,98 +49,72 @@ const ProfileScreen = ({ navigation }) => {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Profile Header */}
-      <View style={styles.profileHeader}>
-        <View style={styles.avatarPlaceholder}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.avatar}>
           <Text style={styles.avatarText}>
             {userProfile?.name?.[0]?.toUpperCase() || 'U'}
           </Text>
         </View>
-        <View style={styles.profileInfo}>
-          <Text style={styles.profileName}>{userProfile?.name}</Text>
-          <Text style={styles.profileEmail}>{userProfile?.email}</Text>
-          {userProfile?.phone && (
-            <Text style={styles.profilePhone}>{userProfile.phone}</Text>
-          )}
+        <View style={{ flex: 1 }}>
+          <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
+          <Text style={styles.email}>{userProfile?.email}</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.editBtn}
+          onPress={() => navigation.navigate('EditProfile')}
+          activeOpacity={0.7}
+        >
+          <Feather name="edit-2" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Stats Cards */}
+      <View style={styles.statsCard}>
+        <View style={styles.statsRow}>
+          {stats.map((stat, idx) => (
+            <View key={stat.label} style={[styles.statCol, idx !== 0 && styles.statColDivider]}> 
+              <View style={styles.statIconCircle}>
+                <Feather name={stat.icon} size={20} color="#4F46E5" />
+              </View>
+              <Text style={styles.statValue}>{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat.label}</Text>
+            </View>
+          ))}
         </View>
       </View>
 
-      {/* Stats */}
-      <View style={styles.statsContainer}>
-        <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Pontos</Text>
-          <Text style={styles.statValue}>{userProfile?.points || 0}</Text>
-        </Card>
-        <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Nível</Text>
-          <Text style={styles.statValue}>{userProfile?.level || 1}</Text>
-        </Card>
-        <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Itens</Text>
-          <Text style={styles.statValue}>{userItems.length}</Text>
-        </Card>
+      {/* Menu Items */}
+      <View style={styles.menuSection}>
+        {menuItems.map((item, idx) => (
+          <TouchableOpacity
+            key={item.label}
+            style={styles.menuItem}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate(item.route)}
+          >
+            <View style={styles.menuIconCircle}>
+              <Feather name={item.icon} size={20} color="#1F2937" />
+            </View>
+            <Text style={styles.menuLabel}>{item.label}</Text>
+            <Feather name="chevron-right" size={20} color="#9CA3AF" style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+        ))}
       </View>
 
-      {/* Bio */}
-      {userProfile?.bio && (
-        <Card>
-          <Text style={styles.bioText}>{userProfile.bio}</Text>
-        </Card>
-      )}
+      {/* Logout Button */}
+      <TouchableOpacity style={styles.logoutBtn} onPress={signOut} activeOpacity={0.8}>
+        <Feather name="log-out" size={20} color="#EF4444" style={{ marginRight: 8 }} />
+        <Text style={styles.logoutText}>Sair da Conta</Text>
+      </TouchableOpacity>
 
-      {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'active' && styles.tabActive]}
-          onPress={() => setActiveTab('active')}
-        >
-          <Text style={styles.tabText}>
-            Itens Ativos ({activeItems.length})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'history' && styles.tabActive]}
-          onPress={() => setActiveTab('history')}
-        >
-          <Text style={styles.tabText}>
-            Histórico ({historyItems.length})
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Items List */}
-      <FlatList
-        data={activeTab === 'active' ? activeItems : historyItems}
-        renderItem={renderItemCard}
-        keyExtractor={item => item.id.toString()}
-        scrollEnabled={false}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {activeTab === 'active' ? 'Nenhum item ativo' : 'Nenhum item no histórico'}
-            </Text>
-          </View>
-        }
-      />
-
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <Button
-          title="Editar Perfil"
-          onPress={() => navigation.navigate('EditProfile')}
-          style={styles.button}
-        />
-        <Button
-          title="Fazer Logout"
-          variant="danger"
-          onPress={handleLogout}
-          style={styles.button}
-        />
-      </View>
+      {/* App Version */}
+      <Text style={styles.version}>Achados & Perdidos v1.0.0</Text>
     </ScrollView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -192,137 +127,158 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
   },
-  profileHeader: {
-    flexDirection: 'row',
-    paddingTop: 20,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  avatarPlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  header: {
     backgroundColor: '#4F46E5',
+    paddingTop: 40,
+    paddingBottom: 28,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+  },
+  editBtn: {
+    marginLeft: 12,
+    backgroundColor: '#6366F1',
+    borderRadius: 20,
+    padding: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 18,
+    borderWidth: 4,
+    borderColor: '#E0E7FF',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
   avatarText: {
-    color: '#fff',
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
+    color: '#4F46E5',
   },
-  profileInfo: {
+  name: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  email: {
+    fontSize: 14,
+    color: '#E0E7FF',
+    marginTop: 2,
+  },
+  statsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    marginHorizontal: 20,
+    marginTop: -32,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    padding: 16,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  statCol: {
     flex: 1,
-    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
   },
-  profileName: {
-    fontSize: 16,
+  statColDivider: {
+    borderLeftWidth: 1,
+    borderLeftColor: '#E5E7EB',
+  },
+  statIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  statValue: {
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#1F2937',
-  },
-  profileEmail: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  profilePhone: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 8,
-    marginVertical: 12,
-  },
-  statCard: {
-    flex: 1,
-    marginHorizontal: 4,
-    alignItems: 'center',
-    paddingVertical: 12,
   },
   statLabel: {
     fontSize: 12,
     color: '#6B7280',
-    marginBottom: 4,
+    marginTop: 2,
   },
-  statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#4F46E5',
+  menuSection: {
+    marginTop: 32,
+    marginHorizontal: 20,
   },
-  bioText: {
-    fontSize: 13,
-    color: '#6B7280',
-    fontStyle: 'italic',
-  },
-  tabsContainer: {
+  menuItem: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    marginTop: 16,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
     alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  tabActive: {
-    borderBottomColor: '#4F46E5',
-  },
-  tabText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  itemCard: {
-    marginHorizontal: 12,
-    marginVertical: 8,
-  },
-  itemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  itemTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    flex: 1,
-  },
-  itemStatus: {
-    fontSize: 16,
-  },
-  itemDescription: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginBottom: 8,
-  },
-  itemActions: {
-    flexDirection: 'row',
-  },
-  emptyContainer: {
-    paddingVertical: 40,
+  menuIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 12,
   },
-  emptyText: {
-    fontSize: 14,
+  menuLabel: {
+    fontSize: 16,
+    color: '#1F2937',
+    fontWeight: '500',
+  },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    marginHorizontal: 20,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    paddingVertical: 14,
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  logoutText: {
+    color: '#EF4444',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  version: {
+    textAlign: 'center',
     color: '#9CA3AF',
-  },
-  actionButtons: {
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-  },
-  button: {
-    marginBottom: 12,
+    fontSize: 12,
+    marginTop: 32,
   },
 });
 

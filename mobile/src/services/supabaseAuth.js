@@ -1,3 +1,26 @@
+// Atualiza o email do usuário autenticado
+export const updateEmail = async (newEmail) => {
+  try {
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+    if (error) {
+      throw error;
+    }
+    return { success: true };
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Exclui o usuário autenticado
+export const deleteUser = async () => {
+  try {
+    // Supabase só permite exclusão via função admin ou extensão, aqui placeholder
+    // Pode ser implementado via edge function ou RPC
+    throw new Error('Exclusão de conta não está disponível nesta versão.');
+  } catch (error) {
+    throw error;
+  }
+};
 import { supabase } from '../lib/supabase';
 
 export const getUser = async () => {

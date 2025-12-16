@@ -18,12 +18,17 @@ import ItemDetailScreen from '../screens/ItemDetailScreen';
 import ChatScreen from '../screens/ChatScreen';
 import InboxScreen from '../screens/InboxScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+
 import DashboardScreen from '../screens/DashboardScreen';
 import MapScreen from '../screens/MapScreen';
 import AdminScreen from '../screens/AdminScreen';
 import NotificationBell from '../components/NotificationBell';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import TabBarButton from '../components/TabBarButton';
+import MeusAnunciosScreen from '../screens/MeusAnunciosScreen';
+import ConfigScreen from '../screens/ConfigScreen';
+import AjudaSuporteScreen from '../screens/AjudaSuporteScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -117,6 +122,8 @@ const PublicStack = () => {
     </Stack.Navigator>
   );
 };
+
+
 
 // Auth Stack
 const AuthStack = () => {
@@ -285,6 +292,26 @@ const MainStack = () => {
         name="Map"
         component={MapScreen}
         options={{ title: 'Mapa' }}
+      />
+      <Stack.Screen
+        name="MeusAnuncios"
+        component={MeusAnunciosScreen}
+        options={{ title: 'Meus Anúncios' }}
+      />
+      <Stack.Screen
+        name="Config"
+        component={ConfigScreen}
+        options={{ title: 'Configurações' }}
+      />
+      <Stack.Screen
+        name="AjudaSuporte"
+        component={AjudaSuporteScreen}
+        options={{ title: 'Ajuda e Suporte' }}
+      />
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{ title: 'Editar Perfil' }}
       />
     </Stack.Navigator>
   );
