@@ -16,6 +16,7 @@ import * as itemsService from '../services/items';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const HomeScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -126,6 +127,9 @@ const HomeScreen = ({ navigation }) => {
 
     console.log('[HomeScreen] Itens após filtros:', filtered.length);
     setFilteredItems(filtered);
+    // Reset expansão ao trocar filtros para evitar blocos estranhos
+    setExpandedItem(null);
+    setExpandedItemDetails(null);
   };
 
   useEffect(() => {
@@ -171,7 +175,7 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleEditItem = (item) => {
-    navigation.navigate('RegisterItemTab', { editItem: item });
+    navigation.navigate('RegisterItem', { editItem: item });
   };
 
   const handleDeleteItem = async (itemId) => {
@@ -433,46 +437,59 @@ const HomeScreen = ({ navigation }) => {
       </View>
 
       {/* Quick Filters Row */}
-      <ScrollView horizontal style={styles.filtersContainer} showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        horizontal
+        style={styles.filtersContainer}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingRight: 16 }}
+      >
         <TouchableOpacity
           style={[
-            styles.filterButton,
-            filters.status === 'all' && styles.filterButtonActive,
+            styles.filterChip,
+            filters.status === 'all' && styles.filterChipActive,
           ]}
           onPress={() => setFilters({ ...filters, status: 'all' })}
+          activeOpacity={0.85}
         >
-          <Text style={styles.filterButtonText}>Todos</Text>
+          <MaterialIcons name="layers" size={14} color={filters.status === 'all' ? '#fff' : '#1F2937'} />
+          <Text style={[styles.filterChipText, filters.status === 'all' && styles.filterChipTextActive]}>Todos</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[
-            styles.filterButton,
-            filters.status === 'lost' && styles.filterButtonActive,
+            styles.filterChip,
+            filters.status === 'lost' && styles.filterChipActive,
           ]}
           onPress={() => setFilters({ ...filters, status: 'lost' })}
+          activeOpacity={0.85}
         >
-          <Text style={styles.filterButtonText}>Perdidos</Text>
+          <MaterialIcons name="highlight-off" size={14} color={filters.status === 'lost' ? '#fff' : '#B91C1C'} />
+          <Text style={[styles.filterChipText, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[
-            styles.filterButton,
-            filters.status === 'found' && styles.filterButtonActive,
+            styles.filterChip,
+            filters.status === 'found' && styles.filterChipActive,
           ]}
           onPress={() => setFilters({ ...filters, status: 'found' })}
+          activeOpacity={0.85}
         >
-          <Text style={styles.filterButtonText}>Encontrados</Text>
+          <MaterialIcons name="check-circle" size={14} color={filters.status === 'found' ? '#fff' : '#0F9D58'} />
+          <Text style={[styles.filterChipText, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
         </TouchableOpacity>
 
         {user && (
           <TouchableOpacity
             style={[
-              styles.filterButton,
-              filters.showMyItems && styles.filterButtonActive,
+              styles.filterChip,
+              filters.showMyItems && styles.filterChipActive,
             ]}
             onPress={handleMyItemsToggle}
+            activeOpacity={0.85}
           >
-            <Text style={styles.filterButtonText}>Meus Itens</Text>
+            <MaterialIcons name="person" size={14} color={filters.showMyItems ? '#fff' : '#1F2937'} />
+            <Text style={[styles.filterChipText, filters.showMyItems && styles.filterChipTextActive]}>Meus Itens</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -512,6 +529,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
+    marginBottom: 8,
   },
   searchContainer: {
     paddingVertical: 12,
@@ -537,20 +555,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 12,
   },
-  filterButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 32,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     marginRight: 8,
-    borderRadius: 20,
+    borderRadius: 12,
     backgroundColor: '#E5E7EB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    gap: 6,
+    flexShrink: 0,
   },
-  filterButtonActive: {
+  filterChipActive: {
     backgroundColor: '#4F46E5',
+    borderColor: '#4338CA',
   },
-  filterButtonText: {
+  filterChipText: {
     fontSize: 12,
     fontWeight: '600',
     color: '#1F2937',
+    lineHeight: 14,
+  },
+  filterChipTextActive: {
+    color: '#fff',
   },
   itemCard: {
     marginHorizontal: 12,
