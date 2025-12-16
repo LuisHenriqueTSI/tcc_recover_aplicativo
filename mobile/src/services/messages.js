@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { uploadMessagePhoto as uploadMessagePhotoFS } from './uploadMessagePhoto';
+import { getUserById } from './user';
 
 export const sendMessage = async (messageData) => {
   try {
@@ -47,21 +48,32 @@ export const getConversations = async (userId) => {
 
     // Group by conversation (sender/receiver pair)
     const conversations = new Map();
-    
+    const userNameCache = {};
+
     if (data) {
-      data.forEach(msg => {
+      for (const msg of data) {
         const otherId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
         const key = [userId, otherId].sort().join('_');
-        
+
         if (!conversations.has(key)) {
+          // Busca nome do outro usuário (cache para evitar múltiplas queries)
+          let otherName = userNameCache[otherId];
+          if (!otherName) {
+            const profile = await getUserById(otherId);
+            otherName = profile?.name || 'Usuário';
+            userNameCache[otherId] = otherName;
+          }
           conversations.set(key, {
             otherId,
+            otherName,
             lastMessage: msg.content,
             lastMessageAt: msg.sent_at,
             unread: msg.receiver_id === userId && !msg.read,
+            itemId: msg.item_id,
+            itemTitle: msg.item_title || '',
           });
         }
-      });
+      }
     }
 
     return Array.from(conversations.values());

@@ -22,6 +22,7 @@ import DashboardScreen from '../screens/DashboardScreen';
 import MapScreen from '../screens/MapScreen';
 import AdminScreen from '../screens/AdminScreen';
 import NotificationBell from '../components/NotificationBell';
+import NotificationsScreen from '../screens/NotificationsScreen';
 import TabBarButton from '../components/TabBarButton';
 
 const Stack = createNativeStackNavigator();
@@ -71,7 +72,7 @@ const PublicAppTabs = ({ navigation }) => {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="home" size={size} color={color} />
           ),
-          headerRight: () => <NotificationBell />,
+          // headerRight removido
         }}
       />
       {/* Search removed from public tabs as requested */}
@@ -168,7 +169,7 @@ const MainAppTabs = ({ navigation }) => {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="home" size={size} color={color} />
           ),
-          headerRight: () => <NotificationBell />,
+          // headerRight removido
         }}
       />
       <Tab.Screen
@@ -180,7 +181,7 @@ const MainAppTabs = ({ navigation }) => {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="chat" size={size} color={color} />
           ),
-          headerRight: () => <NotificationBell />,
+          // headerRight removido
         }}
       />
       <Tab.Screen
@@ -202,7 +203,7 @@ const MainAppTabs = ({ navigation }) => {
       />
       <Tab.Screen
         name="NotificationsTab"
-        component={NotificationBell}
+        component={NotificationsScreen}
         options={{
           title: 'Alertas',
           tabBarLabel: 'Alertas',
@@ -221,7 +222,7 @@ const MainAppTabs = ({ navigation }) => {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="person" size={size} color={color} />
           ),
-          headerRight: () => <NotificationBell />,
+          // headerRight removido
         }}
       />
       {isAdmin && (
