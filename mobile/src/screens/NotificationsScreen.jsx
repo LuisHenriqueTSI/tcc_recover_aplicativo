@@ -1,22 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import { getUnreadCount } from '../services/messages';
+import { getUnreadCount, getConversations } from '../services/messages';
 import { listItems, markItemAsResolved } from '../services/items';
 
-async function getPendingNotificationItems(userId) {
-  if (!userId) return [];
-  const items = await listItems({ owner_id: userId, resolved: false });
-  return items || [];
+
+
+// Utilitário para tempo relativo
+
+function getRelativeTime(dateString) {
+  if (!dateString) return '';
+  const now = new Date();
+  const date = new Date(dateString);
+  const diff = Math.floor((now - date) / 1000);
+  if (diff < 60) return 'Agora';
+  if (diff < 3600) return `${Math.floor(diff / 60)} min atrás`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} horas atrás`;
+  if (diff < 172800) return 'Ontem';
+  return date.toLocaleDateString();
 }
+
+
 
 export default function NotificationsScreen() {
   const { user } = useAuth();
-  const [pendingItems, setPendingItems] = useState([]);
-  const [dismissedItems, setDismissedItems] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [messageNotifications, setMessageNotifications] = useState([]);
+  const [pendingItems, setPendingItems] = useState([]);
 
   useEffect(() => {
     if (!user) return;
@@ -28,77 +39,116 @@ export default function NotificationsScreen() {
   async function fetchNotifications() {
     if (!user) return;
     setLoading(true);
-    const [pending, unread] = await Promise.all([
-      getPendingNotificationItems(user.id),
-      getUnreadCount(user.id),
-    ]);
-    setPendingItems(pending.filter(item => !dismissedItems.includes(item.id)));
-    setUnreadCount(unread);
+    // Mensagens não lidas
+    const conversations = await getConversations(user.id);
+    const unreadMsgs = conversations.filter(c => c.unread);
+    setMessageNotifications(unreadMsgs.map(msg => ({
+      id: msg.itemId + '_' + msg.otherId,
+      type: 'message',
+      title: 'Nova mensagem',
+      message: `Nova mensagem sobre "${msg.itemTitle || 'item'}" de ${msg.otherName}`,
+      time: getRelativeTime(msg.lastMessageAt),
+      read: false,
+      icon: 'message-circle',
+      iconColor: '#F59E42',
+      bgColor: '#FFF7ED',
+    })));
+    // Itens não resolvidos
+    const items = await listItems({ owner_id: user.id, resolved: false });
+    setPendingItems((items || []).map(item => ({
+      id: item.id,
+      type: 'match',
+      title: 'Possível correspondência!',
+      message: `Seu item "${item.title}" ainda não foi marcado como devolvido.`,
+      time: getRelativeTime(item.created_at),
+      read: false,
+      icon: 'alert-circle',
+      iconColor: '#F59E42',
+      bgColor: '#FFF7ED',
+      item,
+    })));
     setLoading(false);
   }
 
-  async function handleYes(item) {
-    setLoading(true);
-    try {
-      await markItemAsResolved(item.id, user.id);
-      setPendingItems(prev => prev.filter(i => i.id !== item.id));
-      alert('🎉 Parabéns! Ótimo saber que encontrou seu item!');
-    } catch (e) {
-      alert('Erro ao marcar como resolvido: ' + (e.message || e));
+
+
+  // Junta todas as notificações
+  const allNotifications = [...messageNotifications, ...pendingItems];
+  const unread = allNotifications.length;
+
+  async function handleMarkAllRead() {
+    // Não há marcação real, apenas limpa a lista visualmente
+    setMessageNotifications([]);
+    setPendingItems([]);
+  }
+
+  async function handleNotificationPress(notification) {
+    // Aqui você pode navegar ou abrir detalhes se quiser
+    if (notification.type === 'match' && notification.item) {
+      // Exemplo: marcar como resolvido
+      await markItemAsResolved(notification.item.id, user.id);
+      await fetchNotifications();
     }
-    setLoading(false);
-  }
-
-  function handleNo(item) {
-    setPendingItems(prev => prev.filter(i => i.id !== item.id));
-    setDismissedItems(prev => [...prev, item.id]);
+    // Para mensagens, abrir chat, etc.
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Notificações</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerTitle}>Notificações</Text>
+          {unread > 0 && (
+            <Text style={styles.headerSubtitle}>{unread} {unread === 1 ? 'nova' : 'novas'}</Text>
+          )}
+        </View>
+        {unread > 0 && (
+          <TouchableOpacity style={styles.markAllBtn} onPress={handleMarkAllRead}>
+            <Text style={{ color: '#F59E42', fontWeight: 'bold' }}>Marcar todas como lidas</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Notifications List */}
       {loading ? (
-        <ActivityIndicator size="large" color="#4F46E5" style={{ marginVertical: 24 }} />
-      ) : (
-        <>
-          {unreadCount > 0 && (
-            <TouchableOpacity style={styles.notificationBox}>
-              <View style={styles.notificationRow}>
-                <MaterialIcons name="chat" size={22} color="#4F46E5" style={{ marginRight: 8 }} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.notificationTitle}>{unreadCount === 1 ? 'Nova mensagem' : `${unreadCount} novas mensagens`}</Text>
-                  <Text style={styles.notificationDesc}>Clique para ver suas mensagens</Text>
-                </View>
+        <ActivityIndicator size="large" color="#F59E42" style={{ marginVertical: 24 }} />
+      ) : allNotifications.length > 0 ? (
+        <FlatList
+          data={allNotifications}
+          keyExtractor={item => item.id.toString()}
+          renderItem={({ item, index }) => (
+            <TouchableOpacity
+              key={item.id}
+              style={[
+                styles.notificationCard,
+                { backgroundColor: item.bgColor },
+                index === 0 ? { borderTopWidth: 0 } : {},
+              ]}
+              activeOpacity={0.85}
+              onPress={() => handleNotificationPress(item)}
+            >
+              <View style={styles.iconCircle}>
+                <Feather name={item.icon} size={22} color={item.iconColor} />
               </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <Text style={[styles.notifTitle, { color: '#1F2937' }]} numberOfLines={1}>{item.title}</Text>
+                  <Text style={styles.notifTime}>{item.time}</Text>
+                </View>
+                <Text style={styles.notifMsg} numberOfLines={2}>{item.message}</Text>
+              </View>
+              <View style={styles.unreadDot} />
             </TouchableOpacity>
           )}
-          <FlatList
-            data={pendingItems}
-            keyExtractor={item => item.id.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.notificationBox}>
-                <View style={styles.notificationRow}>
-                  <MaterialIcons name="search" size={22} color="#4F46E5" style={{ marginRight: 8 }} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.notificationTitle}>Você encontrou seu item?</Text>
-                    <Text style={styles.notificationDesc}>{item.title}{item.location ? ` - 📍 ${item.location}` : ''}</Text>
-                  </View>
-                </View>
-                <View style={styles.actionRow}>
-                  <TouchableOpacity style={styles.actionButton} onPress={() => handleYes(item)} disabled={loading}>
-                    <Text style={styles.actionButtonText}>{loading ? 'Salvando...' : 'Sim! 🎉'}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[styles.actionButton, styles.actionButtonSecondary]} onPress={() => handleNo(item)} disabled={loading}>
-                    <Text style={[styles.actionButtonText, { color: '#4F46E5' }]}>Ainda não</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-            ListEmptyComponent={pendingItems.length === 0 && unreadCount === 0 ? (
-              <Text style={styles.emptyText}>Nenhuma notificação</Text>
-            ) : null}
-          />
-        </>
+        />
+      ) : (
+        <View style={styles.emptyState}>
+          <View style={styles.emptyIconCircle}>
+            <Feather name="bell" size={40} color="#9CA3AF" />
+          </View>
+          <Text style={styles.emptyTitle}>Nenhuma notificação</Text>
+          <Text style={styles.emptyMsg}>Você receberá alertas quando houver novidades sobre seus itens.</Text>
+        </View>
       )}
     </View>
   );
@@ -108,34 +158,81 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 16,
+    paddingTop: 0,
   },
-  title: {
-    fontWeight: 'bold',
-    fontSize: 22,
-    color: '#4F46E5',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  notificationBox: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 12,
-    elevation: 2,
-  },
-  notificationRow: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingTop: 28,
+    paddingBottom: 10,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
-  notificationTitle: {
+  headerTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
-    fontSize: 16,
     color: '#1F2937',
   },
-  notificationDesc: {
-    color: '#6B7280',
+  headerSubtitle: {
     fontSize: 13,
+    color: '#A3A3A3',
+    marginTop: 2,
+  },
+  markAllBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: 'transparent',
+  },
+  notificationCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    borderRadius: 0,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+    backgroundColor: '#fff',
+    position: 'relative',
+  },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+    backgroundColor: '#F3F4F6',
+  },
+  notifTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    flex: 1,
+    marginBottom: 2,
+  },
+  notifTime: {
+    fontSize: 12,
+    color: '#A3A3A3',
+    marginLeft: 8,
+    flexShrink: 0,
+    alignSelf: 'flex-start',
+  },
+  notifMsg: {
+    color: '#444',
+    fontSize: 13,
+    marginTop: 0,
+  },
+  unreadDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#F59E42',
+    position: 'absolute',
+    top: 24,
+    right: 18,
   },
   actionRow: {
     flexDirection: 'row',
@@ -160,9 +257,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
-  emptyText: {
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 60,
+  },
+  emptyIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 6,
+  },
+  emptyMsg: {
+    fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
-    marginTop: 40,
+    maxWidth: 260,
   },
 });
