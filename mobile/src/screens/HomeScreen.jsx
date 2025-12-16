@@ -35,6 +35,7 @@ const HomeScreen = ({ navigation }) => {
   const [expandedItemDetails, setExpandedItemDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [thumbnails, setThumbnails] = useState({});
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const loadItems = async () => {
     try {
@@ -390,59 +391,52 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Botão Flutuante para Registrar Item */}
-      {user && (
-        <TouchableOpacity 
-          style={styles.floatingButton}
-          onPress={() => navigation.navigate('RegisterItemTab')}
-        >
-          <Text style={styles.floatingButtonText}>+ Registrar</Text>
+      {/* Filtro avançado escondido em ícone */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginTop: 8 }}>
+        <TouchableOpacity onPress={() => setShowAdvancedFilters(v => !v)} style={{ marginRight: 8 }}>
+          <MaterialIcons name="filter-list" size={28} color="#4F46E5" />
         </TouchableOpacity>
+        <Text style={{ fontWeight: 'bold', color: '#4F46E5', fontSize: 16 }}>Filtros</Text>
+      </View>
+      {showAdvancedFilters && (
+        <View style={styles.searchContainer}>
+          <View style={styles.searchRow}>
+            <View style={styles.searchInputWrapper}>
+              <Text style={styles.searchLabel}>Buscar</Text>
+              <Input
+                placeholder="Título, descrição, endereço..."
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+              />
+            </View>
+            <View style={styles.searchInputWrapper}>
+              <Text style={styles.searchLabel}>Local</Text>
+              <Input
+                placeholder="Cidade, bairro, endereço..."
+                value={locationFilter}
+                onChangeText={setLocationFilter}
+              />
+            </View>
+          </View>
+          <View style={styles.searchActions}>
+            <Button title="Aplicar" onPress={loadItems} />
+            <Button
+              title="Limpar"
+              variant="secondary"
+              onPress={() => {
+                setSearchTerm('');
+                setLocationFilter('');
+                setFilters({ ...filters, status: 'all', category: 'all' });
+                loadItems();
+              }}
+              style={{ marginLeft: 8 }}
+            />
+          </View>
+        </View>
       )}
 
-      {/* Advanced Search & Filters */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchRow}>
-          <View style={styles.searchInputWrapper}>
-            <Text style={styles.searchLabel}>Buscar</Text>
-            <Input
-              placeholder="Título, descrição, endereço..."
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-            />
-          </View>
-          <View style={styles.searchInputWrapper}>
-            <Text style={styles.searchLabel}>Local</Text>
-            <Input
-              placeholder="Cidade, bairro, endereço..."
-              value={locationFilter}
-              onChangeText={setLocationFilter}
-            />
-          </View>
-        </View>
-        <View style={styles.searchActions}>
-          <Button title="Aplicar" onPress={loadItems} />
-          <Button
-            title="Limpar"
-            variant="secondary"
-            onPress={() => {
-              setSearchTerm('');
-              setLocationFilter('');
-              setFilters({ ...filters, status: 'all', category: 'all' });
-              loadItems();
-            }}
-            style={{ marginLeft: 8 }}
-          />
-        </View>
-      </View>
-
       {/* Quick Filters Row */}
-      <ScrollView
-        horizontal
-        style={styles.filtersContainer}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingRight: 16 }}
-      >
+      <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 8, marginBottom: 16 }}>
         <TouchableOpacity
           style={[
             styles.filterChip,
@@ -451,7 +445,7 @@ const HomeScreen = ({ navigation }) => {
           onPress={() => setFilters({ ...filters, status: 'all' })}
           activeOpacity={0.85}
         >
-          <MaterialIcons name="layers" size={14} color={filters.status === 'all' ? '#fff' : '#1F2937'} />
+          <MaterialIcons name="layers" size={14} color={filters.status === 'all' ? '#fff' : '#1F2937'} style={{ marginRight: 4 }} />
           <Text style={[styles.filterChipText, filters.status === 'all' && styles.filterChipTextActive]}>Todos</Text>
         </TouchableOpacity>
 
@@ -463,7 +457,7 @@ const HomeScreen = ({ navigation }) => {
           onPress={() => setFilters({ ...filters, status: 'lost' })}
           activeOpacity={0.85}
         >
-          <MaterialIcons name="highlight-off" size={14} color={filters.status === 'lost' ? '#fff' : '#B91C1C'} />
+          <MaterialIcons name="highlight-off" size={14} color={filters.status === 'lost' ? '#fff' : '#B91C1C'} style={{ marginRight: 4 }} />
           <Text style={[styles.filterChipText, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
         </TouchableOpacity>
 
@@ -475,7 +469,7 @@ const HomeScreen = ({ navigation }) => {
           onPress={() => setFilters({ ...filters, status: 'found' })}
           activeOpacity={0.85}
         >
-          <MaterialIcons name="check-circle" size={14} color={filters.status === 'found' ? '#fff' : '#0F9D58'} />
+          <MaterialIcons name="check-circle" size={14} color={filters.status === 'found' ? '#fff' : '#0F9D58'} style={{ marginRight: 4 }} />
           <Text style={[styles.filterChipText, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
         </TouchableOpacity>
 
@@ -488,11 +482,11 @@ const HomeScreen = ({ navigation }) => {
             onPress={handleMyItemsToggle}
             activeOpacity={0.85}
           >
-            <MaterialIcons name="person" size={14} color={filters.showMyItems ? '#fff' : '#1F2937'} />
+            <MaterialIcons name="person" size={14} color={filters.showMyItems ? '#fff' : '#1F2937'} style={{ marginRight: 4 }} />
             <Text style={[styles.filterChipText, filters.showMyItems && styles.filterChipTextActive]}>Meus Itens</Text>
           </TouchableOpacity>
         )}
-      </ScrollView>
+      </View>
 
       {/* Items List */}
       <FlatList
@@ -523,14 +517,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
   },
-  filtersContainer: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    marginBottom: 8,
-  },
+  // filtersContainer removido
   searchContainer: {
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -567,7 +554,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    gap: 6,
     flexShrink: 0,
   },
   filterChipActive: {
@@ -718,15 +704,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#9CA3AF',
   },
-  floatingButton: {
+  fabButton: {
     position: 'absolute',
     bottom: 80,
     right: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: '#4F46E5',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 24,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
@@ -735,11 +720,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-  },
-  floatingButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
   },
 });
 

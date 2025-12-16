@@ -22,6 +22,7 @@ import DashboardScreen from '../screens/DashboardScreen';
 import MapScreen from '../screens/MapScreen';
 import AdminScreen from '../screens/AdminScreen';
 import NotificationBell from '../components/NotificationBell';
+import TabBarButton from '../components/TabBarButton';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -133,7 +134,7 @@ const AuthStack = () => {
 };
 
 // Main App Stack with Tabs
-const MainAppTabs = () => {
+const MainAppTabs = ({ navigation }) => {
   const { isAdmin } = useAuth();
 
   return (
@@ -157,7 +158,6 @@ const MainAppTabs = () => {
         },
       }}
     >
-            {/* NotificationBell removido da tab bar */}
       <Tab.Screen
         name="HomeTab"
         component={HomeScreen}
@@ -172,18 +172,6 @@ const MainAppTabs = () => {
         }}
       />
       <Tab.Screen
-        name="RegisterItemTab"
-        component={RegisterItemScreen}
-        options={{
-          title: 'Registrar Item',
-          tabBarLabel: 'Registrar',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="add-circle" size={size} color={color} />
-          ),
-          headerRight: () => <NotificationBell />,
-        }}
-      />
-      <Tab.Screen
         name="ChatTab"
         component={InboxScreen}
         options={{
@@ -193,6 +181,35 @@ const MainAppTabs = () => {
             <MaterialIcons name="chat" size={size} color={color} />
           ),
           headerRight: () => <NotificationBell />,
+        }}
+      />
+      <Tab.Screen
+        name="RegisterItemTab"
+        component={RegisterItemScreen}
+        options={{
+          title: 'Registrar',
+          tabBarLabel: '',
+          tabBarIcon: () => null,
+          tabBarButton: (props) => (
+            <TabBarButton
+              {...props}
+              icon="add"
+              onPress={() => navigation.navigate('RegisterItemTab')}
+            />
+          ),
+          headerShown: false,
+        }}
+      />
+      <Tab.Screen
+        name="NotificationsTab"
+        component={NotificationBell}
+        options={{
+          title: 'Alertas',
+          tabBarLabel: 'Alertas',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="notifications" size={size} color={color} />
+          ),
+          headerTitle: 'Alertas',
         }}
       />
       <Tab.Screen

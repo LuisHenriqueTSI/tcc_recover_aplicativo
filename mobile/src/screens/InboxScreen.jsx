@@ -51,7 +51,7 @@ const InboxScreen = ({ navigation }) => {
     <View style={styles.container}>
       <FlatList
         data={conversations}
-        keyExtractor={item => item.key}
+        keyExtractor={item => `${item.otherId || ''}_${item.itemId || ''}`}
         renderItem={renderItem}
         ListEmptyComponent={<Text style={styles.empty}>Nenhuma conversa encontrada.</Text>}
       />
