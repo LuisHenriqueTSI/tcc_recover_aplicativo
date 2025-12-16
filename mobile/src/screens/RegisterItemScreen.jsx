@@ -158,7 +158,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [rewardAmount, setRewardAmount] = useState('');
   const [rewardDescription, setRewardDescription] = useState('');
 
-  // Carregar fotos e recompensa antigas quando editar item
+  // Carregar fotos e todos os dados antigos quando editar item
   useEffect(() => {
     if (editItem) {
       // Carregar fotos antigas
@@ -171,6 +171,14 @@ const RegisterItemScreen = ({ navigation, route }) => {
         }));
         setPhotos(oldPhotos);
       }
+      
+      // Garantir que todos os dados estão carregados
+      if (!title && editItem.title) setTitle(editItem.title);
+      if (!description && editItem.description) setDescription(editItem.description);
+      if (!location && editItem.location) setLocation(editItem.location);
+      if (!brand && editItem.extra_fields?.brand) setBrand(editItem.extra_fields.brand);
+      if (!color && editItem.extra_fields?.color) setColor(editItem.extra_fields.color);
+      if (!serialNumber && editItem.extra_fields?.serial_number) setSerialNumber(editItem.extra_fields.serial_number);
     }
   }, [editItem]);
 
@@ -251,6 +259,26 @@ const RegisterItemScreen = ({ navigation, route }) => {
       setError('Selecione um tipo de item');
       return false;
     }
+    
+    // Em modo edição, aceitar valores antigos - não obrigar a preencher tudo novamente
+    if (editItem) {
+      // Se tem dados carregados do editItem, não precisa validar rigorosamente
+      if (!title.trim() && !editItem.title) {
+        setError('Preencha o nome do item');
+        return false;
+      }
+      if (!date.trim() && !editItem.date) {
+        setError('Selecione a data');
+        return false;
+      }
+      if (!location.trim() && !editItem.location) {
+        setError('Preencha o local');
+        return false;
+      }
+      return true;
+    }
+    
+    // Modo de CRIAÇÃO - validação rigorosa
     if (!title.trim()) {
       setError('Preencha o nome do item');
       return false;
@@ -294,18 +322,19 @@ const RegisterItemScreen = ({ navigation, route }) => {
     setLoading(true);
 
     try {
+      // Em modo edição, usar dados antigos se não foram modificados
       const itemData = {
-        title,
-        description,
-        location,
-        status,
-        category: itemType,
-        item_type: itemType,
-        date: `${date}T00:00:00Z`,
+        title: title || editItem?.title,
+        description: description || editItem?.description,
+        location: location || editItem?.location,
+        status: status || editItem?.status,
+        category: itemType || editItem?.category,
+        item_type: itemType || editItem?.item_type,
+        date: date ? `${date}T00:00:00Z` : editItem?.date,
         extra_fields: {
-          brand,
-          color,
-          serial_number: serialNumber,
+          brand: brand || editItem?.extra_fields?.brand,
+          color: color || editItem?.extra_fields?.color,
+          serial_number: serialNumber || editItem?.extra_fields?.serial_number,
         },
       };
 
