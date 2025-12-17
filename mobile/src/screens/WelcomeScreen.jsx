@@ -25,9 +25,6 @@ const WelcomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     loadStatistics();
-    // Atualiza as estatísticas a cada 30 segundos
-    const interval = setInterval(loadStatistics, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const loadStatistics = async () => {

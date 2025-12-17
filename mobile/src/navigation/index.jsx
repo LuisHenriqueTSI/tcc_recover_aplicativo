@@ -99,11 +99,7 @@ const PublicStack = () => {
         },
       }}
     >
-      <Stack.Screen
-        name="Welcome"
-        component={WelcomeScreen}
-        options={{ headerShown: false }}
-      />
+      {/* WelcomeScreen removido: inicia direto no Login */}
       <Stack.Screen
         name="PublicApp"
         component={PublicAppTabs}
@@ -113,6 +109,7 @@ const PublicStack = () => {
         name="Login"
         component={LoginScreen}
         options={{ title: 'Entrar' }}
+        initialParams={{}} // Garante que seja a primeira tela
       />
       <Stack.Screen
         name="Register"
@@ -134,7 +131,7 @@ const AuthStack = () => {
         cardStyle: { backgroundColor: '#F9FAFB' },
       }}
     >
-      <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      {/* WelcomeScreen removido do AuthStack */}
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
     </Stack.Navigator>

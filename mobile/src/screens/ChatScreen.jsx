@@ -4,13 +4,18 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, Image, Keyboard } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { getMessages, sendMessage, markMessagesAsRead, uploadMessagePhoto } from '../services/messages';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import Card from '../components/Card';
 import Button from '../components/Button';
 
-const ChatScreen = ({ route }) => {
+import { useRoute } from '@react-navigation/native';
+
+const ChatScreen = (props) => {
+  const route = useRoute();
+  const conversation = route.params?.conversation;
+  console.log('[ChatScreen] MONTADO', Date.now(), conversation);
   const { user } = useAuth();
-  const { conversation } = route.params || {};
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,31 +29,69 @@ const ChatScreen = ({ route }) => {
   const otherId = conversation?.otherId;
   const itemId = conversation?.itemId;
 
-  const loadMessages = async (isPolling = false) => {
-    if (!isPolling) setLoading(true);
-    if (!isPolling) setError('');
-    try {
-      if (!user?.id || !otherId) throw new Error('Usuário inválido');
-      const msgs = await getMessages(user.id, otherId);
-      // Só atualiza se mudou
-      if (messages.length !== msgs.length || (msgs.length && messages.length && messages[messages.length-1]?.id !== msgs[msgs.length-1]?.id)) {
-        setMessages(msgs);
-      }
-      // Marcar como lidas
-      await markMessagesAsRead(user.id, otherId);
-    } catch (err) {
-      if (!isPolling) setError(err.message || 'Erro ao carregar mensagens');
-    } finally {
-      if (!isPolling) setLoading(false);
-    }
-  };
-
+  // Carrega mensagens apenas no início (primeiro render)
+  // Carregamento inicial e canal real-time só uma vez por conversa
+  const loadedRef = useRef(false);
   useEffect(() => {
-    loadMessages();
-    const interval = setInterval(() => loadMessages(true), 3000);
-    return () => clearInterval(interval);
+    let isMounted = true;
+    console.log('[ChatScreen] useEffect carregamento inicial', {userId: user?.id, otherId, itemId, loaded: loadedRef.current, time: Date.now()});
+    if (!user?.id || !otherId || loadedRef.current) return;
+    loadedRef.current = true;
+    const fetchInitialMessages = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        console.log('[ChatScreen] fetchInitialMessages INICIO', Date.now());
+        const msgs = await getMessages(user.id, otherId);
+        if (isMounted) setMessages(msgs);
+        await markMessagesAsRead(user.id, otherId);
+        console.log('[ChatScreen] fetchInitialMessages FIM', Date.now());
+      } catch (err) {
+        if (isMounted) setError(err.message || 'Erro ao carregar mensagens');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchInitialMessages();
+    return () => { isMounted = false; };
     // eslint-disable-next-line
-  }, [otherId, messages]);
+  }, [user?.id, otherId, itemId]);
+
+
+  // Real-time subscription: nunca ativa loading
+  useEffect(() => {
+    let channel;
+    if (user?.id && otherId && !channel) {
+      channel = supabase.channel('chat-messages-' + user.id + '-' + otherId)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `item_id=eq.${itemId}`,
+          },
+          (payload) => {
+            const msg = payload.new;
+            if (
+              (msg.sender_id === user.id && msg.receiver_id === otherId) ||
+              (msg.sender_id === otherId && msg.receiver_id === user.id)
+            ) {
+              setMessages((prev) => {
+                if (prev.some(m => m.id === msg.id)) return prev;
+                return [...prev, msg].sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at));
+              });
+              if (msg.receiver_id === user.id) markMessagesAsRead(user.id, otherId);
+            }
+          }
+        )
+        .subscribe();
+    }
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line
+  }, [user?.id, otherId, itemId]);
 
 
   const handleSend = async () => {
@@ -59,7 +102,7 @@ const ChatScreen = ({ route }) => {
       if (selectedPhoto) {
         photoUrl = await uploadMessagePhoto(Date.now(), selectedPhoto.uri);
       }
-      await sendMessage({
+      const sentMsg = await sendMessage({
         sender_id: user.id,
         receiver_id: otherId,
         item_id: itemId,
@@ -69,7 +112,13 @@ const ChatScreen = ({ route }) => {
       setInput('');
       setSelectedPhoto(null);
       setPhotoPreview(null);
-      await loadMessages();
+      // Adiciona mensagem localmente para resposta instantânea
+      if (sentMsg && sentMsg.id) {
+        setMessages((prev) => {
+          if (prev.some(m => m.id === sentMsg.id)) return prev;
+          return [...prev, sentMsg].sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at));
+        });
+      }
     } catch (err) {
       setError(err.message || 'Erro ao enviar mensagem');
     } finally {
@@ -119,7 +168,9 @@ const ChatScreen = ({ route }) => {
     );
   };
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" color="#007AFF" />;
+
+
+  // Não mostrar loading global. Apenas erro, se houver.
   if (error) return <Text style={styles.error}>{error}</Text>;
 
   return (
@@ -127,6 +178,7 @@ const ChatScreen = ({ route }) => {
       <FlatList
         ref={flatListRef}
         data={messages}
+        extraData={messages}
         keyExtractor={item => String(item.id)}
         renderItem={renderItem}
         contentContainerStyle={{ padding: 12, paddingBottom: 12 }}
