@@ -56,15 +56,7 @@ const PublicAppTabs = ({ navigation }) => {
           paddingBottom: 8,
           paddingTop: 8,
         },
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: '#4F46E5',
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-        headerRight: () => <PublicHeaderRight navigation={navigation} />,
+        headerShown: false,
       }}
     >
       <Tab.Screen

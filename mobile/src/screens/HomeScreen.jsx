@@ -447,40 +447,80 @@ const HomeScreen = ({ navigation }) => {
     navigation.navigate('ItemDetail', { itemId });
   };
 
-  // Novo componente para o card com carrossel
-  // ...existing code...
 
-  if (loading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#4F46E5" />
-      </View>
+  // Atualiza os itens filtrados ao digitar na busca
+  useEffect(() => {
+    const search = searchTerm?.trim().toLowerCase() || '';
+    if (!search) {
+      setFilteredItems(items);
+      return;
+    }
+    const filtered = items.filter(item =>
+      (item.title && item.title.toLowerCase().includes(search)) ||
+      (item.description && item.description.toLowerCase().includes(search))
     );
-  }
+    setFilteredItems(filtered);
+  }, [searchTerm, items]);
 
   return (
     <View style={styles.container}>
-      {/* Localidade do usuário */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginTop: 18, marginBottom: 2 }}>
-        <MaterialIcons name="place" size={20} color="#F59E42" style={{ marginRight: 4 }} />
-        <Text style={{ fontWeight: 'bold', color: '#4F46E5', fontSize: 16 }}>
-          {locationFilter || 'Defina sua localidade'}
-        </Text>
-        <TouchableOpacity onPress={() => {
-          // Preenche modal com estado/cidade atuais se houver
-          if (locationFilter) {
-            const [city, state] = locationFilter.split(',').map(s => s.trim());
-            setEditState(state || '');
-            setEditCity(city || '');
-          } else {
-            setEditState('');
-            setEditCity('');
-          }
-          setEditLocationModal(true);
-        }}>
-          <MaterialIcons name="edit" size={18} color="#F59E42" style={{ marginLeft: 8 }} />
-        </TouchableOpacity>
+      {/* App Bar ajustada: sem círculo no Entrar, textos mais baixos */}
+      <View style={{ backgroundColor: '#4F46E5', paddingTop: 38, paddingBottom: 18, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 24, fontFamily: 'sans-serif', marginBottom: 2, marginTop: 8 }}>Recover</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, marginTop: 2 }}>
+              <MaterialIcons name="place" size={16} color="#F59E42" style={{ marginRight: 3 }} />
+              <Text style={{ color: '#E0E7FF', fontSize: 15 }}>{locationFilter || 'Defina sua localidade'}</Text>
+              <TouchableOpacity onPress={() => {
+                if (locationFilter) {
+                  const [city, state] = locationFilter.split(',').map(s => s.trim());
+                  setEditState(state || '');
+                  setEditCity(city || '');
+                } else {
+                  setEditState('');
+                  setEditCity('');
+                }
+                setEditLocationModal(true);
+              }}>
+                <MaterialIcons name="edit" size={16} color="#F59E42" style={{ marginLeft: 6 }} />
+              </TouchableOpacity>
+            </View>
+          </View>
+          {/* Botão Entrar sem círculo se não logado, avatar se logado */}
+          {!user ? (
+            <TouchableOpacity onPress={() => navigation.navigate('Login')} style={{ marginLeft: 18, justifyContent: 'center', height: 42 }}>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Entrar</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={{ marginLeft: 12 }}>
+              <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: '#FF9800', alignItems: 'center', justifyContent: 'center' }}>
+                {userProfile?.avatar_url ? (
+                  <Image source={{ uri: userProfile.avatar_url }} style={{ width: 42, height: 42, borderRadius: 21 }} />
+                ) : (
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 20 }}>
+                    {userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}
+                  </Text>
+                )}
+              </View>
+            </TouchableOpacity>
+          )}
+        </View>
+        {/* Campo de busca arredondado com ícone de lupa */}
+        <View style={{ marginTop: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F6F6F6', borderRadius: 16, paddingHorizontal: 14, height: 44 }}>
+            <MaterialIcons name="search" size={22} color="#BDBDBD" style={{ marginRight: 8 }} />
+            <Input
+              placeholder="Buscar itens perdidos ou encontrados."
+              value={searchTerm}
+              onChangeText={setSearchTerm}
+              style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, fontSize: 16, color: '#222', paddingVertical: 0, paddingHorizontal: 0 }}
+              textStyle={{ fontSize: 16, color: '#222' }}
+            />
+          </View>
+        </View>
       </View>
+
       {/* Modal de edição de localidade */}
       <Modal
         visible={editLocationModal}
@@ -556,7 +596,6 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={{ fontWeight: 'bold', color: '#4F46E5', fontSize: 16 }}>Filtros</Text>
       </View>
-      {/* ...existing code... */}
       {showAdvancedFilters && (
         <View style={styles.searchContainer}>
           <View style={styles.searchRow}>
