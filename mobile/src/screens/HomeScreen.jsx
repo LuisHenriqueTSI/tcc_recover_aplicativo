@@ -199,41 +199,51 @@ const HomeScreen = ({ navigation }) => {
       setLoading(true);
       let allItems = [];
       if (searchTerm && searchTerm.trim().length > 0) {
+        // Busca otimizada ainda não implementada para search, usar antiga
         allItems = await itemsService.searchItems(searchTerm.trim());
+        // Buscar fotos e owner manualmente para search
+        allItems = await Promise.all(
+          (allItems || []).map(async (item) => {
+            const { data: photos } = await supabase
+              .from('item_photos')
+              .select('id, url')
+              .eq('item_id', item.id);
+            let owner_name = 'Usuário';
+            if (item.owner_id) {
+              const owner = await getUser(item.owner_id);
+              owner_name = owner?.name || owner?.email || 'Usuário';
+            }
+            return {
+              ...item,
+              owner_name,
+              item_photos: photos || [],
+            };
+          })
+        );
       } else {
         const baseFilters = {};
         if (filters.status !== 'all') baseFilters.status = filters.status;
         if (filters.category !== 'all') baseFilters.category = filters.category;
         if (filters.showMyItems && user) baseFilters.owner_id = user.id;
         if (locationFilter) baseFilters.location = locationFilter;
-        allItems = await itemsService.listItems(baseFilters);
+        allItems = await itemsService.listItemsWithPhotosAndOwner(baseFilters);
+        // Ajustar owner_name para compatibilidade
+        allItems = (allItems || []).map(item => ({
+          ...item,
+          owner_name: item.profiles?.name || item.profiles?.email || 'Usuário',
+          item_photos: item.item_photos || [],
+        }));
       }
-      // Buscar fotos de cada item
-      const itemsWithPhotos = await Promise.all(
-        (allItems || []).map(async (item) => {
-          // Buscar fotos desse item
-          const { data: photos, error: photosError } = await supabase
-            .from('item_photos')
-            .select('id, url')
-            .eq('item_id', item.id);
-          // Buscar nome do dono
-          let owner_name = 'Usuário';
-          if (item.owner_id) {
-            const owner = await getUser(item.owner_id);
-            owner_name = owner?.name || owner?.email || 'Usuário';
-          }
-          return {
-            ...item,
-            owner_name,
-            item_photos: photos || [],
-          };
-        })
-      );
-      setItems(itemsWithPhotos);
-      applyFilters(itemsWithPhotos);
-      const ids = (allItems || []).map(i => i.id);
-      const thumbsMap = await itemsService.getItemThumbnails(ids);
-      setThumbnails(thumbsMap || {});
+      setItems(allItems);
+      applyFilters(allItems);
+      // Thumbnails: usar a primeira foto de cada item
+      const thumbsMap = {};
+      (allItems || []).forEach(item => {
+        if (item.item_photos && item.item_photos.length > 0) {
+          thumbsMap[item.id] = item.item_photos[0].url;
+        }
+      });
+      setThumbnails(thumbsMap);
     } catch (error) {
       setItems([]);
       setFilteredItems([]);

@@ -1,3 +1,29 @@
+// Busca itens já com fotos e nome do dono em uma única query (para Home)
+export const listItemsWithPhotosAndOwner = async (filters = {}) => {
+  try {
+    console.log('[listItemsWithPhotosAndOwner] Carregando itens otimizados:', filters);
+    let query = supabase
+      .from('items')
+      .select(`*, item_photos(id, url), profiles!owner_id(name, email)`) // join correto com fotos e perfil
+      .order('created_at', { ascending: false });
+
+    if (filters.status) query = query.eq('status', filters.status);
+    if (filters.category) query = query.eq('category', filters.category);
+    if (filters.resolved !== undefined) query = query.eq('resolved', filters.resolved);
+    if (filters.owner_id) query = query.eq('owner_id', filters.owner_id);
+    if (filters.location) query = query.ilike('location', `%${filters.location}%`);
+
+    const { data, error } = await query;
+    if (error) {
+      console.log('[listItemsWithPhotosAndOwner] Erro:', error.message);
+      return [];
+    }
+    return data || [];
+  } catch (error) {
+    console.log('[listItemsWithPhotosAndOwner] Exceção:', error.message);
+    return [];
+  }
+};
 import { supabase } from '../lib/supabase';
 import * as FileSystem from 'expo-file-system/legacy';
 
