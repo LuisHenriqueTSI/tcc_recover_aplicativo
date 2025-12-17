@@ -92,21 +92,6 @@ export default function NotificationsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Notificações</Text>
-          {unread > 0 && (
-            <Text style={styles.headerSubtitle}>{unread} {unread === 1 ? 'nova' : 'novas'}</Text>
-          )}
-        </View>
-        {unread > 0 && (
-          <TouchableOpacity style={styles.markAllBtn} onPress={handleMarkAllRead}>
-            <Text style={{ color: '#F59E42', fontWeight: 'bold' }}>Marcar todas como lidas</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
       {/* Notifications List */}
       {loading ? (
         <ActivityIndicator size="large" color="#F59E42" style={{ marginVertical: 24 }} />

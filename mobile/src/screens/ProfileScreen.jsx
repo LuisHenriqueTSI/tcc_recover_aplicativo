@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Image, Platform } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
@@ -17,10 +18,13 @@ const menuItems = [
   { label: 'Ajuda e Suporte', icon: 'help-circle', route: 'AjudaSuporte' },
 ];
 
+
 const ProfileScreen = ({ navigation }) => {
   const { userProfile, user, signOut, refreshProfile } = useAuth();
   const [userItems, setUserItems] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(userProfile?.avatar_url || null);
 
   React.useEffect(() => {
     (async () => {
@@ -33,6 +37,38 @@ const ProfileScreen = ({ navigation }) => {
       setLoading(false);
     })();
   }, []);
+
+  React.useEffect(() => {
+    setAvatarUrl(userProfile?.avatar_url || null);
+  }, [userProfile]);
+
+  const handlePickAvatar = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert('Permissão para acessar a galeria é necessária!');
+      return;
+    }
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets[0]?.uri) {
+      setUploading(true);
+      try {
+        const { uploadAvatar, updateProfile } = await import('../services/user');
+        const url = await uploadAvatar(user.id, pickerResult.assets[0].uri);
+        await updateProfile(user.id, { avatar_url: url });
+        setAvatarUrl(url);
+        await refreshProfile();
+      } catch (e) {
+        alert('Erro ao atualizar foto de perfil.');
+      } finally {
+        setUploading(false);
+      }
+    }
+  };
 
   const stats = [
     { label: 'Publicados', value: userItems.length, icon: 'package' },
@@ -50,17 +86,20 @@ const ProfileScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {userProfile?.name?.[0]?.toUpperCase() || 'U'}
-          </Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
-          <Text style={styles.email}>{userProfile?.email}</Text>
-        </View>
+      {/* Avatar centralizado e email */}
+      <View style={styles.profileTopContainer}>
+        <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.8} style={styles.avatarTouchable}>
+          {avatarUrl ? (
+            <Image source={{ uri: avatarUrl }} style={styles.avatarImg} />
+          ) : (
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{userProfile?.name?.[0]?.toUpperCase() || 'U'}</Text>
+            </View>
+          )}
+          {uploading && <ActivityIndicator style={{ position: 'absolute', alignSelf: 'center', top: '40%' }} size="small" color="#6366F1" />}
+        </TouchableOpacity>
+        <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
+        <Text style={styles.email}>{userProfile?.email}</Text>
         <TouchableOpacity
           style={styles.editBtn}
           onPress={() => navigation.navigate('EditProfile')}
@@ -127,15 +166,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
   },
-  header: {
-    backgroundColor: '#4F46E5',
-    paddingTop: 40,
-    paddingBottom: 28,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
+  profileTopContainer: {
     alignItems: 'center',
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    justifyContent: 'center',
+    paddingTop: 32,
+    paddingBottom: 24,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    marginBottom: 8,
+  },
+  avatarTouchable: {
+    marginBottom: 12,
+  },
+  avatarImg: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: '#E5E7EB',
+    borderWidth: 2,
+    borderColor: '#E0E7FF',
   },
   editBtn: {
     marginLeft: 12,
@@ -150,34 +200,30 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#fff',
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 18,
-    borderWidth: 4,
+    borderWidth: 2,
     borderColor: '#E0E7FF',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
   },
   avatarText: {
-    fontSize: 32,
+    fontSize: 40,
     fontWeight: 'bold',
-    color: '#4F46E5',
+    color: '#6366F1',
   },
   name: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#1F2937',
+    marginBottom: 2,
   },
   email: {
     fontSize: 14,
-    color: '#E0E7FF',
-    marginTop: 2,
+    color: '#6B7280',
+    marginBottom: 8,
   },
   statsCard: {
     backgroundColor: '#fff',

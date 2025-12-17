@@ -135,28 +135,25 @@ const InboxScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Mensagens</Text>
-        <View style={styles.searchWrapper}>
-          <Feather name="search" size={18} color="#9CA3AF" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar conversas ou mensagens..."
-            value={search}
-            onChangeText={setSearch}
-            placeholderTextColor="#9CA3AF"
-          />
-          {search.length > 0 && (
-            <TouchableOpacity
-              onPress={() => setSearch('')}
-              style={{ position: 'absolute', right: 8, top: 8, zIndex: 3, padding: 4 }}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Feather name="x-circle" size={20} color="#9CA3AF" />
-            </TouchableOpacity>
-          )}
-        </View>
+      {/* Barra de busca */}
+      <View style={styles.searchWrapper}>
+        <Feather name="search" size={18} color="#9CA3AF" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar conversas ou mensagens..."
+          value={search}
+          onChangeText={setSearch}
+          placeholderTextColor="#9CA3AF"
+        />
+        {search.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setSearch('')}
+            style={{ position: 'absolute', right: 8, top: 8, zIndex: 3, padding: 4 }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Feather name="x-circle" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+        )}
       </View>
       {search.trim() ? (
         searching ? (

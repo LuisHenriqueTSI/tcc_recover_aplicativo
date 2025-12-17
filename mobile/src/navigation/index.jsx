@@ -71,13 +71,12 @@ const PublicAppTabs = ({ navigation }) => {
         name="HomeTab"
         component={HomeScreen}
         options={{
-          title: 'Home',
-          tabBarLabel: 'Home',
+          title: 'Início',
+          tabBarLabel: 'Início',
           headerTitle: 'RECOVER',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="home" size={size} color={color} />
           ),
-          // headerRight removido
         }}
       />
       {/* Search removed from public tabs as requested */}
@@ -167,25 +166,23 @@ const MainAppTabs = ({ navigation }) => {
         name="HomeTab"
         component={HomeScreen}
         options={{
-          title: 'Home',
-          tabBarLabel: 'Home',
+          title: 'Início',
+          tabBarLabel: 'Início',
           headerTitle: 'RECOVER',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="home" size={size} color={color} />
           ),
-          // headerRight removido
         }}
       />
       <Tab.Screen
         name="ChatTab"
         component={InboxScreen}
         options={{
-          title: 'Chat',
-          tabBarLabel: 'Chat',
+          title: 'Mensagens',
+          tabBarLabel: 'Mensagens',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="chat" size={size} color={color} />
           ),
-          // headerRight removido
         }}
       />
       <Tab.Screen
