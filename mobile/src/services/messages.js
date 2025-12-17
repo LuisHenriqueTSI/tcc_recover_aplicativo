@@ -34,6 +34,7 @@ export const sendMessage = async (messageData) => {
 
 export const getConversations = async (userId) => {
   try {
+    // Busca mensagens sem join (compatível com todos os ambientes)
     const { data, error } = await supabase
       .from('messages')
       .select('*')
@@ -46,21 +47,18 @@ export const getConversations = async (userId) => {
       return [];
     }
 
-    // Group by conversation (sender/receiver pair)
+    // Agrupa por conversa (par sender/receiver)
     const conversations = new Map();
     const userCache = {};
-
     if (data) {
       for (const msg of data) {
         const otherId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
         const key = [userId, otherId].sort().join('_');
-
         if (!conversations.has(key)) {
           // Busca dados do outro usuário (cache para evitar múltiplas queries)
           let otherUser = userCache[otherId];
           if (!otherUser) {
             const profile = await getUserById(otherId);
-            // Se não existe perfil, mostra 'Usuário indefinido'
             otherUser = profile || { name: 'Usuário indefinido', avatarUrl: null };
             userCache[otherId] = otherUser;
           }
@@ -78,7 +76,6 @@ export const getConversations = async (userId) => {
         }
       }
     }
-
     return Array.from(conversations.values());
   } catch (error) {
     console.log('[getConversations] Exceção:', error.message);
