@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { getMessages } from '../services/messages';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, TextInput } from 'react-native';
@@ -37,10 +38,19 @@ const InboxScreen = () => {
     }
   }, [user]);
 
+
+  // Carrega conversas ao montar
   useEffect(() => {
     console.log('[InboxScreen] useEffect inicial', Date.now());
     loadConversations();
   }, [loadConversations]);
+
+  // Atualiza conversas ao focar na tela, sem loading visível
+  useFocusEffect(
+    useCallback(() => {
+      loadConversations();
+    }, [loadConversations])
+  );
 
   useEffect(() => {
     let cancelled = false;
