@@ -104,7 +104,14 @@ const InboxScreen = () => {
             <Text style={styles.time}>{time}</Text>
           </View>
           {item.itemTitle ? <Text style={styles.itemTitle} numberOfLines={1}>{item.itemTitle}</Text> : null}
-          <Text style={styles.lastMessage} numberOfLines={1}>{item.lastMessage}</Text>
+          {item.lastPhotoUrl ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Feather name="image" size={16} color="#6366F1" style={{ marginRight: 4 }} />
+              <Text style={styles.lastMessage} numberOfLines={1}>Imagem enviada</Text>
+            </View>
+          ) : (
+            <Text style={styles.lastMessage} numberOfLines={1}>{item.lastMessage}</Text>
+          )}
         </View>
         {item.unread ? (
           <View style={styles.unreadBadge}><Text style={styles.unreadBadgeText}>{item.unread}</Text></View>

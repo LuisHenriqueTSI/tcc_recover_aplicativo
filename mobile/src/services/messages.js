@@ -67,6 +67,7 @@ export const getConversations = async (userId) => {
             otherId,
             otherName,
             lastMessage: msg.content,
+            lastPhotoUrl: msg.photo_url || null,
             lastMessageAt: msg.sent_at,
             unread: msg.receiver_id === userId && !msg.read,
             itemId: msg.item_id,
