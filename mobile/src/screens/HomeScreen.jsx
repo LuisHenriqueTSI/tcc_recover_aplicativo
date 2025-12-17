@@ -477,19 +477,7 @@ const HomeScreen = ({ navigation }) => {
             <TouchableOpacity onPress={() => navigation.navigate('Login')} style={{ marginLeft: 18, justifyContent: 'center', height: 42 }}>
               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Entrar</Text>
             </TouchableOpacity>
-          ) : (
-            <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={{ marginLeft: 12 }}>
-              <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: '#FF9800', alignItems: 'center', justifyContent: 'center' }}>
-                {userProfile?.avatar_url ? (
-                  <Image source={{ uri: userProfile.avatar_url }} style={{ width: 42, height: 42, borderRadius: 21 }} />
-                ) : (
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 20 }}>
-                    {userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}
-                  </Text>
-                )}
-              </View>
-            </TouchableOpacity>
-          )}
+          ) : null}
         </View>
         {/* Barra de busca e filtro de localidade lado a lado (minimalista) */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>

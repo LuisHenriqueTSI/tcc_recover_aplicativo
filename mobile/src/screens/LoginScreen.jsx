@@ -42,7 +42,12 @@ const LoginScreen = ({ navigation }) => {
 
     try {
       await signIn(email, password);
-      navigation.replace('MainApp');
+      navigation.reset({
+        index: 0,
+        routes: [
+          { name: 'MainApp' }
+        ],
+      });
     } catch (error) {
       Alert.alert('Erro de Login', error.message || 'Falha ao fazer login');
     }

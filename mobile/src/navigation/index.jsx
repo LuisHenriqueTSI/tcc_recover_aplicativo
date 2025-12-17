@@ -72,18 +72,6 @@ const PublicAppTabs = ({ navigation }) => {
         }}
       />
       <Tab.Screen
-        name="LoginTab"
-        component={LoginScreen}
-        options={{
-          title: 'Entrar',
-          tabBarLabel: 'Entrar',
-          headerTitle: 'Entrar',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="login" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
         name="RegisterTab"
         component={RegisterScreen}
         options={{
@@ -146,7 +134,7 @@ const PublicStack = () => {
       <Stack.Screen
         name="Login"
         component={LoginScreen}
-        options={{ title: 'Entrar' }}
+        options={{ headerShown: false }}
         initialParams={{}} // Garante que seja a primeira tela
       />
       <Stack.Screen
@@ -170,7 +158,7 @@ const AuthStack = () => {
       }}
     >
       {/* WelcomeScreen removido do AuthStack */}
-      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Register" component={RegisterScreen} />
     </Stack.Navigator>
   );
@@ -178,6 +166,21 @@ const AuthStack = () => {
 
 // Main App Stack with Tabs
 const MainAppTabs = ({ navigation }) => {
+        <Tab.Screen
+          name="ChatTab"
+          component={InboxScreen}
+          options={{
+            title: 'Mensagens',
+            tabBarLabel: 'Mensagens',
+            headerTitle: 'Mensagens',
+            headerStyle: { backgroundColor: '#4F46E5' },
+            headerTintColor: '#fff',
+            headerTitleStyle: { fontWeight: 'bold' },
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="chat" size={size} color={color} />
+            ),
+          }}
+        />
   const { isAdmin } = useAuth();
 
   return (
@@ -191,14 +194,6 @@ const MainAppTabs = ({ navigation }) => {
           paddingBottom: 8,
           paddingTop: 8,
         },
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: '#4F46E5',
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
       }}
     >
       <Tab.Screen
@@ -207,7 +202,7 @@ const MainAppTabs = ({ navigation }) => {
         options={{
           title: 'Início',
           tabBarLabel: 'Início',
-          headerTitle: 'RECOVER',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="home" size={size} color={color} />
           ),
@@ -219,6 +214,10 @@ const MainAppTabs = ({ navigation }) => {
         options={{
           title: 'Mensagens',
           tabBarLabel: 'Mensagens',
+          headerTitle: 'Mensagens',
+          headerStyle: { backgroundColor: '#4F46E5' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="chat" size={size} color={color} />
           ),
@@ -247,10 +246,13 @@ const MainAppTabs = ({ navigation }) => {
         options={{
           title: 'Alertas',
           tabBarLabel: 'Alertas',
+          headerTitle: 'Alertas',
+          headerStyle: { backgroundColor: '#4F46E5' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="notifications" size={size} color={color} />
           ),
-          headerTitle: 'Alertas',
         }}
       />
       <Tab.Screen
@@ -259,10 +261,13 @@ const MainAppTabs = ({ navigation }) => {
         options={{
           title: 'Perfil',
           tabBarLabel: 'Perfil',
+          headerTitle: 'Perfil',
+          headerStyle: { backgroundColor: '#4F46E5' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="person" size={size} color={color} />
           ),
-          // headerRight removido
         }}
       />
       {isAdmin && (
@@ -309,7 +314,7 @@ const MainStack = () => {
       <Stack.Screen
         name="ChatScreen"
         component={ChatScreen}
-        options={{ title: 'Chat' }}
+        options={{ title: 'Mensagens' }}
       />
       <Stack.Screen
         name="RegisterItem"
@@ -320,11 +325,6 @@ const MainStack = () => {
         name="Dashboard"
         component={DashboardScreen}
         options={{ title: 'Dashboard' }}
-      />
-      <Stack.Screen
-        name="Map"
-        component={MapScreen}
-        options={{ title: 'Mapa' }}
       />
       <Stack.Screen
         name="MeusAnuncios"
@@ -363,8 +363,8 @@ const RootNavigator = () => {
     return <MainStack />;
   }
 
-  // If not authenticated, show public app (can view items but limited features)
-  return <PublicStack />;
+    // If not authenticated, show public app (can view items but limited features)
+    return <PublicStack />;
 };
 
 export default RootNavigator;
