@@ -17,6 +17,8 @@ import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import { states, citiesByState, neighborhoodsByCity } from '../lib/br-locations';
+import { Picker } from '@react-native-picker/picker';
 import Card from '../components/Card';
 
 // Configuração dos tipos de itens igual ao web
@@ -141,7 +143,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [status, setStatus] = useState(editItem?.status || 'lost');
   const [title, setTitle] = useState(editItem?.title || '');
   const [description, setDescription] = useState(editItem?.description || '');
-  const [location, setLocation] = useState(editItem?.location || '');
+  const [state, setState] = useState(editItem?.state || '');
+  const [city, setCity] = useState(editItem?.city || '');
+  const [neighborhood, setNeighborhood] = useState(editItem?.neighborhood || '');
   const [date, setDate] = useState(
     editItem?.date ? editItem.date.split('T')[0] : new Date().toISOString().split('T')[0]
   );
@@ -177,7 +181,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
       // Garantir que todos os dados estão carregados
       if (!title && editItem.title) setTitle(editItem.title);
       if (!description && editItem.description) setDescription(editItem.description);
-      if (!location && editItem.location) setLocation(editItem.location);
+      if (!state && editItem.state) setState(editItem.state);
+      if (!city && editItem.city) setCity(editItem.city);
+      if (!neighborhood && editItem.neighborhood) setNeighborhood(editItem.neighborhood);
       if (!brand && editItem.extra_fields?.brand) setBrand(editItem.extra_fields.brand);
       if (!color && editItem.extra_fields?.color) setColor(editItem.extra_fields.color);
       if (!serialNumber && editItem.extra_fields?.serial_number) setSerialNumber(editItem.extra_fields.serial_number);
@@ -273,8 +279,16 @@ const RegisterItemScreen = ({ navigation, route }) => {
         setError('Selecione a data');
         return false;
       }
-      if (!location.trim() && !editItem.location) {
-        setError('Preencha o local');
+      if (!state.trim() && !editItem.state) {
+        setError('Selecione o estado');
+        return false;
+      }
+      if (!city.trim() && !editItem.city) {
+        setError('Selecione a cidade');
+        return false;
+      }
+      if (!neighborhood.trim() && !editItem.neighborhood) {
+        setError('Selecione o bairro');
         return false;
       }
       return true;
@@ -306,8 +320,16 @@ const RegisterItemScreen = ({ navigation, route }) => {
       setError('Selecione a data');
       return false;
     }
-    if (!location.trim()) {
-      setError('Preencha o local');
+    if (!state.trim()) {
+      setError('Selecione o estado');
+      return false;
+    }
+    if (!city.trim()) {
+      setError('Selecione a cidade');
+      return false;
+    }
+    if (!neighborhood.trim()) {
+      setError('Selecione o bairro');
       return false;
     }
     if (!status) {
@@ -328,7 +350,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
       const itemData = {
         title: title || editItem?.title,
         description: description || editItem?.description,
-        location: location || editItem?.location,
+        state: state || editItem?.state,
+        city: city || editItem?.city,
+        neighborhood: neighborhood || editItem?.neighborhood,
         status: status || editItem?.status,
         category: itemType || editItem?.category,
         item_type: itemType || editItem?.item_type,
@@ -386,7 +410,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
               setStep(1);
               setTitle('');
               setDescription('');
-              setLocation('');
+              setState('');
+              setCity('');
+              setNeighborhood('');
               setDate(new Date().toISOString().split('T')[0]);
               setBrand('');
               setColor('');
@@ -424,7 +450,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     owner_id: user.id,
                     title,
                     description,
-                    location,
+                    state,
+                    city,
+                    neighborhood,
                     status,
                     category: itemType,
                     item_type: itemType,
@@ -446,7 +474,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
                         setStep(1);
                         setTitle('');
                         setDescription('');
-                        setLocation('');
+                        setState('');
+                        setCity('');
+                        setNeighborhood('');
                         setDate(new Date().toISOString().split('T')[0]);
                         setBrand('');
                         setColor('');
@@ -731,13 +761,61 @@ const RegisterItemScreen = ({ navigation, route }) => {
         <Card style={styles.card}>
           <Text style={styles.title}>Localização e Tipo</Text>
 
-          <Input
-            label="Local do achado/perda *"
-            placeholder="Cidade, bairro ou endereço"
-            value={location}
-            onChangeText={setLocation}
-            style={styles.input}
-          />
+
+          <View style={styles.input}>
+            <Text style={styles.label}>Estado *</Text>
+            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
+              <Picker
+                selectedValue={state}
+                onValueChange={(uf) => {
+                  setState(uf);
+                  setCity('');
+                  setNeighborhood('');
+                }}
+                style={{ height: 48 }}
+              >
+                <Picker.Item label="Selecione o estado" value="" />
+                {states.map((uf) => (
+                  <Picker.Item key={uf} label={uf} value={uf} />
+                ))}
+              </Picker>
+            </View>
+          </View>
+          <View style={styles.input}>
+            <Text style={styles.label}>Cidade *</Text>
+            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
+              <Picker
+                selectedValue={city}
+                onValueChange={(c) => {
+                  setCity(c);
+                  setNeighborhood('');
+                }}
+                enabled={!!state}
+                style={{ height: 48 }}
+              >
+                <Picker.Item label="Selecione a cidade" value="" />
+                {(citiesByState[state] || []).map((c) => (
+                  <Picker.Item key={c} label={c} value={c} />
+                ))}
+              </Picker>
+            </View>
+          </View>
+          <View style={styles.input}>
+            <Text style={styles.label}>Bairro *</Text>
+            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
+              <Picker
+                selectedValue={neighborhood}
+                onValueChange={setNeighborhood}
+                enabled={!!city}
+                style={{ height: 48 }}
+              >
+                <Picker.Item label="Selecione o bairro" value="" />
+                {(neighborhoodsByCity[city] || []).map((b) => (
+                  <Picker.Item key={b} label={b} value={b} />
+                ))}
+              </Picker>
+            </View>
+          </View>
 
           <View style={styles.datePickerContainer}>
             <Text style={styles.label}>Data do Evento *</Text>

@@ -11,7 +11,9 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
     if (filters.category) query = query.eq('category', filters.category);
     if (filters.resolved !== undefined) query = query.eq('resolved', filters.resolved);
     if (filters.owner_id) query = query.eq('owner_id', filters.owner_id);
-    if (filters.location) query = query.ilike('location', `%${filters.location}%`);
+    if (filters.state) query = query.eq('state', filters.state);
+    if (filters.city) query = query.eq('city', filters.city);
+    if (filters.neighborhood) query = query.eq('neighborhood', filters.neighborhood);
 
     const { data, error } = await query;
     if (error) {
@@ -41,7 +43,9 @@ export const registerItem = async (itemData, photos = []) => {
         category: itemData.category,
         item_type: itemData.item_type,
         status: itemData.status,
-        location: itemData.location,
+        state: itemData.state,
+        city: itemData.city,
+        neighborhood: itemData.neighborhood,
         latitude: itemData.latitude,
         longitude: itemData.longitude,
         date: itemData.date,
@@ -370,7 +374,7 @@ export const searchItems = async (searchTerm) => {
     const { data, error } = await supabase
       .from('items')
       .select('*')
-      .or(`title.ilike.%${term}%,description.ilike.%${term}%,location.ilike.%${term}%`)
+      .or(`title.ilike.%${term}%,description.ilike.%${term}%,city.ilike.%${term}%,state.ilike.%${term}%,neighborhood.ilike.%${term}%`)
       .order('created_at', { ascending: false });
 
     if (error) {

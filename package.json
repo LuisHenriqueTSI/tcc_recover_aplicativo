@@ -1,10 +1,13 @@
 {
   "dependencies": {
+    "@react-native-picker/picker": "2.11.1",
     "expo-splash-screen": "~31.0.12",
     "react-native-share": "^12.2.1",
     "react-native-view-shot": "^4.0.3"
   },
   "devDependencies": {
+    "@react-native-community/cli": "^20.0.2",
+    "@react-native/metro-config": "^0.83.0",
     "@types/react": "~19.1.10",
     "typescript": "~5.9.2"
   }
