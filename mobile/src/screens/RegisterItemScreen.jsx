@@ -394,7 +394,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               setRewardDescription('');
               setOfferReward(false);
               setError('');
-              navigation.navigate('HomeTab');
+              navigation.navigate('Home');
             },
           },
         ]);
@@ -454,7 +454,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                         setRewardDescription('');
                         setOfferReward(false);
                         setError('');
-                        navigation.navigate('HomeTab');
+                        navigation.navigate('Home');
                       },
                     },
                   ]);

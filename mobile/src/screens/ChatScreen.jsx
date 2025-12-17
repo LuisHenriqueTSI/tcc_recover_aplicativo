@@ -16,12 +16,13 @@ const ChatScreen = (props) => {
   const route = useRoute();
   const conversation = route.params?.conversation;
   const highlightMessageId = route.params?.highlightMessageId;
+  const draftMessage = route.params?.draftMessage;
   console.log('[ChatScreen] MONTADO', Date.now(), conversation, 'highlight:', highlightMessageId);
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(draftMessage || '');
 
   const [sending, setSending] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);

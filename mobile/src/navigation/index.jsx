@@ -243,7 +243,7 @@ const MainAppTabs = ({ navigation }) => {
             <TabBarButton
               {...props}
               icon="add"
-              onPress={() => navigation.navigate('RegisterItemTab')}
+              onPress={() => navigation.navigate('RegisterItem')}
             />
           ),
           headerShown: false,

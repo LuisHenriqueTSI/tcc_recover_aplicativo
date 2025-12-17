@@ -51,16 +51,19 @@ const EditProfileScreen = ({ navigation }) => {
     const isValidLocation = (loc) => /^[A-Za-zÀ-ÿ\s]+,\s?[A-Z]{2}$/.test(loc.trim());
     if (location && !isValidLocation(location)) {
       setErrorMsg('Localidade inválida. Use o formato: Cidade, UF (ex: Pelotas, RS)');
+      setSaving(false);
       return;
     }
     // Validação de senha
     if (password || confirmPassword) {
       if (password.length < 6) {
         setErrorMsg('A senha deve ter pelo menos 6 caracteres.');
+        setSaving(false);
         return;
       }
       if (password !== confirmPassword) {
         setErrorMsg('As senhas não coincidem.');
+        setSaving(false);
         return;
       }
     }
@@ -77,7 +80,24 @@ const EditProfileScreen = ({ navigation }) => {
         location: location.trim(),
       });
       if (password) {
-        await supabaseAuth.updatePassword(password);
+        try {
+          await supabaseAuth.updatePassword(password);
+          setPassword('');
+          setConfirmPassword('');
+          Alert.alert('Sucesso', 'Senha alterada com sucesso!');
+        } catch (err) {
+          // Se erro de autenticação, força login e tenta novamente
+          if (err.status === 401 || (err.message && err.message.toLowerCase().includes('auth'))) {
+            setErrorMsg('Sua sessão expirou. Faça login novamente para alterar a senha.');
+            setSaving(false);
+            navigation.navigate('Login');
+            return;
+          } else {
+            setErrorMsg(err.message || 'Erro ao atualizar senha.');
+            setSaving(false);
+            return;
+          }
+        }
       }
       console.log('[EditProfileScreen] Perfil atualizado:', result);
       await refreshProfile();

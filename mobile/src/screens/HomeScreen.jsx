@@ -12,15 +12,136 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Dimensions,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
+import { supabase } from '../lib/supabase';
 import { getUser } from '../services/user';
+import { sendMessage } from '../services/messages';
 import Card from '../components/Card';
 import ShareButton from '../components/ShareButton';
+// Get screen width for carousel
+const SCREEN_WIDTH = Dimensions.get('window').width;
 import Button from '../components/Button';
 import Input from '../components/Input';
 import { MaterialIcons } from '@expo/vector-icons';
+
+// ItemCard agora é um componente fora do HomeScreen
+const ItemCard = ({ item, user, thumbnails, handleSendMessage }) => {
+  const [carouselIndex, setCarouselIndex] = React.useState(0);
+  // Cores para status e categoria
+  const statusColor = item.status === 'lost' ? '#F87171' : '#34D399';
+  const statusLabel = item.status === 'lost' ? 'Perdido' : 'Encontrado';
+  const categoryColors = {
+    animal: { bg: '#E0E7FF', text: '#6366F1', label: 'Animal' },
+    object: { bg: '#FEF3C7', text: '#F59E42', label: 'Objeto' },
+    document: { bg: '#FDE68A', text: '#B45309', label: 'Documento' },
+    other: { bg: '#F3F4F6', text: '#6B7280', label: 'Outro' },
+  };
+  const cat = categoryColors[item.category] || categoryColors.other;
+  const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
+  const showCarousel = photos.length > 1;
+  return (
+    <Card style={{ padding: 0, marginHorizontal: 12, marginVertical: 14, borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 }}>
+      {/* Imagem/Carrossel */}
+      <View style={{ position: 'relative', width: '100%', height: 180 }}>
+        {photos.length > 0 ? (
+          <>
+            {showCarousel ? (
+              <FlatList
+                data={photos}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(photo, idx) => photo.id ? String(photo.id) : String(idx)}
+                renderItem={({ item: photo }) => (
+                  <Image
+                    source={{ uri: photo.url }}
+                    style={{ width: SCREEN_WIDTH - 24, height: 180, backgroundColor: '#F3F4F6' }}
+                    resizeMode="cover"
+                  />
+                )}
+                onMomentumScrollEnd={e => {
+                  const index = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 24));
+                  setCarouselIndex(index);
+                }}
+                style={{ width: SCREEN_WIDTH - 24 }}
+                snapToInterval={SCREEN_WIDTH - 24}
+                decelerationRate="fast"
+              />
+            ) : (
+              <Image
+                source={{ uri: photos[0].url }}
+                style={{ width: '100%', height: 180, backgroundColor: '#F3F4F6' }}
+                resizeMode="cover"
+              />
+            )}
+            {/* Indicador de múltiplas imagens estilo Instagram */}
+            {showCarousel && (
+              <View style={{ position: 'absolute', bottom: 10, alignSelf: 'center', flexDirection: 'row', gap: 4 }}>
+                {photos.slice(0, 5).map((photo, idx) => (
+                  <View key={photo.id || idx} style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: idx === carouselIndex ? '#fff' : '#d1d5db', marginHorizontal: 2, opacity: 0.8 }} />
+                ))}
+                {photos.length > 5 && (
+                  <Text style={{ color: '#fff', fontSize: 10, marginLeft: 4, opacity: 0.8 }}>+{photos.length - 5}</Text>
+                )}
+              </View>
+            )}
+          </>
+        ) : (
+          <View style={{ width: '100%', height: 180, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ color: '#9CA3AF' }}>Sem foto</Text>
+          </View>
+        )}
+        {/* Botão de Compartilhar no canto superior direito */}
+        <View style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>
+          <ShareButton item={item} imageUrl={photos[carouselIndex]?.url || (photos[0]?.url)} />
+        </View>
+      </View>
+      {/* Tags */}
+      <View style={{ position: 'absolute', top: 14, left: 14, flexDirection: 'row', gap: 8 }}>
+        <View style={{ backgroundColor: statusColor, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 2 }}>
+          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>{statusLabel}</Text>
+        </View>
+        <View style={{ backgroundColor: cat.bg, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 2, marginLeft: 6 }}>
+          <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 12 }}>{cat.label}</Text>
+        </View>
+      </View>
+      {/* Conteúdo */}
+      <View style={{ padding: 18 }}>
+        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>{item.title}</Text>
+        <Text style={{ fontSize: 14, color: '#6B7280', marginBottom: 10 }}>{item.description}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+          <MaterialIcons name="place" size={16} color="#9CA3AF" style={{ marginRight: 2 }} />
+          <Text style={{ fontSize: 13, color: '#9CA3AF', marginRight: 12 }}>{item.location}</Text>
+          <MaterialIcons name="event" size={15} color="#9CA3AF" style={{ marginRight: 2 }} />
+          <Text style={{ fontSize: 13, color: '#9CA3AF' }}>{new Date(item.date).toLocaleDateString()}</Text>
+        </View>
+        <View style={{ height: 1, backgroundColor: '#F3F4F6', marginVertical: 8 }} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>{item.owner_name}</Text>
+          {user && item.owner_id !== user.id && (
+            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F59E42', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 6 }} onPress={() => handleSendMessage(item.owner_id, item.id, item.status)}>
+              <MaterialIcons name="chat" size={18} color="#fff" style={{ marginRight: 4 }} />
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Contato</Text>
+            </TouchableOpacity>
+          )}
+          {!user && (
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 6, opacity: 0.7 }}
+              onPress={() => alert('Faça login para usar esta funcionalidade.')}
+              disabled
+            >
+              <MaterialIcons name="chat" size={18} color="#9CA3AF" style={{ marginRight: 4 }} />
+              <Text style={{ color: '#9CA3AF', fontWeight: 'bold', fontSize: 13 }}>Contato</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </Card>
+  );
+};
 
 const HomeScreen = ({ navigation }) => {
   const { user, userProfile, setUserProfile } = useAuth();
@@ -69,17 +190,29 @@ const HomeScreen = ({ navigation }) => {
         if (locationFilter) baseFilters.location = locationFilter;
         allItems = await itemsService.listItems(baseFilters);
       }
-      const itemsWithOwner = await Promise.all(
+      // Buscar fotos de cada item
+      const itemsWithPhotos = await Promise.all(
         (allItems || []).map(async (item) => {
+          // Buscar fotos desse item
+          const { data: photos, error: photosError } = await supabase
+            .from('item_photos')
+            .select('id, url')
+            .eq('item_id', item.id);
+          // Buscar nome do dono
+          let owner_name = 'Usuário';
           if (item.owner_id) {
             const owner = await getUser(item.owner_id);
-            return { ...item, owner_name: owner?.name || owner?.email || 'Usuário' };
+            owner_name = owner?.name || owner?.email || 'Usuário';
           }
-          return { ...item, owner_name: 'Usuário' };
+          return {
+            ...item,
+            owner_name,
+            item_photos: photos || [],
+          };
         })
       );
-      setItems(itemsWithOwner);
-      applyFilters(itemsWithOwner);
+      setItems(itemsWithPhotos);
+      applyFilters(itemsWithPhotos);
       const ids = (allItems || []).map(i => i.id);
       const thumbsMap = await itemsService.getItemThumbnails(ids);
       setThumbnails(thumbsMap || {});
@@ -181,13 +314,32 @@ const HomeScreen = ({ navigation }) => {
     setFilters({ ...filters, showMyItems: !filters.showMyItems });
   };
 
-  const handleSendMessage = () => {
+  // Abre o chat com o dono do item
+  // Preenche mensagem automática ao abrir o chat
+  const handleSendMessage = (ownerId, itemId, itemStatus) => {
     if (!user) {
       alert('Faça login para enviar mensagens');
       navigation.navigate('Login');
       return;
     }
-    navigation.navigate('ChatTab');
+    if (ownerId === user.id) {
+      alert('Este é o seu próprio item.');
+      return;
+    }
+    // Define mensagem automática
+    let autoMessage = '';
+    if (itemStatus === 'lost') {
+      autoMessage = 'Oi, eu achei seu item';
+    } else {
+      autoMessage = 'Oi, você encontrou meu item?';
+    }
+    navigation.navigate('ChatScreen', {
+      conversation: {
+        otherId: ownerId,
+        itemId: itemId,
+      },
+      draftMessage: autoMessage,
+    });
   };
 
   const handleReportSighting = () => {
@@ -258,7 +410,9 @@ const HomeScreen = ({ navigation }) => {
     navigation.navigate('ItemDetail', { itemId });
   };
 
-  const renderItemCard = ({ item }) => {
+  // Novo componente para o card com carrossel
+  const ItemCard = ({ item }) => {
+    const [carouselIndex, setCarouselIndex] = React.useState(0);
     // Cores para status e categoria
     const statusColor = item.status === 'lost' ? '#F87171' : '#34D399';
     const statusLabel = item.status === 'lost' ? 'Perdido' : 'Encontrado';
@@ -269,17 +423,55 @@ const HomeScreen = ({ navigation }) => {
       other: { bg: '#F3F4F6', text: '#6B7280', label: 'Outro' },
     };
     const cat = categoryColors[item.category] || categoryColors.other;
-
+    const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
+    const showCarousel = photos.length > 1;
     return (
       <Card style={{ padding: 0, marginHorizontal: 12, marginVertical: 14, borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 }}>
-        {/* Imagem */}
+        {/* Imagem/Carrossel */}
         <View style={{ position: 'relative', width: '100%', height: 180 }}>
-          {thumbnails[item.id] ? (
-            <Image
-              source={{ uri: thumbnails[item.id] }}
-              style={{ width: '100%', height: 180, backgroundColor: '#F3F4F6' }}
-              resizeMode="cover"
-            />
+          {photos.length > 0 ? (
+            <>
+              {showCarousel ? (
+                <FlatList
+                  data={photos}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(photo, idx) => photo.id ? String(photo.id) : String(idx)}
+                  renderItem={({ item: photo }) => (
+                    <Image
+                      source={{ uri: photo.url }}
+                      style={{ width: SCREEN_WIDTH - 24, height: 180, backgroundColor: '#F3F4F6' }}
+                      resizeMode="cover"
+                    />
+                  )}
+                  onMomentumScrollEnd={e => {
+                    const index = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 24));
+                    setCarouselIndex(index);
+                  }}
+                  style={{ width: SCREEN_WIDTH - 24 }}
+                  snapToInterval={SCREEN_WIDTH - 24}
+                  decelerationRate="fast"
+                />
+              ) : (
+                <Image
+                  source={{ uri: photos[0].url }}
+                  style={{ width: '100%', height: 180, backgroundColor: '#F3F4F6' }}
+                  resizeMode="cover"
+                />
+              )}
+              {/* Indicador de múltiplas imagens estilo Instagram */}
+              {showCarousel && (
+                <View style={{ position: 'absolute', bottom: 10, alignSelf: 'center', flexDirection: 'row', gap: 4 }}>
+                  {photos.slice(0, 5).map((photo, idx) => (
+                    <View key={photo.id || idx} style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: idx === carouselIndex ? '#fff' : '#d1d5db', marginHorizontal: 2, opacity: 0.8 }} />
+                  ))}
+                  {photos.length > 5 && (
+                    <Text style={{ color: '#fff', fontSize: 10, marginLeft: 4, opacity: 0.8 }}>+{photos.length - 5}</Text>
+                  )}
+                </View>
+              )}
+            </>
           ) : (
             <View style={{ width: '100%', height: 180, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }}>
               <Text style={{ color: '#9CA3AF' }}>Sem foto</Text>
@@ -287,7 +479,7 @@ const HomeScreen = ({ navigation }) => {
           )}
           {/* Botão de Compartilhar no canto superior direito */}
           <View style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>
-            <ShareButton item={item} imageUrl={thumbnails[item.id]} />
+            <ShareButton item={item} imageUrl={photos[carouselIndex]?.url || (photos[0]?.url)} />
           </View>
         </View>
         {/* Tags */}
@@ -312,10 +504,22 @@ const HomeScreen = ({ navigation }) => {
           <View style={{ height: 1, backgroundColor: '#F3F4F6', marginVertical: 8 }} />
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>{item.owner_name}</Text>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F59E42', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 6 }} onPress={handleSendMessage}>
-              <MaterialIcons name="chat" size={18} color="#fff" style={{ marginRight: 4 }} />
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Contato</Text>
-            </TouchableOpacity>
+            {user && item.owner_id !== user.id && (
+              <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F59E42', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 6 }} onPress={() => handleSendMessage(item.owner_id, item.id, item.status)}>
+                <MaterialIcons name="chat" size={18} color="#fff" style={{ marginRight: 4 }} />
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Contato</Text>
+              </TouchableOpacity>
+            )}
+            {!user && (
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 6, opacity: 0.7 }}
+                onPress={() => alert('Faça login para usar esta funcionalidade.')}
+                disabled
+              >
+                <MaterialIcons name="chat" size={18} color="#9CA3AF" style={{ marginRight: 4 }} />
+                <Text style={{ color: '#9CA3AF', fontWeight: 'bold', fontSize: 13 }}>Contato</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </Card>
@@ -487,7 +691,14 @@ const HomeScreen = ({ navigation }) => {
       {/* Items List */}
       <FlatList
         data={filteredItems}
-        renderItem={renderItemCard}
+        renderItem={({ item }) => (
+          <ItemCard
+            item={item}
+            user={user}
+            thumbnails={thumbnails}
+            handleSendMessage={handleSendMessage}
+          />
+        )}
         keyExtractor={item => item.id.toString()}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
