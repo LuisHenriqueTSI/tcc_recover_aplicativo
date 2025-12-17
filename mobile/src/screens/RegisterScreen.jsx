@@ -17,31 +17,33 @@ const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [location, setLocation] = useState('');
   const [errors, setErrors] = useState({});
 
+  const isValidLocation = (loc) => /^[A-Za-zÀ-ÿ\s]+,\s?[A-Z]{2}$/.test(loc.trim());
   const validateForm = () => {
     const newErrors = {};
-    
     if (!name.trim()) {
       newErrors.name = 'Nome é obrigatório';
     }
-    
     if (!email) {
       newErrors.email = 'Email é obrigatório';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Email inválido';
     }
-    
     if (!password) {
       newErrors.password = 'Senha é obrigatória';
     } else if (password.length < 6) {
       newErrors.password = 'Senha deve ter no mínimo 6 caracteres';
     }
-    
     if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Senhas não conferem';
     }
-    
+    if (!location.trim()) {
+      newErrors.location = 'Localidade é obrigatória';
+    } else if (!isValidLocation(location)) {
+      newErrors.location = 'Use o formato: Cidade, UF (ex: Pelotas, RS)';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -50,7 +52,7 @@ const RegisterScreen = ({ navigation }) => {
     if (!validateForm()) return;
 
     try {
-      await signUp(email, password, name);
+      await signUp(email, password, name, location);
       Alert.alert(
         'Sucesso',
         'Conta criada! Por favor, confirme seu email e faça login.',
@@ -90,6 +92,16 @@ const RegisterScreen = ({ navigation }) => {
           onChangeText={setEmail}
           keyboardType="email-address"
           error={errors.email}
+          style={styles.input}
+        />
+
+
+        <Input
+          label="Localidade"
+          placeholder="Cidade, Estado"
+          value={location}
+          onChangeText={setLocation}
+          error={errors.location}
           style={styles.input}
         />
 

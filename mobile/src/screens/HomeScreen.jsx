@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Modal, TextInput } from 'react-native';
 import {
   View,
   Text,
@@ -21,7 +22,7 @@ import Input from '../components/Input';
 import { MaterialIcons } from '@expo/vector-icons';
 
 const HomeScreen = ({ navigation }) => {
-  const { user } = useAuth();
+  const { user, userProfile, setUserProfile } = useAuth();
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +33,18 @@ const HomeScreen = ({ navigation }) => {
     showMyItems: false,
   });
   const [searchTerm, setSearchTerm] = useState('');
+  // Localidade padrão do usuário, mas permite alterar livremente
   const [locationFilter, setLocationFilter] = useState('');
+  const [locationFilterTouched, setLocationFilterTouched] = useState(false);
+  // Modal de edição de localidade
+  const [editLocationModal, setEditLocationModal] = useState(false);
+  const [editLocationValue, setEditLocationValue] = useState('');
+
+  useEffect(() => {
+    if (userProfile?.location && !locationFilterTouched) {
+      setLocationFilter(userProfile.location);
+    }
+  }, [userProfile, locationFilterTouched]);
   const [expandedItem, setExpandedItem] = useState(null);
   const [expandedItemDetails, setExpandedItemDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
@@ -50,17 +62,15 @@ const HomeScreen = ({ navigation }) => {
       });
       let allItems = [];
       if (searchTerm && searchTerm.trim().length > 0) {
-        console.log('[HomeScreen] Buscando por termo:', searchTerm);
         allItems = await itemsService.searchItems(searchTerm.trim());
       } else {
         const baseFilters = {};
         if (filters.status !== 'all') baseFilters.status = filters.status;
         if (filters.category !== 'all') baseFilters.category = filters.category;
         if (filters.showMyItems && user) baseFilters.owner_id = user.id;
+        if (locationFilter) baseFilters.location = locationFilter;
         allItems = await itemsService.listItems(baseFilters);
       }
-      console.log('[HomeScreen] Itens carregados (antes de filtro local):', allItems?.length || 0);
-
       // Buscar nome do usuário dono do item
       const itemsWithOwner = await Promise.all(
         (allItems || []).map(async (item) => {
@@ -71,16 +81,13 @@ const HomeScreen = ({ navigation }) => {
           return { ...item, owner_name: 'Usuário' };
         })
       );
-
       setItems(itemsWithOwner);
       applyFilters(itemsWithOwner);
-
       // Load thumbnails for these items
       const ids = (allItems || []).map(i => i.id);
       const thumbsMap = await itemsService.getItemThumbnails(ids);
       setThumbnails(thumbsMap || {});
     } catch (error) {
-      console.log('[HomeScreen] Erro ao carregar itens:', error.message);
       setItems([]);
       setFilteredItems([]);
     } finally {
@@ -322,6 +329,62 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      {/* Localidade do usuário */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginTop: 18, marginBottom: 2 }}>
+        <MaterialIcons name="place" size={20} color="#F59E42" style={{ marginRight: 4 }} />
+        <Text style={{ fontWeight: 'bold', color: '#4F46E5', fontSize: 16 }}>
+          {locationFilter || 'Defina sua localidade'}
+        </Text>
+        <TouchableOpacity onPress={() => {
+          setEditLocationValue(locationFilter || '');
+          setEditLocationModal(true);
+        }}>
+          <MaterialIcons name="edit" size={18} color="#F59E42" style={{ marginLeft: 8 }} />
+        </TouchableOpacity>
+      </View>
+      {/* Modal de edição de localidade */}
+      <Modal
+        visible={editLocationModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEditLocationModal(false)}
+      >
+        <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
+          <View style={{ backgroundColor:'#fff', borderRadius:12, padding:24, minWidth:280 }}>
+            <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Alterar Localidade</Text>
+            <Text style={{ color:'#6B7280', marginBottom:8 }}>Digite sua cidade e estado (ex: Pelotas, RS):</Text>
+            <TextInput
+              value={editLocationValue}
+              onChangeText={setEditLocationValue}
+              placeholder="Cidade, UF"
+              style={{ borderWidth:1, borderColor:'#E5E7EB', borderRadius:8, padding:10, marginBottom:12, fontSize:15 }}
+              autoFocus
+            />
+            <View style={{ flexDirection:'row', justifyContent:'flex-end', gap:8 }}>
+              <TouchableOpacity onPress={() => setEditLocationModal(false)} style={{ paddingVertical:8, paddingHorizontal:16 }}>
+                <Text style={{ color:'#6B7280', fontWeight:'bold' }}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => {
+                const isValidLocation = (loc) => /^[A-Za-zÀ-ÿ\s]+,\s?[A-Z]{2}$/.test(loc.trim());
+                if (!editLocationValue.trim()) {
+                  setEditLocationModal(false);
+                  return;
+                }
+                if (!isValidLocation(editLocationValue)) {
+                  Alert.alert('Formato inválido', 'Use o formato: Cidade, UF (ex: Pelotas, RS)');
+                  return;
+                }
+                setLocationFilter(editLocationValue.trim());
+                setLocationFilterTouched(true);
+                setEditLocationModal(false);
+                loadItems();
+              }} style={{ paddingVertical:8, paddingHorizontal:16 }}>
+                <Text style={{ color:'#4F46E5', fontWeight:'bold' }}>Salvar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       {/* Filtro avançado escondido em ícone */}
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginTop: 8 }}>
         <TouchableOpacity onPress={() => setShowAdvancedFilters(v => !v)} style={{ marginRight: 8 }}>
@@ -329,6 +392,7 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={{ fontWeight: 'bold', color: '#4F46E5', fontSize: 16 }}>Filtros</Text>
       </View>
+      {/* ...existing code... */}
       {showAdvancedFilters && (
         <View style={styles.searchContainer}>
           <View style={styles.searchRow}>
