@@ -356,7 +356,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         status: status || editItem?.status,
         category: itemType || editItem?.category,
         item_type: itemType || editItem?.item_type,
-        date: date ? `${date}T00:00:00Z` : editItem?.date,
+        date: date ? `${date}T00:00:00-03:00` : editItem?.date,
         extra_fields: {
           brand: brand || editItem?.extra_fields?.brand,
           color: color || editItem?.extra_fields?.color,
