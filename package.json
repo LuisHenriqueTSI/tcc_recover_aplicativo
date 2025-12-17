@@ -1,6 +1,8 @@
 {
   "dependencies": {
-    "expo-splash-screen": "~31.0.12"
+    "expo-splash-screen": "~31.0.12",
+    "react-native-share": "^12.2.1",
+    "react-native-view-shot": "^4.0.3"
   },
   "devDependencies": {
     "@types/react": "~19.1.10",

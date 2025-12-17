@@ -13,7 +13,9 @@ import {
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
+import { getUser } from '../services/user';
 import Card from '../components/Card';
+import ShareButton from '../components/ShareButton';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -58,8 +60,20 @@ const HomeScreen = ({ navigation }) => {
         allItems = await itemsService.listItems(baseFilters);
       }
       console.log('[HomeScreen] Itens carregados (antes de filtro local):', allItems?.length || 0);
-      setItems(allItems || []);
-      applyFilters(allItems || []);
+
+      // Buscar nome do usuário dono do item
+      const itemsWithOwner = await Promise.all(
+        (allItems || []).map(async (item) => {
+          if (item.owner_id) {
+            const owner = await getUser(item.owner_id);
+            return { ...item, owner_name: owner?.name || owner?.email || 'Usuário' };
+          }
+          return { ...item, owner_name: 'Usuário' };
+        })
+      );
+
+      setItems(itemsWithOwner);
+      applyFilters(itemsWithOwner);
 
       // Load thumbnails for these items
       const ids = (allItems || []).map(i => i.id);
@@ -235,149 +249,66 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const renderItemCard = ({ item }) => {
-    const isExpanded = expandedItem === item.id;
-    const details = expandedItemDetails;
+    // Cores para status e categoria
+    const statusColor = item.status === 'lost' ? '#F87171' : '#34D399';
+    const statusLabel = item.status === 'lost' ? 'Perdido' : 'Encontrado';
+    const categoryColors = {
+      animal: { bg: '#E0E7FF', text: '#6366F1', label: 'Animal' },
+      object: { bg: '#FEF3C7', text: '#F59E42', label: 'Objeto' },
+      document: { bg: '#FDE68A', text: '#B45309', label: 'Documento' },
+      other: { bg: '#F3F4F6', text: '#6B7280', label: 'Outro' },
+    };
+    const cat = categoryColors[item.category] || categoryColors.other;
 
     return (
-      <TouchableOpacity onPress={() => handleOpenItemDetail(item.id)} activeOpacity={0.7}>
-        <Card style={styles.itemCard}>
-          {/* Thumbnail */}
+      <Card style={{ padding: 0, marginHorizontal: 12, marginVertical: 14, borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 }}>
+        {/* Imagem */}
+        <View style={{ position: 'relative', width: '100%', height: 180 }}>
           {thumbnails[item.id] ? (
             <Image
               source={{ uri: thumbnails[item.id] }}
-              style={styles.itemImage}
+              style={{ width: '100%', height: 180, backgroundColor: '#F3F4F6' }}
               resizeMode="cover"
             />
           ) : (
-            <View style={styles.itemImagePlaceholder}>
-              <Text style={styles.itemImagePlaceholderText}>Sem foto</Text>
+            <View style={{ width: '100%', height: 180, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ color: '#9CA3AF' }}>Sem foto</Text>
             </View>
           )}
-          <View style={styles.itemHeader}>
-            <View style={styles.itemInfo}>
-              <Text style={styles.itemTitle} numberOfLines={1}>
-                {item.title}
-              </Text>
-              <Text style={styles.itemStatus}>
-                {item.status === 'lost' ? '🔴 Perdido' : '🟢 Encontrado'}
-              </Text>
-            </View>
+          {/* Botão de Compartilhar no canto superior direito */}
+          <View style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>
+            <ShareButton item={item} imageUrl={thumbnails[item.id]} />
           </View>
-
-          <Text style={styles.itemDescription} numberOfLines={2}>
-            {item.description}
-          </Text>
-
-          <View style={styles.itemMeta}>
-            <Text style={styles.metaText}>📍 {item.location}</Text>
-            <Text style={styles.metaText}>📅 {new Date(item.date).toLocaleDateString()}</Text>
+        </View>
+        {/* Tags */}
+        <View style={{ position: 'absolute', top: 14, left: 14, flexDirection: 'row', gap: 8 }}>
+          <View style={{ backgroundColor: statusColor, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 2 }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>{statusLabel}</Text>
           </View>
-
-          {isExpanded && (
-            <View style={styles.expandedContent}>
-              {loadingDetails ? (
-                <ActivityIndicator size="small" color="#4F46E5" />
-              ) : (
-                <>
-                  <Text style={styles.sectionTitle}>Detalhes Completos</Text>
-                  <Text style={styles.detailText}>{item.description}</Text>
-
-                  {details?.profiles && (
-                    <View style={styles.ownerInfoExpanded}>
-                      <Text style={styles.sectionTitle}>Proprietário</Text>
-                      <Text style={styles.ownerName}>{details.profiles.name}</Text>
-                      <Text style={styles.ownerEmail}>{details.profiles.email}</Text>
-                    </View>
-                  )}
-
-                  {details?.rewards && details.rewards.length > 0 && (
-                    <View>
-                      <Text style={styles.sectionTitle}>Recompensa</Text>
-                      {details.rewards.map((reward) => (
-                        <Text key={reward.id} style={styles.detailText}>
-                          R$ {reward.amount} {reward.currency} - {reward.status}
-                        </Text>
-                      ))}
-                    </View>
-                  )}
-
-                  {item.extra_fields && Object.keys(item.extra_fields).length > 0 && (
-                    <View>
-                      <Text style={styles.sectionTitle}>Informações Adicionais</Text>
-                      {Object.entries(item.extra_fields).map(([key, value]) => (
-                        <Text key={key} style={styles.detailText}>
-                          {key}: {value}
-                        </Text>
-                      ))}
-                    </View>
-                  )}
-
-                  {details?.item_photos && details.item_photos.length > 0 && (
-                    <View>
-                      <Text style={styles.sectionTitle}>Fotos ({details.item_photos.length})</Text>
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
-                        {details.item_photos.map((p) => (
-                          <Image
-                            key={p.id}
-                            source={{ uri: p.url }}
-                            style={styles.photoThumb}
-                            resizeMode="cover"
-                          />
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )}
-
-                  <View style={styles.actionButtons}>
-                    {user && item.owner_id === user.id ? (
-                      <>
-                        <Button
-                          title="Editar"
-                          onPress={() => handleEditItem(item)}
-                          style={{ flex: 1 }}
-                        />
-                        <Button
-                          title="Excluir"
-                          variant="danger"
-                          onPress={() => handleDeleteItem(item.id)}
-                          style={{ flex: 1, marginLeft: 8 }}
-                        />
-                        <Button
-                          title="Marcar como Resolvido"
-                          variant="secondary"
-                          onPress={() => handleMarkAsResolved(item.id)}
-                          style={{ flex: 1, marginLeft: 8 }}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <Button
-                          title="Enviar Mensagem"
-                          onPress={handleSendMessage}
-                          style={{ flex: 1 }}
-                        />
-                        <Button
-                          title="Reportar Avistamento"
-                          variant="secondary"
-                          onPress={handleReportSighting}
-                          style={{ flex: 1, marginLeft: 8 }}
-                        />
-                      </>
-                    )}
-                  </View>
-                </>
-              )}
-            </View>
-          )}
-
-          <Button
-            title={isExpanded ? 'Recolher' : 'Expandir'}
-            variant="secondary"
-            onPress={() => handleExpandItem(item.id)}
-            style={styles.expandButton}
-          />
-        </Card>
-      </TouchableOpacity>
+          <View style={{ backgroundColor: cat.bg, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 2, marginLeft: 6 }}>
+            <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 12 }}>{cat.label}</Text>
+          </View>
+        </View>
+        {/* Conteúdo */}
+        <View style={{ padding: 18 }}>
+          <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>{item.title}</Text>
+          <Text style={{ fontSize: 14, color: '#6B7280', marginBottom: 10 }}>{item.description}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <MaterialIcons name="place" size={16} color="#9CA3AF" style={{ marginRight: 2 }} />
+            <Text style={{ fontSize: 13, color: '#9CA3AF', marginRight: 12 }}>{item.location}</Text>
+            <MaterialIcons name="event" size={15} color="#9CA3AF" style={{ marginRight: 2 }} />
+            <Text style={{ fontSize: 13, color: '#9CA3AF' }}>{new Date(item.date).toLocaleDateString()}</Text>
+          </View>
+          <View style={{ height: 1, backgroundColor: '#F3F4F6', marginVertical: 8 }} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>{item.owner_name}</Text>
+            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F59E42', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 6 }} onPress={handleSendMessage}>
+              <MaterialIcons name="chat" size={18} color="#fff" style={{ marginRight: 4 }} />
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Contato</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Card>
     );
   };
 
