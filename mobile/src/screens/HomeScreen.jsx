@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { states, citiesByState } from '../lib/br-locations';
+import { states, citiesByState, neighborhoodsByCity } from '../lib/br-locations';
 import * as userService from '../services/user';
 import {
   View,
@@ -186,12 +186,16 @@ const HomeScreen = ({ navigation }) => {
   const [editLocationModal, setEditLocationModal] = useState(false);
   const [editState, setEditState] = useState('');
   const [editCity, setEditCity] = useState('');
+  const [editNeighborhood, setEditNeighborhood] = useState('');
 
   // Atualiza localidade sempre que a tela ganha foco (ex: após editar perfil)
   useFocusEffect(
     React.useCallback(() => {
       if (userProfile?.city && userProfile?.state && !locationFilterTouched) {
-        setLocationFilter(`${userProfile.city}, ${userProfile.state}`);
+        setEditState(userProfile.state);
+        setEditCity(userProfile.city);
+        setEditNeighborhood(userProfile.neighborhood || '');
+        setLocationFilter(`${userProfile.state}, ${userProfile.city}${userProfile.neighborhood ? ', ' + userProfile.neighborhood : ''}`);
       }
     }, [userProfile, locationFilterTouched])
   );
@@ -232,11 +236,10 @@ const HomeScreen = ({ navigation }) => {
         if (filters.status !== 'all') baseFilters.status = filters.status;
         if (filters.category !== 'all') baseFilters.category = filters.category;
         if (filters.showMyItems && user) baseFilters.owner_id = user.id;
-        if (locationFilter) {
-          const [city, state] = locationFilter.split(',').map(s => s.trim());
-          if (city) baseFilters.city = city;
-          if (state) baseFilters.state = state;
-        }
+        // Filtro por estado, cidade e bairro
+        if (editState) baseFilters.state = editState;
+        if (editCity) baseFilters.city = editCity;
+        if (editNeighborhood) baseFilters.neighborhood = editNeighborhood;
         allItems = await itemsService.listItemsWithPhotosAndOwner(baseFilters);
         // Ajustar owner_name para compatibilidade
         allItems = (allItems || []).map(item => ({
@@ -464,30 +467,12 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* App Bar ajustada: sem círculo no Entrar, textos mais baixos */}
+      {/* App Bar ajustada: filtro de localidade ao lado da busca */}
       <View style={{ backgroundColor: '#4F46E5', paddingTop: 38, paddingBottom: 18, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <View style={{ flex: 1 }}>
             <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 24, fontFamily: 'sans-serif', marginBottom: 2, marginTop: 8 }}>Recover</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, marginTop: 2 }}>
-              <MaterialIcons name="place" size={16} color="#F59E42" style={{ marginRight: 3 }} />
-              <Text style={{ color: '#E0E7FF', fontSize: 15 }}>{locationFilter || 'Defina sua localidade'}</Text>
-              <TouchableOpacity onPress={() => {
-                if (locationFilter) {
-                  const [city, state] = locationFilter.split(',').map(s => s.trim());
-                  setEditState(state || '');
-                  setEditCity(city || '');
-                } else {
-                  setEditState('');
-                  setEditCity('');
-                }
-                setEditLocationModal(true);
-              }}>
-                <MaterialIcons name="edit" size={16} color="#F59E42" style={{ marginLeft: 6 }} />
-              </TouchableOpacity>
-            </View>
           </View>
-          {/* Botão Entrar sem círculo se não logado, avatar se logado */}
           {!user ? (
             <TouchableOpacity onPress={() => navigation.navigate('Login')} style={{ marginLeft: 18, justifyContent: 'center', height: 42 }}>
               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Entrar</Text>
@@ -506,9 +491,9 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
           )}
         </View>
-        {/* Campo de busca arredondado com ícone de lupa */}
-        <View style={{ marginTop: 12 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F6F6F6', borderRadius: 16, paddingHorizontal: 14, height: 44 }}>
+        {/* Barra de busca e filtro de localidade lado a lado (minimalista) */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#F6F6F6', borderRadius: 16, paddingHorizontal: 14, height: 44 }}>
             <MaterialIcons name="search" size={22} color="#BDBDBD" style={{ marginRight: 8 }} />
             <Input
               placeholder="Buscar itens perdidos ou encontrados."
@@ -518,6 +503,10 @@ const HomeScreen = ({ navigation }) => {
               textStyle={{ fontSize: 16, color: '#222' }}
             />
           </View>
+          {/* Botão de filtro minimalista: só ícone */}
+          <TouchableOpacity onPress={() => setEditLocationModal(true)} style={{ marginLeft: 8, width: 40, height: 40, borderRadius: 20, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E7EB' }} accessibilityLabel={editState || editCity || editNeighborhood ? `Local: ${editState || ''}${editCity ? ', ' + editCity : ''}${editNeighborhood ? ', ' + editNeighborhood : ''}` : 'Selecionar local'}>
+            <MaterialIcons name="place" size={24} color="#F59E42" />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -531,7 +520,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
           <View style={{ backgroundColor:'#fff', borderRadius:12, padding:24, minWidth:280 }}>
             <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Alterar Localidade</Text>
-            <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione seu estado e cidade:</Text>
+            <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione estado, cidade e bairro:</Text>
             <Text style={{ marginBottom: 6 }}>Estado</Text>
             <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12 }}>
               <Picker
@@ -539,6 +528,7 @@ const HomeScreen = ({ navigation }) => {
                 onValueChange={uf => {
                   setEditState(uf);
                   setEditCity('');
+                  setEditNeighborhood('');
                 }}
                 style={{ height: 44 }}
               >
@@ -549,16 +539,33 @@ const HomeScreen = ({ navigation }) => {
               </Picker>
             </View>
             <Text style={{ marginBottom: 6 }}>Cidade</Text>
-            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16 }}>
+            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12 }}>
               <Picker
                 selectedValue={editCity}
-                onValueChange={setEditCity}
+                onValueChange={city => {
+                  setEditCity(city);
+                  setEditNeighborhood('');
+                }}
                 enabled={!!editState}
                 style={{ height: 44 }}
               >
                 <Picker.Item label="Selecione a cidade" value="" />
                 {(citiesByState[editState] || []).map(city => (
                   <Picker.Item key={city} label={city} value={city} />
+                ))}
+              </Picker>
+            </View>
+            <Text style={{ marginBottom: 6 }}>Bairro</Text>
+            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16 }}>
+              <Picker
+                selectedValue={editNeighborhood}
+                onValueChange={setEditNeighborhood}
+                enabled={!!editCity}
+                style={{ height: 44 }}
+              >
+                <Picker.Item label="Selecione o bairro" value="" />
+                {(neighborhoodsByCity[editCity] || []).map(bairro => (
+                  <Picker.Item key={bairro} label={bairro} value={bairro} />
                 ))}
               </Picker>
             </View>
@@ -573,11 +580,12 @@ const HomeScreen = ({ navigation }) => {
                 }
                 setLocationFilterTouched(true);
                 setEditLocationModal(false);
-                setLocationFilter(`${editCity}, ${editState}`);
+                setLocationFilter(`${editState}, ${editCity}${editNeighborhood ? ', ' + editNeighborhood : ''}`);
+                loadItems(); // Carrega imediatamente após salvar
                 // Atualiza localidade no perfil do usuário
                 try {
                   if (user && user.id) {
-                    await userService.updateProfile(user.id, { city: editCity, state: editState });
+                    await userService.updateProfile(user.id, { city: editCity, state: editState, neighborhood: editNeighborhood });
                   }
                 } catch (e) {
                   console.log('[HomeScreen] Erro ao atualizar localidade no perfil:', e.message);
@@ -589,75 +597,8 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-      {/* Filtro avançado escondido em ícone */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginTop: 8 }}>
-        <TouchableOpacity onPress={() => setShowAdvancedFilters(v => !v)} style={{ marginRight: 8 }}>
-          <MaterialIcons name="filter-list" size={28} color="#4F46E5" />
-        </TouchableOpacity>
-        <Text style={{ fontWeight: 'bold', color: '#4F46E5', fontSize: 16 }}>Filtros</Text>
-      </View>
-      {showAdvancedFilters && (
-        <View style={styles.searchContainer}>
-          <View style={styles.searchRow}>
-            <View style={styles.searchInputWrapper}>
-              <Text style={styles.searchLabel}>Buscar</Text>
-              <Input
-                placeholder="Título, descrição, endereço..."
-                value={searchTerm}
-                onChangeText={setSearchTerm}
-              />
-            </View>
-            <View style={styles.searchInputWrapper}>
-              <Text style={styles.searchLabel}>Local</Text>
-              {/*
-                O filtro de localidade avançado pode ser substituído por selects de estado/cidade se desejar.
-                Por ora, removido input livre para evitar inconsistência.
-              */}
-              <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 8 }}>
-                <Picker
-                  selectedValue={editState}
-                  onValueChange={uf => {
-                    setEditState(uf);
-                    setEditCity('');
-                  }}
-                  style={{ height: 44 }}
-                >
-                  <Picker.Item label="Selecione o estado" value="" />
-                  {states.map(uf => (
-                    <Picker.Item key={uf} label={uf} value={uf} />
-                  ))}
-                </Picker>
-              </View>
-              <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 8 }}>
-                <Picker
-                  selectedValue={editCity}
-                  onValueChange={setEditCity}
-                  enabled={!!editState}
-                  style={{ height: 44 }}
-                >
-                  <Picker.Item label="Selecione a cidade" value="" />
-                  {(citiesByState[editState] || []).map(city => (
-                    <Picker.Item key={city} label={city} value={city} />
-                  ))}
-                </Picker>
-              </View>
-            </View>
-          </View>
-          <View style={styles.searchActions}>
-            <Button title="Aplicar" onPress={loadItems} />
-            <Button
-              title="Limpar"
-              variant="secondary"
-              onPress={() => {
-                setSearchTerm('');
-                setLocationFilter('');
-                setFilters({ ...filters, status: 'all', category: 'all' });
-                loadItems();
-              }}
-            />
-          </View>
-        </View>
-      )}
+      {/* Filtro avançado removido conforme solicitado */}
+      {/* Campos duplicados de buscar/local removidos */}
 
       {/* Quick Filters Row */}
       <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 8, marginBottom: 16 }}>
