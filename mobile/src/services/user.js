@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export const getUser = async (userId) => {
   try {
@@ -66,23 +67,37 @@ export const updateProfile = async (userId, updates) => {
   }
 };
 
-export const uploadAvatar = async (userId, uri) => {
+export const uploadAvatar = async (userId, photoUri) => {
   try {
     console.log('[uploadAvatar] Enviando avatar para:', userId);
 
-    // Extract filename from URI
-    const filename = uri.split('/').pop();
-    const ext = filename.split('.').pop();
+    if (!photoUri) throw new Error('photoUri indefinido');
+
+    // Garante que a URI está no formato correto
+    let uri = photoUri;
+    if (!uri.startsWith('file://')) uri = 'file://' + uri;
+
+    const filename = uri.split('/').pop() || `avatar_${Date.now()}.jpg`;
+    const ext = filename.includes('.') ? filename.split('.').pop() : 'jpg';
     const filepath = `${userId}/avatar.${ext}`;
 
-    // Convert URI to blob
-    const response = await fetch(uri);
-    const blob = await response.blob();
+    // Usa expo-file-system para ler o arquivo como Uint8Array (base64 -> Uint8Array)
+    let fileBuffer;
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      if (!fileInfo.exists) throw new Error('Arquivo não encontrado no caminho: ' + uri);
+      const fileData = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      fileBuffer = Uint8Array.from(atob(fileData), c => c.charCodeAt(0));
+      console.log('[uploadAvatar] File lido como Uint8Array, tamanho:', fileBuffer.length);
+    } catch (fsErr) {
+      console.log('[uploadAvatar] Erro ao ler arquivo com expo-file-system:', fsErr, 'URI:', uri);
+      throw fsErr;
+    }
 
-    // Upload to Supabase Storage
+    // Upload para Supabase Storage
     const { data, error } = await supabase.storage
-      .from('avatars')
-      .upload(filepath, blob, {
+      .from('profile-photos')
+      .upload(filepath, fileBuffer, {
         upsert: true,
         contentType: `image/${ext}`,
       });
@@ -94,7 +109,7 @@ export const uploadAvatar = async (userId, uri) => {
 
     // Get public URL
     const { data: urlData } = supabase.storage
-      .from('avatars')
+      .from('profile-photos')
       .getPublicUrl(filepath);
 
     console.log('[uploadAvatar] Avatar uploaded successfully');
