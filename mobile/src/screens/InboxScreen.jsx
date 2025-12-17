@@ -130,6 +130,15 @@ const InboxScreen = () => {
             onChangeText={setSearch}
             placeholderTextColor="#9CA3AF"
           />
+          {search.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setSearch('')}
+              style={{ position: 'absolute', right: 8, top: 8, zIndex: 3, padding: 4 }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Feather name="x-circle" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       {search.trim() ? (
