@@ -134,8 +134,10 @@ const ITEM_TYPES = {
 const RegisterItemScreen = ({ navigation, route }) => {
   const { user } = useAuth();
   const editItem = route?.params?.editItem || null;
-  const [step, setStep] = useState(editItem ? 2 : 1);
-  const [itemType, setItemType] = useState(editItem?.category || null);
+  // Prioriza tipo vindo por parâmetro, depois do editItem, nunca deixa nulo se veio por navegação
+  const initialType = route?.params?.itemType || route?.params?.category || editItem?.category || null;
+  const [step, setStep] = useState(editItem || initialType ? 2 : 1);
+  const [itemType, setItemType] = useState(initialType);
   const [status, setStatus] = useState(editItem?.status || 'lost');
   const [title, setTitle] = useState(editItem?.title || '');
   const [description, setDescription] = useState(editItem?.description || '');
@@ -475,13 +477,31 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
   // Step 1: Selecionar tipo
   if (step === 1 && !itemType) {
+    // Se estiver editando, mostrar apenas o tipo já selecionado, sem exigir nova escolha
+    if (editItem && editItem.category) {
+      return (
+        <ScrollView style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Editar Item</Text>
+            <Text style={styles.subtitle}>Tipo: {ITEM_TYPES[editItem.category]?.label || editItem.category}</Text>
+            <Text style={{ color: '#DC2626', marginTop: 16, fontWeight: 'bold' }}>
+              Não é possível alterar o tipo do item após a publicação. Para mudar o tipo, exclua e crie um novo item.
+            </Text>
+          </View>
+          <Button title="Avançar" onPress={() => {
+            setItemType(editItem.category);
+            setStep(2);
+          }} />
+        </ScrollView>
+      );
+    }
+    // Criação normal
     return (
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>{editItem ? 'Editar Item' : 'Selecione o Tipo'}</Text>
+          <Text style={styles.title}>Selecione o Tipo</Text>
           <Text style={styles.subtitle}>Escolha a categoria do item</Text>
         </View>
-
         <View style={styles.typeGrid}>
           {Object.entries(ITEM_TYPES).map(([key, type]) => (
             <TouchableOpacity
@@ -508,7 +528,15 @@ const RegisterItemScreen = ({ navigation, route }) => {
           <Card style={styles.card}>
             <Text style={styles.title}>Erro ao carregar tipo de item</Text>
             <Text>Por favor, selecione o tipo de item novamente.</Text>
-            <Button title="Voltar" onPress={() => setStep(1)} />
+            <Button title="Voltar" onPress={() => {
+              if (editItem) {
+                setItemType(editItem.category);
+                setStep(1);
+              } else {
+                setItemType(null);
+                setStep(1);
+              }
+            }} />
           </Card>
         </ScrollView>
       );
@@ -610,9 +638,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
           <View style={styles.navigation}>
             <Button
-              title="Voltar"
+              title="Cancelar"
               variant="secondary"
-              onPress={() => setItemType(null)}
+              onPress={() => navigation.goBack()}
               style={{ flex: 1 }}
             />
             <Button
