@@ -3,6 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { states, citiesByState } from '../lib/br-locations';
+import * as userService from '../services/user';
 import {
   View,
   Text,
@@ -525,7 +526,7 @@ const HomeScreen = ({ navigation }) => {
               <TouchableOpacity onPress={() => setEditLocationModal(false)} style={{ paddingVertical:8, paddingHorizontal:16 }}>
                 <Text style={{ color:'#6B7280', fontWeight:'bold' }}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => {
+              <TouchableOpacity onPress={async () => {
                 if (!editState || !editCity) {
                   Alert.alert('Selecione estado e cidade');
                   return;
@@ -533,6 +534,14 @@ const HomeScreen = ({ navigation }) => {
                 setLocationFilterTouched(true);
                 setEditLocationModal(false);
                 setLocationFilter(`${editCity}, ${editState}`);
+                // Atualiza localidade no perfil do usuário
+                try {
+                  if (user && user.id) {
+                    await userService.updateProfile(user.id, { city: editCity, state: editState });
+                  }
+                } catch (e) {
+                  console.log('[HomeScreen] Erro ao atualizar localidade no perfil:', e.message);
+                }
               }} style={{ paddingVertical:8, paddingHorizontal:16 }}>
                 <Text style={{ color:'#4F46E5', fontWeight:'bold' }}>Salvar</Text>
               </TouchableOpacity>
