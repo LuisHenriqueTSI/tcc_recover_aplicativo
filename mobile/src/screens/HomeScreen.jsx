@@ -54,12 +54,6 @@ const HomeScreen = ({ navigation }) => {
   const loadItems = async () => {
     try {
       setLoading(true);
-      console.log('[HomeScreen] Carregando itens com filtros:', {
-        searchTerm,
-        locationFilter,
-        status: filters.status,
-        category: filters.category,
-      });
       let allItems = [];
       if (searchTerm && searchTerm.trim().length > 0) {
         allItems = await itemsService.searchItems(searchTerm.trim());
@@ -71,7 +65,6 @@ const HomeScreen = ({ navigation }) => {
         if (locationFilter) baseFilters.location = locationFilter;
         allItems = await itemsService.listItems(baseFilters);
       }
-      // Buscar nome do usuário dono do item
       const itemsWithOwner = await Promise.all(
         (allItems || []).map(async (item) => {
           if (item.owner_id) {
@@ -83,7 +76,6 @@ const HomeScreen = ({ navigation }) => {
       );
       setItems(itemsWithOwner);
       applyFilters(itemsWithOwner);
-      // Load thumbnails for these items
       const ids = (allItems || []).map(i => i.id);
       const thumbsMap = await itemsService.getItemThumbnails(ids);
       setThumbnails(thumbsMap || {});
@@ -94,6 +86,13 @@ const HomeScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
+
+  // Sempre recarregar itens ao mudar locationFilter
+  useEffect(() => {
+    if (locationFilter) {
+      loadItems();
+    }
+  }, [locationFilter]);
 
   // Carregar detalhes do item quando expandir
   const handleExpandItem = async (itemId) => {
@@ -374,10 +373,9 @@ const HomeScreen = ({ navigation }) => {
                   Alert.alert('Formato inválido', 'Use o formato: Cidade, UF (ex: Pelotas, RS)');
                   return;
                 }
-                setLocationFilter(editLocationValue.trim());
                 setLocationFilterTouched(true);
                 setEditLocationModal(false);
-                loadItems();
+                setLocationFilter(editLocationValue.trim());
               }} style={{ paddingVertical:8, paddingHorizontal:16 }}>
                 <Text style={{ color:'#4F46E5', fontWeight:'bold' }}>Salvar</Text>
               </TouchableOpacity>
@@ -424,7 +422,6 @@ const HomeScreen = ({ navigation }) => {
                 setFilters({ ...filters, status: 'all', category: 'all' });
                 loadItems();
               }}
-              style={{ marginLeft: 8 }}
             />
           </View>
         </View>
