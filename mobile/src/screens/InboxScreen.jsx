@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { getMessages } from '../services/messages';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, TextInput } from 'react-native';
 import { getConversations } from '../services/messages';
@@ -13,6 +14,8 @@ const InboxScreen = () => {
   const { user } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [filtered, setFiltered] = useState([]);
+  const [searchResults, setSearchResults] = useState([]); // [{conversation, message}]
+  const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
@@ -40,18 +43,35 @@ const InboxScreen = () => {
   }, [loadConversations]);
 
   useEffect(() => {
-    console.log('[InboxScreen] useEffect search/conversations', {search, conversationsLen: conversations.length, time: Date.now()});
-    if (!search.trim()) {
-      setFiltered(conversations);
-    } else {
+    let cancelled = false;
+    async function searchMessages() {
+      if (!search.trim()) {
+        setFiltered(conversations);
+        setSearchResults([]);
+        setSearching(false);
+        return;
+      }
+      setSearching(true);
       const s = search.trim().toLowerCase();
-      setFiltered(conversations.filter(c =>
-        (c.otherName || '').toLowerCase().includes(s) ||
-        (c.itemTitle || '').toLowerCase().includes(s) ||
-        (c.lastMessage || '').toLowerCase().includes(s)
-      ));
+      let results = [];
+      for (const c of conversations) {
+        try {
+          const msgs = await getMessages(user.id, c.otherId, 200);
+          msgs.forEach(m => {
+            if ((m.content || '').toLowerCase().includes(s)) {
+              results.push({ conversation: c, message: m });
+            }
+          });
+        } catch (e) {}
+      }
+      if (!cancelled) {
+        setSearchResults(results);
+        setSearching(false);
+      }
     }
-  }, [search, conversations]);
+    searchMessages();
+    return () => { cancelled = true; };
+  }, [search, conversations, user.id]);
 
   const renderItem = ({ item, index }) => {
     const avatar = (item.otherName || 'U').charAt(0).toUpperCase();
@@ -105,14 +125,44 @@ const InboxScreen = () => {
           <Feather name="search" size={18} color="#9CA3AF" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Buscar conversas..."
+            placeholder="Buscar conversas ou mensagens..."
             value={search}
             onChangeText={setSearch}
             placeholderTextColor="#9CA3AF"
           />
         </View>
       </View>
-      {filtered.length > 0 ? (
+      {search.trim() ? (
+        searching ? (
+          <ActivityIndicator style={{ flex: 1, marginTop: 32 }} size="large" color="#4F46E5" />
+        ) : searchResults.length > 0 ? (
+          <FlatList
+            data={searchResults}
+            keyExtractor={item => `${item.conversation.otherId}_${item.conversation.itemId}_${item.message.id}`}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => navigation.navigate('ChatScreen', { conversation: item.conversation })}
+                style={[styles.convBtn, { flexDirection: 'column', alignItems: 'flex-start' }]}
+                activeOpacity={0.85}
+              >
+                <Text style={{ fontWeight: 'bold', color: '#4F46E5', marginBottom: 2 }}>{item.conversation.otherName} {item.conversation.itemTitle ? `• ${item.conversation.itemTitle}` : ''}</Text>
+                <Text style={{ color: '#1F2937', fontSize: 15 }}>{item.message.content}</Text>
+                <Text style={{ color: '#6B7280', fontSize: 12, marginTop: 2 }}>{new Date(item.message.sent_at).toLocaleString()}</Text>
+              </TouchableOpacity>
+            )}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom: 24 }}
+          />
+        ) : (
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIconCircle}>
+              <Feather name="search" size={40} color="#9CA3AF" />
+            </View>
+            <Text style={styles.emptyTitle}>Nenhuma mensagem encontrada</Text>
+            <Text style={styles.emptyMsg}>Nenhuma mensagem ou conversa contém o termo pesquisado.</Text>
+          </View>
+        )
+      ) : filtered.length > 0 ? (
         <FlatList
           data={filtered}
           keyExtractor={item => `${item.otherId || ''}_${item.itemId || ''}`}
