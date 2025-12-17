@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Modal, TextInput } from 'react-native';
 import {
   View,
@@ -40,11 +41,14 @@ const HomeScreen = ({ navigation }) => {
   const [editLocationModal, setEditLocationModal] = useState(false);
   const [editLocationValue, setEditLocationValue] = useState('');
 
-  useEffect(() => {
-    if (userProfile?.location && !locationFilterTouched) {
-      setLocationFilter(userProfile.location);
-    }
-  }, [userProfile, locationFilterTouched]);
+  // Atualiza localidade sempre que a tela ganha foco (ex: após editar perfil)
+  useFocusEffect(
+    React.useCallback(() => {
+      if (userProfile?.location && !locationFilterTouched) {
+        setLocationFilter(userProfile.location);
+      }
+    }, [userProfile, locationFilterTouched])
+  );
   const [expandedItem, setExpandedItem] = useState(null);
   const [expandedItemDetails, setExpandedItemDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);

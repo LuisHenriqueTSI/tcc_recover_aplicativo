@@ -11,15 +11,23 @@ export const updateEmail = async (newEmail) => {
   }
 };
 
-// Exclui o usuário autenticado
+
+// Exclui o usuário autenticado via Edge Function
 export const deleteUser = async () => {
-  try {
-    // Supabase só permite exclusão via função admin ou extensão, aqui placeholder
-    // Pode ser implementado via edge function ou RPC
-    throw new Error('Exclusão de conta não está disponível nesta versão.');
-  } catch (error) {
-    throw error;
-  }
+  const { data: { session } } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+  if (!accessToken) throw new Error('Usuário não autenticado');
+
+  const response = await fetch('https://uiegfwnlphfblvzupziu.supabase.co/functions/v1/delete-user', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Erro ao excluir conta');
+  return data;
 };
 import { supabase } from '../lib/supabase';
 

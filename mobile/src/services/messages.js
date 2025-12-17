@@ -60,12 +60,13 @@ export const getConversations = async (userId) => {
           let otherUser = userCache[otherId];
           if (!otherUser) {
             const profile = await getUserById(otherId);
-            otherUser = profile || { name: 'Usuário', avatarUrl: null };
+            // Se não existe perfil, mostra 'Usuário indefinido'
+            otherUser = profile || { name: 'Usuário indefinido', avatarUrl: null };
             userCache[otherId] = otherUser;
           }
           conversations.set(key, {
             otherId,
-            otherName: otherUser.name || 'Usuário',
+            otherName: otherUser.name || 'Usuário indefinido',
             avatarUrl: otherUser.avatarUrl || null,
             lastMessage: msg.content,
             lastPhotoUrl: msg.photo_url || null,

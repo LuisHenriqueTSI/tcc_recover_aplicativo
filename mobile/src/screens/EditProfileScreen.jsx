@@ -25,6 +25,9 @@ const EditProfileScreen = ({ navigation }) => {
   const [linkedin, setLinkedin] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [location, setLocation] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     if (userProfile) {
@@ -36,6 +39,7 @@ const EditProfileScreen = ({ navigation }) => {
       setTwitter(userProfile.twitter || '');
       setWhatsapp(userProfile.whatsapp || '');
       setLinkedin(userProfile.linkedin || '');
+      setLocation(userProfile.location || '');
     }
   }, [userProfile]);
 
@@ -43,6 +47,23 @@ const EditProfileScreen = ({ navigation }) => {
   const handleSave = async () => {
     if (!user) return;
     setErrorMsg('');
+    // Validação da localidade
+    const isValidLocation = (loc) => /^[A-Za-zÀ-ÿ\s]+,\s?[A-Z]{2}$/.test(loc.trim());
+    if (location && !isValidLocation(location)) {
+      setErrorMsg('Localidade inválida. Use o formato: Cidade, UF (ex: Pelotas, RS)');
+      return;
+    }
+    // Validação de senha
+    if (password || confirmPassword) {
+      if (password.length < 6) {
+        setErrorMsg('A senha deve ter pelo menos 6 caracteres.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setErrorMsg('As senhas não coincidem.');
+        return;
+      }
+    }
     try {
       setSaving(true);
       const result = await userService.updateProfile(user.id, {
@@ -53,7 +74,11 @@ const EditProfileScreen = ({ navigation }) => {
         twitter,
         whatsapp,
         linkedin,
+        location: location.trim(),
       });
+      if (password) {
+        await supabaseAuth.updatePassword(password);
+      }
       console.log('[EditProfileScreen] Perfil atualizado:', result);
       await refreshProfile();
       navigation.goBack();
@@ -115,9 +140,9 @@ const EditProfileScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <Card>
-        <Text style={styles.title}>Editar Perfil</Text>
 
+      <Card style={{ paddingBottom: 32 }}>
+        <Text style={styles.sectionTitle}>Meus Dados</Text>
         <Input
           label="Nome"
           placeholder="Seu nome completo"
@@ -128,14 +153,12 @@ const EditProfileScreen = ({ navigation }) => {
         {errorMsg ? (
           <Text style={{ color: '#EF4444', marginBottom: 8 }}>{errorMsg}</Text>
         ) : null}
-
         <Input
           label="Email"
           placeholder={userProfile?.email}
           editable={false}
           style={styles.input}
         />
-
         <Input
           label="Telefone"
           placeholder="(XX) XXXXX-XXXX"
@@ -144,10 +167,34 @@ const EditProfileScreen = ({ navigation }) => {
           keyboardType="phone-pad"
           style={styles.input}
         />
-
+        <Input
+          label="Localidade"
+          placeholder="Cidade, UF"
+          value={location}
+          onChangeText={setLocation}
+          style={styles.input}
+        />
+        <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 8 }}>
+          Exemplo: Pelotas, RS
+        </Text>
+        <Input
+          label="Nova Senha"
+          placeholder="Digite a nova senha"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+        <Input
+          label="Confirmar Nova Senha"
+          placeholder="Confirme a nova senha"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          style={styles.input}
+        />
 
         <Text style={styles.sectionTitle}>Redes Sociais</Text>
-
         <Input
           label="Instagram"
           placeholder="seu_usuario"
@@ -155,7 +202,6 @@ const EditProfileScreen = ({ navigation }) => {
           onChangeText={setInstagram}
           style={styles.input}
         />
-
         <Input
           label="Facebook"
           placeholder="seu_usuario"
@@ -163,7 +209,6 @@ const EditProfileScreen = ({ navigation }) => {
           onChangeText={setFacebook}
           style={styles.input}
         />
-
         <Input
           label="Twitter"
           placeholder="seu_usuario"
@@ -171,7 +216,6 @@ const EditProfileScreen = ({ navigation }) => {
           onChangeText={setTwitter}
           style={styles.input}
         />
-
         <Input
           label="WhatsApp"
           placeholder="(XX) XXXXX-XXXX"
@@ -180,7 +224,6 @@ const EditProfileScreen = ({ navigation }) => {
           keyboardType="phone-pad"
           style={styles.input}
         />
-
         <Input
           label="LinkedIn"
           placeholder="seu_usuario"
@@ -188,8 +231,7 @@ const EditProfileScreen = ({ navigation }) => {
           onChangeText={setLinkedin}
           style={styles.input}
         />
-
-        <View style={styles.actions}>
+        <View style={[styles.actions, { marginBottom: 32 }]}> 
           <Button
             title="Cancelar"
             variant="secondary"
@@ -205,23 +247,17 @@ const EditProfileScreen = ({ navigation }) => {
           />
         </View>
 
-        <View style={{ marginTop: 32 }}>
+        {/* Seção de exclusão de conta */}
+        <View style={{ marginTop: 32, alignItems: 'center' }}>
+          <Text style={{ color: '#EF4444', fontWeight: 'bold', marginBottom: 8, fontSize: 16 }}>Excluir Conta</Text>
+          <Text style={{ color: '#6B7280', fontSize: 13, marginBottom: 12, textAlign: 'center' }}>
+            Esta ação é irreversível. Todos os seus dados serão apagados.
+          </Text>
           <Button
-            title="Alterar Senha"
-            variant="secondary"
-            onPress={handleChangePassword}
-            style={{ marginBottom: 12 }}
-          />
-          <Button
-            title="Alterar Email"
-            variant="secondary"
-            onPress={handleChangeEmail}
-            style={{ marginBottom: 12 }}
-          />
-          <Button
-            title="Excluir Conta"
+            title="Excluir minha conta"
             variant="danger"
             onPress={handleDeleteAccount}
+            style={{ minWidth: 180 }}
           />
         </View>
       </Card>
