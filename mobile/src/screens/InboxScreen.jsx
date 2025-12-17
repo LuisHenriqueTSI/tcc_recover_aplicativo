@@ -141,12 +141,12 @@ const InboxScreen = () => {
             keyExtractor={item => `${item.conversation.otherId}_${item.conversation.itemId}_${item.message.id}`}
             renderItem={({ item }) => (
               <TouchableOpacity
-                onPress={() => navigation.navigate('ChatScreen', { conversation: item.conversation })}
+                onPress={() => navigation.navigate('ChatScreen', { conversation: item.conversation, highlightMessageId: item.message.id })}
                 style={[styles.convBtn, { flexDirection: 'column', alignItems: 'flex-start' }]}
                 activeOpacity={0.85}
               >
                 <Text style={{ fontWeight: 'bold', color: '#4F46E5', marginBottom: 2 }}>{item.conversation.otherName} {item.conversation.itemTitle ? `• ${item.conversation.itemTitle}` : ''}</Text>
-                <Text style={{ color: '#1F2937', fontSize: 15 }}>{item.message.content}</Text>
+                <Text style={{ color: '#1F2937', fontSize: 15, backgroundColor: '#FFF9C4', borderRadius: 6, padding: 4 }}>{item.message.content}</Text>
                 <Text style={{ color: '#6B7280', fontSize: 12, marginTop: 2 }}>{new Date(item.message.sent_at).toLocaleString()}</Text>
               </TouchableOpacity>
             )}

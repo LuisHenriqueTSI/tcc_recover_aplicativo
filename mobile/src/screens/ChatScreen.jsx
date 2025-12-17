@@ -14,7 +14,8 @@ import { useRoute } from '@react-navigation/native';
 const ChatScreen = (props) => {
   const route = useRoute();
   const conversation = route.params?.conversation;
-  console.log('[ChatScreen] MONTADO', Date.now(), conversation);
+  const highlightMessageId = route.params?.highlightMessageId;
+  console.log('[ChatScreen] MONTADO', Date.now(), conversation, 'highlight:', highlightMessageId);
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -155,9 +156,10 @@ const ChatScreen = (props) => {
 
   const renderItem = ({ item }) => {
     const isMine = item.sender_id === user.id;
+    const isHighlighted = highlightMessageId && item.id === highlightMessageId;
     return (
       <View style={[styles.messageRow, isMine ? styles.myMessage : styles.otherMessage]}>
-        <Card style={styles.messageCard}>
+        <Card style={[styles.messageCard, isHighlighted && { backgroundColor: '#FFF9C4', borderWidth: 1, borderColor: '#FACC15' }] }>
           {item.photo_url && (
             <Image source={{ uri: item.photo_url }} style={styles.messageImage} resizeMode="cover" />
           )}
