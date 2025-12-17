@@ -506,11 +506,11 @@ const HomeScreen = ({ navigation }) => {
         onRequestClose={() => setEditLocationModal(false)}
       >
         <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
-          <View style={{ backgroundColor:'#fff', borderRadius:12, padding:24, minWidth:280 }}>
+          <View style={{ backgroundColor:'#fff', borderRadius:12, paddingVertical:24, paddingHorizontal:16, minWidth:360, maxWidth: '95%' }}>
             <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Alterar Localidade</Text>
             <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione estado, cidade e bairro:</Text>
             <Text style={{ marginBottom: 6 }}>Estado</Text>
-            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12 }}>
+            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
               <Picker
                 selectedValue={editState}
                 onValueChange={uf => {
@@ -518,7 +518,7 @@ const HomeScreen = ({ navigation }) => {
                   setEditCity('');
                   setEditNeighborhood('');
                 }}
-                style={{ height: 44 }}
+                style={{ height: 56, minWidth: 320 }}
               >
                 <Picker.Item label="Selecione o estado" value="" />
                 {states.map(uf => (
@@ -527,7 +527,7 @@ const HomeScreen = ({ navigation }) => {
               </Picker>
             </View>
             <Text style={{ marginBottom: 6 }}>Cidade</Text>
-            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12 }}>
+            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
               <Picker
                 selectedValue={editCity}
                 onValueChange={city => {
@@ -535,7 +535,7 @@ const HomeScreen = ({ navigation }) => {
                   setEditNeighborhood('');
                 }}
                 enabled={!!editState}
-                style={{ height: 44 }}
+                style={{ height: 56, minWidth: 320 }}
               >
                 <Picker.Item label="Selecione a cidade" value="" />
                 {(citiesByState[editState] || []).map(city => (
@@ -544,12 +544,12 @@ const HomeScreen = ({ navigation }) => {
               </Picker>
             </View>
             <Text style={{ marginBottom: 6 }}>Bairro</Text>
-            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16 }}>
+            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
               <Picker
                 selectedValue={editNeighborhood}
                 onValueChange={setEditNeighborhood}
                 enabled={!!editCity}
-                style={{ height: 44 }}
+                style={{ height: 56, minWidth: 320 }}
               >
                 <Picker.Item label="Selecione o bairro" value="" />
                 {(neighborhoodsByCity[editCity] || []).map(bairro => (
