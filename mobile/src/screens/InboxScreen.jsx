@@ -105,9 +105,18 @@ const InboxScreen = () => {
         style={styles.convBtn}
         activeOpacity={0.85}
       >
-        <View style={styles.avatarCircle}>
-          <Text style={styles.avatarText}>{avatar}</Text>
-        </View>
+        {item.avatarUrl ? (
+          <View style={styles.avatarCircle}>
+            <Image
+              source={{ uri: item.avatarUrl }}
+              style={{ width: 48, height: 48, borderRadius: 24, resizeMode: 'cover' }}
+            />
+          </View>
+        ) : (
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarText}>{avatar}</Text>
+          </View>
+        )}
         <View style={{ flex: 1, minWidth: 0 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={styles.name} numberOfLines={1}>{item.otherName || 'Usuário'}</Text>

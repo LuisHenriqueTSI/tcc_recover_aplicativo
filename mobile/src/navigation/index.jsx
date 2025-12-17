@@ -79,7 +79,54 @@ const PublicAppTabs = ({ navigation }) => {
           ),
         }}
       />
-      {/* Search removed from public tabs as requested */}
+      <Tab.Screen
+        name="LoginTab"
+        component={LoginScreen}
+        options={{
+          title: 'Entrar',
+          tabBarLabel: 'Entrar',
+          headerTitle: 'Entrar',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="login" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="RegisterTab"
+        component={RegisterScreen}
+        options={{
+          title: 'Cadastrar',
+          tabBarLabel: 'Cadastrar',
+          headerTitle: 'Cadastrar',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="person-add" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="AjudaSuporteTab"
+        component={AjudaSuporteScreen}
+        options={{
+          title: 'Ajuda',
+          tabBarLabel: 'Ajuda',
+          headerTitle: 'Ajuda e Suporte',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="help-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="SobreTab"
+        component={WelcomeScreen}
+        options={{
+          title: 'Sobre',
+          tabBarLabel: 'Sobre',
+          headerTitle: 'Sobre',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="info-outline" size={size} color={color} />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 };

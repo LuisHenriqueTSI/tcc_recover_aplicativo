@@ -48,7 +48,7 @@ export const getConversations = async (userId) => {
 
     // Group by conversation (sender/receiver pair)
     const conversations = new Map();
-    const userNameCache = {};
+    const userCache = {};
 
     if (data) {
       for (const msg of data) {
@@ -56,16 +56,17 @@ export const getConversations = async (userId) => {
         const key = [userId, otherId].sort().join('_');
 
         if (!conversations.has(key)) {
-          // Busca nome do outro usuário (cache para evitar múltiplas queries)
-          let otherName = userNameCache[otherId];
-          if (!otherName) {
+          // Busca dados do outro usuário (cache para evitar múltiplas queries)
+          let otherUser = userCache[otherId];
+          if (!otherUser) {
             const profile = await getUserById(otherId);
-            otherName = profile?.name || 'Usuário';
-            userNameCache[otherId] = otherName;
+            otherUser = profile || { name: 'Usuário', avatarUrl: null };
+            userCache[otherId] = otherUser;
           }
           conversations.set(key, {
             otherId,
-            otherName,
+            otherName: otherUser.name || 'Usuário',
+            avatarUrl: otherUser.avatarUrl || null,
             lastMessage: msg.content,
             lastPhotoUrl: msg.photo_url || null,
             lastMessageAt: msg.sent_at,

@@ -24,7 +24,6 @@ export const getUser = async (userId) => {
 
 export const getUserById = async (userId) => {
   try {
-
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -36,7 +35,15 @@ export const getUserById = async (userId) => {
       return null;
     }
 
-    return data;
+    // Adiciona avatarUrl público se existir avatar
+    let avatarUrl = null;
+    if (data && data.avatar_path) {
+      const { data: urlData } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(data.avatar_path);
+      avatarUrl = urlData?.publicUrl || null;
+    }
+    return { ...data, avatarUrl };
   } catch (error) {
     console.log('[getUserById] Exception:', error.message);
     return null;

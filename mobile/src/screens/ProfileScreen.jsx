@@ -24,7 +24,7 @@ const ProfileScreen = ({ navigation }) => {
   const [userItems, setUserItems] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [uploading, setUploading] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(userProfile?.avatar_url || null);
+  const [avatarUrl, setAvatarUrl] = useState(userProfile?.avatar_url || userProfile?.avatarUrl || null);
 
   React.useEffect(() => {
     (async () => {
@@ -39,7 +39,7 @@ const ProfileScreen = ({ navigation }) => {
   }, []);
 
   React.useEffect(() => {
-    setAvatarUrl(userProfile?.avatar_url || null);
+    setAvatarUrl(userProfile?.avatar_url || userProfile?.avatarUrl || null);
   }, [userProfile]);
 
   const handlePickAvatar = async () => {
@@ -59,7 +59,10 @@ const ProfileScreen = ({ navigation }) => {
       try {
         const { uploadAvatar, updateProfile } = await import('../services/user');
         const url = await uploadAvatar(user.id, pickerResult.assets[0].uri);
-        await updateProfile(user.id, { avatar_url: url });
+        // Atualiza o campo avatar_path no perfil para garantir consistência com getUserById
+        const ext = url.split('.').pop().split('?')[0];
+        const avatarPath = `${user.id}/avatar.${ext}`;
+        await updateProfile(user.id, { avatar_path: avatarPath });
         setAvatarUrl(url);
         await refreshProfile();
       } catch (e) {
@@ -86,27 +89,34 @@ const ProfileScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
-      {/* Avatar centralizado e email */}
-      <View style={styles.profileTopContainer}>
-        <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.8} style={styles.avatarTouchable}>
-          {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={styles.avatarImg} />
-          ) : (
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{userProfile?.name?.[0]?.toUpperCase() || 'U'}</Text>
-            </View>
-          )}
-          {uploading && <ActivityIndicator style={{ position: 'absolute', alignSelf: 'center', top: '40%' }} size="small" color="#6366F1" />}
-        </TouchableOpacity>
-        <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
-        <Text style={styles.email}>{userProfile?.email}</Text>
-        <TouchableOpacity
-          style={styles.editBtn}
-          onPress={() => navigation.navigate('EditProfile')}
-          activeOpacity={0.7}
-        >
-          <Feather name="edit-2" size={20} color="#fff" />
-        </TouchableOpacity>
+      {/* Botão editar no topo direito */}
+      <View style={{ position: 'relative' }}>
+        {/* Avatar centralizado e email */}
+        <View style={styles.profileTopContainer}>
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.8} style={styles.avatarTouchable}>
+              {avatarUrl ? (
+                <Image source={{ uri: avatarUrl }} style={styles.avatarImg} />
+              ) : (
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>{userProfile?.name?.[0]?.toUpperCase() || 'U'}</Text>
+                </View>
+              )}
+              {uploading && <ActivityIndicator style={{ position: 'absolute', alignSelf: 'center', top: '40%' }} size="small" color="#6366F1" />}
+            </TouchableOpacity>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
+            <TouchableOpacity
+              style={{ marginLeft: 8, backgroundColor: '#4F46E5', borderRadius: 16, padding: 6 }}
+              onPress={() => navigation.navigate('EditProfile')}
+              activeOpacity={0.7}
+            >
+              <Feather name="edit-2" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.email}>{userProfile?.email}</Text>
+        </View>
       </View>
 
       {/* Stats Cards */}
@@ -148,8 +158,7 @@ const ProfileScreen = ({ navigation }) => {
         <Text style={styles.logoutText}>Sair da Conta</Text>
       </TouchableOpacity>
 
-      {/* App Version */}
-      <Text style={styles.version}>Achados & Perdidos v1.0.0</Text>
+      {/* App Version removido */}
     </ScrollView>
   );
 };
@@ -269,17 +278,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   menuSection: {
-    marginTop: 32,
-    marginHorizontal: 20,
+    marginTop: 12,
+    marginHorizontal: 10,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginBottom: 6,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 4,
@@ -303,13 +312,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
-    marginHorizontal: 20,
+    marginTop: 10,
+    marginHorizontal: 10,
     backgroundColor: '#fff',
-    borderRadius: 16,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: '#FCA5A5',
-    paddingVertical: 14,
+    paddingVertical: 8,
     shadowColor: '#000',
     shadowOpacity: 0.03,
     shadowRadius: 2,

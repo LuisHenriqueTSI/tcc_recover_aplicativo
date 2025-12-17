@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Feather } from '@expo/vector-icons';
 import {
   TextInput,
   View,
@@ -18,26 +19,49 @@ const Input = ({
   style,
   error,
 }) => {
+  // Estado local para alternar visualização da senha
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = secureTextEntry;
+
   return (
     <View style={style}>
       {label && (
         <Text style={styles.label}>{label}</Text>
       )}
-      <TextInput
-        style={[
-          styles.input,
-          multiline && styles.multilineInput,
-          error && styles.inputError,
-        ]}
-        placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
-        value={value}
-        onChangeText={onChangeText}
-        secureTextEntry={secureTextEntry}
-        keyboardType={keyboardType}
-        multiline={multiline}
-        numberOfLines={numberOfLines}
-      />
+      <View style={{ position: 'relative', justifyContent: 'center' }}>
+        <TextInput
+          style={[
+            styles.input,
+            multiline && styles.multilineInput,
+            error && styles.inputError,
+            isPassword && { paddingRight: 44 },
+          ]}
+          placeholder={placeholder}
+          placeholderTextColor="#9CA3AF"
+          value={value}
+          onChangeText={onChangeText}
+          secureTextEntry={isPassword ? !showPassword : false}
+          keyboardType={keyboardType}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+        />
+        {isPassword && (
+          <Feather
+            name={showPassword ? 'eye-off' : 'eye'}
+            size={22}
+            color="#9CA3AF"
+            onPress={() => setShowPassword((v) => !v)}
+            style={{
+              position: 'absolute',
+              right: 12,
+              top: 12,
+              zIndex: 10,
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+          />
+        )}
+      </View>
       {error && (
         <Text style={styles.errorText}>{error}</Text>
       )}
