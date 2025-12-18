@@ -489,16 +489,14 @@ const HomeScreen = ({ navigation, route }) => {
         </View>
         {/* Barra de busca e filtro de localidade lado a lado (minimalista) */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
-          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#F6F6F6', borderRadius: 16, paddingHorizontal: 14, height: 44 }}>
-            <MaterialIcons name="search" size={22} color="#BDBDBD" style={{ marginRight: 8 }} />
-            <Input
-              placeholder="Buscar itens perdidos ou encontrados."
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-              style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, fontSize: 16, color: '#222', paddingVertical: 0, paddingHorizontal: 0 }}
-              textStyle={{ fontSize: 16, color: '#222' }}
-            />
-          </View>
+          <MaterialIcons name="search" size={22} color="#BDBDBD" style={{ marginRight: 8 }} />
+          <Input
+            placeholder="Buscar itens perdidos ou encontrados."
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+            style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, fontSize: 16, color: '#222', paddingVertical: 0, paddingHorizontal: 0 }}
+            textStyle={{ fontSize: 16, color: '#222' }}
+          />
           {/* Botão de filtro minimalista: só ícone */}
           <TouchableOpacity onPress={() => setEditLocationModal(true)} style={{ marginLeft: 8, width: 40, height: 40, borderRadius: 20, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E7EB' }} accessibilityLabel={editState || editCity || editNeighborhood ? `Local: ${editState || ''}${editCity ? ', ' + editCity : ''}${editNeighborhood ? ', ' + editNeighborhood : ''}` : 'Selecionar local'}>
             <MaterialIcons name="place" size={24} color="#F59E42" />
