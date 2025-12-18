@@ -63,22 +63,23 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
                 renderItem={({ item: photo }) => (
                   <Image
                     source={{ uri: photo.url }}
-                    style={{ width: SCREEN_WIDTH - 24, height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
+                    style={{ width: SCREEN_WIDTH, height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
                     resizeMode="cover"
                   />
                 )}
                 onMomentumScrollEnd={e => {
-                  const index = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 24));
+                  const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
                   setCarouselIndex(index);
                 }}
-                style={{ width: SCREEN_WIDTH - 24 }}
-                snapToInterval={SCREEN_WIDTH - 24}
-                decelerationRate="fast"
+                style={{ width: SCREEN_WIDTH, alignSelf: 'center' }}
+                snapToInterval={SCREEN_WIDTH}
+                decelerationRate={0.98}
+                bounces={false}
               />
             ) : (
               <Image
                 source={{ uri: photos[0].url }}
-                style={{ width: '100%', height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
+                style={{ width: SCREEN_WIDTH, height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6', alignSelf: 'center' }}
                 resizeMode="cover"
               />
             )}
