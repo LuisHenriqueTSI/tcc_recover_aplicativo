@@ -26,6 +26,7 @@ import Card from '../components/Card';
 import ShareButton from '../components/ShareButton';
 // Get screen width for carousel
 const SCREEN_WIDTH = Dimensions.get('window').width;
+const CARD_IMAGE_HEIGHT = 340; // altura intermediária para a foto do card
 import Button from '../components/Button';
 import Input from '../components/Input';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -49,7 +50,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
     <TouchableOpacity activeOpacity={0.85} onPress={onPress}>
       <Card style={{ padding: 0, marginHorizontal: 12, marginVertical: 14, borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 }}>
       {/* Imagem/Carrossel */}
-      <View style={{ position: 'relative', width: '100%', height: 180 }}>
+      <View style={{ position: 'relative', width: '100%', height: CARD_IMAGE_HEIGHT }}>
         {photos.length > 0 ? (
           <>
             {showCarousel ? (
@@ -62,7 +63,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
                 renderItem={({ item: photo }) => (
                   <Image
                     source={{ uri: photo.url }}
-                    style={{ width: SCREEN_WIDTH - 24, height: 180, backgroundColor: '#F3F4F6' }}
+                    style={{ width: SCREEN_WIDTH - 24, height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
                     resizeMode="cover"
                   />
                 )}
@@ -77,7 +78,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             ) : (
               <Image
                 source={{ uri: photos[0].url }}
-                style={{ width: '100%', height: 180, backgroundColor: '#F3F4F6' }}
+                style={{ width: '100%', height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
                 resizeMode="cover"
               />
             )}
@@ -144,24 +145,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
               <Text style={{ color: '#9CA3AF', fontWeight: 'bold', fontSize: 13 }}>Contato</Text>
             </TouchableOpacity>
           )}
-          {user && item.owner_id === user.id && (
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#4F46E5', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, marginRight: 4 }}
-                onPress={() => handleEditItem(item)}
-              >
-                <MaterialIcons name="edit" size={18} color="#fff" style={{ marginRight: 4 }} />
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Editar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#DC2626', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 }}
-                onPress={() => handleDeleteItem(item.id)}
-              >
-                <MaterialIcons name="delete" size={18} color="#fff" style={{ marginRight: 4 }} />
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Excluir</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          {/* Botões de editar/excluir removidos dos cards. */}
         </View>
       </View>
       </Card>

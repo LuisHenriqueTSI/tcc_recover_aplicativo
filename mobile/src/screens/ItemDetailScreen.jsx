@@ -17,6 +17,7 @@ import * as itemsService from '../services/items';
 
 import Card from '../components/Card';
 import Button from '../components/Button';
+
 import SightingModal from '../components/SightingModal';
 import * as sightingsService from '../services/sightings';
 
@@ -362,17 +363,18 @@ const ItemDetailScreen = ({ route, navigation }) => {
         </View>
 
         {/* Botões de Ação */}
-        <View style={styles.actionsSection}>
+        <View style={[styles.actionsSection, { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }]}> 
           {isOwner ? (
             <>
-              <Button title="✏️ Editar" onPress={handleEditItem} style={styles.actionButton} />
-              <Button title="🗑️ Excluir" variant="danger" onPress={handleDeleteItem} style={styles.actionButton} disabled={deleting} />
-              <Button title="✓ Marcar como Resolvido" variant="secondary" onPress={handleMarkAsResolved} style={styles.actionButton} disabled={item.resolved} />
+              <TouchableOpacity onPress={handleEditItem} style={styles.iconButton} accessibilityLabel="Editar">
+                <MaterialIcons name="edit" size={24} color="#4F46E5" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleDeleteItem} style={styles.iconButton} accessibilityLabel="Excluir" disabled={deleting}>
+                <MaterialIcons name="delete" size={24} color="#DC2626" />
+              </TouchableOpacity>
             </>
           ) : (
-            <>
-              <Button title="💬 Enviar Mensagem" onPress={handleSendMessage} style={styles.actionButton} />
-            </>
+            <Button title="💬 Enviar Mensagem" onPress={handleSendMessage} style={styles.actionButton} />
           )}
         </View>
 
@@ -539,6 +541,13 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     marginVertical: 6,
+  },
+  iconButton: {
+    backgroundColor: 'transparent',
+    padding: 6,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   spacer: {
     height: 40,
