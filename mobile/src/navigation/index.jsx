@@ -4,6 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../contexts/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Auth Screens
 import WelcomeScreen from '../screens/WelcomeScreen';
@@ -29,6 +30,7 @@ import MeusAnunciosScreen from '../screens/MeusAnunciosScreen';
 import ConfigScreen from '../screens/ConfigScreen';
 import AjudaSuporteScreen from '../screens/AjudaSuporteScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
+import SobreScreen from '../screens/SobreScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -48,13 +50,10 @@ const PublicAppTabs = ({ navigation }) => {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: '#4F46E5',
-        tabBarInactiveTintColor: '#9CA3AF',
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: '#fff',
           borderTopColor: '#E5E7EB',
-          paddingBottom: 8,
-          paddingTop: 8,
+          paddingTop: 0,
         },
         headerShown: false,
       }}
@@ -63,47 +62,45 @@ const PublicAppTabs = ({ navigation }) => {
         name="HomeTab"
         component={HomeScreen}
         options={{
-          title: 'Início',
-          tabBarLabel: 'Início',
-          headerTitle: 'RECOVER',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="home" size={size} color={color} />
+          title: 'Explorar',
+          tabBarLabel: ({ color }) => (
+            <Text style={{ color, fontSize: 13, marginTop: 2 }}>Explorar</Text>
+          ),
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="home" size={22} color={color} />
           ),
         }}
       />
       <Tab.Screen
-        name="RegisterTab"
-        component={RegisterScreen}
+        name="LoginTab"
+        component={LoginScreen}
         options={{
-          title: 'Cadastrar',
-          tabBarLabel: 'Cadastrar',
-          headerTitle: 'Cadastrar',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="person-add" size={size} color={color} />
+          title: 'Entrar',
+          tabBarLabel: ({ color }) => (
+            <Text style={{ color: '#fff', fontSize: 13, marginTop: 2 }}>Entrar</Text>
           ),
-        }}
-      />
-      <Tab.Screen
-        name="AjudaSuporteTab"
-        component={AjudaSuporteScreen}
-        options={{
-          title: 'Ajuda',
-          tabBarLabel: 'Ajuda',
-          headerTitle: 'Ajuda e Suporte',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="help-outline" size={size} color={color} />
+          tabBarIcon: () => (
+            <MaterialIcons name="login" size={22} color="#fff" />
           ),
-        }}
-      />
-      <Tab.Screen
-        name="SobreTab"
-        component={WelcomeScreen}
-        options={{
-          title: 'Sobre',
-          tabBarLabel: 'Sobre',
-          headerTitle: 'Sobre',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="info-outline" size={size} color={color} />
+          tabBarButton: (props) => (
+            <TouchableOpacity
+              {...props}
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginHorizontal: 8,
+                marginVertical: 4,
+                backgroundColor: '#4F46E5',
+                borderRadius: 24,
+                flexDirection: 'row',
+                minWidth: 80,
+                maxWidth: 120,
+              }}
+            >
+              <MaterialIcons name="login" size={22} color="#fff" style={{ marginRight: 6 }} />
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Entrar</Text>
+            </TouchableOpacity>
           ),
         }}
       />
@@ -113,6 +110,22 @@ const PublicAppTabs = ({ navigation }) => {
 
 // Public Stack for unauthenticated users
 const PublicStack = () => {
+  // Para teste: sempre mostrar a tela Sobre
+  const showSobre = true;
+  const checked = true;
+
+  // Código original comentado para referência:
+  // const [showSobre, setShowSobre] = React.useState(false);
+  // const [checked, setChecked] = React.useState(false);
+  // React.useEffect(() => {
+  //   AsyncStorage.getItem('accepted_terms').then((accepted) => {
+  //     setShowSobre(!accepted);
+  //     setChecked(true);
+  //   });
+  // }, []);
+
+  if (!checked) return null;
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -127,7 +140,13 @@ const PublicStack = () => {
         },
       }}
     >
-      {/* WelcomeScreen removido: inicia direto no Login */}
+      {showSobre && (
+        <Stack.Screen
+          name="Sobre"
+          component={SobreScreen}
+          options={{ headerShown: false }}
+        />
+      )}
       <Stack.Screen
         name="PublicApp"
         component={PublicAppTabs}
@@ -136,13 +155,13 @@ const PublicStack = () => {
       <Stack.Screen
         name="Login"
         component={LoginScreen}
-        options={{ headerShown: false }}
+          options={{ headerShown: false }}
         initialParams={{}} // Garante que seja a primeira tela
       />
       <Stack.Screen
         name="Register"
         component={RegisterScreen}
-        options={{ title: 'Registrar' }}
+          options={{ headerShown: false }}
       />
       <Stack.Screen
         name="ItemDetail"
@@ -166,7 +185,7 @@ const AuthStack = () => {
     >
       {/* WelcomeScreen removido do AuthStack */}
       <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 };

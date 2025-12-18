@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   Alert,
+  Image,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import Card from '../components/Card';
+import { getStates, getCitiesByState } from '../services/location';
+import { Picker } from '@react-native-picker/picker';
 
 const RegisterScreen = ({ navigation }) => {
   const { signUp, loading } = useAuth();
@@ -17,10 +20,26 @@ const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [location, setLocation] = useState('');
+  const [selectedState, setSelectedState] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
   const [errors, setErrors] = useState({});
 
-  const isValidLocation = (loc) => /^[A-Za-zÀ-ÿ\s]+,\s?[A-Z]{2}$/.test(loc.trim());
+  // Validação simples: ambos selecionados
+  const isValidLocation = () => selectedState && selectedCity;
+    useEffect(() => {
+      getStates().then(setStates).catch(() => setStates([]));
+    }, []);
+
+    useEffect(() => {
+      if (selectedState) {
+        getCitiesByState(selectedState).then(setCities).catch(() => setCities([]));
+      } else {
+        setCities([]);
+        setSelectedCity('');
+      }
+    }, [selectedState]);
   const validateForm = () => {
     const newErrors = {};
     if (!name.trim()) {
@@ -39,10 +58,11 @@ const RegisterScreen = ({ navigation }) => {
     if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Senhas não conferem';
     }
-    if (!location.trim()) {
-      newErrors.location = 'Localidade é obrigatória';
-    } else if (!isValidLocation(location)) {
-      newErrors.location = 'Use o formato: Cidade, UF (ex: Pelotas, RS)';
+    if (!selectedState) {
+      newErrors.selectedState = 'Selecione o estado';
+    }
+    if (!selectedCity) {
+      newErrors.selectedCity = 'Selecione a cidade';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -52,6 +72,7 @@ const RegisterScreen = ({ navigation }) => {
     if (!validateForm()) return;
 
     try {
+      const location = `${selectedCity}, ${selectedState}`;
       await signUp(email, password, name, location);
       Alert.alert(
         'Sucesso',
@@ -71,8 +92,7 @@ const RegisterScreen = ({ navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.logo}>RECOVER</Text>
-        <Text style={styles.title}>Cadastro</Text>
+        <Image source={require('../assets/logo_recover.png')} style={styles.logoImg} resizeMode="contain" />
       </View>
 
       <Card style={styles.card}>
@@ -96,14 +116,41 @@ const RegisterScreen = ({ navigation }) => {
         />
 
 
-        <Input
-          label="Localidade"
-          placeholder="Cidade, Estado"
-          value={location}
-          onChangeText={setLocation}
-          error={errors.location}
-          style={styles.input}
-        />
+        <View style={styles.inputRow}>
+          <View style={{ flex: 1, marginRight: 8 }}>
+            <Text style={styles.label}>Estado</Text>
+            <View style={styles.pickerBox}>
+              <Picker
+                selectedValue={selectedState}
+                onValueChange={value => setSelectedState(value)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Selecione" value="" />
+                {states.map(state => (
+                  <Picker.Item key={state.sigla} label={`${state.nome} (${state.sigla})`} value={state.sigla} />
+                ))}
+              </Picker>
+            </View>
+            {errors.selectedState ? <Text style={styles.error}>{errors.selectedState}</Text> : null}
+          </View>
+          <View style={{ flex: 2 }}>
+            <Text style={styles.label}>Cidade</Text>
+            <View style={styles.pickerBox}>
+              <Picker
+                selectedValue={selectedCity}
+                onValueChange={value => setSelectedCity(value)}
+                style={styles.picker}
+                enabled={!!selectedState}
+              >
+                <Picker.Item label="Selecione" value="" />
+                {cities.map(city => (
+                  <Picker.Item key={city.id} label={city.nome} value={city.nome} />
+                ))}
+              </Picker>
+            </View>
+            {errors.selectedCity ? <Text style={styles.error}>{errors.selectedCity}</Text> : null}
+          </View>
+        </View>
 
         <Input
           label="Senha"
@@ -147,26 +194,54 @@ const RegisterScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+    inputRow: {
+      flexDirection: 'row',
+      marginBottom: 12,
+      alignItems: 'flex-end',
+    },
+    label: {
+      fontSize: 14,
+      color: '#444',
+      marginBottom: 4,
+      fontWeight: '500',
+    },
+    pickerBox: {
+      borderWidth: 1,
+      borderColor: '#E5E7EB',
+      borderRadius: 8,
+      backgroundColor: '#fff',
+      marginBottom: 2,
+    },
+    picker: {
+      width: '100%',
+      height: 54,
+      color: '#222',
+      backgroundColor: 'transparent',
+      fontSize: 17,
+      paddingVertical: 8,
+    },
+    error: {
+      color: '#EF4444',
+      fontSize: 13,
+      marginTop: 2,
+    },
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
   header: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#F3F4F6',
     padding: 20,
-    paddingTop: 40,
-    paddingBottom: 30,
+    paddingTop: 10,
+    paddingBottom: 10,
     alignItems: 'center',
   },
-  logo: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  title: {
-    fontSize: 18,
-    color: '#E0E7FF',
-    marginTop: 8,
+  logoImg: {
+    width: 220,
+    height: 220,
+    alignSelf: 'center',
+    marginBottom: 0,
+    backgroundColor: 'transparent',
   },
   card: {
     marginTop: 20,

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
@@ -46,13 +47,12 @@ const WelcomeScreen = ({ navigation }) => {
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.logo}>RECOVER</Text>
-        <Text style={styles.subtitle}>Encontramos o que você perdeu</Text>
+        <Image source={require('../assets/logo_recover.png')} style={styles.logoImg} resizeMode="contain" />
       </View>
 
       {/* Hero Section */}
       <View style={styles.heroSection}>
-        <Text style={styles.heroTitle}>Bem-vindo ao RECOVER</Text>
+        {/* <Text style={styles.heroTitle}>Bem-vindo ao RECOVER</Text> */}
         <Text style={styles.heroDescription}>
           Ajudamos pessoas a encontrar itens perdidos e conectar quem achou com quem procura
         </Text>
@@ -181,13 +181,15 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#4F46E5',
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 10,
     alignItems: 'center',
   },
-  logo: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
+  logoImg: {
+    width: 220,
+    height: 220,
+    alignSelf: 'center',
+    marginBottom: 0,
+    backgroundColor: 'transparent',
   },
   subtitle: {
     fontSize: 14,

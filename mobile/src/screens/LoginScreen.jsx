@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
@@ -53,11 +54,11 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.logo}>RECOVER</Text>
-        <Text style={styles.title}>Entrar</Text>
+        <Image source={require('../assets/logo_recover.png')} style={styles.logoImg} resizeMode="contain" />
       </View>
 
       <Card style={styles.card}>
@@ -117,21 +118,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   header: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#F3F4F6',
     padding: 20,
-    paddingTop: 40,
-    paddingBottom: 30,
+    paddingTop: 10,
+    paddingBottom: 10,
     alignItems: 'center',
   },
-  logo: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  title: {
-    fontSize: 18,
-    color: '#E0E7FF',
-    marginTop: 8,
+  logoImg: {
+    width: 220,
+    height: 220,
+    alignSelf: 'center',
+    marginBottom: 0,
+    backgroundColor: 'transparent',
   },
   card: {
     marginTop: 20,
