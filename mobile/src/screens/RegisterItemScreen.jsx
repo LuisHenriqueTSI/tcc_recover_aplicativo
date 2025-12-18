@@ -400,12 +400,28 @@ const RegisterItemScreen = ({ navigation, route }) => {
         // Modo de edição
         resultItem = await itemsService.updateItem(editItem.id, itemData);
 
-        // Upload apenas de novas fotos (sem id)
+        // Remover apenas as fotos antigas que o usuário excluiu
+        if (editItem.item_photos && editItem.item_photos.length > 0) {
+          // Fotos antigas que ainda estão no array photos
+          const remainingOldPhotoIds = photos
+            .filter(photo => photo.id) // só fotos antigas
+            .map(photo => photo.id);
+          // Fotos antigas que foram removidas pelo usuário
+          const removedOldPhotos = editItem.item_photos.filter(photo => !remainingOldPhotoIds.includes(photo.id));
+          for (const removedPhoto of removedOldPhotos) {
+            try {
+              await itemsService.removeItemPhoto(removedPhoto.id, removedPhoto.url);
+            } catch (err) {
+              console.error('[RegisterItem] Erro ao remover foto antiga:', err);
+            }
+          }
+        }
+
+        // Upload de todas as fotos locais (novas)
         if (photos && photos.length > 0) {
-          const newPhotos = photos.filter(photo => !photo.id); // Fotos novas não têm id
-          if (newPhotos.length > 0) {
-            console.log('[RegisterItem] Fazendo upload de', newPhotos.length, 'novas fotos');
-            for (const photo of newPhotos) {
+          for (const photo of photos) {
+            // Só faz upload se for arquivo local (não tem id)
+            if (!photo.id && photo.uri && (photo.uri.startsWith('file://') || photo.uri.startsWith('content://'))) {
               try {
                 await itemsService.saveItemPhoto(editItem.id, photo);
               } catch (err) {

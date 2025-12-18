@@ -1,3 +1,30 @@
+// Remove todas as fotos de um item (banco e storage)
+export const removeAllItemPhotos = async (itemId) => {
+  try {
+    const { data: photos, error: photosError } = await supabase
+      .from('item_photos')
+      .select('id, url')
+      .eq('item_id', itemId);
+    if (!photosError && photos && photos.length > 0) {
+      for (const photo of photos) {
+        try {
+          // Extrai o caminho do arquivo do storage
+          const url = new URL(photo.url);
+          const filepath = url.pathname.split('/item-photos/')[1];
+          if (filepath) {
+            await supabase.storage.from('item-photos').remove([filepath]);
+          }
+        } catch (err) {
+          console.error('[removeAllItemPhotos] Erro ao remover foto do storage:', err);
+        }
+      }
+      // Remove registros do banco
+      await supabase.from('item_photos').delete().eq('item_id', itemId);
+    }
+  } catch (err) {
+    console.error('[removeAllItemPhotos] Erro geral:', err);
+  }
+};
 // Busca itens já com fotos e nome do dono em uma única query (para Home)
 export const listItemsWithPhotosAndOwner = async (filters = {}) => {
   try {
@@ -27,6 +54,8 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
   }
 };
 import { supabase } from '../lib/supabase';
+import { removeItemPhoto } from './removeItemPhoto';
+export { removeItemPhoto };
 import * as FileSystem from 'expo-file-system/legacy';
 
 export const registerItem = async (itemData, photos = []) => {
