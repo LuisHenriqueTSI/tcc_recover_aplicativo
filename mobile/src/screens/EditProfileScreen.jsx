@@ -13,6 +13,8 @@ import Input from '../components/Input';
 import Card from '../components/Card';
 import { Alert } from 'react-native';
 import * as supabaseAuth from '../services/supabaseAuth';
+import { Picker } from '@react-native-picker/picker';
+import { states, citiesByState } from '../lib/br-locations';
 
 const EditProfileScreen = ({ navigation }) => {
   const { user, userProfile, refreshProfile } = useAuth();
@@ -25,7 +27,8 @@ const EditProfileScreen = ({ navigation }) => {
   const [linkedin, setLinkedin] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [location, setLocation] = useState('');
+  const [profileState, setProfileState] = useState('');
+  const [profileCity, setProfileCity] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -39,7 +42,8 @@ const EditProfileScreen = ({ navigation }) => {
       setTwitter(userProfile.twitter || '');
       setWhatsapp(userProfile.whatsapp || '');
       setLinkedin(userProfile.linkedin || '');
-      setLocation(userProfile.location || '');
+      setProfileState(userProfile.state || '');
+      setProfileCity(userProfile.city || '');
     }
   }, [userProfile]);
 
@@ -48,9 +52,8 @@ const EditProfileScreen = ({ navigation }) => {
     if (!user) return;
     setErrorMsg('');
     // Validação da localidade
-    const isValidLocation = (loc) => /^[A-Za-zÀ-ÿ\s]+,\s?[A-Z]{2}$/.test(loc.trim());
-    if (location && !isValidLocation(location)) {
-      setErrorMsg('Localidade inválida. Use o formato: Cidade, UF (ex: Pelotas, RS)');
+    if (!profileState || !profileCity) {
+      setErrorMsg('Selecione o estado e a cidade.');
       setSaving(false);
       return;
     }
@@ -77,7 +80,8 @@ const EditProfileScreen = ({ navigation }) => {
         twitter,
         whatsapp,
         linkedin,
-        location: location.trim(),
+        state: profileState,
+        city: profileCity,
       });
       if (password) {
         try {
@@ -187,16 +191,36 @@ const EditProfileScreen = ({ navigation }) => {
           keyboardType="phone-pad"
           style={styles.input}
         />
-        <Input
-          label="Localidade"
-          placeholder="Cidade, UF"
-          value={location}
-          onChangeText={setLocation}
-          style={styles.input}
-        />
-        <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 8 }}>
-          Exemplo: Pelotas, RS
-        </Text>
+        <Text style={{ fontWeight: 'bold', marginTop: 12, marginBottom: 4 }}>Localidade</Text>
+        <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 4 }}>Selecione o estado e a cidade do seu perfil:</Text>
+        <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 220, maxWidth: '100%', width: '100%', height: 48, justifyContent: 'center' }}>
+          <Picker
+            selectedValue={profileState}
+            onValueChange={uf => {
+              setProfileState(uf);
+              setProfileCity('');
+            }}
+            style={{ height: 48, minWidth: 220 }}
+          >
+            <Picker.Item label="Selecione o estado" value="" />
+            {states.map(uf => (
+              <Picker.Item key={uf} label={uf} value={uf} />
+            ))}
+          </Picker>
+        </View>
+        <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 220, maxWidth: '100%', width: '100%', height: 48, justifyContent: 'center' }}>
+          <Picker
+            selectedValue={profileCity}
+            onValueChange={setProfileCity}
+            enabled={!!profileState}
+            style={{ height: 48, minWidth: 220 }}
+          >
+            <Picker.Item label="Selecione a cidade" value="" />
+            {(citiesByState[profileState] || []).map(city => (
+              <Picker.Item key={city} label={city} value={city} />
+            ))}
+          </Picker>
+        </View>
         <Input
           label="Nova Senha"
           placeholder="Digite a nova senha"

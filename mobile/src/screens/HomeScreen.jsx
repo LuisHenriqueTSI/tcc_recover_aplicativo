@@ -649,6 +649,13 @@ const HomeScreen = ({ navigation, route }) => {
               </Picker>
             </View>
             <View style={{ flexDirection:'row', justifyContent:'flex-end', gap:8 }}>
+              <TouchableOpacity onPress={() => {
+                setEditState('');
+                setEditCity('');
+                setEditNeighborhood('');
+              }} style={{ paddingVertical:8, paddingHorizontal:16, backgroundColor:'#E5E7EB', borderRadius:6, marginRight:8 }}>
+                <Text style={{ color:'#222', fontWeight:'bold' }}>Limpar Filtro</Text>
+              </TouchableOpacity>
               <TouchableOpacity onPress={() => setEditLocationModal(false)} style={{ paddingVertical:8, paddingHorizontal:16 }}>
                 <Text style={{ color:'#6B7280', fontWeight:'bold' }}>Cancelar</Text>
               </TouchableOpacity>
