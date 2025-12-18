@@ -77,14 +77,14 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderWidth: 0,
+    borderColor: 'transparent',
     borderRadius: 8,
     paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 4,
     fontSize: 16,
     color: '#1F2937',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: 'transparent',
   },
   multilineInput: {
     minHeight: 100,

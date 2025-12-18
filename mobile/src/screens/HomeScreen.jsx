@@ -488,26 +488,19 @@ const HomeScreen = ({ navigation, route }) => {
     <View style={styles.container}>
       {/* App Bar ajustada: filtro de localidade ao lado da busca */}
       <View style={{ backgroundColor: '#4F46E5', paddingTop: 38, paddingBottom: 18, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 24, fontFamily: 'sans-serif', marginBottom: 0, marginTop: 8 }}>Recover</Text>
-            {/* Localidade do usuário abaixo do nome do app */}
-            {userProfile?.city && userProfile?.state && (
-              <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}
-                onPress={() => setShowProfileLocationModal(true)}
-                accessibilityLabel={`Localidade do perfil: ${userProfile.city}, ${userProfile.state}`}
-              >
-                <MaterialIcons name="place" size={18} color="#F59E42" style={{ marginRight: 2 }} />
-                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '500', textDecorationLine: 'underline' }}>{userProfile.city}, {userProfile.state}</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          {!user ? (
-            <TouchableOpacity onPress={() => navigation.navigate('Login')} style={{ marginLeft: 18, justifyContent: 'center', height: 42 }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Entrar</Text>
+        <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 24, fontFamily: 'sans-serif', marginBottom: 0, marginTop: 8, textAlign: 'center' }}>Recover</Text>
+          {/* Localidade do usuário abaixo do nome do app */}
+          {userProfile?.city && userProfile?.state && (
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, justifyContent: 'center' }}
+              onPress={() => setShowProfileLocationModal(true)}
+              accessibilityLabel={`Localidade do perfil: ${userProfile.city}, ${userProfile.state}`}
+            >
+              <MaterialIcons name="place" size={18} color="#F59E42" style={{ marginRight: 2 }} />
+              <Text style={{ color: '#fff', fontSize: 15, fontWeight: '500', textDecorationLine: 'underline' }}>{userProfile.city}, {userProfile.state}</Text>
             </TouchableOpacity>
-          ) : null}
+          )}
         </View>
               {/* Modal para atualizar localidade do perfil */}
               <Modal
@@ -561,14 +554,17 @@ const HomeScreen = ({ navigation, route }) => {
               </Modal>
         {/* Barra de busca e filtro de localidade lado a lado (minimalista) */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
-          <MaterialIcons name="search" size={22} color="#BDBDBD" style={{ marginRight: 8 }} />
-          <Input
-            placeholder="Buscar itens perdidos ou encontrados."
-            value={searchTerm}
-            onChangeText={setSearchTerm}
-            style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, fontSize: 16, color: '#222', paddingVertical: 0, paddingHorizontal: 0 }}
-            textStyle={{ fontSize: 16, color: '#222' }}
-          />
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 10, height: 44 }}>
+            <MaterialIcons name="search" size={22} color="#BDBDBD" style={{ marginRight: 6 }} />
+            <Input
+              placeholder="Buscar itens perdidos ou encontrados."
+              value={searchTerm}
+              onChangeText={setSearchTerm}
+              style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, fontSize: 16, color: '#222', paddingVertical: 0, paddingHorizontal: 0 }}
+              textStyle={{ fontSize: 16, color: '#222' }}
+              placeholderTextColor="#fff"
+            />
+          </View>
           {/* Botão de filtro minimalista: só ícone */}
           <TouchableOpacity onPress={() => setEditLocationModal(true)} style={{ marginLeft: 8, width: 40, height: 40, borderRadius: 20, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E7EB' }} accessibilityLabel={editState || editCity || editNeighborhood ? `Local: ${editState || ''}${editCity ? ', ' + editCity : ''}${editNeighborhood ? ', ' + editNeighborhood : ''}` : 'Selecionar local'}>
             <MaterialIcons name="place" size={24} color="#F59E42" />
