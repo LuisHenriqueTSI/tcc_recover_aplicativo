@@ -168,7 +168,31 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
 };
 
 const HomeScreen = ({ navigation, route }) => {
-  const { user, userProfile, setUserProfile } = useAuth();
+  const { user, userProfile, refreshProfile, setUserProfile } = useAuth();
+  // Localidade do perfil (fixa)
+  const [showProfileLocationModal, setShowProfileLocationModal] = useState(false);
+  const [profileEditState, setProfileEditState] = useState('');
+  const [profileEditCity, setProfileEditCity] = useState('');
+
+  useEffect(() => {
+    setProfileEditState(userProfile?.state || '');
+    setProfileEditCity(userProfile?.city || '');
+  }, [userProfile]);
+
+  // Salvar localidade do perfil
+  const handleSaveProfileLocation = async () => {
+    if (!user || !profileEditState || !profileEditCity) return;
+    try {
+      await userService.updateProfile(user.id, {
+        state: profileEditState,
+        city: profileEditCity,
+      });
+      if (typeof refreshProfile === 'function') refreshProfile();
+      setShowProfileLocationModal(false);
+    } catch (err) {
+      Alert.alert('Erro', 'Não foi possível atualizar a localidade do perfil.');
+    }
+  };
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -479,7 +503,18 @@ const HomeScreen = ({ navigation, route }) => {
       <View style={{ backgroundColor: '#4F46E5', paddingTop: 38, paddingBottom: 18, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 24, fontFamily: 'sans-serif', marginBottom: 2, marginTop: 8 }}>Recover</Text>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 24, fontFamily: 'sans-serif', marginBottom: 0, marginTop: 8 }}>Recover</Text>
+            {/* Localidade do usuário abaixo do nome do app */}
+            {userProfile?.city && userProfile?.state && (
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}
+                onPress={() => setShowProfileLocationModal(true)}
+                accessibilityLabel={`Localidade do perfil: ${userProfile.city}, ${userProfile.state}`}
+              >
+                <MaterialIcons name="place" size={18} color="#F59E42" style={{ marginRight: 2 }} />
+                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '500', textDecorationLine: 'underline' }}>{userProfile.city}, {userProfile.state}</Text>
+              </TouchableOpacity>
+            )}
           </View>
           {!user ? (
             <TouchableOpacity onPress={() => navigation.navigate('Login')} style={{ marginLeft: 18, justifyContent: 'center', height: 42 }}>
@@ -487,6 +522,56 @@ const HomeScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           ) : null}
         </View>
+              {/* Modal para atualizar localidade do perfil */}
+              <Modal
+                visible={!!showProfileLocationModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowProfileLocationModal(false)}
+              >
+                <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
+                  <View style={{ backgroundColor:'#fff', borderRadius:12, paddingVertical:24, paddingHorizontal:16, minWidth:360, maxWidth: '95%' }}>
+                    <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Atualizar Localidade do Perfil</Text>
+                    <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione estado e cidade:</Text>
+                    {/* Estado */}
+                    <Text style={{ marginBottom: 6 }}>Estado</Text>
+                    <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                      <Picker
+                        selectedValue={profileEditState}
+                        onValueChange={uf => {
+                          setProfileEditState(uf);
+                          setProfileEditCity('');
+                        }}
+                        style={{ height: 56, minWidth: 320 }}
+                      >
+                        <Picker.Item label="Selecione o estado" value="" />
+                        {states.map(uf => (
+                          <Picker.Item key={uf} label={uf} value={uf} />
+                        ))}
+                      </Picker>
+                    </View>
+                    {/* Cidade */}
+                    <Text style={{ marginBottom: 6 }}>Cidade</Text>
+                    <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                      <Picker
+                        selectedValue={profileEditCity}
+                        onValueChange={setProfileEditCity}
+                        enabled={!!profileEditState}
+                        style={{ height: 56, minWidth: 320 }}
+                      >
+                        <Picker.Item label="Selecione a cidade" value="" />
+                        {(citiesByState[profileEditState] || []).map(city => (
+                          <Picker.Item key={city} label={city} value={city} />
+                        ))}
+                      </Picker>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 }}>
+                      <Button title="Cancelar" onPress={() => setShowProfileLocationModal(false)} style={{ marginRight: 8, backgroundColor: '#E5E7EB', color: '#222' }} />
+                      <Button title="Salvar" onPress={handleSaveProfileLocation} disabled={!profileEditState || !profileEditCity} />
+                    </View>
+                  </View>
+                </View>
+              </Modal>
         {/* Barra de busca e filtro de localidade lado a lado (minimalista) */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
           <MaterialIcons name="search" size={22} color="#BDBDBD" style={{ marginRight: 8 }} />
