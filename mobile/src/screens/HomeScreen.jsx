@@ -335,7 +335,7 @@ const HomeScreen = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    applyFilters(items);
+    loadItems();
   }, [filters, user, locationFilter]);
 
   const onRefresh = async () => {
