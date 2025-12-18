@@ -118,6 +118,8 @@ const PublicStack = () => {
       screenOptions={{
         headerStyle: {
           backgroundColor: '#4F46E5',
+          paddingTop: 38,
+          paddingBottom: 18,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {

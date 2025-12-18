@@ -41,6 +41,24 @@ const ITEM_TYPES = {
       serialNumber: 'Ex: Coleira azul, cicatriz na orelha',
     },
   },
+  outro: {
+    label: 'Outro',
+    fields: {
+      required: ['title'],
+      optional: ['brand', 'color', 'serialNumber'],
+    },
+    fieldLabels: {
+      brand: 'Marca/Tipo',
+      color: 'Cor',
+      serialNumber: 'Características/Detalhes',
+    },
+    placeholders: {
+      title: 'Ex: Chave, Guarda-chuva, Outro item',
+      brand: 'Ex: Tipo ou marca do item',
+      color: 'Ex: Cor predominante',
+      serialNumber: 'Ex: Detalhes, características únicas',
+    },
+  },
   document: {
     label: 'Documento',
     fields: {
@@ -137,7 +155,16 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const { user } = useAuth();
   const editItem = route?.params?.editItem || null;
   // Prioriza tipo vindo por parâmetro, depois do editItem, nunca deixa nulo se veio por navegação
-  const initialType = route?.params?.itemType || route?.params?.category || editItem?.category || null;
+  // Normaliza categoria para minúsculo e garante fallback para 'outro'
+  function normalizeCategory(cat) {
+    if (!cat) return null;
+    const key = String(cat).toLowerCase();
+    if (ITEM_TYPES[key]) return key;
+    // fallback: se não existir, retorna 'outro' se existir
+    if (ITEM_TYPES['outro']) return 'outro';
+    return null;
+  }
+  const initialType = normalizeCategory(route?.params?.itemType || route?.params?.category || editItem?.category);
   const [step, setStep] = useState(editItem || initialType ? 2 : 1);
   const [itemType, setItemType] = useState(initialType);
   const [status, setStatus] = useState(editItem?.status || 'lost');
@@ -422,7 +449,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               setRewardDescription('');
               setOfferReward(false);
               setError('');
-              navigation.navigate('HomeTab');
+              navigation.navigate('MainApp', { screen: 'HomeTab' });
             },
           },
         ]);
@@ -509,17 +536,18 @@ const RegisterItemScreen = ({ navigation, route }) => {
   if (step === 1 && !itemType) {
     // Se estiver editando, mostrar apenas o tipo já selecionado, sem exigir nova escolha
     if (editItem && editItem.category) {
+      const normalized = normalizeCategory(editItem.category);
       return (
         <ScrollView style={styles.container}>
           <View style={styles.header}>
             <Text style={styles.title}>Editar Item</Text>
-            <Text style={styles.subtitle}>Tipo: {ITEM_TYPES[editItem.category]?.label || editItem.category}</Text>
+            <Text style={styles.subtitle}>Tipo: {ITEM_TYPES[normalized]?.label || normalized || editItem.category}</Text>
             <Text style={{ color: '#DC2626', marginTop: 16, fontWeight: 'bold' }}>
               Não é possível alterar o tipo do item após a publicação. Para mudar o tipo, exclua e crie um novo item.
             </Text>
           </View>
           <Button title="Avançar" onPress={() => {
-            setItemType(editItem.category);
+            setItemType(normalized);
             setStep(2);
           }} />
         </ScrollView>
@@ -553,19 +581,19 @@ const RegisterItemScreen = ({ navigation, route }) => {
   if (step === 2) {
     const config = ITEM_TYPES[itemType];
     if (!config) {
+      // Tenta fallback para 'outro' se não existir
+      if (ITEM_TYPES['outro']) {
+        setItemType('outro');
+        return null;
+      }
       return (
         <ScrollView style={styles.container}>
           <Card style={styles.card}>
             <Text style={styles.title}>Erro ao carregar tipo de item</Text>
             <Text>Por favor, selecione o tipo de item novamente.</Text>
             <Button title="Voltar" onPress={() => {
-              if (editItem) {
-                setItemType(editItem.category);
-                setStep(1);
-              } else {
-                setItemType(null);
-                setStep(1);
-              }
+              setItemType(null);
+              setStep(1);
             }} />
           </Card>
         </ScrollView>
