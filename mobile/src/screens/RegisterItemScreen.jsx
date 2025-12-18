@@ -449,7 +449,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               setRewardDescription('');
               setOfferReward(false);
               setError('');
-              navigation.navigate('MainApp', { screen: 'HomeTab' });
+              navigation.navigate('MainApp', { screen: 'HomeTab', params: { refresh: true } });
             },
           },
         ]);
@@ -513,7 +513,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                         setRewardDescription('');
                         setOfferReward(false);
                         setError('');
-                        navigation.navigate('HomeTab');
+                        navigation.navigate('HomeTab', { refresh: true });
                       },
                     },
                   ]);

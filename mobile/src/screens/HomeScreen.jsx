@@ -167,7 +167,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
   );
 };
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ navigation, route }) => {
   const { user, userProfile, setUserProfile } = useAuth();
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
@@ -188,7 +188,15 @@ const HomeScreen = ({ navigation }) => {
   const [editCity, setEditCity] = useState('');
   const [editNeighborhood, setEditNeighborhood] = useState('');
 
-  // Atualiza localidade sempre que a tela ganha foco (ex: após editar perfil)
+  // Sempre recarrega os itens ao focar na HomeTab
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadItems();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  // Atualiza localidade ao focar (mantém lógica anterior)
   useFocusEffect(
     React.useCallback(() => {
       if (userProfile?.city && userProfile?.state && !locationFilterTouched) {
