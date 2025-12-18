@@ -14,8 +14,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import * as itemsService from '../services/items';
+
 import Card from '../components/Card';
 import Button from '../components/Button';
+import SightingModal from '../components/SightingModal';
+import * as sightingsService from '../services/sightings';
+
 
 const ItemDetailScreen = ({ route, navigation }) => {
   const { itemId } = route.params;
@@ -26,9 +30,11 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [rewards, setRewards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [sightings, setSightings] = useState([]);
+  const [sightingModalVisible, setSightingModalVisible] = useState(false);
+  const [sightingLoading, setSightingLoading] = useState(false);
 
   useEffect(() => {
-    // Set up navigation options
     navigation.setOptions({
       title: 'Detalhes do Item',
       headerStyle: {
@@ -38,14 +44,30 @@ const ItemDetailScreen = ({ route, navigation }) => {
       headerTitleStyle: {
         fontWeight: 'bold',
       },
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginLeft: 8 }}>
+          <MaterialIcons name="arrow-back" size={26} color="#fff" />
+        </TouchableOpacity>
+      ),
     });
   }, []);
+
 
   useFocusEffect(
     useCallback(() => {
       loadItemDetails();
+      loadSightings();
     }, [itemId])
   );
+
+  const loadSightings = async () => {
+    try {
+      const data = await sightingsService.getSightings(itemId);
+      setSightings(data);
+    } catch (e) {
+      setSightings([]);
+    }
+  };
 
   const loadItemDetails = async () => {
     try {
@@ -141,14 +163,35 @@ const ItemDetailScreen = ({ route, navigation }) => {
     });
   };
 
+
   const handleReportSighting = () => {
     if (!user) {
       Alert.alert('Login Necessário', 'Faça login para reportar avistamentos');
       navigation.navigate('Login');
       return;
     }
-    // TODO: Implementar flow de avistamento
-    Alert.alert('Em Desenvolvimento', 'Feature de avistamento em desenvolvimento');
+    setSightingModalVisible(true);
+  };
+
+  const handleSubmitSighting = async (form) => {
+    setSightingLoading(true);
+    try {
+      await sightingsService.createSighting({
+        item_id: itemId,
+        user_id: user.id,
+        location: form.location,
+        description: form.description,
+        contact_info: form.contact_info,
+        photo_url: form.photo_url,
+      });
+      setSightingModalVisible(false);
+      loadSightings();
+      Alert.alert('Sucesso', 'Comentário/avistamento enviado!');
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível enviar o comentário.');
+    } finally {
+      setSightingLoading(false);
+    }
   };
 
   const isOwner = user && item && item.owner_id === user.id;
@@ -238,12 +281,25 @@ const ItemDetailScreen = ({ route, navigation }) => {
         {item.extra_fields && Object.keys(item.extra_fields).length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Informações Adicionais</Text>
-            {Object.entries(item.extra_fields).map(([key, value]) => (
-              <View key={key} style={styles.extraField}>
-                <Text style={styles.fieldLabel}>{key}</Text>
-                <Text style={styles.fieldValue}>{value}</Text>
-              </View>
-            ))}
+            {Object.entries(item.extra_fields).map(([key, value]) => {
+              // Tradução dos campos extras conhecidos
+              const labels = {
+                brand: 'Marca',
+                color: 'Cor',
+                serial_number: 'Número de Série',
+                model: 'Modelo',
+                size: 'Tamanho',
+                type: 'Tipo',
+                description: 'Descrição',
+              };
+              const label = labels[key] || key;
+              return (
+                <View key={key} style={styles.extraField}>
+                  <Text style={styles.fieldLabel}>{label}</Text>
+                  <Text style={styles.fieldValue}>{value}</Text>
+                </View>
+              );
+            })}
           </View>
         )}
 
@@ -273,46 +329,59 @@ const ItemDetailScreen = ({ route, navigation }) => {
           </View>
         )}
 
+
+        {/* Comentários / Avistamentos */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Comentários e Avistamentos</Text>
+          {sightings.length === 0 ? (
+            <Text style={{ color: '#6B7280' }}>Nenhum comentário ainda.</Text>
+          ) : (
+            sightings.map((s, idx) => (
+              <Card key={s.id || idx} style={{ marginBottom: 10, padding: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                  {s.profiles?.avatar_url ? (
+                    <Image source={{ uri: s.profiles.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }} />
+                  ) : null}
+                  <Text style={{ fontWeight: 'bold', color: '#1F2937' }}>{s.profiles?.name || 'Usuário'}</Text>
+                  <Text style={{ marginLeft: 8, color: '#6B7280', fontSize: 12 }}>{new Date(s.created_at).toLocaleString('pt-BR')}</Text>
+                </View>
+                <Text style={{ color: '#374151', marginBottom: 4 }}>{s.description}</Text>
+                {s.photo_url ? (
+                  <Image source={{ uri: s.photo_url }} style={{ width: '100%', height: 120, borderRadius: 8, marginBottom: 4 }} />
+                ) : null}
+                {s.location ? <Text style={{ color: '#6B7280', fontSize: 12 }}>Local: {s.location}</Text> : null}
+                {s.contact_info ? <Text style={{ color: '#6B7280', fontSize: 12 }}>Contato: {s.contact_info}</Text> : null}
+              </Card>
+            ))
+          )}
+          <Button
+            title="Adicionar Comentário/Avistamento"
+            onPress={handleReportSighting}
+            style={{ marginTop: 10 }}
+          />
+        </View>
+
         {/* Botões de Ação */}
         <View style={styles.actionsSection}>
           {isOwner ? (
             <>
-              <Button
-                title="✏️ Editar"
-                onPress={handleEditItem}
-                style={styles.actionButton}
-              />
-              <Button
-                title="🗑️ Excluir"
-                variant="danger"
-                onPress={handleDeleteItem}
-                style={styles.actionButton}
-                disabled={deleting}
-              />
-              <Button
-                title="✓ Marcar como Resolvido"
-                variant="secondary"
-                onPress={handleMarkAsResolved}
-                style={styles.actionButton}
-                disabled={item.resolved}
-              />
+              <Button title="✏️ Editar" onPress={handleEditItem} style={styles.actionButton} />
+              <Button title="🗑️ Excluir" variant="danger" onPress={handleDeleteItem} style={styles.actionButton} disabled={deleting} />
+              <Button title="✓ Marcar como Resolvido" variant="secondary" onPress={handleMarkAsResolved} style={styles.actionButton} disabled={item.resolved} />
             </>
           ) : (
             <>
-              <Button
-                title="💬 Enviar Mensagem"
-                onPress={handleSendMessage}
-                style={styles.actionButton}
-              />
-              <Button
-                title="👁️ Reportar Avistamento"
-                variant="secondary"
-                onPress={handleReportSighting}
-                style={styles.actionButton}
-              />
+              <Button title="💬 Enviar Mensagem" onPress={handleSendMessage} style={styles.actionButton} />
             </>
           )}
         </View>
+
+        <SightingModal
+          visible={sightingModalVisible}
+          onClose={() => setSightingModalVisible(false)}
+          onSubmit={handleSubmitSighting}
+          loading={sightingLoading}
+        />
 
         {/* Espaço livre no fim */}
         <View style={styles.spacer} />

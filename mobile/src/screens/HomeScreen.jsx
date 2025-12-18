@@ -31,7 +31,7 @@ import Input from '../components/Input';
 import { MaterialIcons } from '@expo/vector-icons';
 
 // ItemCard agora é um componente fora do HomeScreen
-const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem }) => {
+const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress }) => {
   const [carouselIndex, setCarouselIndex] = React.useState(0);
   // Cores para status e categoria
   const statusColor = item.status === 'lost' ? '#F87171' : '#34D399';
@@ -46,7 +46,8 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
   const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
   const showCarousel = photos.length > 1;
   return (
-    <Card style={{ padding: 0, marginHorizontal: 12, marginVertical: 14, borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 }}>
+    <TouchableOpacity activeOpacity={0.85} onPress={onPress}>
+      <Card style={{ padding: 0, marginHorizontal: 12, marginVertical: 14, borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 }}>
       {/* Imagem/Carrossel */}
       <View style={{ position: 'relative', width: '100%', height: 180 }}>
         {photos.length > 0 ? (
@@ -163,7 +164,8 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
           )}
         </View>
       </View>
-    </Card>
+      </Card>
+    </TouchableOpacity>
   );
 };
 
@@ -750,6 +752,7 @@ const HomeScreen = ({ navigation, route }) => {
             handleSendMessage={handleSendMessage}
             handleEditItem={handleEditItem}
             handleDeleteItem={handleDeleteItem}
+            onPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
           />
         )}
         keyExtractor={item => item.id.toString()}

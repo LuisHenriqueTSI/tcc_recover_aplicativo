@@ -144,6 +144,11 @@ const PublicStack = () => {
         component={RegisterScreen}
         options={{ title: 'Registrar' }}
       />
+      <Stack.Screen
+        name="ItemDetail"
+        component={ItemDetailScreen}
+        options={{ title: 'Detalhes do Item' }}
+      />
     </Stack.Navigator>
   );
 };
