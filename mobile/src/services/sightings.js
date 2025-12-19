@@ -4,6 +4,15 @@ export const createSighting = async (sightingData) => {
   try {
     console.log('[createSighting] Criando novo avistamento...');
 
+    // Garante que contact_info será sempre um objeto (JSON)
+    let contact_info = sightingData.contact_info;
+    if (contact_info && typeof contact_info !== 'object') {
+      try {
+        contact_info = JSON.parse(contact_info);
+      } catch {
+        contact_info = { raw: String(contact_info) };
+      }
+    }
     const { data, error } = await supabase
       .from('sightings')
       .insert({
@@ -11,7 +20,7 @@ export const createSighting = async (sightingData) => {
         user_id: sightingData.user_id,
         location: sightingData.location,
         description: sightingData.description,
-        contact_info: sightingData.contact_info,
+        contact_info,
         photo_url: sightingData.photo_url,
       })
       .select()
@@ -32,12 +41,10 @@ export const createSighting = async (sightingData) => {
 
 export const getSightings = async (itemId) => {
   try {
-    const { data, error } = await supabase
+    // Busca todos os avistamentos do item
+    const { data: sightings, error } = await supabase
       .from('sightings')
-      .select(`
-        *,
-        profiles(id, name, avatar_url)
-      `)
+      .select('*')
       .eq('item_id', itemId)
       .order('created_at', { ascending: false });
 
@@ -45,8 +52,39 @@ export const getSightings = async (itemId) => {
       console.log('[getSightings] Erro:', error.message);
       return [];
     }
+    if (!sightings || sightings.length === 0) return [];
 
-    return data || [];
+    // Busca perfis dos usuários únicos
+    const userIds = [...new Set(sightings.map(s => s.user_id).filter(Boolean))];
+    let profilesMap = {};
+    if (userIds.length > 0) {
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url')
+        .in('id', userIds.map(String));
+      if (!profileError && profiles) {
+        profilesMap = Object.fromEntries(profiles.map(p => [p.id, p]));
+      }
+    }
+
+    // Monta resultado, parseando contact_info se for JSON
+    return sightings.map(s => {
+      let contact_info = s.contact_info;
+      if (typeof contact_info === 'string') {
+        try {
+          // Tenta parsear como JSON, se falhar mantém string
+          const parsed = JSON.parse(contact_info);
+          if (typeof parsed === 'object' && parsed !== null) {
+            contact_info = parsed;
+          }
+        } catch {}
+      }
+      return {
+        ...s,
+        contact_info,
+        profiles: profilesMap[s.user_id] || null,
+      };
+    });
   } catch (error) {
     console.log('[getSightings] Exceção:', error.message);
     return [];

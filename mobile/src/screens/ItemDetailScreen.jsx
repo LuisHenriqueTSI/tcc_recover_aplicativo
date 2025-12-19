@@ -337,23 +337,43 @@ const ItemDetailScreen = ({ route, navigation }) => {
           {sightings.length === 0 ? (
             <Text style={{ color: '#6B7280' }}>Nenhum comentário ainda.</Text>
           ) : (
-            sightings.map((s, idx) => (
-              <Card key={s.id || idx} style={{ marginBottom: 10, padding: 10 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                  {s.profiles?.avatar_url ? (
-                    <Image source={{ uri: s.profiles.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }} />
+            sightings.map((s, idx) => {
+              // Compatibilidade: contact_info pode ser string (antigo) ou objeto (novo)
+              let cellphone = '', instagram = '', whatsapp = '', contatoExtra = '';
+              if (s.contact_info && typeof s.contact_info === 'object') {
+                cellphone = s.contact_info.cellphone || '';
+                instagram = s.contact_info.instagram || '';
+                whatsapp = s.contact_info.whatsapp || '';
+              } else if (typeof s.contact_info === 'string' && s.contact_info.trim() !== '') {
+                // Se for string, exibe como contato extra
+                contatoExtra = s.contact_info;
+              }
+              return (
+                <Card key={s.id || idx} style={{ marginBottom: 10, padding: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    {s.profiles?.avatar_url ? (
+                      <Image source={{ uri: s.profiles.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }} />
+                    ) : null}
+                    <Text style={{ fontWeight: 'bold', color: '#1F2937' }}>{s.profiles?.name || 'Usuário'}</Text>
+                    <Text style={{ marginLeft: 8, color: '#6B7280', fontSize: 12 }}>{new Date(s.created_at).toLocaleString('pt-BR')}</Text>
+                  </View>
+                  <Text style={{ color: '#374151', marginBottom: 4 }}>{s.description}</Text>
+                  {s.photo_url ? (
+                    <Image source={{ uri: s.photo_url }} style={{ width: '100%', height: 120, borderRadius: 8, marginBottom: 4 }} />
                   ) : null}
-                  <Text style={{ fontWeight: 'bold', color: '#1F2937' }}>{s.profiles?.name || 'Usuário'}</Text>
-                  <Text style={{ marginLeft: 8, color: '#6B7280', fontSize: 12 }}>{new Date(s.created_at).toLocaleString('pt-BR')}</Text>
-                </View>
-                <Text style={{ color: '#374151', marginBottom: 4 }}>{s.description}</Text>
-                {s.photo_url ? (
-                  <Image source={{ uri: s.photo_url }} style={{ width: '100%', height: 120, borderRadius: 8, marginBottom: 4 }} />
-                ) : null}
-                {s.location ? <Text style={{ color: '#6B7280', fontSize: 12 }}>Local: {s.location}</Text> : null}
-                {s.contact_info ? <Text style={{ color: '#6B7280', fontSize: 12 }}>Contato: {s.contact_info}</Text> : null}
-              </Card>
-            ))
+                  {s.location ? <Text style={{ color: '#6B7280', fontSize: 12 }}>Local: {s.location}</Text> : null}
+                  {(cellphone || instagram || whatsapp || contatoExtra) ? (
+                    <View style={{ marginTop: 4 }}>
+                      <Text style={{ color: '#6B7280', fontSize: 12, fontWeight: 'bold' }}>Contato:</Text>
+                      {cellphone ? <Text style={{ color: '#6B7280', fontSize: 12 }}>📱 Celular: {cellphone}</Text> : null}
+                      {instagram ? <Text style={{ color: '#6B7280', fontSize: 12 }}>📸 Instagram: @{instagram}</Text> : null}
+                      {whatsapp ? <Text style={{ color: '#6B7280', fontSize: 12 }}>💬 WhatsApp: {whatsapp}</Text> : null}
+                      {contatoExtra ? <Text style={{ color: '#6B7280', fontSize: 12 }}>{contatoExtra}</Text> : null}
+                    </View>
+                  ) : null}
+                </Card>
+              );
+            })
           )}
           <Button
             title="Adicionar Comentário/Avistamento"

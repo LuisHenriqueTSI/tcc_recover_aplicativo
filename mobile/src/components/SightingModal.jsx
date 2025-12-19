@@ -1,20 +1,53 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import Button from './Button';
 
 const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
-  const [contactInfo, setContactInfo] = useState('');
-  const [photoUrl, setPhotoUrl] = useState(''); // Para simplificar, só URL
+  const [cellphone, setCellphone] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   const handleSend = () => {
     if (!description.trim()) return;
-    onSubmit({ description, location, contact_info: contactInfo, photo_url: photoUrl });
+    onSubmit({
+      description,
+      location,
+      contact_info: {
+        cellphone,
+        instagram,
+        whatsapp,
+      },
+      photo_url: photoUrl,
+    });
     setDescription('');
     setLocation('');
-    setContactInfo('');
+    setCellphone('');
+    setInstagram('');
+    setWhatsapp('');
     setPhotoUrl('');
+  };
+
+  const handlePickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert('Permissão para acessar fotos é necessária!');
+      return;
+    }
+    setUploading(true);
+    let pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.7,
+    });
+    setUploading(false);
+    if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
+      setPhotoUrl(pickerResult.assets[0].uri);
+    }
   };
 
   return (
@@ -37,16 +70,29 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
           />
           <TextInput
             style={styles.input}
-            placeholder="Contato (opcional)"
-            value={contactInfo}
-            onChangeText={setContactInfo}
+            placeholder="Celular (apenas números)"
+            value={cellphone}
+            onChangeText={text => setCellphone(text.replace(/[^0-9]/g, ''))}
+            keyboardType="numeric"
+            maxLength={15}
           />
           <TextInput
             style={styles.input}
-            placeholder="URL da foto (opcional)"
-            value={photoUrl}
-            onChangeText={setPhotoUrl}
+            placeholder="Instagram (opcional)"
+            value={instagram}
+            onChangeText={setInstagram}
+            autoCapitalize="none"
           />
+          <TextInput
+            style={styles.input}
+            placeholder="WhatsApp (opcional)"
+            value={whatsapp}
+            onChangeText={setWhatsapp}
+            autoCapitalize="none"
+          />
+          <TouchableOpacity onPress={handlePickImage} style={{ marginBottom: 10, backgroundColor: '#E5E7EB', borderRadius: 8, padding: 10, alignItems: 'center' }}>
+            <Text style={{ color: '#4F46E5', fontWeight: 'bold' }}>{uploading ? 'Abrindo galeria...' : (photoUrl ? 'Trocar foto' : 'Adicionar foto')}</Text>
+          </TouchableOpacity>
           {photoUrl ? (
             <Image source={{ uri: photoUrl }} style={styles.photoPreview} />
           ) : null}
