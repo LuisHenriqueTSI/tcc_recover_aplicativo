@@ -21,24 +21,51 @@ import { states, citiesByState, neighborhoodsByCity } from '../lib/br-locations'
 import { Picker } from '@react-native-picker/picker';
 import Card from '../components/Card';
 
-// Configuração dos tipos de itens igual ao web
 const ITEM_TYPES = {
   animal: {
     label: 'Animal',
     fields: {
-      required: ['title', 'color'],
-      optional: ['brand', 'serialNumber'],
+      required: [
+        'animalName',
+        'species',
+        'breed',
+        'color',
+        'size',
+        'age',
+        'microchip'
+      ],
+      optional: [
+        'collar',
+        'serialNumber',
+        'brand',
+        'description'
+      ],
     },
     fieldLabels: {
-      brand: 'Raça/Tipo',
+      animalName: 'Nome do animal',
+      species: 'Espécie',
+      breed: 'Raça',
       color: 'Cor',
+      size: 'Porte',
+      age: 'Idade',
+      collar: 'Coleira (descrição)',
+      microchip: 'Microchipado?',
       serialNumber: 'Características especiais',
+      brand: 'Raça/Tipo',
+      description: 'Descrição',
     },
     placeholders: {
-      title: 'Ex: Cachorro Golden Retriever, Gato Persa',
-      brand: 'Ex: Vira-lata, Poodle, Persa',
-      color: 'Ex: Marrom e branco, Preto',
+      animalName: 'Ex: Thor',
+      species: 'Ex: Cachorro, Gato',
+      breed: 'Ex: Golden Retriever',
+      color: 'Ex: Dourado',
+      size: 'Ex: Grande, Médio, Pequeno',
+      age: 'Ex: Filhote, Adulto, Idoso',
+      collar: 'Ex: Coleira azul com medalha',
+      microchip: 'Selecione',
       serialNumber: 'Ex: Coleira azul, cicatriz na orelha',
+      brand: 'Ex: Vira-lata, Poodle, Persa',
+      description: 'Descreva detalhes importantes...',
     },
   },
   outro: {
@@ -640,86 +667,177 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </ScrollView>
       );
     }
+
+    // Animal: formulário detalhado
+    if (itemType === 'animal') {
+      return (
+        <ScrollView style={styles.container}>
+          <Card style={styles.card}>
+            <Text style={styles.title}>{editItem ? 'Editar Animal' : 'Detalhes do Animal'}</Text>
+            <Input
+              label="Nome do animal *"
+              placeholder="Ex: Thor"
+              value={animalName}
+              onChangeText={setAnimalName}
+              style={styles.input}
+            />
+            <Input
+              label="Espécie *"
+              placeholder="Ex: Cachorro, Gato"
+              value={animalSpecies}
+              onChangeText={setAnimalSpecies}
+              style={styles.input}
+            />
+            <Input
+              label="Raça *"
+              placeholder="Ex: Golden Retriever"
+              value={animalBreed}
+              onChangeText={setAnimalBreed}
+              style={styles.input}
+            />
+            <Input
+              label="Cor *"
+              placeholder="Ex: Dourado"
+              value={color}
+              onChangeText={setColor}
+              style={styles.input}
+            />
+            <View style={styles.input}>
+              <Text style={styles.label}>Porte *</Text>
+              <Picker
+                selectedValue={animalSize}
+                onValueChange={setAnimalSize}
+                style={{ height: 48 }}
+              >
+                <Picker.Item label="Selecione o porte" value="" />
+                <Picker.Item label="Grande" value="Grande" />
+                <Picker.Item label="Médio" value="Médio" />
+                <Picker.Item label="Pequeno" value="Pequeno" />
+              </Picker>
+            </View>
+            <View style={styles.input}>
+              <Text style={styles.label}>Idade *</Text>
+              <Picker
+                selectedValue={animalAge}
+                onValueChange={setAnimalAge}
+                style={{ height: 48 }}
+              >
+                <Picker.Item label="Selecione a idade" value="" />
+                <Picker.Item label="Filhote (até 1 ano)" value="Filhote" />
+                <Picker.Item label="Jovem (1-3 anos)" value="Jovem" />
+                <Picker.Item label="Adulto (3-7 anos)" value="Adulto" />
+                <Picker.Item label="Idoso (7+ anos)" value="Idoso" />
+              </Picker>
+            </View>
+            <Input
+              label="Coleira (descrição)"
+              placeholder="Ex: Coleira azul com medalha"
+              value={animalCollar}
+              onChangeText={setAnimalCollar}
+              style={styles.input}
+            />
+            <View style={styles.input}>
+              <Text style={styles.label}>Microchipado? *</Text>
+              <Picker
+                selectedValue={animalMicrochip}
+                onValueChange={setAnimalMicrochip}
+                style={{ height: 48 }}
+              >
+                <Picker.Item label="Selecione" value="" />
+                <Picker.Item label="Sim" value="Sim" />
+                <Picker.Item label="Não" value="Não" />
+              </Picker>
+            </View>
+            <Input
+              label="Descrição (opcional)"
+              placeholder="Descreva detalhes importantes..."
+              value={description}
+              onChangeText={setDescription}
+              multiline={true}
+              numberOfLines={4}
+              style={styles.input}
+            />
+            <View style={styles.statusContainer}>
+              <Text style={styles.label}>Status *</Text>
+              <View style={styles.statusOptions}>
+                <TouchableOpacity
+                  style={[
+                    styles.statusButton,
+                    status === 'lost' && styles.statusButtonActive,
+                  ]}
+                  onPress={() => setStatus('lost')}
+                >
+                  <Text style={[
+                    styles.statusText,
+                    status === 'lost' && styles.statusTextActive,
+                  ]}>
+                    Perdi
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.statusButton,
+                    status === 'found' && styles.statusButtonActive,
+                  ]}
+                  onPress={() => setStatus('found')}
+                >
+                  <Text style={[
+                    styles.statusText,
+                    status === 'found' && styles.statusTextActive,
+                  ]}>
+                    Achei
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            {error ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+            <View style={styles.navigation}>
+              <Button
+                title="Cancelar"
+                variant="secondary"
+                onPress={() => navigation.goBack()}
+                style={{ flex: 1 }}
+              />
+              <Button
+                title="Próximo"
+                onPress={() => setStep(3)}
+                style={{ flex: 1, marginLeft: 8 }}
+              />
+            </View>
+          </Card>
+        </ScrollView>
+      );
+    }
+
+    // Outros tipos: formulário dinâmico
     return (
       <ScrollView style={styles.container}>
         <Card style={styles.card}>
-          <Text style={styles.title}>{editItem ? 'Editar Animal' : 'Detalhes do Animal'}</Text>
-
-          <Input
-            label="Nome do animal *"
-            placeholder="Ex: Thor"
-            value={animalName}
-            onChangeText={setAnimalName}
-            style={styles.input}
-          />
-          <Input
-            label="Espécie *"
-            placeholder="Ex: Cachorro, Gato"
-            value={animalSpecies}
-            onChangeText={setAnimalSpecies}
-            style={styles.input}
-          />
-          <Input
-            label="Raça *"
-            placeholder="Ex: Golden Retriever"
-            value={animalBreed}
-            onChangeText={setAnimalBreed}
-            style={styles.input}
-          />
-          <Input
-            label="Cor *"
-            placeholder="Ex: Dourado"
-            value={color}
-            onChangeText={setColor}
-            style={styles.input}
-          />
-          <View style={styles.input}>
-            <Text style={styles.label}>Porte *</Text>
-            <Picker
-              selectedValue={animalSize}
-              onValueChange={setAnimalSize}
-              style={{ height: 48 }}
-            >
-              <Picker.Item label="Selecione o porte" value="" />
-              <Picker.Item label="Grande" value="Grande" />
-              <Picker.Item label="Médio" value="Médio" />
-              <Picker.Item label="Pequeno" value="Pequeno" />
-            </Picker>
-          </View>
-          <View style={styles.input}>
-            <Text style={styles.label}>Idade *</Text>
-            <Picker
-              selectedValue={animalAge}
-              onValueChange={setAnimalAge}
-              style={{ height: 48 }}
-            >
-              <Picker.Item label="Selecione a idade" value="" />
-              <Picker.Item label="Filhote (até 1 ano)" value="Filhote" />
-              <Picker.Item label="Jovem (1-3 anos)" value="Jovem" />
-              <Picker.Item label="Adulto (3-7 anos)" value="Adulto" />
-              <Picker.Item label="Idoso (7+ anos)" value="Idoso" />
-            </Picker>
-          </View>
-          <Input
-            label="Coleira (descrição)"
-            placeholder="Ex: Coleira azul com medalha"
-            value={animalCollar}
-            onChangeText={setAnimalCollar}
-            style={styles.input}
-          />
-          <View style={styles.input}>
-            <Text style={styles.label}>Microchipado? *</Text>
-            <Picker
-              selectedValue={animalMicrochip}
-              onValueChange={setAnimalMicrochip}
-              style={{ height: 48 }}
-            >
-              <Picker.Item label="Selecione" value="" />
-              <Picker.Item label="Sim" value="Sim" />
-              <Picker.Item label="Não" value="Não" />
-            </Picker>
-          </View>
-
+          <Text style={styles.title}>{editItem ? 'Editar Item' : 'Detalhes do Item'}</Text>
+          {config.fields.required.concat(config.fields.optional)
+            .filter(field => config.fieldLabels[field] && config.placeholders[field])
+            .map((field) => {
+              let value = '';
+              let onChangeText = () => {};
+              if (field === 'title') { value = title; onChangeText = setTitle; }
+              else if (field === 'brand') { value = brand; onChangeText = setBrand; }
+              else if (field === 'color') { value = color; onChangeText = setColor; }
+              else if (field === 'serialNumber') { value = serialNumber; onChangeText = setSerialNumber; }
+              return (
+                <Input
+                  key={field}
+                  label={config.fieldLabels[field] + (config.fields.required.includes(field) ? ' *' : '')}
+                  placeholder={config.placeholders[field]}
+                  value={value}
+                  onChangeText={onChangeText}
+                  style={styles.input}
+                />
+              );
+            })}
           <Input
             label="Descrição (opcional)"
             placeholder="Descreva detalhes importantes..."
@@ -729,7 +847,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
             numberOfLines={4}
             style={styles.input}
           />
-
           <View style={styles.statusContainer}>
             <Text style={styles.label}>Status *</Text>
             <View style={styles.statusOptions}>
@@ -763,13 +880,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
           </View>
-
           {error ? (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
-
           <View style={styles.navigation}>
             <Button
               title="Cancelar"
