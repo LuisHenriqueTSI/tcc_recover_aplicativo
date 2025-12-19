@@ -226,6 +226,9 @@ const HomeScreen = ({ navigation, route }) => {
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [thumbnails, setThumbnails] = useState({});
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState({
+    category: 'all',
+  });
 
   const loadItems = async () => {
     try {
@@ -676,6 +679,13 @@ const HomeScreen = ({ navigation, route }) => {
 
       {/* Quick Filters Row */}
       <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 8, marginBottom: 16 }}>
+                {/* Filtro avançado: tipo de item */}
+                <TouchableOpacity
+                  style={{ marginRight: 8, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8, backgroundColor: showAdvancedFilters ? '#E5E7EB' : '#fff', borderWidth: 1, borderColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center' }}
+                  onPress={() => setShowAdvancedFilters(v => !v)}
+                >
+                  <MaterialIcons name="tune" size={22} color="#4F46E5" />
+                </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.filterChip,
@@ -696,7 +706,7 @@ const HomeScreen = ({ navigation, route }) => {
           onPress={() => setFilters({ ...filters, status: 'lost' })}
           activeOpacity={0.85}
         >
-          <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: filters.status === 'lost' ? '#fff' : '#F87171', borderWidth: filters.status === 'lost' ? 2 : 0, borderColor: '#F87171', marginRight: 4 }} />
+          {/* Bolinha removida */}
           <Text style={[styles.filterChipText, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
         </TouchableOpacity>
 
@@ -708,7 +718,7 @@ const HomeScreen = ({ navigation, route }) => {
           onPress={() => setFilters({ ...filters, status: 'found' })}
           activeOpacity={0.85}
         >
-          <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: filters.status === 'found' ? '#fff' : '#34D399', borderWidth: filters.status === 'found' ? 2 : 0, borderColor: '#34D399', marginRight: 4 }} />
+          {/* Bolinha removida */}
           <Text style={[styles.filterChipText, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
         </TouchableOpacity>
 
@@ -728,8 +738,38 @@ const HomeScreen = ({ navigation, route }) => {
       </View>
 
       {/* Items List */}
+            {/* Filtros avançados: tipo de item */}
+            {showAdvancedFilters && (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, marginBottom: 8 }}>
+                {[
+                  { key: 'all', label: 'Todos' },
+                  { key: 'animal', label: 'Animal' },
+                  { key: 'object', label: 'Objeto' },
+                  { key: 'clothing', label: 'Roupa' },
+                  { key: 'document', label: 'Documento' },
+                  { key: 'other', label: 'Outro' },
+                ].map(opt => (
+                  <TouchableOpacity
+                    key={opt.key}
+                    style={{
+                      paddingVertical: 6,
+                      paddingHorizontal: 14,
+                      borderRadius: 8,
+                      backgroundColor: advancedFilters.category === opt.key ? '#4F46E5' : '#F3F4F6',
+                      marginRight: 8,
+                      marginBottom: 8,
+                    }}
+                    onPress={() => setAdvancedFilters(f => ({ ...f, category: opt.key }))}
+                  >
+                    <Text style={{ color: advancedFilters.category === opt.key ? '#fff' : '#4F46E5', fontWeight: 'bold', fontSize: 13 }}>{opt.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
       <FlatList
-        data={filteredItems}
+        data={filteredItems.filter(item =>
+          advancedFilters.category === 'all' ? true : item.category === advancedFilters.category
+        )}
         renderItem={({ item }) => (
           <ItemCard
             item={item}
