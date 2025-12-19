@@ -152,7 +152,7 @@ const ITEM_TYPES = {
 };
 
 const RegisterItemScreen = ({ navigation, route }) => {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const editItem = route?.params?.editItem || null;
   // Prioriza tipo vindo por parâmetro, depois do editItem, nunca deixa nulo se veio por navegação
   // Normaliza categoria para minúsculo e garante fallback para 'outro'
@@ -170,17 +170,27 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [status, setStatus] = useState(editItem?.status || 'lost');
   const [title, setTitle] = useState(editItem?.title || '');
   const [description, setDescription] = useState(editItem?.description || '');
-  const [state, setState] = useState(editItem?.state || '');
-  const [city, setCity] = useState(editItem?.city || '');
+  const [state, setState] = useState(editItem?.state || (userProfile?.state || ''));
+  const [city, setCity] = useState(editItem?.city || (userProfile?.city || ''));
   const [neighborhood, setNeighborhood] = useState(editItem?.neighborhood || '');
   const [date, setDate] = useState(
     editItem?.date ? editItem.date.split('T')[0] : new Date().toISOString().split('T')[0]
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
   
+  // Campos genéricos
   const [brand, setBrand] = useState(editItem?.extra_fields?.brand || '');
   const [color, setColor] = useState(editItem?.extra_fields?.color || '');
   const [serialNumber, setSerialNumber] = useState(editItem?.extra_fields?.serial_number || '');
+
+  // Campos detalhados para animal
+  const [animalSpecies, setAnimalSpecies] = useState(editItem?.extra_fields?.species || 'Cachorro');
+  const [animalBreed, setAnimalBreed] = useState(editItem?.extra_fields?.breed || '');
+  const [animalSize, setAnimalSize] = useState(editItem?.extra_fields?.size || '');
+  const [animalAge, setAnimalAge] = useState(editItem?.extra_fields?.age || '');
+  const [animalCollar, setAnimalCollar] = useState(editItem?.extra_fields?.collar || '');
+  const [animalMicrochip, setAnimalMicrochip] = useState(editItem?.extra_fields?.microchip || 'Não');
+  const [animalName, setAnimalName] = useState(editItem?.extra_fields?.animal_name || '');
   
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -204,7 +214,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
         }));
         setPhotos(oldPhotos);
       }
-      
       // Garantir que todos os dados estão carregados
       if (!title && editItem.title) setTitle(editItem.title);
       if (!description && editItem.description) setDescription(editItem.description);
@@ -214,8 +223,12 @@ const RegisterItemScreen = ({ navigation, route }) => {
       if (!brand && editItem.extra_fields?.brand) setBrand(editItem.extra_fields.brand);
       if (!color && editItem.extra_fields?.color) setColor(editItem.extra_fields.color);
       if (!serialNumber && editItem.extra_fields?.serial_number) setSerialNumber(editItem.extra_fields.serial_number);
+    } else {
+      // Se não estiver editando, preenche cidade/estado do perfil
+      if (userProfile?.state) setState(userProfile.state);
+      if (userProfile?.city) setCity(userProfile.city);
     }
-  }, [editItem]);
+  }, [editItem, userProfile]);
 
   if (!user) {
     return (
@@ -289,16 +302,17 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
   const validateFields = () => {
     setError('');
-    
+
     if (!itemType) {
       setError('Selecione um tipo de item');
       return false;
     }
-    
+
     // Em modo edição, aceitar valores antigos - não obrigar a preencher tudo novamente
     if (editItem) {
       // Se tem dados carregados do editItem, não precisa validar rigorosamente
-      if (!title.trim() && !editItem.title) {
+      const currentTitle = itemType === 'animal' ? animalName : title;
+      if (!currentTitle.trim() && !editItem.title) {
         setError('Preencha o nome do item');
         return false;
       }
@@ -320,15 +334,16 @@ const RegisterItemScreen = ({ navigation, route }) => {
       }
       return true;
     }
-    
+
     // Modo de CRIAÇÃO - validação rigorosa
-    if (!title.trim()) {
+    const currentTitle = itemType === 'animal' ? animalName : title;
+    if (!currentTitle.trim()) {
       setError('Preencha o nome do item');
       return false;
     }
 
     const config = ITEM_TYPES[itemType];
-    
+
     // Validar campos obrigatórios
     if (config.fields.required.includes('brand') && !brand.trim()) {
       setError(`${config.fieldLabels.brand} é obrigatório`);
@@ -373,22 +388,32 @@ const RegisterItemScreen = ({ navigation, route }) => {
     setLoading(true);
 
     try {
+      // Definir corretamente o título para animal
+      const currentTitle = itemType === 'animal' ? animalName : title;
       // Em modo edição, usar dados antigos se não foram modificados
+      const toNull = v => (typeof v === 'string' && v.trim() === '' ? null : v);
       const itemData = {
-        title: title || editItem?.title,
-        description: description || editItem?.description,
-        state: state || editItem?.state,
-        city: city || editItem?.city,
-        neighborhood: neighborhood || editItem?.neighborhood,
-        status: status || editItem?.status,
-        category: itemType || editItem?.category,
-        item_type: itemType || editItem?.item_type,
+        title: toNull(currentTitle) || editItem?.title,
+        description: toNull(description) || editItem?.description,
+        state: toNull(state) || editItem?.state,
+        city: toNull(city) || editItem?.city,
+        neighborhood: toNull(neighborhood) || editItem?.neighborhood,
+        status: toNull(status) || editItem?.status,
+        category: toNull(itemType) || editItem?.category,
+        item_type: toNull(itemType) || editItem?.item_type,
         date: date ? `${date}T00:00:00-03:00` : editItem?.date,
-        extra_fields: {
-          brand: brand || editItem?.extra_fields?.brand,
-          color: color || editItem?.extra_fields?.color,
-          serial_number: serialNumber || editItem?.extra_fields?.serial_number,
-        },
+        // Campos genéricos
+        brand: toNull(brand) || (editItem?.brand ?? null),
+        color: toNull(color) || (editItem?.color ?? null),
+        serial_number: toNull(serialNumber) || (editItem?.serial_number ?? null),
+        // Campos de animal
+        species: toNull(animalSpecies) || (editItem?.species ?? null),
+        breed: toNull(animalBreed) || (editItem?.breed ?? null),
+        size: toNull(animalSize) || (editItem?.size ?? null),
+        age: toNull(animalAge) || (editItem?.age ?? null),
+        collar: toNull(animalCollar) || (editItem?.collar ?? null),
+        microchip: toNull(animalMicrochip) || (editItem?.microchip ?? null),
+        animal_name: toNull(animalName) || (editItem?.animal_name ?? null),
       };
 
       if (!editItem) {
@@ -618,47 +643,82 @@ const RegisterItemScreen = ({ navigation, route }) => {
     return (
       <ScrollView style={styles.container}>
         <Card style={styles.card}>
-          <Text style={styles.title}>{editItem ? 'Editar Item' : 'Detalhes do Item'}</Text>
-          
+          <Text style={styles.title}>{editItem ? 'Editar Animal' : 'Detalhes do Animal'}</Text>
+
           <Input
-            label="O que você achou / perdeu? *"
-            placeholder={config.placeholders.title}
-            value={title}
-            onChangeText={setTitle}
+            label="Nome do animal *"
+            placeholder="Ex: Thor"
+            value={animalName}
+            onChangeText={setAnimalName}
             style={styles.input}
           />
-
-          {config.fields.required.map(field => 
-            field !== 'title' && (
-              <Input
-                key={field}
-                label={`${config.fieldLabels[field]} *`}
-                placeholder={config.placeholders[field]}
-                value={field === 'brand' ? brand : field === 'color' ? color : serialNumber}
-                onChangeText={value => {
-                  if (field === 'brand') setBrand(value);
-                  else if (field === 'color') setColor(value);
-                  else setSerialNumber(value);
-                }}
-                style={styles.input}
-              />
-            )
-          )}
-
-          {config.fields.optional.map(field => (
-            <Input
-              key={field}
-              label={`${config.fieldLabels[field]} (opcional)`}
-              placeholder={config.placeholders[field]}
-              value={field === 'brand' ? brand : field === 'color' ? color : serialNumber}
-              onChangeText={value => {
-                if (field === 'brand') setBrand(value);
-                else if (field === 'color') setColor(value);
-                else setSerialNumber(value);
-              }}
-              style={styles.input}
-            />
-          ))}
+          <Input
+            label="Espécie *"
+            placeholder="Ex: Cachorro, Gato"
+            value={animalSpecies}
+            onChangeText={setAnimalSpecies}
+            style={styles.input}
+          />
+          <Input
+            label="Raça *"
+            placeholder="Ex: Golden Retriever"
+            value={animalBreed}
+            onChangeText={setAnimalBreed}
+            style={styles.input}
+          />
+          <Input
+            label="Cor *"
+            placeholder="Ex: Dourado"
+            value={color}
+            onChangeText={setColor}
+            style={styles.input}
+          />
+          <View style={styles.input}>
+            <Text style={styles.label}>Porte *</Text>
+            <Picker
+              selectedValue={animalSize}
+              onValueChange={setAnimalSize}
+              style={{ height: 48 }}
+            >
+              <Picker.Item label="Selecione o porte" value="" />
+              <Picker.Item label="Grande" value="Grande" />
+              <Picker.Item label="Médio" value="Médio" />
+              <Picker.Item label="Pequeno" value="Pequeno" />
+            </Picker>
+          </View>
+          <View style={styles.input}>
+            <Text style={styles.label}>Idade *</Text>
+            <Picker
+              selectedValue={animalAge}
+              onValueChange={setAnimalAge}
+              style={{ height: 48 }}
+            >
+              <Picker.Item label="Selecione a idade" value="" />
+              <Picker.Item label="Filhote (até 1 ano)" value="Filhote" />
+              <Picker.Item label="Jovem (1-3 anos)" value="Jovem" />
+              <Picker.Item label="Adulto (3-7 anos)" value="Adulto" />
+              <Picker.Item label="Idoso (7+ anos)" value="Idoso" />
+            </Picker>
+          </View>
+          <Input
+            label="Coleira (descrição)"
+            placeholder="Ex: Coleira azul com medalha"
+            value={animalCollar}
+            onChangeText={setAnimalCollar}
+            style={styles.input}
+          />
+          <View style={styles.input}>
+            <Text style={styles.label}>Microchipado? *</Text>
+            <Picker
+              selectedValue={animalMicrochip}
+              onValueChange={setAnimalMicrochip}
+              style={{ height: 48 }}
+            >
+              <Picker.Item label="Selecione" value="" />
+              <Picker.Item label="Sim" value="Sim" />
+              <Picker.Item label="Não" value="Não" />
+            </Picker>
+          </View>
 
           <Input
             label="Descrição (opcional)"
@@ -805,42 +865,27 @@ const RegisterItemScreen = ({ navigation, route }) => {
         <Card style={styles.card}>
           <Text style={styles.title}>Localização e Tipo</Text>
 
-
           <View style={styles.input}>
             <Text style={styles.label}>Estado *</Text>
-            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
+            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
               <Picker
                 selectedValue={state}
-                onValueChange={(uf) => {
-                  setState(uf);
-                  setCity('');
-                  setNeighborhood('');
-                }}
-                style={{ height: 48 }}
+                enabled={false}
+                style={{ height: 48, color: '#6B7280' }}
               >
-                <Picker.Item label="Selecione o estado" value="" />
-                {states.map((uf) => (
-                  <Picker.Item key={uf} label={uf} value={uf} />
-                ))}
+                {state ? <Picker.Item label={state} value={state} /> : <Picker.Item label="Selecione o estado" value="" />}
               </Picker>
             </View>
           </View>
           <View style={styles.input}>
             <Text style={styles.label}>Cidade *</Text>
-            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
+            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
               <Picker
                 selectedValue={city}
-                onValueChange={(c) => {
-                  setCity(c);
-                  setNeighborhood('');
-                }}
-                enabled={!!state}
-                style={{ height: 48 }}
+                enabled={false}
+                style={{ height: 48, color: '#6B7280' }}
               >
-                <Picker.Item label="Selecione a cidade" value="" />
-                {(citiesByState[state] || []).map((c) => (
-                  <Picker.Item key={c} label={c} value={c} />
-                ))}
+                {city ? <Picker.Item label={city} value={city} /> : <Picker.Item label="Selecione a cidade" value="" />}
               </Picker>
             </View>
           </View>
@@ -995,6 +1040,7 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 24,
     alignItems: 'center',
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 24,
@@ -1051,7 +1097,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   statusButtonActive: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#fff',
     borderColor: '#4F46E5',
   },
   statusText: {

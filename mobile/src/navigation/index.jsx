@@ -319,9 +319,9 @@ const MainStack = () => {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#4F46E5',
+          backgroundColor: '#fff',
         },
-        headerTintColor: '#fff',
+        headerTintColor: '#1F2937',
         headerTitleStyle: {
           fontWeight: 'bold',
         },

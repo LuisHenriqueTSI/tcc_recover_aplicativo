@@ -108,7 +108,7 @@ const ProfileScreen = ({ navigation }) => {
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
             <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
             <TouchableOpacity
-              style={{ marginLeft: 8, backgroundColor: '#4F46E5', borderRadius: 16, padding: 6 }}
+              style={{ marginLeft: 8, backgroundColor: '#fff', borderRadius: 16, padding: 6 }}
               onPress={() => navigation.navigate('EditProfile')}
               activeOpacity={0.7}
             >
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   editBtn: {
     marginLeft: 12,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 8,
     justifyContent: 'center',

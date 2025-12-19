@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   unreadBadge: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#fff',
     borderRadius: 10,
     minWidth: 20,
     height: 20,

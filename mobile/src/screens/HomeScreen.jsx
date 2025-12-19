@@ -79,8 +79,8 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
       </View>
       {/* Conteúdo */}
       <View style={{ padding: 16, paddingBottom: 10 }}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#2563EB', marginBottom: 2 }}>{item.title}</Text>
-        <Text style={{ fontSize: 14, color: '#6B7280', marginBottom: 10 }}>{item.description}</Text>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#374151', marginBottom: 16 }}>{item.title}</Text>
+        <Text style={{ fontSize: 14, color: '#6B7280', marginBottom: 16 }}>{item.description}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
           <MaterialIcons name="place" size={16} color="#9CA3AF" style={{ marginRight: 2 }} />
           <Text style={{ fontSize: 13, color: '#6B7280', marginRight: 12, fontWeight: 500 }}>{item.city && item.state ? `${item.city}, ${item.state}` : item.city || item.state || '-'}{item.neighborhood ? ` - ${item.neighborhood}` : ''}</Text>
@@ -92,8 +92,8 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>{item.owner_name}</Text>
           <TouchableOpacity onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F3F4F6', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 }}>
-            <MaterialIcons name="visibility" size={18} color="#4F46E5" style={{ marginRight: 4 }} />
-            <Text style={{ color: '#374151', fontWeight: 'bold', fontSize: 14 }}>Ver detalhes</Text>
+            <MaterialIcons name="visibility" size={18} color="#1F2937" style={{ marginRight: 4 }} />
+            <Text style={{ color: '#1F2937', fontSize: 14 }}>Ver detalhes</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -142,8 +142,9 @@ const HomeScreen = ({ navigation, route }) => {
   const [locationFilterTouched, setLocationFilterTouched] = useState(false);
   // Modal de edição de localidade
   const [editLocationModal, setEditLocationModal] = useState(false);
-  const [editState, setEditState] = useState('');
-  const [editCity, setEditCity] = useState('');
+  // Estado e cidade do perfil, fixos para filtro
+  const [editState, setEditState] = useState(userProfile?.state || '');
+  const [editCity, setEditCity] = useState(userProfile?.city || '');
   const [editNeighborhood, setEditNeighborhood] = useState('');
 
   // Sempre recarrega os itens ao focar na HomeTab
@@ -439,89 +440,99 @@ const HomeScreen = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       {/* App Bar ajustada: filtro de localidade ao lado da busca */}
-      <View style={{ backgroundColor: '#4F46E5', paddingTop: 38, paddingBottom: 18, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }}>
-        <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 24, fontFamily: 'sans-serif', marginBottom: 0, marginTop: 8, textAlign: 'center' }}>Recover</Text>
-          {/* Localidade do usuário abaixo do nome do app */}
-          {userProfile?.city && userProfile?.state && (
-            <TouchableOpacity
-              style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, justifyContent: 'center' }}
-              onPress={() => setShowProfileLocationModal(true)}
-              accessibilityLabel={`Localidade do perfil: ${userProfile.city}, ${userProfile.state}`}
-            >
-              <MaterialIcons name="place" size={18} color="#F59E42" style={{ marginRight: 2 }} />
-              <Text style={{ color: '#fff', fontSize: 15, fontWeight: '500', textDecorationLine: 'underline' }}>{userProfile.city}, {userProfile.state}</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-              {/* Modal para atualizar localidade do perfil */}
-              <Modal
-                visible={!!showProfileLocationModal}
-                transparent
-                animationType="fade"
-                onRequestClose={() => setShowProfileLocationModal(false)}
+      <View style={{ backgroundColor: '#fff', paddingTop: 56, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Text style={{ color: '#1F2937', fontWeight: 'bold', fontSize: 22, marginBottom: 2 }}>Recover</Text>
+            {userProfile?.city && userProfile?.state && (
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}
+                onPress={() => setShowProfileLocationModal(true)}
+                accessibilityLabel={`Localidade do perfil: ${userProfile.city}, ${userProfile.state}`}
               >
-                <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
-                  <View style={{ backgroundColor:'#fff', borderRadius:12, paddingVertical:24, paddingHorizontal:16, minWidth:360, maxWidth: '95%' }}>
-                    <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Atualizar Localidade do Perfil</Text>
-                    <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione estado e cidade:</Text>
-                    {/* Estado */}
-                    <Text style={{ marginBottom: 6 }}>Estado</Text>
-                    <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
-                      <Picker
-                        selectedValue={profileEditState}
-                        onValueChange={uf => {
-                          setProfileEditState(uf);
-                          setProfileEditCity('');
-                        }}
-                        style={{ height: 56, minWidth: 320 }}
-                      >
-                        <Picker.Item label="Selecione o estado" value="" />
-                        {states.map(uf => (
-                          <Picker.Item key={uf} label={uf} value={uf} />
-                        ))}
-                      </Picker>
-                    </View>
-                    {/* Cidade */}
-                    <Text style={{ marginBottom: 6 }}>Cidade</Text>
-                    <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
-                      <Picker
-                        selectedValue={profileEditCity}
-                        onValueChange={setProfileEditCity}
-                        enabled={!!profileEditState}
-                        style={{ height: 56, minWidth: 320 }}
-                      >
-                        <Picker.Item label="Selecione a cidade" value="" />
-                        {(citiesByState[profileEditState] || []).map(city => (
-                          <Picker.Item key={city} label={city} value={city} />
-                        ))}
-                      </Picker>
-                    </View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 }}>
-                      <Button title="Cancelar" onPress={() => setShowProfileLocationModal(false)} style={{ marginRight: 8, backgroundColor: '#E5E7EB', color: '#222' }} />
-                      <Button title="Salvar" onPress={handleSaveProfileLocation} disabled={!profileEditState || !profileEditCity} />
-                    </View>
-                  </View>
-                </View>
-              </Modal>
-        {/* Barra de busca e filtro de localidade lado a lado (minimalista) */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
-          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 10, height: 44 }}>
-            <MaterialIcons name="search" size={22} color="#BDBDBD" style={{ marginRight: 6 }} />
+                <MaterialIcons name="place" size={16} color="#9CA3AF" style={{ marginRight: 2 }} />
+                <Text style={{ color: '#9CA3AF', fontSize: 14, fontWeight: '400' }}>{userProfile.city}, {userProfile.state}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity
+            onPress={() => {/* abrir menu de perfil/logout aqui futuramente */}}
+            style={{ marginLeft: 12 }}
+            accessibilityLabel="Abrir menu do perfil"
+          >
+            {userProfile?.avatar_url ? (
+              <Image source={{ uri: userProfile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E7EB' }} />
+            ) : (
+              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#60A5FA', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>{userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+        {/* Barra de pesquisa única, fundo branco */}
+        <View style={{ marginTop: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 14, paddingHorizontal: 16, height: 44 }}>
+            <MaterialIcons name="search" size={22} color="#6B7280" style={{ marginRight: 8 }} />
             <Input
               placeholder="Buscar itens perdidos ou encontrados."
               value={searchTerm}
               onChangeText={setSearchTerm}
               style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, fontSize: 16, color: '#222', paddingVertical: 0, paddingHorizontal: 0 }}
               textStyle={{ fontSize: 16, color: '#222' }}
-              placeholderTextColor="#fff"
+              placeholderTextColor="#6B7280"
             />
           </View>
-          {/* Botão de filtro minimalista: só ícone */}
-          <TouchableOpacity onPress={() => setEditLocationModal(true)} style={{ marginLeft: 8, width: 40, height: 40, borderRadius: 20, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E7EB' }} accessibilityLabel={editState || editCity || editNeighborhood ? `Local: ${editState || ''}${editCity ? ', ' + editCity : ''}${editNeighborhood ? ', ' + editNeighborhood : ''}` : 'Selecionar local'}>
-            <MaterialIcons name="place" size={24} color="#F59E42" />
-          </TouchableOpacity>
         </View>
+        {/* Modal para atualizar localidade do perfil */}
+        <Modal
+          visible={!!showProfileLocationModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowProfileLocationModal(false)}
+        >
+          <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
+            <View style={{ backgroundColor:'#fff', borderRadius:12, paddingVertical:24, paddingHorizontal:16, minWidth:360, maxWidth: '95%' }}>
+              <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Atualizar Localidade do Perfil</Text>
+              <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione estado e cidade:</Text>
+              {/* Estado */}
+              <Text style={{ marginBottom: 6 }}>Estado</Text>
+              <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                <Picker
+                  selectedValue={profileEditState}
+                  onValueChange={uf => {
+                    setProfileEditState(uf);
+                    setProfileEditCity('');
+                  }}
+                  style={{ height: 56, minWidth: 320 }}
+                >
+                  <Picker.Item label="Selecione o estado" value="" />
+                  {states.map(uf => (
+                    <Picker.Item key={uf} label={uf} value={uf} />
+                  ))}
+                </Picker>
+              </View>
+              {/* Cidade */}
+              <Text style={{ marginBottom: 6 }}>Cidade</Text>
+              <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                <Picker
+                  selectedValue={profileEditCity}
+                  onValueChange={setProfileEditCity}
+                  enabled={!!profileEditState}
+                  style={{ height: 56, minWidth: 320 }}
+                >
+                  <Picker.Item label="Selecione a cidade" value="" />
+                  {(citiesByState[profileEditState] || []).map(city => (
+                    <Picker.Item key={city} label={city} value={city} />
+                  ))}
+                </Picker>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 }}>
+                <Button title="Cancelar" onPress={() => setShowProfileLocationModal(false)} style={{ marginRight: 8, backgroundColor: '#E5E7EB', color: '#222' }} />
+                <Button title="Salvar" onPress={handleSaveProfileLocation} disabled={!profileEditState || !profileEditCity} />
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
 
       {/* Modal de edição de localidade */}
@@ -533,60 +544,91 @@ const HomeScreen = ({ navigation, route }) => {
       >
         <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
           <View style={{ backgroundColor:'#fff', borderRadius:12, paddingVertical:24, paddingHorizontal:16, minWidth:360, maxWidth: '95%' }}>
-            <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Alterar Localidade</Text>
-            <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione estado, cidade e bairro:</Text>
-            <Text style={{ marginBottom: 6 }}>Estado</Text>
-            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
-              <Picker
-                selectedValue={editState}
-                onValueChange={uf => {
-                  setEditState(uf);
-                  setEditCity('');
-                  setEditNeighborhood('');
-                }}
-                style={{ height: 56, minWidth: 320 }}
-              >
-                <Picker.Item label="Selecione o estado" value="" />
-                {states.map(uf => (
-                  <Picker.Item key={uf} label={uf} value={uf} />
-                ))}
-              </Picker>
-            </View>
-            <Text style={{ marginBottom: 6 }}>Cidade</Text>
-            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
-              <Picker
-                selectedValue={editCity}
-                onValueChange={city => {
-                  setEditCity(city);
-                  setEditNeighborhood('');
-                }}
-                enabled={!!editState}
-                style={{ height: 56, minWidth: 320 }}
-              >
-                <Picker.Item label="Selecione a cidade" value="" />
-                {(citiesByState[editState] || []).map(city => (
-                  <Picker.Item key={city} label={city} value={city} />
-                ))}
-              </Picker>
-            </View>
-            <Text style={{ marginBottom: 6 }}>Bairro</Text>
-            <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
-              <Picker
-                selectedValue={editNeighborhood}
-                onValueChange={setEditNeighborhood}
-                enabled={!!editCity}
-                style={{ height: 56, minWidth: 320 }}
-              >
-                <Picker.Item label="Selecione o bairro" value="" />
-                {(neighborhoodsByCity[editCity] || []).map(bairro => (
-                  <Picker.Item key={bairro} label={bairro} value={bairro} />
-                ))}
-              </Picker>
-            </View>
+            {user ? (
+              <>
+                <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Filtrar por Bairro</Text>
+                <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione o bairro para filtrar. Cidade e estado são do seu perfil.</Text>
+                <Text style={{ marginBottom: 6 }}>Estado</Text>
+                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: '#F3F4F6' }}>
+                  <Text style={{ paddingLeft: 12, paddingTop: 16, fontSize: 16, color: '#6B7280' }}>{editState}</Text>
+                </View>
+                <Text style={{ marginBottom: 6 }}>Cidade</Text>
+                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: '#F3F4F6' }}>
+                  <Text style={{ paddingLeft: 12, paddingTop: 16, fontSize: 16, color: '#6B7280' }}>{editCity}</Text>
+                </View>
+                <Text style={{ marginBottom: 6 }}>Bairro</Text>
+                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                  <Picker
+                    selectedValue={editNeighborhood}
+                    onValueChange={setEditNeighborhood}
+                    enabled={!!editCity}
+                    style={{ height: 56, minWidth: 320 }}
+                  >
+                    <Picker.Item label="Selecione o bairro" value="" />
+                    {(neighborhoodsByCity[editCity] || []).map(bairro => (
+                      <Picker.Item key={bairro} label={bairro} value={bairro} />
+                    ))}
+                  </Picker>
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Filtrar por Localidade</Text>
+                <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione estado, cidade e bairro para filtrar.</Text>
+                <Text style={{ marginBottom: 6 }}>Estado</Text>
+                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                  <Picker
+                    selectedValue={editState}
+                    onValueChange={uf => {
+                      setEditState(uf);
+                      setEditCity('');
+                      setEditNeighborhood('');
+                    }}
+                    style={{ height: 56, minWidth: 320 }}
+                  >
+                    <Picker.Item label="Selecione o estado" value="" />
+                    {states.map(uf => (
+                      <Picker.Item key={uf} label={uf} value={uf} />
+                    ))}
+                  </Picker>
+                </View>
+                <Text style={{ marginBottom: 6 }}>Cidade</Text>
+                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                  <Picker
+                    selectedValue={editCity}
+                    onValueChange={city => {
+                      setEditCity(city);
+                      setEditNeighborhood('');
+                    }}
+                    enabled={!!editState}
+                    style={{ height: 56, minWidth: 320 }}
+                  >
+                    <Picker.Item label="Selecione a cidade" value="" />
+                    {(citiesByState[editState] || []).map(city => (
+                      <Picker.Item key={city} label={city} value={city} />
+                    ))}
+                  </Picker>
+                </View>
+                <Text style={{ marginBottom: 6 }}>Bairro</Text>
+                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                  <Picker
+                    selectedValue={editNeighborhood}
+                    onValueChange={setEditNeighborhood}
+                    enabled={!!editCity}
+                    style={{ height: 56, minWidth: 320 }}
+                  >
+                    <Picker.Item label="Selecione o bairro" value="" />
+                    {(neighborhoodsByCity[editCity] || []).map(bairro => (
+                      <Picker.Item key={bairro} label={bairro} value={bairro} />
+                    ))}
+                  </Picker>
+                </View>
+              </>
+            )}
             <View style={{ flexDirection:'row', justifyContent:'flex-end', gap:8 }}>
               <TouchableOpacity onPress={() => {
-                setEditState('');
-                setEditCity('');
+                setEditState(user ? editState : '');
+                setEditCity(user ? editCity : '');
                 setEditNeighborhood('');
               }} style={{ paddingVertical:8, paddingHorizontal:16, backgroundColor:'#E5E7EB', borderRadius:6, marginRight:8 }}>
                 <Text style={{ color:'#222', fontWeight:'bold' }}>Limpar Filtro</Text>
@@ -595,10 +637,6 @@ const HomeScreen = ({ navigation, route }) => {
                 <Text style={{ color:'#6B7280', fontWeight:'bold' }}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={async () => {
-                if (!editState || !editCity) {
-                  Alert.alert('Selecione estado e cidade');
-                  return;
-                }
                 setLocationFilterTouched(true);
                 setEditLocationModal(false);
                 setLocationFilter(`${editState}, ${editCity}${editNeighborhood ? ', ' + editNeighborhood : ''}`);
@@ -606,7 +644,7 @@ const HomeScreen = ({ navigation, route }) => {
                 // Atualiza localidade no perfil do usuário
                 try {
                   if (user && user.id) {
-                    await userService.updateProfile(user.id, { city: editCity, state: editState, neighborhood: editNeighborhood });
+                    await userService.updateProfile(user.id, { neighborhood: editNeighborhood });
                   }
                 } catch (e) {
                   console.log('[HomeScreen] Erro ao atualizar localidade no perfil:', e.message);
@@ -684,32 +722,49 @@ const HomeScreen = ({ navigation, route }) => {
       {/* Items List */}
             {/* Filtros avançados: tipo de item */}
             {showAdvancedFilters && (
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, marginBottom: 8 }}>
-                {[
-                  { key: 'all', label: 'Todos' },
-                  { key: 'animal', label: 'Animal' },
-                  { key: 'object', label: 'Objeto' },
-                  { key: 'clothing', label: 'Roupa' },
-                  { key: 'document', label: 'Documento' },
-                  { key: 'other', label: 'Outro' },
-                ].map(opt => (
-                  <TouchableOpacity
-                    key={opt.key}
-                    style={{
-                      paddingVertical: 6,
-                      paddingHorizontal: 14,
-                      borderRadius: 8,
-                      backgroundColor: advancedFilters.category === opt.key ? '#4F46E5' : '#F3F4F6',
-                      marginRight: 8,
-                      marginBottom: 8,
-                    }}
-                    onPress={() => setAdvancedFilters(f => ({ ...f, category: opt.key }))}
-                  >
-                    <Text style={{ color: advancedFilters.category === opt.key ? '#fff' : '#4F46E5', fontWeight: 'bold', fontSize: 13 }}>{opt.label}</Text>
+              <View style={{ flexDirection: 'column', paddingHorizontal: 16, marginBottom: 8 }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8 }}>
+                  {[
+                    { key: 'all', label: 'Todos' },
+                    { key: 'animal', label: 'Animal' },
+                    { key: 'object', label: 'Objeto' },
+                    { key: 'clothing', label: 'Roupa' },
+                    { key: 'document', label: 'Documento' },
+                    { key: 'other', label: 'Outro' },
+                  ].map(opt => (
+                    <TouchableOpacity
+                      key={opt.key}
+                      style={{
+                        paddingVertical: 6,
+                        paddingHorizontal: 14,
+                        borderRadius: 8,
+                        backgroundColor: advancedFilters.category === opt.key ? '#4F46E5' : '#F3F4F6',
+                        marginRight: 8,
+                        marginBottom: 8,
+                      }}
+                      onPress={() => setAdvancedFilters(f => ({ ...f, category: opt.key }))}
+                    >
+                      <Text style={{ color: advancedFilters.category === opt.key ? '#fff' : '#4F46E5', fontWeight: 'bold', fontSize: 13 }}>{opt.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                {/* Filtro de bairro dentro do filtro avançado */}
+                <View style={{ marginTop: 8 }}>
+                  <TouchableOpacity onPress={() => setEditLocationModal(true)} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 12, height: 44 }}>
+                    <MaterialIcons name="place" size={22} color="#F59E42" style={{ marginRight: 8 }} />
+                    <Text style={{ color: '#222', fontSize: 15 }}>
+                      Filtrar por bairro
+                    </Text>
                   </TouchableOpacity>
-                ))}
+                </View>
               </View>
             )}
+      {/* Quantidade de itens encontrados */}
+      <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
+        <Text style={{ color: '#6B7280', fontSize: 15 }}>
+          {filteredItems.filter(item => advancedFilters.category === 'all' ? true : item.category === advancedFilters.category).length} itens encontrados
+        </Text>
+      </View>
       <FlatList
         data={filteredItems.filter(item =>
           advancedFilters.category === 'all' ? true : item.category === advancedFilters.category

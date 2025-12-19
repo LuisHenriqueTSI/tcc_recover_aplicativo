@@ -39,15 +39,15 @@ const ItemDetailScreen = ({ route, navigation }) => {
     navigation.setOptions({
       title: 'Detalhes do Item',
       headerStyle: {
-        backgroundColor: '#4F46E5',
+        backgroundColor: '#fff',
       },
-      headerTintColor: '#fff',
+      headerTintColor: '#1F2937',
       headerTitleStyle: {
         fontWeight: 'bold',
       },
       headerLeft: () => (
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginLeft: 8 }}>
-          <MaterialIcons name="arrow-back" size={26} color="#fff" />
+          <MaterialIcons name="arrow-back" size={26} color="#1F2937" />
         </TouchableOpacity>
       ),
     });
@@ -155,11 +155,19 @@ const ItemDetailScreen = ({ route, navigation }) => {
       return;
     }
     if (!item) return;
+    // Mensagem pronta conforme status
+    let initialMessage = '';
+    if (item.status === 'lost') {
+      initialMessage = 'Oi, você achou meu item?';
+    } else if (item.status === 'found') {
+      initialMessage = 'Oi, eu encontrei seu item!';
+    }
     navigation.navigate('ChatScreen', {
       conversation: {
         otherId: item.owner_id,
         itemId: itemId,
-        otherName: owner?.name || 'Usuário'
+        otherName: owner?.name || 'Usuário',
+        initialMessage,
       }
     });
   };
@@ -213,150 +221,165 @@ const ItemDetailScreen = ({ route, navigation }) => {
     );
   }
 
+  // NOVO DESIGN INSPIRADO NO ANEXO
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Banner/Fotos do Item */}
-      <View style={styles.bannerContainer}>
-        {photos && photos.length > 0 ? (
-          <Image
-            source={{ uri: photos[0].url }}
-            style={styles.bannerImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={styles.noPhotoContainer}>
-            <MaterialIcons name="image-not-supported" size={48} color="#D1D5DB" />
-            <Text style={styles.noPhotoText}>Sem foto</Text>
-          </View>
-        )}
-        {/* Badges de status/categoria */}
-        <View style={styles.badgesRow}>
-          <View style={[styles.badge, item.status === 'lost' ? styles.badgeLost : styles.badgeFound]}>
-            <Text style={[styles.badgeText, item.status === 'lost' ? styles.badgeLostText : styles.badgeFoundText]}>
-              {item.status === 'lost' ? 'Perdido' : 'Encontrado'}
-            </Text>
-          </View>
-          {item.category && (
-            <View style={[styles.badge, styles.badgeCategory]}>
-              <Text style={styles.badgeCategoryText}>{item.category}</Text>
+    <ScrollView style={{ backgroundColor: '#F9FAFB' }} showsVerticalScrollIndicator={false}>
+      <View style={{ padding: 0, margin: 0 }}>
+        {/* Fotos do animal no topo */}
+        <View style={{ width: '100%', height: 240, backgroundColor: '#E5E7EB', borderBottomLeftRadius: 24, borderBottomRightRadius: 24, overflow: 'hidden', marginBottom: 0 }}>
+          {photos && photos.length > 0 ? (
+            <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={{ width: '100%', height: 240 }}>
+              {photos.map((photo, idx) => (
+                <Image
+                  key={photo.id || idx}
+                  source={{ uri: photo.url }}
+                  style={{ width: 360, height: 240, resizeMode: 'cover' }}
+                />
+              ))}
+            </ScrollView>
+          ) : (
+            <View style={{ flex: 1, height: 240, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F3F4F6' }}>
+              <MaterialIcons name="image-not-supported" size={48} color="#D1D5DB" />
+              <Text style={{ marginTop: 8, color: '#9CA3AF', fontSize: 14 }}>Sem foto</Text>
             </View>
           )}
         </View>
-      </View>
 
-      <View style={styles.contentContainer}>
-        {/* Título e descrição curta */}
-        <Text style={styles.title}>{item.title}</Text>
-        {item.short_description && (
-          <Text style={styles.shortDescription}>{item.short_description}</Text>
-        )}
+        {/* Título e descrição */}
+        <View style={{ padding: 24, paddingBottom: 0 }}>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>{item.title}</Text>
+          <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 12 }}>{item.description}</Text>
+        </View>
 
-        {/* Local e Data */}
-        <View style={styles.infoRowGroup}>
-          <View style={styles.infoBox}>
-            <MaterialIcons name="location-on" size={18} color="#6366F1" />
-            <Text style={styles.infoBoxText}>{item.location}</Text>
+        {/* Bairro e Data */}
+        <View style={{ flexDirection: 'row', gap: 16, paddingHorizontal: 24, marginTop: 8, marginBottom: 8 }}>
+          <View style={{ flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'flex-start', justifyContent: 'center', marginRight: 8, borderWidth: 1, borderColor: '#F3F4F6' }}>
+            <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Bairro</Text>
+            <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold' }}>{item.neighborhood || '-'}</Text>
+            <Text style={{ fontSize: 13, color: '#6B7280' }}>{item.city}, {item.state}</Text>
           </View>
-          <View style={styles.infoBox}>
-            <MaterialIcons name="calendar-today" size={18} color="#6366F1" />
-            <Text style={styles.infoBoxText}>{new Date(item.date).toLocaleDateString('pt-BR')}</Text>
+          <View style={{ flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'flex-start', justifyContent: 'center', borderWidth: 1, borderColor: '#F3F4F6' }}>
+            <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Data</Text>
+            <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold' }}>{new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</Text>
           </View>
         </View>
 
-        {/* Informações detalhadas (Animal, Documento, Objeto, etc) */}
-        {item.extra_fields && Object.keys(item.extra_fields).length > 0 && (
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>Informações do {item.category || 'Item'}</Text>
-            {Object.entries(item.extra_fields).map(([key, value]) => {
-              const labels = {
-                brand: 'Marca',
-                color: 'Cor',
-                serial_number: 'Número de Série',
-                model: 'Modelo',
-                size: 'Tamanho',
-                type: 'Tipo',
-                description: 'Descrição',
-                race: 'Raça',
-                age: 'Idade',
-                collar: 'Coleira',
-                microchip: 'Microchipado',
-                owner_name: 'Nome do Proprietário',
-                document_number: 'Número do Documento',
-                features: 'Características',
-              };
-              const label = labels[key] || key;
-              return (
-                <View key={key} style={styles.extraFieldRow}>
-                  <Text style={styles.fieldLabel}>{label}</Text>
-                  <Text style={styles.fieldValue}>{value}</Text>
-                </View>
-              );
-            })}
+        {/* Informações detalhadas do item, baseadas no tipo */}
+        {item.category === 'animal' ? (
+          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Animal</Text>
+            <AnimalInfoRow
+              icon={<MaterialIcons name="pets" size={18} color="#6B7280" />}
+              label="Espécie"
+              value={item.species}
+            />
+            <Separator />
+            <AnimalInfoRow
+              icon={<MaterialIcons name="label" size={18} color="#6B7280" />}
+              label="Raça"
+              value={item.breed}
+            />
+            <Separator />
+            <AnimalInfoRow
+              icon={<MaterialIcons name="palette" size={18} color="#6B7280" />}
+              label="Cor"
+              value={item.color}
+            />
+            <Separator />
+            <AnimalInfoRow
+              icon={<MaterialIcons name="straighten" size={18} color="#6B7280" />}
+              label="Porte"
+              value={item.size}
+            />
+            <Separator />
+            <AnimalInfoRow
+              icon={<MaterialIcons name="event" size={18} color="#6B7280" />}
+              label="Idade"
+              value={item.age}
+            />
+            <Separator />
+            <AnimalInfoRow
+              icon={<MaterialIcons name="style" size={18} color="#6B7280" />}
+              label="Coleira"
+              value={item.collar}
+            />
+            <Separator />
+            <AnimalInfoRow
+              icon={<MaterialIcons name="tag" size={18} color="#6B7280" />}
+              label="Microchipado"
+              value={item.microchip}
+            />
+          </View>
+        ) : item.category === 'document' ? (
+          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Documento</Text>
+            <View style={{ gap: 12 }}>
+              <InfoRow label="Tipo de Documento" value={item.extra_fields?.brand} />
+              <InfoRow label="Nome do Proprietário" value={item.extra_fields?.owner_name} />
+              <InfoRow label="Número do Documento" value={item.extra_fields?.serial_number} />
+            </View>
+          </View>
+        ) : item.category === 'object' ? (
+          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Objeto</Text>
+            <View style={{ gap: 12 }}>
+              <InfoRow label="Marca" value={item.extra_fields?.brand} />
+              <InfoRow label="Cor" value={item.extra_fields?.color} />
+              <InfoRow label="Características" value={item.extra_fields?.serial_number} />
+            </View>
+          </View>
+        ) : (
+          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Item</Text>
+            <View style={{ gap: 12 }}>
+              {item.extra_fields?.brand && <InfoRow label="Tipo" value={item.extra_fields?.brand} />}
+              {item.extra_fields?.color && <InfoRow label="Cor" value={item.extra_fields?.color} />}
+              {item.extra_fields?.serial_number && <InfoRow label="Características" value={item.extra_fields?.serial_number} />}
+            </View>
           </View>
         )}
 
-        {/* Descrição longa */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Descrição</Text>
-          <Text style={styles.description}>{item.description}</Text>
-        </View>
-
-        {/* Usuário que publicou */}
+        {/* Publicado por */}
         {owner && (
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>Publicado por</Text>
-            <View style={styles.ownerRow}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937', marginBottom: 10 }}>Publicado por</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
               {owner.avatar_url ? (
-                <Image source={{ uri: owner.avatar_url }} style={styles.avatar} />
+                <Image source={{ uri: owner.avatar_url }} style={{ width: 44, height: 44, borderRadius: 22, marginRight: 12 }} />
               ) : (
-                <View style={styles.avatarPlaceholder} />
+                <View style={{ width: 44, height: 44, borderRadius: 22, marginRight: 12, backgroundColor: '#E5E7EB' }} />
               )}
               <View style={{ flex: 1 }}>
-                <Text style={styles.ownerName}>{owner.name}</Text>
-                <Text style={styles.ownerSince}>Membro desde {owner.created_at ? new Date(owner.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : ''}</Text>
+                <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937' }}>{owner.name}</Text>
+                <Text style={{ fontSize: 13, color: '#6B7280' }}>Membro desde {owner.created_at ? new Date(owner.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : ''}</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.messageButton} onPress={handleSendMessage} disabled={isOwner}>
-              <Text style={styles.messageButtonText}>Enviar Mensagem</Text>
-            </TouchableOpacity>
+            {!isOwner && (
+              <TouchableOpacity style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingVertical: 10, alignItems: 'center', backgroundColor: '#fff' }} onPress={handleSendMessage}>
+                <Text style={{ color: '#374151', fontWeight: 'bold', fontSize: 15 }}>Enviar Mensagem</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
 
-        {/* Contato rápido (ligar) */}
+        {/* Contato Rápido */}
         {owner && owner.phone && (
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>Contato Rápido</Text>
-            <TouchableOpacity style={styles.callButton} onPress={() => {}}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937', marginBottom: 10 }}>Contato Rápido</Text>
+            <TouchableOpacity style={{ backgroundColor: '#3B82F6', borderRadius: 8, paddingVertical: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }} onPress={() => {}}>
               <MaterialIcons name="call" size={20} color="#fff" />
-              <Text style={styles.callButtonText}>Ligar para {owner.name}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Botões de editar/excluir para o dono */}
-        {isOwner && (
-          <View style={styles.ownerActionsRow}>
-            <TouchableOpacity onPress={handleEditItem} style={styles.editButton} accessibilityLabel="Editar">
-              <MaterialIcons name="edit" size={20} color="#6366F1" />
-              <Text style={styles.editButtonText}>Editar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleDeleteItem} style={styles.deleteButton} accessibilityLabel="Excluir" disabled={deleting}>
-              <MaterialIcons name="delete" size={20} color="#fff" />
-              <Text style={styles.deleteButtonText}>Excluir</Text>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16, marginLeft: 8 }}>Ligar para {owner.name}</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* Comentários */}
-        <View style={styles.sectionCard}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-            <Text style={styles.sectionTitle}>Comentários</Text>
-            <View style={styles.commentsCountBadge}>
-              <Text style={styles.commentsCountText}>{sightings.length}</Text>
-            </View>
-            <TouchableOpacity style={styles.addCommentButton} onPress={handleReportSighting}>
+        <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937' }}>Comentários ({sightings.length})</Text>
+            <TouchableOpacity style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }} onPress={handleReportSighting}>
               <MaterialIcons name="add-comment" size={18} color="#6366F1" />
-              <Text style={styles.addCommentButtonText}>Comentar</Text>
+              <Text style={{ color: '#6366F1', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Comentar</Text>
             </TouchableOpacity>
           </View>
           {sightings.length === 0 ? (
@@ -372,46 +395,46 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 contatoExtra = s.contact_info;
               }
               return (
-                <View key={s.id || idx} style={styles.commentCard}>
-                  <View style={styles.commentHeader}>
+                <View key={s.id || idx} style={{ backgroundColor: '#F9FAFB', borderRadius: 10, padding: 12, marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
                     {s.profiles?.avatar_url ? (
-                      <Image source={{ uri: s.profiles.avatar_url }} style={styles.commentAvatar} />
+                      <Image source={{ uri: s.profiles.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8, backgroundColor: '#E5E7EB' }} />
                     ) : (
-                      <View style={styles.commentAvatarPlaceholder} />
+                      <View style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8, backgroundColor: '#E5E7EB' }} />
                     )}
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.commentAuthor}>{s.profiles?.name || 'Usuário'}</Text>
-                      <Text style={styles.commentDate}>{new Date(s.created_at).toLocaleString('pt-BR')}</Text>
+                      <Text style={{ fontWeight: 'bold', color: '#1F2937', fontSize: 14 }}>{s.profiles?.name || 'Usuário'}</Text>
+                      <Text style={{ color: '#6B7280', fontSize: 11 }}>{new Date(s.created_at).toLocaleString('pt-BR')}</Text>
                     </View>
                   </View>
-                  <Text style={styles.commentText}>{s.description}</Text>
+                  <Text style={{ color: '#374151', marginBottom: 4, fontSize: 13 }}>{s.description}</Text>
                   {s.photo_url ? (
-                    <Image source={{ uri: s.photo_url }} style={styles.commentImage} />
+                    <Image source={{ uri: s.photo_url }} style={{ width: '100%', height: 110, borderRadius: 8, marginBottom: 4 }} />
                   ) : null}
-                  {s.location ? <Text style={styles.commentLocation}>Local: {s.location}</Text> : null}
+                  {s.location ? <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 2 }}>Local: {s.location}</Text> : null}
                   {(instagram || whatsapp || facebook || contatoExtra) ? (
-                    <View style={styles.commentContactsRow}>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
                       {instagram ? (
-                        <View style={styles.commentContactTag}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
                           <FontAwesome name="instagram" size={14} color="#C13584" style={{ marginRight: 4 }} />
-                          <Text style={styles.commentContactText}>@{instagram}</Text>
+                          <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>@{instagram}</Text>
                         </View>
                       ) : null}
                       {whatsapp ? (
-                        <View style={styles.commentContactTag}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
                           <FontAwesome name="whatsapp" size={14} color="#25D366" style={{ marginRight: 4 }} />
-                          <Text style={styles.commentContactText}>{whatsapp}</Text>
+                          <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{whatsapp}</Text>
                         </View>
                       ) : null}
                       {facebook ? (
-                        <View style={styles.commentContactTag}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
                           <FontAwesome name="facebook-square" size={14} color="#1877F3" style={{ marginRight: 4 }} />
-                          <Text style={styles.commentContactText}>{facebook}</Text>
+                          <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{facebook}</Text>
                         </View>
                       ) : null}
                       {contatoExtra ? (
-                        <View style={styles.commentContactTag}>
-                          <Text style={styles.commentContactText}>{contatoExtra}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
+                          <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{contatoExtra}</Text>
                         </View>
                       ) : null}
                     </View>
@@ -429,10 +452,38 @@ const ItemDetailScreen = ({ route, navigation }) => {
           loading={sightingLoading}
         />
 
-        <View style={styles.spacer} />
+        <View style={{ height: 40 }} />
       </View>
     </ScrollView>
   );
+
+// Componente InfoRow para exibir label e valor alinhados (usado para outros tipos)
+function InfoRow({ label, value }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+      <Text style={{ fontSize: 15, color: '#6B7280', minWidth: 90 }}>{label}</Text>
+      <Text style={{ fontSize: 15, color: '#1F2937', fontWeight: 'bold', marginLeft: 8 }}>{value || 'não informado'}</Text>
+    </View>
+  );
+}
+
+// Componente AnimalInfoRow para exibir campo com ícone, label, valor, fonte e fallback
+function AnimalInfoRow({ icon, label, value }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: 36 }}>
+      <View style={{ width: 28, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: '500' }}>{label}</Text>
+        <Text style={{ fontSize: 15, color: '#1F2937', fontWeight: 600 }}>{value && value.trim() ? value : 'não informado'}</Text>
+      </View>
+    </View>
+  );
+}
+
+// Linha separadora
+function Separator() {
+  return <View style={{ height: 1, backgroundColor: '#F3F4F6', marginVertical: 6 }} />;
+}
 };
 
 const styles = StyleSheet.create({
@@ -605,7 +656,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   messageButton: {
-    backgroundColor: '#6366F1',
+    backgroundColor: '#fff',
     borderRadius: 8,
     paddingVertical: 10,
     alignItems: 'center',

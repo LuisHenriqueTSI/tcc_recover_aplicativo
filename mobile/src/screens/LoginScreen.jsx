@@ -167,6 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 17,
     letterSpacing: 0.5,
+    color: '#fff',
   },
   forgotPassword: {
     color: '#4F46E5',

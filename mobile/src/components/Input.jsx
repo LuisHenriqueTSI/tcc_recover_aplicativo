@@ -39,7 +39,14 @@ const Input = ({
           placeholder={placeholder}
           placeholderTextColor="#9CA3AF"
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={text => {
+            if (typeof text === 'string' && text.length > 0) {
+              const capitalized = text.charAt(0).toUpperCase() + text.slice(1);
+              onChangeText(capitalized);
+            } else {
+              onChangeText(text);
+            }
+          }}
           secureTextEntry={isPassword ? !showPassword : false}
           keyboardType={keyboardType}
           multiline={multiline}

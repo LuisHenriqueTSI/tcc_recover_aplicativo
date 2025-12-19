@@ -78,7 +78,18 @@ export const registerItem = async (itemData, photos = []) => {
         latitude: itemData.latitude,
         longitude: itemData.longitude,
         date: itemData.date,
-        extra_fields: itemData.extra_fields || {},
+        // Campos de animal salvos em colunas separadas
+        species: itemData.species,
+        breed: itemData.breed,
+        size: itemData.size,
+        age: itemData.age,
+        collar: itemData.collar,
+        microchip: itemData.microchip,
+        animal_name: itemData.animal_name,
+        // Campos genéricos
+        brand: itemData.brand,
+        color: itemData.color,
+        serial_number: itemData.serial_number,
         resolved: false,
       })
       .select();
@@ -114,7 +125,31 @@ export const updateItem = async (itemId, itemData) => {
 
     const { data, error } = await supabase
       .from('items')
-      .update(itemData)
+      .update({
+        title: itemData.title,
+        description: itemData.description,
+        category: itemData.category,
+        item_type: itemData.item_type,
+        status: itemData.status,
+        state: itemData.state,
+        city: itemData.city,
+        neighborhood: itemData.neighborhood,
+        latitude: itemData.latitude,
+        longitude: itemData.longitude,
+        date: itemData.date,
+        // Campos de animal salvos em colunas separadas
+        species: itemData.species,
+        breed: itemData.breed,
+        size: itemData.size,
+        age: itemData.age,
+        collar: itemData.collar,
+        microchip: itemData.microchip,
+        animal_name: itemData.animal_name,
+        // Campos genéricos
+        brand: itemData.brand,
+        color: itemData.color,
+        serial_number: itemData.serial_number,
+      })
       .eq('id', itemId)
       .select()
       .single();
