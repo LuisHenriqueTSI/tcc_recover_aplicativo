@@ -34,6 +34,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 // ItemCard agora é um componente fora do HomeScreen
 const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress }) => {
   const [carouselIndex, setCarouselIndex] = React.useState(0);
+  const flatListRef = React.useRef(null);
   // Cores para status e categoria
   const statusColor = item.status === 'lost' ? '#F87171' : '#34D399';
   const statusLabel = item.status === 'lost' ? 'Perdido' : 'Encontrado';
@@ -54,29 +55,65 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
           <>
             {showCarousel ? (
               <View style={{ width: SCREEN_WIDTH, height: CARD_IMAGE_HEIGHT, alignSelf: 'center', justifyContent: 'center', alignItems: 'center' }}>
-                <Image
-                  source={{ uri: photos[carouselIndex]?.url }}
-                  style={{ width: SCREEN_WIDTH, height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
-                  resizeMode="cover"
+                <FlatList
+                  ref={flatListRef}
+                  data={photos}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(photo, idx) => photo.id ? String(photo.id) : String(idx)}
+                  renderItem={({ item: photo }) => (
+                    <Image
+                      source={{ uri: photo.url }}
+                      style={{ width: SCREEN_WIDTH, height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
+                      resizeMode="cover"
+                    />
+                  )}
+                  onMomentumScrollEnd={e => {
+                    const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+                    setCarouselIndex(index);
+                  }}
+                  style={{ width: SCREEN_WIDTH, alignSelf: 'center' }}
+                  snapToInterval={SCREEN_WIDTH}
+                  decelerationRate={'fast'}
+                  bounces={false}
+                  snapToAlignment="center"
+                  disableIntervalMomentum={true}
+                  scrollEventThrottle={16}
+                  getItemLayout={(_, index) => ({ length: SCREEN_WIDTH, offset: SCREEN_WIDTH * index, index })}
+                  removeClippedSubviews={true}
+                  initialNumToRender={2}
+                  windowSize={3}
+                  extraData={carouselIndex}
                 />
                 {/* Botões minimalistas de navegação */}
                 {photos.length > 1 && (
-                  <>
+                  <View style={{ position: 'absolute', top: '50%', left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 18 }}>
                     <TouchableOpacity
-                      style={{ position: 'absolute', left: 10, top: '50%', transform: [{ translateY: -20 }], backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: 16, padding: 8, zIndex: 2 }}
-                      onPress={() => setCarouselIndex(idx => Math.max(0, idx - 1))}
+                      style={{ backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: 16, padding: 10, zIndex: 2 }}
+                      onPress={() => {
+                        if (carouselIndex > 0) {
+                          flatListRef.current?.scrollToIndex({ index: carouselIndex - 1, animated: true });
+                          setCarouselIndex(carouselIndex - 1);
+                        }
+                      }}
                       disabled={carouselIndex === 0}
                     >
-                      <Text style={{ color: '#fff', fontSize: 18 }}>{'<'}</Text>
+                      <Text style={{ color: '#fff', fontSize: 22 }}>{'<'}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={{ position: 'absolute', right: 10, top: '50%', transform: [{ translateY: -20 }], backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: 16, padding: 8, zIndex: 2 }}
-                      onPress={() => setCarouselIndex(idx => Math.min(photos.length - 1, idx + 1))}
+                      style={{ backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: 16, padding: 10, zIndex: 2 }}
+                      onPress={() => {
+                        if (carouselIndex < photos.length - 1) {
+                          flatListRef.current?.scrollToIndex({ index: carouselIndex + 1, animated: true });
+                          setCarouselIndex(carouselIndex + 1);
+                        }
+                      }}
                       disabled={carouselIndex === photos.length - 1}
                     >
-                      <Text style={{ color: '#fff', fontSize: 18 }}>{'>'}</Text>
+                      <Text style={{ color: '#fff', fontSize: 22 }}>{'>'}</Text>
                     </TouchableOpacity>
-                  </>
+                  </View>
                 )}
               </View>
             ) : (
