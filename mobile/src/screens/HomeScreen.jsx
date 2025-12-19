@@ -691,7 +691,7 @@ const HomeScreen = ({ navigation, route }) => {
           onPress={() => setFilters({ ...filters, status: 'lost' })}
           activeOpacity={0.85}
         >
-          <MaterialIcons name="highlight-off" size={14} color={filters.status === 'lost' ? '#fff' : '#B91C1C'} style={{ marginRight: 4 }} />
+          <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: filters.status === 'lost' ? '#fff' : '#F87171', borderWidth: filters.status === 'lost' ? 2 : 0, borderColor: '#F87171', marginRight: 4 }} />
           <Text style={[styles.filterChipText, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
         </TouchableOpacity>
 
@@ -703,7 +703,7 @@ const HomeScreen = ({ navigation, route }) => {
           onPress={() => setFilters({ ...filters, status: 'found' })}
           activeOpacity={0.85}
         >
-          <MaterialIcons name="check-circle" size={14} color={filters.status === 'found' ? '#fff' : '#0F9D58'} style={{ marginRight: 4 }} />
+          <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: filters.status === 'found' ? '#fff' : '#34D399', borderWidth: filters.status === 'found' ? 2 : 0, borderColor: '#34D399', marginRight: 4 }} />
           <Text style={[styles.filterChipText, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
         </TouchableOpacity>
 

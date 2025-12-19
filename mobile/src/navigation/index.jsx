@@ -63,11 +63,11 @@ const PublicAppTabs = ({ navigation }) => {
         component={HomeScreen}
         options={{
           title: 'Explorar',
-          tabBarLabel: ({ color }) => (
-            <Text style={{ color, fontSize: 13, marginTop: 2 }}>Explorar</Text>
+          tabBarLabel: () => (
+            <Text style={{ color: '#4F46E5', fontSize: 13, marginBottom: 4, textAlign: 'center', fontWeight: 'bold' }}>Explorar</Text>
           ),
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons name="home" size={22} color={color} />
+          tabBarIcon: () => (
+            <MaterialIcons name="home" size={22} color="#4F46E5" />
           ),
         }}
       />
