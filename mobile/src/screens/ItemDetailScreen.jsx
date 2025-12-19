@@ -215,75 +215,59 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Fotos do Item */}
-      {photos && photos.length > 0 ? (
-        <FlatList
-          data={photos}
-          keyExtractor={(_, idx) => idx.toString()}
-          horizontal
-          pagingEnabled
-          scrollEventThrottle={16}
-          renderItem={({ item: photo }) => (
-            <Image
-              source={{ uri: photo.url }}
-              style={styles.mainImage}
-              resizeMode="cover"
-            />
+      {/* Banner/Fotos do Item */}
+      <View style={styles.bannerContainer}>
+        {photos && photos.length > 0 ? (
+          <Image
+            source={{ uri: photos[0].url }}
+            style={styles.bannerImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={styles.noPhotoContainer}>
+            <MaterialIcons name="image-not-supported" size={48} color="#D1D5DB" />
+            <Text style={styles.noPhotoText}>Sem foto</Text>
+          </View>
+        )}
+        {/* Badges de status/categoria */}
+        <View style={styles.badgesRow}>
+          <View style={[styles.badge, item.status === 'lost' ? styles.badgeLost : styles.badgeFound]}>
+            <Text style={[styles.badgeText, item.status === 'lost' ? styles.badgeLostText : styles.badgeFoundText]}>
+              {item.status === 'lost' ? 'Perdido' : 'Encontrado'}
+            </Text>
+          </View>
+          {item.category && (
+            <View style={[styles.badge, styles.badgeCategory]}>
+              <Text style={styles.badgeCategoryText}>{item.category}</Text>
+            </View>
           )}
-          scrollEnabled={photos.length > 1}
-          style={styles.photosContainer}
-        />
-      ) : (
-        <View style={styles.noPhotoContainer}>
-          <MaterialIcons name="image-not-supported" size={48} color="#D1D5DB" />
-          <Text style={styles.noPhotoText}>Sem fotos</Text>
         </View>
-      )}
+      </View>
 
       <View style={styles.contentContainer}>
-        {/* Título e Status */}
-        <View style={styles.headerSection}>
-          <View>
-            <Text style={styles.title}>{item.title}</Text>
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusText}>
-                {item.status === 'lost' ? '🔴 Perdido' : '🟢 Encontrado'}
-              </Text>
-              {item.resolved && <Text style={styles.resolvedBadge}>✓ Resolvido</Text>}
-            </View>
+        {/* Título e descrição curta */}
+        <Text style={styles.title}>{item.title}</Text>
+        {item.short_description && (
+          <Text style={styles.shortDescription}>{item.short_description}</Text>
+        )}
+
+        {/* Local e Data */}
+        <View style={styles.infoRowGroup}>
+          <View style={styles.infoBox}>
+            <MaterialIcons name="location-on" size={18} color="#6366F1" />
+            <Text style={styles.infoBoxText}>{item.location}</Text>
+          </View>
+          <View style={styles.infoBox}>
+            <MaterialIcons name="calendar-today" size={18} color="#6366F1" />
+            <Text style={styles.infoBoxText}>{new Date(item.date).toLocaleDateString('pt-BR')}</Text>
           </View>
         </View>
 
-        {/* Informações Básicas */}
-        <Card style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <MaterialIcons name="location-on" size={20} color="#6B7280" />
-            <Text style={styles.infoText}>{item.location}</Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.infoRow}>
-            <MaterialIcons name="calendar-today" size={20} color="#6B7280" />
-            <Text style={styles.infoText}>{new Date(item.date).toLocaleDateString('pt-BR')}</Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.infoRow}>
-            <MaterialIcons name="category" size={20} color="#6B7280" />
-            <Text style={styles.infoText}>{item.category}</Text>
-          </View>
-        </Card>
-
-        {/* Descrição */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Descrição</Text>
-          <Text style={styles.description}>{item.description}</Text>
-        </View>
-
-        {/* Campos Adicionais */}
+        {/* Informações detalhadas (Animal, Documento, Objeto, etc) */}
         {item.extra_fields && Object.keys(item.extra_fields).length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Informações Adicionais</Text>
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Informações do {item.category || 'Item'}</Text>
             {Object.entries(item.extra_fields).map(([key, value]) => {
-              // Tradução dos campos extras conhecidos
               const labels = {
                 brand: 'Marca',
                 color: 'Cor',
@@ -292,10 +276,17 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 size: 'Tamanho',
                 type: 'Tipo',
                 description: 'Descrição',
+                race: 'Raça',
+                age: 'Idade',
+                collar: 'Coleira',
+                microchip: 'Microchipado',
+                owner_name: 'Nome do Proprietário',
+                document_number: 'Número do Documento',
+                features: 'Características',
               };
               const label = labels[key] || key;
               return (
-                <View key={key} style={styles.extraField}>
+                <View key={key} style={styles.extraFieldRow}>
                   <Text style={styles.fieldLabel}>{label}</Text>
                   <Text style={styles.fieldValue}>{value}</Text>
                 </View>
@@ -304,122 +295,131 @@ const ItemDetailScreen = ({ route, navigation }) => {
           </View>
         )}
 
-        {/* Informações do Proprietário */}
+        {/* Descrição longa */}
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Descrição</Text>
+          <Text style={styles.description}>{item.description}</Text>
+        </View>
+
+        {/* Usuário que publicou */}
         {owner && (
-          <Card style={styles.ownerCard}>
-            <Text style={styles.sectionTitle}>Proprietário</Text>
-            <View style={styles.ownerInfo}>
-              {owner.avatar_url && (
-                <Image
-                  source={{ uri: owner.avatar_url }}
-                  style={styles.avatar}
-                />
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Publicado por</Text>
+            <View style={styles.ownerRow}>
+              {owner.avatar_url ? (
+                <Image source={{ uri: owner.avatar_url }} style={styles.avatar} />
+              ) : (
+                <View style={styles.avatarPlaceholder} />
               )}
-              <View style={styles.ownerDetails}>
+              <View style={{ flex: 1 }}>
                 <Text style={styles.ownerName}>{owner.name}</Text>
-                <Text style={styles.ownerEmail}>{owner.email}</Text>
+                <Text style={styles.ownerSince}>Membro desde {owner.created_at ? new Date(owner.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : ''}</Text>
               </View>
             </View>
-          </Card>
-        )}
-
-        {/* Contagem de Fotos */}
-        {photos && photos.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Fotos</Text>
+            <TouchableOpacity style={styles.messageButton} onPress={handleSendMessage} disabled={isOwner}>
+              <Text style={styles.messageButtonText}>Enviar Mensagem</Text>
+            </TouchableOpacity>
           </View>
         )}
 
+        {/* Contato rápido (ligar) */}
+        {owner && owner.phone && (
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Contato Rápido</Text>
+            <TouchableOpacity style={styles.callButton} onPress={() => {}}>
+              <MaterialIcons name="call" size={20} color="#fff" />
+              <Text style={styles.callButtonText}>Ligar para {owner.name}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Botões de editar/excluir para o dono */}
+        {isOwner && (
+          <View style={styles.ownerActionsRow}>
+            <TouchableOpacity onPress={handleEditItem} style={styles.editButton} accessibilityLabel="Editar">
+              <MaterialIcons name="edit" size={20} color="#6366F1" />
+              <Text style={styles.editButtonText}>Editar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleDeleteItem} style={styles.deleteButton} accessibilityLabel="Excluir" disabled={deleting}>
+              <MaterialIcons name="delete" size={20} color="#fff" />
+              <Text style={styles.deleteButtonText}>Excluir</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Comentários */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Comentários{typeof sightings.length === 'number' ? ` (${sightings.length})` : ''}
-          </Text>
-          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-            <Button
-              title="Adicionar Comentário"
-              onPress={handleReportSighting}
-              style={{ flex: 1 }}
-            />
-            {!isOwner && (
-              <Button
-                title="💬 Enviar Mensagem"
-                onPress={handleSendMessage}
-                style={{ flex: 1 }}
-              />
-            )}
+        <View style={styles.sectionCard}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <Text style={styles.sectionTitle}>Comentários</Text>
+            <View style={styles.commentsCountBadge}>
+              <Text style={styles.commentsCountText}>{sightings.length}</Text>
+            </View>
+            <TouchableOpacity style={styles.addCommentButton} onPress={handleReportSighting}>
+              <MaterialIcons name="add-comment" size={18} color="#6366F1" />
+              <Text style={styles.addCommentButtonText}>Comentar</Text>
+            </TouchableOpacity>
           </View>
           {sightings.length === 0 ? (
-            <Text style={{ color: '#6B7280' }}>Nenhum comentário ainda.</Text>
+            <Text style={{ color: '#6B7280', textAlign: 'center', marginVertical: 16 }}>Nenhum comentário ainda. Seja o primeiro a comentar!</Text>
           ) : (
             sightings.map((s, idx) => {
-              // Compatibilidade: contact_info pode ser string (antigo) ou objeto (novo)
               let instagram = '', whatsapp = '', facebook = '', contatoExtra = '';
               if (s.contact_info && typeof s.contact_info === 'object') {
                 instagram = s.contact_info.instagram || '';
                 whatsapp = s.contact_info.whatsapp || '';
                 facebook = s.contact_info.facebook || '';
               } else if (typeof s.contact_info === 'string' && s.contact_info.trim() !== '') {
-                // Se for string, exibe como contato extra
                 contatoExtra = s.contact_info;
               }
               return (
-                <Card key={s.id || idx} style={{ marginBottom: 10, padding: 10 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <View key={s.id || idx} style={styles.commentCard}>
+                  <View style={styles.commentHeader}>
                     {s.profiles?.avatar_url ? (
-                      <Image source={{ uri: s.profiles.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }} />
-                    ) : null}
-                    <Text style={{ fontWeight: 'bold', color: '#1F2937' }}>{s.profiles?.name || 'Usuário'}</Text>
-                    <Text style={{ marginLeft: 8, color: '#6B7280', fontSize: 12 }}>{new Date(s.created_at).toLocaleString('pt-BR')}</Text>
+                      <Image source={{ uri: s.profiles.avatar_url }} style={styles.commentAvatar} />
+                    ) : (
+                      <View style={styles.commentAvatarPlaceholder} />
+                    )}
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.commentAuthor}>{s.profiles?.name || 'Usuário'}</Text>
+                      <Text style={styles.commentDate}>{new Date(s.created_at).toLocaleString('pt-BR')}</Text>
+                    </View>
                   </View>
-                  <Text style={{ color: '#374151', marginBottom: 4 }}>{s.description}</Text>
+                  <Text style={styles.commentText}>{s.description}</Text>
                   {s.photo_url ? (
-                    <Image source={{ uri: s.photo_url }} style={{ width: '100%', height: 120, borderRadius: 8, marginBottom: 4 }} />
+                    <Image source={{ uri: s.photo_url }} style={styles.commentImage} />
                   ) : null}
-                  {s.location ? <Text style={{ color: '#6B7280', fontSize: 12 }}>Local: {s.location}</Text> : null}
+                  {s.location ? <Text style={styles.commentLocation}>Local: {s.location}</Text> : null}
                   {(instagram || whatsapp || facebook || contatoExtra) ? (
-                    <View style={{ marginTop: 4 }}>
-                      <Text style={{ color: '#6B7280', fontSize: 12, fontWeight: 'bold' }}>Contato:</Text>
+                    <View style={styles.commentContactsRow}>
                       {instagram ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={styles.commentContactTag}>
                           <FontAwesome name="instagram" size={14} color="#C13584" style={{ marginRight: 4 }} />
-                          <Text style={{ color: '#6B7280', fontSize: 12 }}>@{instagram}</Text>
+                          <Text style={styles.commentContactText}>@{instagram}</Text>
                         </View>
                       ) : null}
                       {whatsapp ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={styles.commentContactTag}>
                           <FontAwesome name="whatsapp" size={14} color="#25D366" style={{ marginRight: 4 }} />
-                          <Text style={{ color: '#6B7280', fontSize: 12 }}>{whatsapp}</Text>
+                          <Text style={styles.commentContactText}>{whatsapp}</Text>
                         </View>
                       ) : null}
                       {facebook ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={styles.commentContactTag}>
                           <FontAwesome name="facebook-square" size={14} color="#1877F3" style={{ marginRight: 4 }} />
-                          <Text style={{ color: '#6B7280', fontSize: 12 }}>{facebook}</Text>
+                          <Text style={styles.commentContactText}>{facebook}</Text>
                         </View>
                       ) : null}
-                      {contatoExtra ? <Text style={{ color: '#6B7280', fontSize: 12 }}>{contatoExtra}</Text> : null}
+                      {contatoExtra ? (
+                        <View style={styles.commentContactTag}>
+                          <Text style={styles.commentContactText}>{contatoExtra}</Text>
+                        </View>
+                      ) : null}
                     </View>
                   ) : null}
-                </Card>
+                </View>
               );
             })
           )}
-        </View>
-
-        {/* Botões de Ação */}
-        <View style={[styles.actionsSection, { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }]}> 
-          {isOwner ? (
-            <>
-              <TouchableOpacity onPress={handleEditItem} style={styles.iconButton} accessibilityLabel="Editar">
-                <MaterialIcons name="edit" size={24} color="#4F46E5" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleDeleteItem} style={styles.iconButton} accessibilityLabel="Excluir" disabled={deleting}>
-                <MaterialIcons name="delete" size={24} color="#DC2626" />
-              </TouchableOpacity>
-            </>
-          ) : null}
         </View>
 
         <SightingModal
@@ -429,7 +429,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
           loading={sightingLoading}
         />
 
-        {/* Espaço livre no fim */}
         <View style={styles.spacer} />
       </View>
     </ScrollView>
@@ -441,6 +440,336 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
+  bannerContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 220,
+    backgroundColor: '#E5E7EB',
+    marginBottom: 8,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    overflow: 'hidden',
+  },
+  bannerImage: {
+    width: '100%',
+    height: 220,
+  },
+  badgesRow: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  badge: {
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E5E7EB',
+  },
+  badgeLost: {
+    backgroundColor: '#FEE2E2',
+  },
+  badgeFound: {
+    backgroundColor: '#DCFCE7',
+  },
+  badgeText: {
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
+  badgeLostText: {
+    color: '#DC2626',
+  },
+  badgeFoundText: {
+    color: '#059669',
+  },
+  badgeCategory: {
+    backgroundColor: '#E0E7FF',
+  },
+  badgeCategoryText: {
+    color: '#6366F1',
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
+  noPhotoContainer: {
+    flex: 1,
+    height: 220,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+  },
+  noPhotoText: {
+    marginTop: 8,
+    color: '#9CA3AF',
+    fontSize: 14,
+  },
+  contentContainer: {
+    padding: 18,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 2,
+  },
+  shortDescription: {
+    fontSize: 15,
+    color: '#6B7280',
+    marginBottom: 10,
+  },
+  infoRowGroup: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginRight: 8,
+  },
+  infoBoxText: {
+    fontSize: 13,
+    color: '#374151',
+    marginLeft: 4,
+  },
+  sectionCard: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 6,
+  },
+  description: {
+    fontSize: 14,
+    color: '#4B5563',
+    lineHeight: 20,
+  },
+  extraFieldRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  fieldLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  fieldValue: {
+    fontSize: 13,
+    color: '#1F2937',
+    fontWeight: '500',
+  },
+  ownerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 10,
+    backgroundColor: '#E5E7EB',
+  },
+  avatarPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 10,
+    backgroundColor: '#E5E7EB',
+  },
+  ownerName: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#1F2937',
+  },
+  ownerSince: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  messageButton: {
+    backgroundColor: '#6366F1',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 8,
+    opacity: 1,
+  },
+  messageButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  callButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#22C55E',
+    borderRadius: 8,
+    paddingVertical: 10,
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  callButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginLeft: 8,
+  },
+  ownerActionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+    justifyContent: 'flex-end',
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EEF2FF',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginRight: 8,
+  },
+  editButtonText: {
+    color: '#6366F1',
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginLeft: 6,
+  },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#DC2626',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginLeft: 6,
+  },
+  commentsCountBadge: {
+    backgroundColor: '#E0E7FF',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    marginLeft: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 22,
+  },
+  commentsCountText: {
+    color: '#6366F1',
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
+  addCommentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 'auto',
+    backgroundColor: '#EEF2FF',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  addCommentButtonText: {
+    color: '#6366F1',
+    fontWeight: 'bold',
+    fontSize: 13,
+    marginLeft: 4,
+  },
+  commentCard: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+  },
+  commentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  commentAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+    backgroundColor: '#E5E7EB',
+  },
+  commentAvatarPlaceholder: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+    backgroundColor: '#E5E7EB',
+  },
+  commentAuthor: {
+    fontWeight: 'bold',
+    color: '#1F2937',
+    fontSize: 14,
+  },
+  commentDate: {
+    color: '#6B7280',
+    fontSize: 11,
+  },
+  commentText: {
+    color: '#374151',
+    marginBottom: 4,
+    fontSize: 13,
+  },
+  commentImage: {
+    width: '100%',
+    height: 110,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  commentLocation: {
+    color: '#6B7280',
+    fontSize: 12,
+    marginBottom: 2,
+  },
+  commentContactsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 4,
+  },
+  commentContactTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginRight: 6,
+    marginBottom: 4,
+  },
+  commentContactText: {
+    color: '#6366F1',
+    fontSize: 12,
+    marginLeft: 2,
+  },
+  spacer: {
+    height: 40,
+  },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -449,152 +778,6 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     color: '#6B7280',
-  },
-  photosContainer: {
-    backgroundColor: '#E5E7EB',
-    height: 300,
-  },
-  mainImage: {
-    width: 400,
-    height: 300,
-  },
-  noPhotoContainer: {
-    backgroundColor: '#F3F4F6',
-    height: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  noPhotoText: {
-    marginTop: 8,
-    color: '#9CA3AF',
-    fontSize: 14,
-  },
-  contentContainer: {
-    padding: 16,
-  },
-  headerSection: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 8,
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  resolvedBadge: {
-    fontSize: 14,
-    color: '#059669',
-    fontWeight: '600',
-    backgroundColor: '#D1FAE5',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  infoCard: {
-    marginBottom: 16,
-    padding: 12,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 8,
-  },
-  infoText: {
-    fontSize: 14,
-    color: '#4B5563',
-    flex: 1,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#E5E7EB',
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 14,
-    color: '#4B5563',
-    lineHeight: 20,
-  },
-  extraField: {
-    backgroundColor: '#F3F4F6',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  fieldLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  fieldValue: {
-    fontSize: 14,
-    color: '#1F2937',
-    fontWeight: '500',
-  },
-  ownerCard: {
-    marginBottom: 16,
-    padding: 12,
-  },
-  ownerInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginTop: 8,
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#E5E7EB',
-  },
-  ownerDetails: {
-    flex: 1,
-  },
-  ownerName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 2,
-  },
-  ownerEmail: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  actionsSection: {
-    gap: 10,
-    marginBottom: 16,
-  },
-  actionButton: {
-    marginVertical: 6,
-  },
-  iconButton: {
-    backgroundColor: 'transparent',
-    padding: 6,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  spacer: {
-    height: 40,
   },
 });
 

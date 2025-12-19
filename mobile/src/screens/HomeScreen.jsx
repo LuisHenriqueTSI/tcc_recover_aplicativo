@@ -47,148 +47,55 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
   const cat = categoryColors[item.category] || categoryColors.other;
   const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
   const showCarousel = photos.length > 1;
+  const IMAGE_HEIGHT = 290;
   return (
-    <Card style={{ padding: 0, marginHorizontal: 12, marginVertical: 14, borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 }}>
-      {/* Imagem/Carrossel */}
-      <View style={{ position: 'relative', width: '100%', height: CARD_IMAGE_HEIGHT }}>
+    <Card style={{ padding: 0, marginHorizontal: 8, marginVertical: 10, borderRadius: 18, overflow: 'hidden', backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
+      {/* Imagem */}
+      <View style={{ position: 'relative', width: '100%', height: IMAGE_HEIGHT }}>
         {photos.length > 0 ? (
-          <>
-            {showCarousel ? (
-              <View style={{ width: SCREEN_WIDTH, height: CARD_IMAGE_HEIGHT, alignSelf: 'center', justifyContent: 'center', alignItems: 'center' }}>
-                <FlatList
-                  ref={flatListRef}
-                  data={photos}
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  keyExtractor={(photo, idx) => photo.id ? String(photo.id) : String(idx)}
-                  renderItem={({ item: photo }) => (
-                    <Image
-                      source={{ uri: photo.url }}
-                      style={{ width: SCREEN_WIDTH, height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
-                      resizeMode="cover"
-                    />
-                  )}
-                  onMomentumScrollEnd={e => {
-                    const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-                    setCarouselIndex(index);
-                  }}
-                  style={{ width: SCREEN_WIDTH, alignSelf: 'center' }}
-                  snapToInterval={SCREEN_WIDTH}
-                  decelerationRate={'fast'}
-                  bounces={false}
-                  snapToAlignment="center"
-                  disableIntervalMomentum={true}
-                  scrollEventThrottle={16}
-                  getItemLayout={(_, index) => ({ length: SCREEN_WIDTH, offset: SCREEN_WIDTH * index, index })}
-                  removeClippedSubviews={true}
-                  initialNumToRender={2}
-                  windowSize={3}
-                  extraData={carouselIndex}
-                />
-                {/* Botões minimalistas de navegação */}
-                {photos.length > 1 && (
-                  <View style={{ position: 'absolute', top: '50%', left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 18 }}>
-                    <TouchableOpacity
-                      style={{ backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: 16, padding: 10, zIndex: 2 }}
-                      onPress={() => {
-                        if (carouselIndex > 0) {
-                          flatListRef.current?.scrollToIndex({ index: carouselIndex - 1, animated: true });
-                          setCarouselIndex(carouselIndex - 1);
-                        }
-                      }}
-                      disabled={carouselIndex === 0}
-                    >
-                      <Text style={{ color: '#fff', fontSize: 22 }}>{'<'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={{ backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: 16, padding: 10, zIndex: 2 }}
-                      onPress={() => {
-                        if (carouselIndex < photos.length - 1) {
-                          flatListRef.current?.scrollToIndex({ index: carouselIndex + 1, animated: true });
-                          setCarouselIndex(carouselIndex + 1);
-                        }
-                      }}
-                      disabled={carouselIndex === photos.length - 1}
-                    >
-                      <Text style={{ color: '#fff', fontSize: 22 }}>{'>'}</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            ) : (
-              <Image
-                source={{ uri: photos[0].url }}
-                style={{ width: SCREEN_WIDTH, height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6', alignSelf: 'center' }}
-                resizeMode="cover"
-              />
-            )}
-            {/* Indicador de múltiplas imagens estilo Instagram */}
-            {showCarousel && (
-              <View style={{ position: 'absolute', bottom: 10, alignSelf: 'center', flexDirection: 'row', gap: 4 }}>
-                {photos.map((photo, idx) => (
-                  <View key={photo.id || idx} style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: idx === carouselIndex ? '#fff' : '#d1d5db', marginHorizontal: 2, opacity: 0.8 }} />
-                ))}
-              </View>
-            )}
-          </>
+          <Image
+            source={{ uri: photos[0].url }}
+            style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
+            resizeMode="cover"
+          />
         ) : (
-          <View style={{ width: '100%', height: 180, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }}>
             <Text style={{ color: '#9CA3AF' }}>Sem foto</Text>
           </View>
         )}
+        {/* Badges */}
+        <View style={{ position: 'absolute', top: 12, left: 12, flexDirection: 'row', gap: 8 }}>
+          <View style={{ backgroundColor: statusColor, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 2, marginRight: 6 }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>{statusLabel}</Text>
+          </View>
+          <View style={{ backgroundColor: cat.bg, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 2 }}>
+            <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 13 }}>{cat.label}</Text>
+          </View>
+        </View>
         {/* Botão de Compartilhar no canto superior direito */}
         <View style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>
-          <ShareButton item={item} imageUrl={photos[carouselIndex]?.url || (photos[0]?.url)} />
-        </View>
-      </View>
-      {/* Tags */}
-      <View style={{ position: 'absolute', top: 14, left: 14, flexDirection: 'row', gap: 8 }}>
-        <View style={{ backgroundColor: statusColor, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 2 }}>
-          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>{statusLabel}</Text>
-        </View>
-        <View style={{ backgroundColor: cat.bg, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 2, marginLeft: 6 }}>
-          <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 12 }}>{cat.label}</Text>
+          <ShareButton item={item} imageUrl={photos[0]?.url} />
         </View>
       </View>
       {/* Conteúdo */}
-      <View style={{ padding: 18 }}>
-        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>{item.title}</Text>
+      <View style={{ padding: 16, paddingBottom: 10 }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#2563EB', marginBottom: 2 }}>{item.title}</Text>
         <Text style={{ fontSize: 14, color: '#6B7280', marginBottom: 10 }}>{item.description}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
           <MaterialIcons name="place" size={16} color="#9CA3AF" style={{ marginRight: 2 }} />
-          <Text style={{ fontSize: 13, color: '#9CA3AF', marginRight: 12 }}>
-            {item.city && item.state ? `${item.city}, ${item.state}` : item.city || item.state || '-'}
-            {item.neighborhood ? ` - ${item.neighborhood}` : ''}
-          </Text>
+          <Text style={{ fontSize: 13, color: '#6B7280', marginRight: 12, fontWeight: 500 }}>{item.city && item.state ? `${item.city}, ${item.state}` : item.city || item.state || '-'}{item.neighborhood ? ` - ${item.neighborhood}` : ''}</Text>
           <MaterialIcons name="event" size={15} color="#9CA3AF" style={{ marginRight: 2 }} />
-          <Text style={{ fontSize: 13, color: '#9CA3AF' }}>{new Date(item.date).toLocaleDateString()}</Text>
+          <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 500 }}>{new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</Text>
         </View>
-        <View style={{ height: 1, backgroundColor: '#F3F4F6', marginVertical: 8 }} />
+        {/* Barra divisória fina */}
+        <View style={{ height: 1, backgroundColor: '#E5E7EB', marginBottom: 10 }} />
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>{item.owner_name}</Text>
-          {user && item.owner_id !== user.id && (
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F59E42', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 6 }} onPress={() => handleSendMessage(item.owner_id, item.id, item.status)}>
-              <MaterialIcons name="chat" size={18} color="#fff" style={{ marginRight: 4 }} />
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Contato</Text>
-            </TouchableOpacity>
-          )}
-          {!user && (
-            <TouchableOpacity
-              style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 6, opacity: 0.7 }}
-              onPress={() => alert('Faça login para usar esta funcionalidade.')}
-              disabled
-            >
-              <MaterialIcons name="chat" size={18} color="#9CA3AF" style={{ marginRight: 4 }} />
-              <Text style={{ color: '#9CA3AF', fontWeight: 'bold', fontSize: 13 }}>Contato</Text>
-            </TouchableOpacity>
-          )}
-          {/* Botões de editar/excluir removidos dos cards. */}
+          <TouchableOpacity onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F3F4F6', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 }}>
+            <MaterialIcons name="visibility" size={18} color="#4F46E5" style={{ marginRight: 4 }} />
+            <Text style={{ color: '#374151', fontWeight: 'bold', fontSize: 14 }}>Ver detalhes</Text>
+          </TouchableOpacity>
         </View>
-        {/* Botão minimalista para ver detalhes */}
-        <TouchableOpacity onPress={onPress} style={{ alignSelf: 'flex-end', marginTop: 8, padding: 6, borderRadius: 8, backgroundColor: '#E5E7EB' }}>
-          <Text style={{ color: '#4F46E5', fontSize: 13, fontWeight: 'bold' }}>Ver detalhes</Text>
-        </TouchableOpacity>
       </View>
     </Card>
   );
