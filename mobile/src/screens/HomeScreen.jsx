@@ -103,6 +103,8 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
 
 const HomeScreen = ({ navigation, route }) => {
   const { user, userProfile, refreshProfile, setUserProfile } = useAuth();
+  // Corrige erro: garantir estado do modal de perfil
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   // Localidade do perfil (fixa)
   const [showProfileLocationModal, setShowProfileLocationModal] = useState(false);
   const [profileEditState, setProfileEditState] = useState('');
@@ -456,7 +458,7 @@ const HomeScreen = ({ navigation, route }) => {
             )}
           </View>
           <TouchableOpacity
-            onPress={() => {/* abrir menu de perfil/logout aqui futuramente */}}
+            onPress={() => setShowProfileMenu(true)}
             style={{ marginLeft: 12 }}
             accessibilityLabel="Abrir menu do perfil"
           >
@@ -468,6 +470,56 @@ const HomeScreen = ({ navigation, route }) => {
               </View>
             )}
           </TouchableOpacity>
+
+          {/* Modal de menu de perfil */}
+          <Modal
+            visible={!!showProfileMenu}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowProfileMenu(false)}
+          >
+            <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
+              <View style={{ backgroundColor:'#fff', borderRadius:16, padding:24, minWidth:260, alignItems:'center' }}>
+                {userProfile?.avatar_url ? (
+                  <Image source={{ uri: userProfile.avatar_url }} style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#E5E7EB', marginBottom: 12 }} />
+                ) : (
+                  <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#60A5FA', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 28 }}>{userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}</Text>
+                  </View>
+                )}
+                <Text style={{ fontWeight:'bold', fontSize:16, color:'#1F2937', marginBottom: 4 }}>{userProfile?.name || 'Usuário'}</Text>
+                <Text style={{ color:'#6B7280', fontSize:14, marginBottom: 16 }}>{userProfile?.email}</Text>
+                <TouchableOpacity
+                  style={{ width: '100%', paddingVertical: 12, borderRadius: 8, backgroundColor: '#4F46E5', marginBottom: 10, alignItems: 'center' }}
+                  onPress={() => {
+                    setShowProfileMenu(false);
+                    navigation.navigate('Profile');
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Ver Perfil</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ width: '100%', paddingVertical: 12, borderRadius: 8, backgroundColor: '#FEE2E2', alignItems: 'center' }}
+                  onPress={() => {
+                    setShowProfileMenu(false);
+                    if (typeof user?.signOut === 'function') user.signOut();
+                    else if (typeof navigation?.navigate === 'function') navigation.navigate('Login');
+                  }}
+                >
+                  <Text style={{ color: '#DC2626', fontWeight: 'bold', fontSize: 16 }}>Sair</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ marginTop: 10 }}
+                  onPress={() => setShowProfileMenu(false)}
+                >
+                  <Text style={{ color: '#6B7280', fontSize: 15 }}>Fechar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        // ...existing code...
+          // Modal de menu de perfil
+          const [showProfileMenu, setShowProfileMenu] = useState(false);
         </View>
         {/* Barra de pesquisa única, fundo branco */}
         <View style={{ marginTop: 16 }}>

@@ -108,11 +108,11 @@ const ProfileScreen = ({ navigation }) => {
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
             <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
             <TouchableOpacity
-              style={{ marginLeft: 8, backgroundColor: '#fff', borderRadius: 16, padding: 6 }}
+              style={{ marginLeft: 8, backgroundColor: '#EEF2FF', borderRadius: 16, padding: 6 }}
               onPress={() => navigation.navigate('EditProfile')}
               activeOpacity={0.7}
             >
-              <Feather name="edit-2" size={16} color="#fff" />
+              <Feather name="edit-2" size={16} color="#4F46E5" />
             </TouchableOpacity>
           </View>
           <Text style={styles.email}>{userProfile?.email}</Text>

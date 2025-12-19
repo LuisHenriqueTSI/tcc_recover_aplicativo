@@ -980,30 +980,49 @@ const RegisterItemScreen = ({ navigation, route }) => {
         <Card style={styles.card}>
           <Text style={styles.title}>Localização e Tipo</Text>
 
+          {/* Estado */}
           <View style={styles.input}>
             <Text style={styles.label}>Estado *</Text>
             <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
               <Picker
                 selectedValue={state}
-                enabled={false}
-                style={{ height: 48, color: '#6B7280' }}
+                onValueChange={(value) => {
+                  setState(value);
+                  setCity('');
+                  setNeighborhood('');
+                }}
+                style={{ height: 48, color: '#1F2937' }}
               >
-                {state ? <Picker.Item label={state} value={state} /> : <Picker.Item label="Selecione o estado" value="" />}
+                <Picker.Item label="Selecione o estado" value="" />
+                {states.map((uf) => (
+                  <Picker.Item key={uf} label={uf} value={uf} />
+                ))}
               </Picker>
             </View>
           </View>
+
+          {/* Cidade */}
           <View style={styles.input}>
             <Text style={styles.label}>Cidade *</Text>
             <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
               <Picker
                 selectedValue={city}
-                enabled={false}
-                style={{ height: 48, color: '#6B7280' }}
+                onValueChange={(value) => {
+                  setCity(value);
+                  setNeighborhood('');
+                }}
+                enabled={!!state}
+                style={{ height: 48, color: '#1F2937' }}
               >
-                {city ? <Picker.Item label={city} value={city} /> : <Picker.Item label="Selecione a cidade" value="" />}
+                <Picker.Item label="Selecione a cidade" value="" />
+                {(citiesByState[state] || []).map((c) => (
+                  <Picker.Item key={c} label={c} value={c} />
+                ))}
               </Picker>
             </View>
           </View>
+
+          {/* Bairro */}
           <View style={styles.input}>
             <Text style={styles.label}>Bairro *</Text>
             <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
@@ -1212,7 +1231,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   statusButtonActive: {
-    backgroundColor: '#fff',
+    backgroundColor: '#4F46E5',
     borderColor: '#4F46E5',
   },
   statusText: {
