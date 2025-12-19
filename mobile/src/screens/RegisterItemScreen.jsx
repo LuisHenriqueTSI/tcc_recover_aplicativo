@@ -15,6 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Calendar } from 'react-native-calendars';
 import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
+import * as rewardsService from '../services/rewards';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import { states, citiesByState, neighborhoodsByCity } from '../lib/br-locations';
@@ -26,7 +27,7 @@ const ITEM_TYPES = {
     label: 'Animal',
     fields: {
       required: [
-        'animalName',
+        'animal_name',
         'species',
         'breed',
         'color',
@@ -36,13 +37,13 @@ const ITEM_TYPES = {
       ],
       optional: [
         'collar',
-        'serialNumber',
+        'serial_number',
         'brand',
         'description'
       ],
     },
     fieldLabels: {
-      animalName: 'Nome do animal',
+      animal_name: 'Nome do animal',
       species: 'Espécie',
       breed: 'Raça',
       color: 'Cor',
@@ -50,12 +51,12 @@ const ITEM_TYPES = {
       age: 'Idade',
       collar: 'Coleira (descrição)',
       microchip: 'Microchipado?',
-      serialNumber: 'Características especiais',
+      serial_number: 'Características especiais',
       brand: 'Raça/Tipo',
       description: 'Descrição',
     },
     placeholders: {
-      animalName: 'Ex: Thor',
+      animal_name: 'Ex: Thor',
       species: 'Ex: Cachorro, Gato',
       breed: 'Ex: Golden Retriever',
       color: 'Ex: Dourado',
@@ -63,7 +64,7 @@ const ITEM_TYPES = {
       age: 'Ex: Filhote, Adulto, Idoso',
       collar: 'Ex: Coleira azul com medalha',
       microchip: 'Selecione',
-      serialNumber: 'Ex: Coleira azul, cicatriz na orelha',
+      serial_number: 'Ex: Coleira azul, cicatriz na orelha',
       brand: 'Ex: Vira-lata, Poodle, Persa',
       description: 'Descreva detalhes importantes...',
     },
@@ -72,90 +73,90 @@ const ITEM_TYPES = {
     label: 'Outro',
     fields: {
       required: ['title'],
-      optional: ['brand', 'color', 'serialNumber'],
+      optional: ['brand', 'color', 'serial_number'],
     },
     fieldLabels: {
       brand: 'Marca/Tipo',
       color: 'Cor',
-      serialNumber: 'Características/Detalhes',
+      serial_number: 'Características/Detalhes',
     },
     placeholders: {
       title: 'Ex: Chave, Guarda-chuva, Outro item',
       brand: 'Ex: Tipo ou marca do item',
       color: 'Ex: Cor predominante',
-      serialNumber: 'Ex: Detalhes, características únicas',
+      serial_number: 'Ex: Detalhes, características únicas',
     },
   },
   document: {
     label: 'Documento',
     fields: {
       required: ['title', 'brand'],
-      optional: ['serialNumber', 'color'],
+      optional: ['serial_number', 'color'],
     },
     fieldLabels: {
       brand: 'Tipo de documento',
       color: 'Cor',
-      serialNumber: 'Número/Detalhes',
+      serial_number: 'Número/Detalhes',
     },
     placeholders: {
       title: 'Ex: RG, CNH, Passaporte',
       brand: 'Ex: RG, CNH, Passaporte',
       color: 'Ex: Azul, Verde',
-      serialNumber: 'Ex: 12345678-9',
+      serial_number: 'Ex: 12345678-9',
     },
   },
   object: {
     label: 'Objeto',
     fields: {
       required: ['title', 'color'],
-      optional: ['brand', 'serialNumber'],
+      optional: ['brand', 'serial_number'],
     },
     fieldLabels: {
       brand: 'Marca',
       color: 'Cor',
-      serialNumber: 'Características especiais',
+      serial_number: 'Características especiais',
     },
     placeholders: {
       title: 'Ex: Mochila preta, Livro de ficção científica',
       brand: 'Ex: Mochila Adidas, Livro "Game of Thrones"',
       color: 'Ex: Preto com detalhes vermelhos',
-      serialNumber: 'Ex: Com zíper quebrado, adesivo na lateral',
+      serial_number: 'Ex: Com zíper quebrado, adesivo na lateral',
     },
   },
   electronics: {
     label: 'Eletrônico',
     fields: {
       required: ['title', 'brand', 'color'],
-      optional: ['serialNumber'],
+      optional: ['serial_number'],
     },
     fieldLabels: {
       brand: 'Marca/Modelo',
       color: 'Cor',
-      serialNumber: 'Número de série/IMEI',
+      serial_number: 'Número de série/IMEI',
     },
     placeholders: {
       title: 'Ex: iPhone 13, Fone AirPods',
       brand: 'Ex: iPhone 13 Pro, Samsung Galaxy S21',
       color: 'Ex: Preto, Prata',
-      serialNumber: 'Ex: A2846B1C9D7E5F3G',
+      serial_number: 'Ex: A2846B1C9D7E5F3G',
     },
   },
   jewelry: {
     label: 'Joia/Acessório',
     fields: {
       required: ['title', 'color'],
-      optional: ['brand', 'serialNumber'],
+      optional: ['brand', 'serial_number'],
     },
     fieldLabels: {
       brand: 'Material',
       color: 'Cor',
-      serialNumber: 'Marcas distintivas',
+      serial_number: 'Marcas distintivas',
     },
     placeholders: {
       title: 'Ex: Anel de ouro, Colar com pedra azul',
       brand: 'Ex: Ouro 18k, Prata 925',
       color: 'Ex: Dourado, Prateado',
-      serialNumber: 'Ex: Gravado "Para Maria", com pedra azul',
+      serial_number: 'Ex: Gravado "Para Maria", com pedra azul',
     },
   },
   clothing: {
@@ -452,6 +453,29 @@ const RegisterItemScreen = ({ navigation, route }) => {
         // Modo de edição
         resultItem = await itemsService.updateItem(editItem.id, itemData);
 
+        // Atualizar ou criar recompensa se necessário
+        if (offerReward && rewardAmount && rewardDescription) {
+          // Buscar recompensa existente
+          const existingReward = await rewardsService.getRewardByItemId(editItem.id);
+          if (existingReward) {
+            await rewardsService.updateReward(existingReward.id, {
+              amount: rewardAmount,
+              description: rewardDescription,
+              currency: 'BRL',
+              status: 'active',
+            });
+          } else {
+            await rewardsService.createReward({
+              item_id: editItem.id,
+              owner_id: user.id,
+              amount: rewardAmount,
+              currency: 'BRL',
+              description: rewardDescription,
+              status: 'active',
+            });
+          }
+        }
+
         // Remover apenas as fotos antigas que o usuário excluiu
         if (editItem.item_photos && editItem.item_photos.length > 0) {
           // Fotos antigas que ainda estão no array photos
@@ -495,6 +519,18 @@ const RegisterItemScreen = ({ navigation, route }) => {
       } else {
         // Modo de criação
         resultItem = await itemsService.registerItem(itemData, photos);
+
+        // Criar recompensa se necessário
+        if (offerReward && rewardAmount && rewardDescription) {
+          await rewardsService.createReward({
+            item_id: resultItem.id,
+            owner_id: user.id,
+            amount: rewardAmount,
+            currency: 'BRL',
+            description: rewardDescription,
+            status: 'active',
+          });
+        }
 
         Alert.alert('Sucesso', 'Item registrado com sucesso!', [
           {
@@ -559,7 +595,19 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     },
                   };
 
-                  await itemsService.registerItem(itemData, []);
+                  const createdItem = await itemsService.registerItem(itemData, []);
+
+                  // Criar recompensa se necessário
+                  if (offerReward && rewardAmount && rewardDescription) {
+                    await rewardsService.createReward({
+                      item_id: createdItem.id,
+                      owner_id: user.id,
+                      amount: rewardAmount,
+                      currency: 'BRL',
+                      description: rewardDescription,
+                      status: 'active',
+                    });
+                  }
                   
                   Alert.alert('Sucesso', 'Item registrado sem fotos!', [
                     {

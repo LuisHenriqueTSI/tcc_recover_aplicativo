@@ -48,6 +48,13 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
   const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
   const showCarousel = photos.length > 1;
   const IMAGE_HEIGHT = 290;
+  // Defensive string conversion for all text props
+  const safeTitle = item.title != null ? String(item.title) : '';
+  const safeDescription = item.description != null ? String(item.description) : '';
+  const safeOwnerName = item.owner_name != null ? String(item.owner_name) : '';
+  const safeCity = item.city != null ? String(item.city) : '';
+  const safeState = item.state != null ? String(item.state) : '';
+  const safeNeighborhood = item.neighborhood != null ? String(item.neighborhood) : '';
   return (
     <Card style={{ padding: 0, marginHorizontal: 8, marginVertical: 10, borderRadius: 18, overflow: 'hidden', backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
       {/* Imagem */}
@@ -79,18 +86,20 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
       </View>
       {/* Conteúdo */}
       <View style={{ padding: 16, paddingBottom: 10 }}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#374151', marginBottom: 16 }}>{item.title}</Text>
-        <Text style={{ fontSize: 14, color: '#6B7280', marginBottom: 16 }}>{item.description}</Text>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#374151', marginBottom: 16 }}>{safeTitle}</Text>
+        <Text style={{ fontSize: 14, color: '#6B7280', marginBottom: 16 }}>{safeDescription}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
           <MaterialIcons name="place" size={16} color="#9CA3AF" style={{ marginRight: 2 }} />
-          <Text style={{ fontSize: 13, color: '#6B7280', marginRight: 12, fontWeight: 500 }}>{item.city && item.state ? `${item.city}, ${item.state}` : item.city || item.state || '-'}{item.neighborhood ? ` - ${item.neighborhood}` : ''}</Text>
+          <Text style={{ fontSize: 13, color: '#6B7280', marginRight: 12, fontWeight: 500 }}>{
+            (safeCity && safeState ? `${safeCity}, ${safeState}` : (safeCity || safeState || '-')) + (safeNeighborhood ? ` - ${safeNeighborhood}` : '')
+          }</Text>
           <MaterialIcons name="event" size={15} color="#9CA3AF" style={{ marginRight: 2 }} />
-          <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 500 }}>{new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</Text>
+          <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 500 }}>{item.date ? new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}</Text>
         </View>
         {/* Barra divisória fina */}
         <View style={{ height: 1, backgroundColor: '#E5E7EB', marginBottom: 10 }} />
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>{item.owner_name}</Text>
+          <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>{safeOwnerName}</Text>
           <TouchableOpacity onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F3F4F6', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 }}>
             <MaterialIcons name="visibility" size={18} color="#1F2937" style={{ marginRight: 4 }} />
             <Text style={{ color: '#1F2937', fontSize: 14 }}>Ver detalhes</Text>
@@ -102,7 +111,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
 };
 
 const HomeScreen = ({ navigation, route }) => {
-  const { user, userProfile, refreshProfile, setUserProfile } = useAuth();
+  const { user, userProfile, refreshProfile, setUserProfile, signOut } = useAuth();
   // Corrige erro: garantir estado do modal de perfil
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   // Localidade do perfil (fixa)
@@ -441,6 +450,17 @@ const HomeScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
+      {/* Overlay para fechar o menu ao clicar fora */}
+      {user && showProfileMenu && (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowProfileMenu(false)}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }}
+        >
+          {/* TouchableOpacity precisa de filho, mesmo que vazio */}
+          <View />
+        </TouchableOpacity>
+      )}
       {/* App Bar ajustada: filtro de localidade ao lado da busca */}
       <View style={{ backgroundColor: '#fff', paddingTop: 56, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -457,69 +477,52 @@ const HomeScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity
-            onPress={() => setShowProfileMenu(true)}
-            style={{ marginLeft: 12 }}
-            accessibilityLabel="Abrir menu do perfil"
-          >
-            {userProfile?.avatar_url ? (
-              <Image source={{ uri: userProfile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E7EB' }} />
-            ) : (
-              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#60A5FA', alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>{userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          {/* Modal de menu de perfil */}
-          <Modal
-            visible={!!showProfileMenu}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setShowProfileMenu(false)}
-          >
-            <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
-              <View style={{ backgroundColor:'#fff', borderRadius:16, padding:24, minWidth:260, alignItems:'center' }}>
-                {userProfile?.avatar_url ? (
-                  <Image source={{ uri: userProfile.avatar_url }} style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#E5E7EB', marginBottom: 12 }} />
-                ) : (
-                  <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#60A5FA', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 28 }}>{userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}</Text>
-                  </View>
-                )}
-                <Text style={{ fontWeight:'bold', fontSize:16, color:'#1F2937', marginBottom: 4 }}>{userProfile?.name || 'Usuário'}</Text>
-                <Text style={{ color:'#6B7280', fontSize:14, marginBottom: 16 }}>{userProfile?.email}</Text>
-                <TouchableOpacity
-                  style={{ width: '100%', paddingVertical: 12, borderRadius: 8, backgroundColor: '#4F46E5', marginBottom: 10, alignItems: 'center' }}
-                  onPress={() => {
-                    setShowProfileMenu(false);
-                    navigation.navigate('Profile');
-                  }}
-                >
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Ver Perfil</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{ width: '100%', paddingVertical: 12, borderRadius: 8, backgroundColor: '#FEE2E2', alignItems: 'center' }}
-                  onPress={() => {
-                    setShowProfileMenu(false);
-                    if (typeof user?.signOut === 'function') user.signOut();
-                    else if (typeof navigation?.navigate === 'function') navigation.navigate('Login');
-                  }}
-                >
-                  <Text style={{ color: '#DC2626', fontWeight: 'bold', fontSize: 16 }}>Sair</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{ marginTop: 10 }}
-                  onPress={() => setShowProfileMenu(false)}
-                >
-                  <Text style={{ color: '#6B7280', fontSize: 15 }}>Fechar</Text>
-                </TouchableOpacity>
-              </View>
+          {user && (
+            <TouchableOpacity
+              onPress={() => setShowProfileMenu((prev) => !prev)}
+              style={{ marginLeft: 12 }}
+              accessibilityLabel="Abrir menu do perfil"
+            >
+              {userProfile?.avatar_url ? (
+                <Image source={{ uri: userProfile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E7EB' }} />
+              ) : (
+                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#60A5FA', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>{userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
+          {/* Modal de menu de perfil minimalista */}
+          {/* Perfil/Sair menu inline below profile photo */}
+          {user && showProfileMenu && (
+            <View style={{ position: 'absolute', top: 48, right: 18, backgroundColor: 'white', borderRadius: 10, elevation: 4, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8, paddingVertical: 8, paddingHorizontal: 16, zIndex: 100 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowProfileMenu(false);
+                  navigation.navigate('ProfileTab');
+                }}
+                style={{ paddingVertical: 8 }}
+              >
+                <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 16 }}>Perfil</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowProfileMenu(false);
+                  if (typeof signOut === 'function') signOut();
+                  else if (typeof navigation?.navigate === 'function') navigation.navigate('Login');
+                }}
+                style={{ paddingVertical: 8 }}
+              >
+                <Text style={{ color: '#DC2626', fontWeight: 'bold', fontSize: 16 }}>Sair</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setShowProfileMenu(false)}
+                style={{ paddingVertical: 8 }}
+              >
+                <Text style={{ color: '#6B7280', fontWeight: 'bold', fontSize: 16 }}>Cancelar</Text>
+              </TouchableOpacity>
             </View>
-          </Modal>
-        // ...existing code...
-          // Modal de menu de perfil
-          const [showProfileMenu, setShowProfileMenu] = useState(false);
+          )}
         </View>
         {/* Barra de pesquisa única, fundo branco */}
         <View style={{ marginTop: 16 }}>
@@ -814,7 +817,8 @@ const HomeScreen = ({ navigation, route }) => {
       {/* Quantidade de itens encontrados */}
       <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
         <Text style={{ color: '#6B7280', fontSize: 15 }}>
-          {filteredItems.filter(item => advancedFilters.category === 'all' ? true : item.category === advancedFilters.category).length} itens encontrados
+          {/* Corrigido: tudo dentro de <Text> */}
+          {String(filteredItems.filter(item => advancedFilters.category === 'all' ? true : item.category === advancedFilters.category).length) + ' itens encontrados'}
         </Text>
       </View>
       <FlatList
@@ -831,7 +835,8 @@ const HomeScreen = ({ navigation, route }) => {
             handleDeleteItem={handleDeleteItem}
             onPress={() => {
               if (!user) {
-                alert('Faça login para ver detalhes do item');
+                // Corrigido: nunca retorna alert() no JSX, apenas executa efeito colateral
+                Alert.alert('Atenção', 'Faça login para ver detalhes do item');
                 navigation.navigate('Login', {
                   redirectAfterLogin: null,
                 });
@@ -841,15 +846,22 @@ const HomeScreen = ({ navigation, route }) => {
             }}
           />
         )}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={item => {
+          // Defensive: always return a string, never undefined/null
+          if (item && item.id !== undefined && item.id !== null) {
+            return String(item.id);
+          }
+          // Fallback: use a random string (should not happen in production)
+          return `unknown-${Math.random().toString(36).substr(2, 9)}`;
+        }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        ListEmptyComponent={
+        ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>Nenhum item encontrado</Text>
           </View>
-        }
+        )}
       />
     </View>
   );
