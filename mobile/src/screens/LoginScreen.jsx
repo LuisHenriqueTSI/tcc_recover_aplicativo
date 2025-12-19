@@ -42,15 +42,23 @@ const LoginScreen = ({ navigation }) => {
     if (!validateForm()) return;
 
     try {
-      await signIn(email, password);
-      navigation.reset({
-        index: 0,
-        routes: [
-          { name: 'MainApp' }
-        ],
-      });
+      const result = await signIn(email, password);
+      // Se o usuário não confirmou o email, Supabase retorna erro
+      if (result?.user && !result?.user.confirmed_at && !result?.user.email_confirmed_at && !result?.session) {
+        Alert.alert(
+          'Confirmação necessária',
+          'Você precisa confirmar seu e-mail antes de fazer login. Verifique sua caixa de entrada.',
+        );
+        return;
+      }
+      // NÃO navegue manualmente após login. O RootNavigator já faz o redirecionamento automático.
+      // Removido navigation.reset()
     } catch (error) {
-      Alert.alert('Erro de Login', error.message || 'Falha ao fazer login');
+      if (error.message && error.message.toLowerCase().includes('email not confirmed')) {
+        Alert.alert('Confirmação necessária', 'Você precisa confirmar seu e-mail antes de fazer login. Verifique sua caixa de entrada.');
+      } else {
+        Alert.alert('Erro de Login', error.message || 'Falha ao fazer login');
+      }
     }
   };
 
@@ -59,6 +67,10 @@ const LoginScreen = ({ navigation }) => {
     <View style={styles.bgFull}>
       <ScrollView contentContainerStyle={styles.centeredScroll} keyboardShouldPersistTaps="handled">
         <Image source={require('../assets/logo_recover.png')} style={styles.logoImg} resizeMode="contain" />
+        <View style={{ alignItems: 'center', marginBottom: 8, marginTop: -8 }}>
+          <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#4F46E5', marginBottom: 2 }}>Entrar no aplicativo.</Text>
+          <Text style={{ fontSize: 15, color: '#6B7280', textAlign: 'center' }}>Acesse sua conta para continuar</Text>
+        </View>
         <View style={styles.formBox}>
           <Input
             label="E-mail"

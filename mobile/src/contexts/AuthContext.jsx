@@ -71,19 +71,13 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const signUp = useCallback(async (email, password, name) => {
+  const signUp = useCallback(async (email, password, name, location) => {
     try {
       console.log('[signUp] Registrando novo usuário...');
-      const result = await supabaseAuth.signUp(email, password, name);
-      setUser(result.user);
-      
-      // Fetch newly created profile
-      const profile = await userService.getUser(result.user.id);
-      if (profile) {
-        setUserProfile(profile);
-        setIsAdmin(profile.role === 'admin');
-      }
-      
+      const result = await supabaseAuth.signUp(email, password, name, location);
+      // NÃO atualize o estado do usuário após registro
+      // Removido setUser(result.user);
+      // Não busca perfil nem define isAdmin
       return result;
     } catch (error) {
       console.log('[signUp] Erro:', error.message);

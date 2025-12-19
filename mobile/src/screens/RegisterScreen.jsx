@@ -73,19 +73,23 @@ const RegisterScreen = ({ navigation }) => {
 
     try {
       const location = `${selectedCity}, ${selectedState}`;
-      await signUp(email, password, name, location);
+      const { user } = await signUp(email, password, name, location);
       Alert.alert(
-        'Sucesso',
-        'Conta criada! Por favor, confirme seu email e faça login.',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('Login'),
-          },
-        ]
-      );
+        'Confirmação necessária',
+        'Conta criada! Verifique seu e-mail para confirmar antes de fazer login.'
+      ); // Remove navegação após registro
     } catch (error) {
-      Alert.alert('Erro de Cadastro', error.message || 'Falha ao criar conta');
+      const msg = error.message ? error.message.toLowerCase() : '';
+      if (
+        msg.includes('already registered') ||
+        msg.includes('already exists') ||
+        msg.includes('duplicate key') ||
+        (msg.includes('email') && (msg.includes('exists') || msg.includes('used') || msg.includes('já está em uso')))
+      ) {
+        Alert.alert('Erro de Cadastro', 'Este e-mail já está em uso. Tente outro.');
+      } else {
+        Alert.alert('Erro de Cadastro', error.message || 'Falha ao criar conta');
+      }
     }
   };
 
@@ -93,6 +97,10 @@ const RegisterScreen = ({ navigation }) => {
     <View style={styles.bgFull}>
       <ScrollView contentContainerStyle={styles.centeredScroll} keyboardShouldPersistTaps="handled">
         <Image source={require('../assets/logo_recover.png')} style={styles.logoImg} resizeMode="contain" />
+        <View style={{ alignItems: 'center', marginBottom: 8, marginTop: -8 }}>
+          <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#4F46E5', marginBottom: 2 }}>Criar conta</Text>
+          <Text style={{ fontSize: 15, color: '#6B7280', textAlign: 'center' }}>Junte-se à nossa comunidade</Text>
+        </View>
         <View style={styles.formBox}>
           <Input
             label="Nome Completo"

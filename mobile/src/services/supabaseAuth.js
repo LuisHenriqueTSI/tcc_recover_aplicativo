@@ -58,6 +58,12 @@ export const signIn = async (email, password) => {
       throw error;
     }
 
+    // Bloqueia login se email não estiver confirmado
+    if (!data.user.confirmed_at) {
+      console.log('[signIn] Email não confirmado. Bloqueando acesso.');
+      throw new Error('Por favor, confirme seu email antes de fazer login.');
+    }
+
     console.log('[signIn] Login bem-sucedido');
     return { user: data.user, session: data.session };
   } catch (error) {
@@ -106,11 +112,15 @@ export const signUp = async (email, password, name, location) => {
       .single();
 
     if (profileError) {
-      console.log('[signUp] Erro ao criar perfil:', profileError.message);
-      throw profileError;
+      if (profileError.message && profileError.message.toLowerCase().includes('duplicate key')) {
+        console.log('[signUp] Perfil já existe, ignorando erro de chave duplicada.');
+      } else {
+        console.log('[signUp] Erro ao criar perfil:', profileError.message);
+        throw profileError;
+      }
+    } else {
+      console.log('[signUp] Perfil criado com sucesso');
     }
-
-    console.log('[signUp] Perfil criado com sucesso');
     return { user: data.user, session: data.session };
   } catch (error) {
     console.log('[signUp] Exceção:', error.message);
