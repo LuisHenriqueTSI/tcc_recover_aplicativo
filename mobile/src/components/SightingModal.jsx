@@ -6,9 +6,9 @@ import Button from './Button';
 const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
-  const [cellphone, setCellphone] = useState('');
   const [instagram, setInstagram] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+  const [facebook, setFacebook] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
 
@@ -18,17 +18,17 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
       description,
       location,
       contact_info: {
-        cellphone,
         instagram,
         whatsapp,
+        facebook,
       },
       photo_url: photoUrl,
     });
     setDescription('');
     setLocation('');
-    setCellphone('');
     setInstagram('');
     setWhatsapp('');
+    setFacebook('');
     setPhotoUrl('');
   };
 
@@ -68,14 +68,14 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
             value={location}
             onChangeText={setLocation}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Celular (apenas números)"
-            value={cellphone}
-            onChangeText={text => setCellphone(text.replace(/[^0-9]/g, ''))}
-            keyboardType="numeric"
-            maxLength={15}
-          />
+          {/* Removido campo de celular */}
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Facebook (opcional)"
+                      value={facebook}
+                      onChangeText={setFacebook}
+                      autoCapitalize="none"
+                    />
           <TextInput
             style={styles.input}
             placeholder="Instagram (opcional)"
@@ -85,9 +85,11 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
           />
           <TextInput
             style={styles.input}
-            placeholder="WhatsApp (opcional)"
+            placeholder="WhatsApp (apenas números)"
             value={whatsapp}
-            onChangeText={setWhatsapp}
+            onChangeText={text => setWhatsapp(text.replace(/[^0-9]/g, ''))}
+            keyboardType="numeric"
+            maxLength={15}
             autoCapitalize="none"
           />
           <TouchableOpacity onPress={handlePickImage} style={{ marginBottom: 10, backgroundColor: '#E5E7EB', borderRadius: 8, padding: 10, alignItems: 'center' }}>

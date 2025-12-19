@@ -1,3 +1,12 @@
+function formatContactInfo(info: any) {
+  if (!info) return "(não fornecido)";
+  if (typeof info === "string") return escapeHtml(info);
+  let out = [];
+  if (info.whatsapp) out.push("💬 WhatsApp: " + escapeHtml(info.whatsapp));
+  if (info.instagram) out.push("📸 Instagram: @" + escapeHtml(info.instagram));
+  if (info.facebook) out.push("📘 Facebook: " + escapeHtml(info.facebook));
+  return out.length ? out.join("<br>") : "(não fornecido)";
+}
 // @ts-nocheck
 /// <reference types="https://deno.land/std@0.224.0/types.d.ts" />
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
@@ -120,19 +129,24 @@ Local:
 ${location}
 
 Contato do usuário:
-${record.contact_info || "(não fornecido)"}
+${typeof record.contact_info === "object" ?
+  [
+    record.contact_info.whatsapp ? `WhatsApp: ${record.contact_info.whatsapp}` : null,
+    record.contact_info.instagram ? `Instagram: @${record.contact_info.instagram}` : null,
+    record.contact_info.facebook ? `Facebook: ${record.contact_info.facebook}` : null
+  ].filter(Boolean).join("\n") : (record.contact_info || "(não fornecido)")}
 
 Veja mais detalhes:
 ${sightingPage}
 `;
 
     const html =
-`<p>Você recebeu um novo avistamento para seu item <strong>${escapeHtml(itemTitle)}</strong>.</p>
-<p><strong>Descrição:</strong><br>${escapeHtml(description)}</p>
-<p><strong>Local:</strong><br>${escapeHtml(location)}</p>
-${record.contact_info ? `<p><strong>Contato:</strong><br>${escapeHtml(record.contact_info)}</p>` : ""}
-${photoHtml}
-<p><a href="${sightingPage}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px;">Ver detalhes</a></p>`;
+  `<p>Você recebeu um novo avistamento para seu item <strong>${escapeHtml(itemTitle)}</strong>.</p>
+  <p><strong>Descrição:</strong><br>${escapeHtml(description)}</p>
+  <p><strong>Local:</strong><br>${escapeHtml(location)}</p>
+  ${record.contact_info ? `<p><strong>Contato:</strong><br>${formatContactInfo(record.contact_info)}</p>` : ""}
+  ${photoHtml}
+  <p><a href="${sightingPage}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px;">Ver detalhes</a></p>`;
 
     await sendEmail({
       to: ownerProfile.email,

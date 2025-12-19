@@ -339,11 +339,11 @@ const ItemDetailScreen = ({ route, navigation }) => {
           ) : (
             sightings.map((s, idx) => {
               // Compatibilidade: contact_info pode ser string (antigo) ou objeto (novo)
-              let cellphone = '', instagram = '', whatsapp = '', contatoExtra = '';
+              let instagram = '', whatsapp = '', facebook = '', contatoExtra = '';
               if (s.contact_info && typeof s.contact_info === 'object') {
-                cellphone = s.contact_info.cellphone || '';
                 instagram = s.contact_info.instagram || '';
                 whatsapp = s.contact_info.whatsapp || '';
+                facebook = s.contact_info.facebook || '';
               } else if (typeof s.contact_info === 'string' && s.contact_info.trim() !== '') {
                 // Se for string, exibe como contato extra
                 contatoExtra = s.contact_info;
@@ -362,12 +362,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
                     <Image source={{ uri: s.photo_url }} style={{ width: '100%', height: 120, borderRadius: 8, marginBottom: 4 }} />
                   ) : null}
                   {s.location ? <Text style={{ color: '#6B7280', fontSize: 12 }}>Local: {s.location}</Text> : null}
-                  {(cellphone || instagram || whatsapp || contatoExtra) ? (
+                  {(instagram || whatsapp || facebook || contatoExtra) ? (
                     <View style={{ marginTop: 4 }}>
                       <Text style={{ color: '#6B7280', fontSize: 12, fontWeight: 'bold' }}>Contato:</Text>
-                      {cellphone ? <Text style={{ color: '#6B7280', fontSize: 12 }}>📱 Celular: {cellphone}</Text> : null}
                       {instagram ? <Text style={{ color: '#6B7280', fontSize: 12 }}>📸 Instagram: @{instagram}</Text> : null}
                       {whatsapp ? <Text style={{ color: '#6B7280', fontSize: 12 }}>💬 WhatsApp: {whatsapp}</Text> : null}
+                      {facebook ? <Text style={{ color: '#6B7280', fontSize: 12 }}>📘 Facebook: {facebook}</Text> : null}
                       {contatoExtra ? <Text style={{ color: '#6B7280', fontSize: 12 }}>{contatoExtra}</Text> : null}
                     </View>
                   ) : null}
