@@ -10,7 +10,7 @@ import {
   Image,
   FlatList,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, FontAwesome, FontAwesome5, Entypo } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import * as itemsService from '../services/items';
@@ -167,7 +167,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleReportSighting = () => {
     if (!user) {
-      Alert.alert('Login Necessário', 'Faça login para reportar avistamentos');
+      Alert.alert('Login Necessário', 'Faça login para comentar');
       navigation.navigate('Login');
       return;
     }
@@ -187,7 +187,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
       });
       setSightingModalVisible(false);
       loadSightings();
-      Alert.alert('Sucesso', 'Comentário/avistamento enviado!');
+      Alert.alert('Sucesso', 'Comentário enviado!');
     } catch (e) {
       Alert.alert('Erro', 'Não foi possível enviar o comentário.');
     } finally {
@@ -326,14 +326,30 @@ const ItemDetailScreen = ({ route, navigation }) => {
         {/* Contagem de Fotos */}
         {photos && photos.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Fotos ({photos.length})</Text>
+            <Text style={styles.sectionTitle}>Fotos</Text>
           </View>
         )}
 
 
-        {/* Comentários / Avistamentos */}
+        {/* Comentários */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Comentários e Avistamentos</Text>
+          <Text style={styles.sectionTitle}>
+            Comentários{typeof sightings.length === 'number' ? ` (${sightings.length})` : ''}
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+            <Button
+              title="Adicionar Comentário"
+              onPress={handleReportSighting}
+              style={{ flex: 1 }}
+            />
+            {!isOwner && (
+              <Button
+                title="💬 Enviar Mensagem"
+                onPress={handleSendMessage}
+                style={{ flex: 1 }}
+              />
+            )}
+          </View>
           {sightings.length === 0 ? (
             <Text style={{ color: '#6B7280' }}>Nenhum comentário ainda.</Text>
           ) : (
@@ -365,9 +381,24 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   {(instagram || whatsapp || facebook || contatoExtra) ? (
                     <View style={{ marginTop: 4 }}>
                       <Text style={{ color: '#6B7280', fontSize: 12, fontWeight: 'bold' }}>Contato:</Text>
-                      {instagram ? <Text style={{ color: '#6B7280', fontSize: 12 }}>📸 Instagram: @{instagram}</Text> : null}
-                      {whatsapp ? <Text style={{ color: '#6B7280', fontSize: 12 }}>💬 WhatsApp: {whatsapp}</Text> : null}
-                      {facebook ? <Text style={{ color: '#6B7280', fontSize: 12 }}>📘 Facebook: {facebook}</Text> : null}
+                      {instagram ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <FontAwesome name="instagram" size={14} color="#C13584" style={{ marginRight: 4 }} />
+                          <Text style={{ color: '#6B7280', fontSize: 12 }}>@{instagram}</Text>
+                        </View>
+                      ) : null}
+                      {whatsapp ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <FontAwesome name="whatsapp" size={14} color="#25D366" style={{ marginRight: 4 }} />
+                          <Text style={{ color: '#6B7280', fontSize: 12 }}>{whatsapp}</Text>
+                        </View>
+                      ) : null}
+                      {facebook ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <FontAwesome name="facebook-square" size={14} color="#1877F3" style={{ marginRight: 4 }} />
+                          <Text style={{ color: '#6B7280', fontSize: 12 }}>{facebook}</Text>
+                        </View>
+                      ) : null}
                       {contatoExtra ? <Text style={{ color: '#6B7280', fontSize: 12 }}>{contatoExtra}</Text> : null}
                     </View>
                   ) : null}
@@ -375,11 +406,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
               );
             })
           )}
-          <Button
-            title="Adicionar Comentário/Avistamento"
-            onPress={handleReportSighting}
-            style={{ marginTop: 10 }}
-          />
         </View>
 
         {/* Botões de Ação */}
@@ -393,9 +419,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 <MaterialIcons name="delete" size={24} color="#DC2626" />
               </TouchableOpacity>
             </>
-          ) : (
-            <Button title="💬 Enviar Mensagem" onPress={handleSendMessage} style={styles.actionButton} />
-          )}
+          ) : null}
         </View>
 
         <SightingModal
