@@ -30,7 +30,7 @@ const SobreScreen = ({ navigation }) => {
         <Image source={require('../assets/logo_recover.png')} style={styles.logoImg} resizeMode="contain" />
       </View>
       {/* <Text style={styles.title}>Recover</Text> */}
-      <Text style={styles.subtitle}>Reconectando pessoas às suas memórias perdidas</Text>
+      <Text style={styles.subtitle}>Reconectando pessoas aos seus pertences perdidos</Text>
       <Text style={styles.desc}>
         Encontre animais, objetos, documentos e muito mais. Nossa comunidade ajuda milhares de pessoas todos os dias.
       </Text>

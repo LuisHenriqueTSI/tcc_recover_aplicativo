@@ -47,35 +47,38 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
   const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
   const showCarousel = photos.length > 1;
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress}>
-      <Card style={{ padding: 0, marginHorizontal: 12, marginVertical: 14, borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 }}>
+    <Card style={{ padding: 0, marginHorizontal: 12, marginVertical: 14, borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 }}>
       {/* Imagem/Carrossel */}
       <View style={{ position: 'relative', width: '100%', height: CARD_IMAGE_HEIGHT }}>
         {photos.length > 0 ? (
           <>
             {showCarousel ? (
-              <FlatList
-                data={photos}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(photo, idx) => photo.id ? String(photo.id) : String(idx)}
-                renderItem={({ item: photo }) => (
-                  <Image
-                    source={{ uri: photo.url }}
-                    style={{ width: SCREEN_WIDTH, height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
-                    resizeMode="cover"
-                  />
+              <View style={{ width: SCREEN_WIDTH, height: CARD_IMAGE_HEIGHT, alignSelf: 'center', justifyContent: 'center', alignItems: 'center' }}>
+                <Image
+                  source={{ uri: photos[carouselIndex]?.url }}
+                  style={{ width: SCREEN_WIDTH, height: CARD_IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
+                  resizeMode="cover"
+                />
+                {/* Botões minimalistas de navegação */}
+                {photos.length > 1 && (
+                  <>
+                    <TouchableOpacity
+                      style={{ position: 'absolute', left: 10, top: '50%', transform: [{ translateY: -20 }], backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: 16, padding: 8, zIndex: 2 }}
+                      onPress={() => setCarouselIndex(idx => Math.max(0, idx - 1))}
+                      disabled={carouselIndex === 0}
+                    >
+                      <Text style={{ color: '#fff', fontSize: 18 }}>{'<'}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ position: 'absolute', right: 10, top: '50%', transform: [{ translateY: -20 }], backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: 16, padding: 8, zIndex: 2 }}
+                      onPress={() => setCarouselIndex(idx => Math.min(photos.length - 1, idx + 1))}
+                      disabled={carouselIndex === photos.length - 1}
+                    >
+                      <Text style={{ color: '#fff', fontSize: 18 }}>{'>'}</Text>
+                    </TouchableOpacity>
+                  </>
                 )}
-                onMomentumScrollEnd={e => {
-                  const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-                  setCarouselIndex(index);
-                }}
-                style={{ width: SCREEN_WIDTH, alignSelf: 'center' }}
-                snapToInterval={SCREEN_WIDTH}
-                decelerationRate={0.98}
-                bounces={false}
-              />
+              </View>
             ) : (
               <Image
                 source={{ uri: photos[0].url }}
@@ -86,12 +89,9 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             {/* Indicador de múltiplas imagens estilo Instagram */}
             {showCarousel && (
               <View style={{ position: 'absolute', bottom: 10, alignSelf: 'center', flexDirection: 'row', gap: 4 }}>
-                {photos.slice(0, 5).map((photo, idx) => (
+                {photos.map((photo, idx) => (
                   <View key={photo.id || idx} style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: idx === carouselIndex ? '#fff' : '#d1d5db', marginHorizontal: 2, opacity: 0.8 }} />
                 ))}
-                {photos.length > 5 && (
-                  <Text style={{ color: '#fff', fontSize: 10, marginLeft: 4, opacity: 0.8 }}>+{photos.length - 5}</Text>
-                )}
               </View>
             )}
           </>
@@ -148,9 +148,12 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
           )}
           {/* Botões de editar/excluir removidos dos cards. */}
         </View>
+        {/* Botão minimalista para ver detalhes */}
+        <TouchableOpacity onPress={onPress} style={{ alignSelf: 'flex-end', marginTop: 8, padding: 6, borderRadius: 8, backgroundColor: '#E5E7EB' }}>
+          <Text style={{ color: '#4F46E5', fontSize: 13, fontWeight: 'bold' }}>Ver detalhes</Text>
+        </TouchableOpacity>
       </View>
-      </Card>
-    </TouchableOpacity>
+    </Card>
   );
 };
 
@@ -378,7 +381,9 @@ const HomeScreen = ({ navigation, route }) => {
   const handleSendMessage = (ownerId, itemId, itemStatus) => {
     if (!user) {
       alert('Faça login para enviar mensagens');
-      navigation.navigate('Login');
+      navigation.navigate('Login', {
+        redirectAfterLogin: null,
+      });
       return;
     }
     if (ownerId === user.id) {
@@ -733,7 +738,16 @@ const HomeScreen = ({ navigation, route }) => {
             handleSendMessage={handleSendMessage}
             handleEditItem={handleEditItem}
             handleDeleteItem={handleDeleteItem}
-            onPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
+            onPress={() => {
+              if (!user) {
+                alert('Faça login para ver detalhes do item');
+                navigation.navigate('Login', {
+                  redirectAfterLogin: null,
+                });
+                return;
+              }
+              navigation.navigate('ItemDetail', { itemId: item.id });
+            }}
           />
         )}
         keyExtractor={item => item.id.toString()}

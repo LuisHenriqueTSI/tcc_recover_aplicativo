@@ -89,6 +89,10 @@ export const signUp = async (email, password, name, location) => {
     });
 
     if (authError) {
+      // Trata erro de email já existente
+      if (authError.message && authError.message.toLowerCase().includes('email')) {
+        throw new Error('Este e-mail já está em uso. Tente outro.');
+      }
       console.log('[signUp] Erro auth:', authError.message);
       throw authError;
     }
