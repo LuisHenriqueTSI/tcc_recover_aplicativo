@@ -338,37 +338,16 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
     // Em modo edição, aceitar valores antigos - não obrigar a preencher tudo novamente
     if (editItem) {
-      // Se tem dados carregados do editItem, não precisa validar rigorosamente
-      const currentTitle = itemType === 'animal' ? animalName : title;
-      if (!currentTitle.trim() && !editItem.title) {
-        setError('Preencha o nome do item');
-        return false;
-      }
       if (!date.trim() && !editItem.date) {
         setError('Selecione a data');
         return false;
       }
-      if (!state.trim() && !editItem.state) {
-        setError('Selecione o estado');
-        return false;
-      }
-      if (!city.trim() && !editItem.city) {
-        setError('Selecione a cidade');
-        return false;
-      }
-      if (!neighborhood.trim() && !editItem.neighborhood) {
-        setError('Selecione o bairro');
-        return false;
-      }
+      // Localização e nome agora opcionais
       return true;
     }
 
     // Modo de CRIAÇÃO - validação rigorosa
-    const currentTitle = itemType === 'animal' ? animalName : title;
-    if (!currentTitle.trim()) {
-      setError('Preencha o nome do item');
-      return false;
-    }
+    // Nome do item/animal agora opcional
 
     const config = ITEM_TYPES[itemType];
 
@@ -390,18 +369,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
       setError('Selecione a data');
       return false;
     }
-    if (!state.trim()) {
-      setError('Selecione o estado');
-      return false;
-    }
-    if (!city.trim()) {
-      setError('Selecione a cidade');
-      return false;
-    }
-    if (!neighborhood.trim()) {
-      setError('Selecione o bairro');
-      return false;
-    }
+    // Localização agora opcional
     if (!status) {
       setError('Selecione se perdeu ou encontrou');
       return false;
@@ -417,11 +385,15 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
     try {
       // Definir corretamente o título para animal
-      const currentTitle = itemType === 'animal' ? animalName : title;
+      let currentTitle = itemType === 'animal' ? animalName : title;
+      // Se title estiver vazio, garantir valor padrão para evitar erro no banco
+      if (!currentTitle || currentTitle.trim() === '') {
+        currentTitle = 'Sem título';
+      }
       // Em modo edição, usar dados antigos se não foram modificados
       const toNull = v => (typeof v === 'string' && v.trim() === '' ? null : v);
       const itemData = {
-        title: toNull(currentTitle) || editItem?.title,
+        title: toNull(currentTitle) || editItem?.title || 'Sem título',
         description: toNull(description) || editItem?.description,
         state: toNull(state) || editItem?.state,
         city: toNull(city) || editItem?.city,
@@ -781,9 +753,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
           <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ paddingBottom: 180 }}>
             <View>
-              <View style={{ marginBottom: 24 }}>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1F2937', marginBottom: 8 }}>{editItem ? 'Editar Animal' : 'Detalhes do Animal'}</Text>
-              </View>
+
               {/* Status question at the top */}
               <View style={styles.statusContainer}>
                 <Text style={styles.label}>Você perdeu ou encontrou? *</Text>
@@ -818,6 +788,42 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   </TouchableOpacity>
                 </View>
               </View>
+
+              {/* Fotos do Animal - logo após status */}
+              <Text style={styles.title}>Fotos do Animal</Text>
+              <TouchableOpacity
+                style={styles.uploadButton}
+                onPress={pickImage}
+              >
+                <Text style={styles.uploadButtonText}>+ Adicionar Fotos</Text>
+              </TouchableOpacity>
+              {photos.length > 0 && (
+                <View style={styles.photosContainer}>
+                  <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
+                  <FlatList
+                    data={photos}
+                    keyExtractor={(_, i) => i.toString()}
+                    numColumns={3}
+                    scrollEnabled={false}
+                    renderItem={({ item, index }) => (
+                      <View style={styles.photoItem}>
+                        <Image
+                          source={{ uri: item.uri }}
+                          style={styles.photo}
+                        />
+                        <TouchableOpacity
+                          style={styles.removePhotoButton}
+                          onPress={() => removePhoto(index)}
+                        >
+                          <Text style={styles.removePhotoText}>✕</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  />
+                </View>
+              )}
+
+              {/* Campos detalhados do animal */}
               <Input
                 label="Nome do animal *"
                 placeholder="Ex: Thor"
@@ -928,39 +934,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   <Text style={styles.errorText}>{error}</Text>
                 </View>
               ) : null}
-
-              <Text style={styles.title}>Fotos do Animal</Text>
-              <TouchableOpacity
-                style={styles.uploadButton}
-                onPress={pickImage}
-              >
-                <Text style={styles.uploadButtonText}>+ Adicionar Fotos</Text>
-              </TouchableOpacity>
-              {photos.length > 0 && (
-                <View style={styles.photosContainer}>
-                  <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
-                  <FlatList
-                    data={photos}
-                    keyExtractor={(_, i) => i.toString()}
-                    numColumns={3}
-                    scrollEnabled={false}
-                    renderItem={({ item, index }) => (
-                      <View style={styles.photoItem}>
-                        <Image
-                          source={{ uri: item.uri }}
-                          style={styles.photo}
-                        />
-                        <TouchableOpacity
-                          style={styles.removePhotoButton}
-                          onPress={() => removePhoto(index)}
-                        >
-                          <Text style={styles.removePhotoText}>✕</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  />
-                </View>
-              )}
             </View>
           </ScrollView>
           <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
@@ -973,7 +946,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               />
               <Button
                 title="Próximo"
-                onPress={() => setStep(3)}
+                onPress={() => setStep(4)}
                 style={{ flex: 1, marginLeft: 8 }}
               />
             </View>
@@ -987,9 +960,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
       <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
         <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ paddingBottom: 180 }}>
           <View>
-            <View style={{ marginBottom: 24 }}>
-              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1F2937', marginBottom: 8 }}>{editItem ? 'Editar Item' : 'Detalhes do Item'}</Text>
-            </View>
+
             {/* Status question at the top */}
             <View style={styles.statusContainer}>
               <Text style={styles.label}>Você perdeu ou encontrou? *</Text>
@@ -1024,41 +995,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 </TouchableOpacity>
               </View>
             </View>
-            {config.fields.required.concat(config.fields.optional)
-              .filter(field => config.fieldLabels[field] && config.placeholders[field])
-              .map((field) => {
-                let value = '';
-                let onChangeText = () => {};
-                if (field === 'title') { value = title; onChangeText = setTitle; }
-                else if (field === 'brand') { value = brand; onChangeText = setBrand; }
-                else if (field === 'color') { value = color; onChangeText = setColor; }
-                else if (field === 'serialNumber') { value = serialNumber; onChangeText = setSerialNumber; }
-                return (
-                  <Input
-                    key={field}
-                    label={config.fieldLabels[field] + (config.fields.required.includes(field) ? ' *' : '')}
-                    placeholder={config.placeholders[field]}
-                    value={value}
-                    onChangeText={onChangeText}
-                    style={styles.input}
-                  />
-                );
-              })}
-            <Input
-              label="Descrição (opcional)"
-              placeholder="Descreva detalhes importantes..."
-              value={description}
-              onChangeText={setDescription}
-              multiline={true}
-              numberOfLines={4}
-              style={styles.input}
-            />
-            {error ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            ) : null}
-
+            {/* Fotos do Item - logo após status */}
             <Text style={styles.title}>Fotos do Item</Text>
 
             {itemType === 'document' && (
@@ -1105,6 +1042,52 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 )}
               </>
             )}
+
+            {/* Campos dinâmicos após fotos */}
+            {/* Campo de título sempre presente */}
+            <Input
+              key="title"
+              label={config.fieldLabels.title ? config.fieldLabels.title + (config.fields.required.includes('title') ? ' *' : '') : 'Título'}
+              placeholder={config.placeholders.title || 'Digite o título do item'}
+              value={title}
+              onChangeText={setTitle}
+              style={styles.input}
+            />
+            {/* Campos dinâmicos após fotos, exceto title */}
+            {config.fields.required.concat(config.fields.optional)
+              .filter(field => field !== 'title' && config.fieldLabels[field] && config.placeholders[field])
+              .map((field) => {
+                let value = '';
+                let onChangeText = () => {};
+                if (field === 'brand') { value = brand; onChangeText = setBrand; }
+                else if (field === 'color') { value = color; onChangeText = setColor; }
+                else if (field === 'serial_number' || field === 'serialNumber') { value = serialNumber; onChangeText = setSerialNumber; }
+                else { return null; }
+                return (
+                  <Input
+                    key={field}
+                    label={config.fieldLabels[field] + (config.fields.required.includes(field) ? ' *' : '')}
+                    placeholder={config.placeholders[field]}
+                    value={value}
+                    onChangeText={onChangeText}
+                    style={styles.input}
+                  />
+                );
+              })}
+            <Input
+              label="Descrição (opcional)"
+              placeholder="Descreva detalhes importantes..."
+              value={description}
+              onChangeText={setDescription}
+              multiline={true}
+              numberOfLines={4}
+              style={styles.input}
+            />
+            {error ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
           </View>
         </ScrollView>
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
@@ -1117,7 +1100,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
             />
             <Button
               title="Próximo"
-              onPress={() => setStep(3)}
+              onPress={() => setStep(4)}
               style={{ flex: 1, marginLeft: 8 }}
             />
           </View>
@@ -1133,9 +1116,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
         <Card style={styles.card}>
           <Text style={styles.title}>Localização e Tipo</Text>
 
-          {/* Estado */}
+          {/* Estado (opcional) */}
           <View style={styles.input}>
-            <Text style={styles.label}>Estado *</Text>
+            <Text style={styles.label}>Estado</Text>
             <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
               <Picker
                 selectedValue={state}
@@ -1154,9 +1137,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
             </View>
           </View>
 
-          {/* Cidade */}
+          {/* Cidade (opcional) */}
           <View style={styles.input}>
-            <Text style={styles.label}>Cidade *</Text>
+            <Text style={styles.label}>Cidade</Text>
             <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
               <Picker
                 selectedValue={city}
@@ -1175,9 +1158,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
             </View>
           </View>
 
-          {/* Bairro */}
+          {/* Bairro (opcional) */}
           <View style={styles.input}>
-            <Text style={styles.label}>Bairro *</Text>
+            <Text style={styles.label}>Bairro</Text>
             <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
               <Picker
                 selectedValue={neighborhood}
@@ -1295,7 +1278,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
             <Button
               title="Voltar"
               variant="secondary"
-              onPress={() => setStep(3)}
+              onPress={() => setStep(2)}
               style={{ flex: 1 }}
             />
             <Button
