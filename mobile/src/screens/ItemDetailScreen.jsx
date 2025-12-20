@@ -193,23 +193,30 @@ const ItemDetailScreen = ({ route, navigation }) => {
     if (isLocalPhoto && photoUrlToSave !== editCommentObj.photo_url) {
       try {
         if (sightingsService.uploadSightingPhoto) {
+          console.log('[handleSaveEditComment] Chamando uploadSightingPhoto com:', photoUrlToSave);
           const uploadedUrl = await sightingsService.uploadSightingPhoto(editCommentObj.id, photoUrlToSave);
+          console.log('[handleSaveEditComment] URL retornada do upload:', uploadedUrl);
           if (uploadedUrl && !uploadedUrl.startsWith('file:///')) {
             photoUrlToSave = uploadedUrl;
           } else {
             // Upload não retornou URL pública, mantém anterior
-            photoUrlToSave = editCommentObj.photo_url || '';
+            photoUrlToSave = editCommentObj.photo_url;
           }
         }
       } catch (err) {
         uploadError = err;
-        photoUrlToSave = editCommentObj.photo_url || '';
+        photoUrlToSave = editCommentObj.photo_url;
       }
     }
     // Nunca salva file:/// no banco
     if (photoUrlToSave && photoUrlToSave.startsWith('file:///')) {
-      photoUrlToSave = editCommentObj.photo_url || '';
+      photoUrlToSave = editCommentObj.photo_url;
     }
+    // Se não houve alteração de foto, mantém a anterior
+    if (!photoUrlToSave && editCommentObj.photo_url) {
+      photoUrlToSave = editCommentObj.photo_url;
+    }
+    console.log('[handleSaveEditComment] Valor final de photoUrlToSave:', photoUrlToSave);
     try {
       await sightingsService.updateSighting(editCommentObj.id, {
         description: editCommentText.trim(),

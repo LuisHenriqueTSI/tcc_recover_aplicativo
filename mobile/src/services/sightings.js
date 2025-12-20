@@ -27,6 +27,7 @@ export const updateSighting = async (sightingId, updates) => {
   }
 };
 import { supabase } from '../lib/supabase';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export const createSighting = async (sightingData) => {
   try {
@@ -143,34 +144,49 @@ export const deleteSighting = async (sightingId) => {
 
 export const uploadSightingPhoto = async (sightingId, photoUri) => {
   try {
-    console.log('[uploadSightingPhoto] Enviando foto do avistamento...');
+    if (!photoUri) throw new Error('photoUri indefinido');
+    let uri = photoUri;
+    if (!uri.startsWith('file://')) uri = 'file://' + uri;
 
-    const filename = photoUri.split('/').pop();
-    const ext = filename.split('.').pop();
-    const filepath = `sightings/${sightingId}/${Date.now()}.${ext}`;
+    const ext = photoUri.split('.').pop() || 'jpg';
+    const timestamp = Date.now();
+    const filepath = `sightings/${sightingId}/${timestamp}.${ext}`;
 
-    const response = await fetch(photoUri);
-    const blob = await response.blob();
+    // Lê o arquivo como base64 e converte para Uint8Array
+    const fileInfo = await FileSystem.getInfoAsync(uri);
+    if (!fileInfo.exists) {
+      console.log('[uploadSightingPhoto] Arquivo não encontrado:', uri);
+      throw new Error('Arquivo não encontrado no caminho: ' + uri);
+    }
+    const fileData = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+    const fileBuffer = Uint8Array.from(atob(fileData), c => c.charCodeAt(0));
 
-    const { data, error } = await supabase.storage
+    // Upload para Supabase Storage
+    const { error } = await supabase.storage
       .from('sightings')
-      .upload(filepath, blob, {
+      .upload(filepath, fileBuffer, {
+        upsert: true,
         contentType: `image/${ext}`,
       });
 
     if (error) {
       console.log('[uploadSightingPhoto] Upload error:', error.message);
-      throw error;
+      throw new Error('Erro ao enviar foto para o Supabase Storage.');
     }
 
+    // Get public URL
     const { data: urlData } = supabase.storage
       .from('sightings')
       .getPublicUrl(filepath);
 
-    console.log('[uploadSightingPhoto] Foto enviada com sucesso');
+    if (!urlData || !urlData.publicUrl) {
+      console.log('[uploadSightingPhoto] Falha ao obter URL pública:', urlData);
+      throw new Error('URL pública não gerada.');
+    }
+    console.log('[uploadSightingPhoto] Foto enviada com sucesso:', urlData.publicUrl);
     return urlData.publicUrl;
   } catch (error) {
-    console.log('[uploadSightingPhoto] Exceção:', error.message);
+    console.log('[uploadSightingPhoto] Exceção detalhada:', error);
     throw error;
   }
 };

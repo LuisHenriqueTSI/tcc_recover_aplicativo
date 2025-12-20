@@ -111,6 +111,19 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
 };
 
 const HomeScreen = ({ navigation, route }) => {
+    // Limpa filtros ao sair da HomeScreen
+    useEffect(() => {
+      const unsubscribe = navigation.addListener('blur', () => {
+        setFilters({ status: 'all', category: 'all', showMyItems: false });
+        setSearchTerm('');
+        setLocationFilter('');
+        setLocationFilterTouched(false);
+        setEditState(userProfile?.state || '');
+        setEditCity(userProfile?.city || '');
+        setEditNeighborhood('');
+      });
+      return unsubscribe;
+    }, [navigation, userProfile]);
   const { user, userProfile, refreshProfile, setUserProfile, signOut } = useAuth();
   // Corrige erro: garantir estado do modal de perfil
   const [showProfileMenu, setShowProfileMenu] = useState(false);
