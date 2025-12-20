@@ -350,7 +350,12 @@ const MainStack = () => {
       <Stack.Screen
         name="RegisterItem"
         component={RegisterItemScreen}
-        options={{ title: 'Registrar/Editar Item' }}
+        options={{
+          title: 'Registrar/Editar Item',
+          headerStyle: { backgroundColor: '#4F46E5' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
       />
       <Stack.Screen
         name="Dashboard"

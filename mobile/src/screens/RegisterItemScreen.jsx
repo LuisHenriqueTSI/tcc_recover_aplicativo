@@ -669,23 +669,82 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </ScrollView>
       );
     }
-    // Criação normal
+    // Criação normal - novo design
+    const typeOptions = [
+      {
+        key: 'animal',
+        label: 'Animal',
+        desc: 'Cães, gatos, aves e outros animais',
+        color: '#F3E8FF',
+        icon: '🐾',
+      },
+      {
+        key: 'object',
+        label: 'Objeto',
+        desc: 'Celulares, carteiras, chaves, etc.',
+        color: '#E0E7FF',
+        icon: '📦',
+      },
+      {
+        key: 'document',
+        label: 'Documento',
+        desc: 'RG, CPF, CNH, cartões, etc.',
+        color: '#FEF3C7',
+        icon: '📄',
+      },
+      {
+        key: 'electronics',
+        label: 'Eletrônico',
+        desc: 'Celulares, notebooks, fones, etc.',
+        color: '#DBF4FF',
+        icon: '💻',
+      },
+      {
+        key: 'jewelry',
+        label: 'Joia/Acessório',
+        desc: 'Anéis, colares, relógios, etc.',
+        color: '#FFF1F2',
+        icon: '💍',
+      },
+      {
+        key: 'clothing',
+        label: 'Roupa',
+        desc: 'Jaquetas, calças, bonés, etc.',
+        color: '#ECFDF5',
+        icon: '👕',
+      },
+      {
+        key: 'outro',
+        label: 'Outro',
+        desc: 'Outros itens não listados',
+        color: '#FEE2E2',
+        icon: '🧩',
+      },
+    ];
     return (
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Selecione o Tipo</Text>
-          <Text style={styles.subtitle}>Escolha a categoria do item</Text>
+      <ScrollView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+        <View style={{ alignItems: 'center', marginTop: 32, marginBottom: 12 }}>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>Registrar Item</Text>
+          <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 16 }}>Primeiro, selecione a categoria do item</Text>
         </View>
-        <View style={styles.typeGrid}>
-          {Object.entries(ITEM_TYPES).map(([key, type]) => (
+        <View style={{ gap: 18, marginHorizontal: 12, marginBottom: 32 }}>
+          {typeOptions.map((opt) => (
             <TouchableOpacity
-              key={key}
-              style={styles.typeButton}
-              onPress={() => handleSelectType(key)}
+              key={opt.key}
+              onPress={() => handleSelectType(opt.key)}
+              style={{ borderRadius: 18, backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, marginBottom: 0 }}
+              activeOpacity={0.85}
             >
-              <Card style={styles.typeCard}>
-                <Text style={styles.typeLabel}>{type.label}</Text>
-              </Card>
+              <View style={{ flexDirection: 'row', alignItems: 'center', padding: 18 }}>
+                <View style={{ backgroundColor: opt.color, borderRadius: 12, width: 48, height: 48, alignItems: 'center', justifyContent: 'center', marginRight: 18 }}>
+                  <Text style={{ fontSize: 26 }}>{opt.icon}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#1F2937' }}>{opt.label}</Text>
+                  <Text style={{ color: '#6B7280', fontSize: 15, marginTop: 2 }}>{opt.desc}</Text>
+                </View>
+                <Text style={{ fontSize: 22, color: '#D1D5DB', marginLeft: 8 }}>→</Text>
+              </View>
             </TouchableOpacity>
           ))}
         </View>
