@@ -676,50 +676,50 @@ const RegisterItemScreen = ({ navigation, route }) => {
         label: 'Animal',
         desc: 'Cães, gatos, aves e outros animais',
         color: '#F3E8FF',
-        icon: '🐾',
+        icon: '🐾'
       },
       {
         key: 'object',
         label: 'Objeto',
         desc: 'Celulares, carteiras, chaves, etc.',
         color: '#E0E7FF',
-        icon: '📦',
+        icon: '📦'
       },
       {
         key: 'document',
         label: 'Documento',
         desc: 'RG, CPF, CNH, cartões, etc.',
         color: '#FEF3C7',
-        icon: '📄',
+        icon: '📄'
       },
       {
         key: 'electronics',
         label: 'Eletrônico',
         desc: 'Celulares, notebooks, fones, etc.',
         color: '#DBF4FF',
-        icon: '💻',
+        icon: '💻'
       },
       {
         key: 'jewelry',
         label: 'Joia/Acessório',
         desc: 'Anéis, colares, relógios, etc.',
         color: '#FFF1F2',
-        icon: '💍',
+        icon: '💍'
       },
       {
         key: 'clothing',
         label: 'Roupa',
         desc: 'Jaquetas, calças, bonés, etc.',
         color: '#ECFDF5',
-        icon: '👕',
+        icon: '👕'
       },
       {
         key: 'outro',
         label: 'Outro',
         desc: 'Outros itens não listados',
         color: '#FEE2E2',
-        icon: '🧩',
-      },
+        icon: '🧩'
+      }
     ];
     return (
       <ScrollView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
@@ -778,94 +778,221 @@ const RegisterItemScreen = ({ navigation, route }) => {
     // Animal: formulário detalhado
     if (itemType === 'animal') {
       return (
-        <ScrollView style={styles.container}>
-          <Card style={styles.card}>
-            <Text style={styles.title}>{editItem ? 'Editar Animal' : 'Detalhes do Animal'}</Text>
-            <Input
-              label="Nome do animal *"
-              placeholder="Ex: Thor"
-              value={animalName}
-              onChangeText={setAnimalName}
-              style={styles.input}
-            />
-            <Input
-              label="Espécie *"
-              placeholder="Ex: Cachorro, Gato"
-              value={animalSpecies}
-              onChangeText={setAnimalSpecies}
-              style={styles.input}
-            />
-            <Input
-              label="Raça *"
-              placeholder="Ex: Golden Retriever"
-              value={animalBreed}
-              onChangeText={setAnimalBreed}
-              style={styles.input}
-            />
-            <Input
-              label="Cor *"
-              placeholder="Ex: Dourado"
-              value={color}
-              onChangeText={setColor}
-              style={styles.input}
-            />
-            <View style={styles.input}>
-              <Text style={styles.label}>Porte *</Text>
-              <Picker
-                selectedValue={animalSize}
-                onValueChange={setAnimalSize}
-                style={{ height: 48 }}
+        <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+          <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ paddingBottom: 180 }}>
+            <View>
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1F2937', marginBottom: 8 }}>{editItem ? 'Editar Animal' : 'Detalhes do Animal'}</Text>
+              </View>
+              {/* Status question at the top */}
+              <View style={styles.statusContainer}>
+                <Text style={styles.label}>Você perdeu ou encontrou? *</Text>
+                <View style={styles.statusOptions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.statusButton,
+                      status === 'lost' && styles.statusButtonActive,
+                    ]}
+                    onPress={() => setStatus('lost')}
+                  >
+                    <Text style={[
+                      styles.statusText,
+                      status === 'lost' && styles.statusTextActive,
+                    ]}>
+                      Perdi
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.statusButton,
+                      status === 'found' && styles.statusButtonActive,
+                    ]}
+                    onPress={() => setStatus('found')}
+                  >
+                    <Text style={[
+                      styles.statusText,
+                      status === 'found' && styles.statusTextActive,
+                    ]}>
+                      Achei
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <Input
+                label="Nome do animal *"
+                placeholder="Ex: Thor"
+                value={animalName}
+                onChangeText={setAnimalName}
+                style={styles.input}
+              />
+              <Input
+                label="Espécie *"
+                placeholder="Ex: Cachorro, Gato"
+                value={animalSpecies}
+                onChangeText={setAnimalSpecies}
+                style={styles.input}
+              />
+              <Input
+                label="Raça *"
+                placeholder="Ex: Golden Retriever"
+                value={animalBreed}
+                onChangeText={setAnimalBreed}
+                style={styles.input}
+              />
+              <Input
+                label="Cor *"
+                placeholder="Ex: Dourado"
+                value={color}
+                onChangeText={setColor}
+                style={styles.input}
+              />
+              <Input
+                label="Porte *"
+                placeholder="Ex: Grande, Médio, Pequeno"
+                value={animalSize}
+                onChangeText={setAnimalSize}
+                style={styles.input}
+              />
+              <Input
+                label="Idade *"
+                placeholder="Ex: Filhote, Adulto, Idoso"
+                value={animalAge}
+                onChangeText={setAnimalAge}
+                style={styles.input}
+              />
+              <Input
+                label="Coleira (descrição)"
+                placeholder="Ex: Coleira azul com medalha"
+                value={animalCollar}
+                onChangeText={setAnimalCollar}
+                style={styles.input}
+              />
+              <View style={styles.input}>
+                <Text style={styles.label}>Microchipado? *</Text>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <TouchableOpacity
+                    style={[
+                      styles.statusButton,
+                      animalMicrochip === 'Sim' && styles.statusButtonActive,
+                    ]}
+                    onPress={() => setAnimalMicrochip('Sim')}
+                  >
+                    <Text style={[
+                      styles.statusText,
+                      animalMicrochip === 'Sim' && styles.statusTextActive,
+                    ]}>
+                      Sim
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.statusButton,
+                      animalMicrochip === 'Não' && styles.statusButtonActive,
+                    ]}
+                    onPress={() => setAnimalMicrochip('Não')}
+                  >
+                    <Text style={[
+                      styles.statusText,
+                      animalMicrochip === 'Não' && styles.statusTextActive,
+                    ]}>
+                      Não
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <Input
+                label="Características especiais"
+                placeholder="Ex: Coleira azul, cicatriz na orelha"
+                value={serialNumber}
+                onChangeText={setSerialNumber}
+                style={styles.input}
+              />
+              <Input
+                label="Raça/Tipo"
+                placeholder="Ex: Vira-lata, Poodle, Persa"
+                value={brand}
+                onChangeText={setBrand}
+                style={styles.input}
+              />
+              <Input
+                label="Descrição (opcional)"
+                placeholder="Descreva detalhes importantes..."
+                value={description}
+                onChangeText={setDescription}
+                multiline={true}
+                numberOfLines={4}
+                style={styles.input}
+              />
+              {error ? (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              ) : null}
+
+              <Text style={styles.title}>Fotos do Animal</Text>
+              <TouchableOpacity
+                style={styles.uploadButton}
+                onPress={pickImage}
               >
-                <Picker.Item label="Selecione o porte" value="" />
-                <Picker.Item label="Grande" value="Grande" />
-                <Picker.Item label="Médio" value="Médio" />
-                <Picker.Item label="Pequeno" value="Pequeno" />
-              </Picker>
+                <Text style={styles.uploadButtonText}>+ Adicionar Fotos</Text>
+              </TouchableOpacity>
+              {photos.length > 0 && (
+                <View style={styles.photosContainer}>
+                  <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
+                  <FlatList
+                    data={photos}
+                    keyExtractor={(_, i) => i.toString()}
+                    numColumns={3}
+                    scrollEnabled={false}
+                    renderItem={({ item, index }) => (
+                      <View style={styles.photoItem}>
+                        <Image
+                          source={{ uri: item.uri }}
+                          style={styles.photo}
+                        />
+                        <TouchableOpacity
+                          style={styles.removePhotoButton}
+                          onPress={() => removePhoto(index)}
+                        >
+                          <Text style={styles.removePhotoText}>✕</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  />
+                </View>
+              )}
             </View>
-            <View style={styles.input}>
-              <Text style={styles.label}>Idade *</Text>
-              <Picker
-                selectedValue={animalAge}
-                onValueChange={setAnimalAge}
-                style={{ height: 48 }}
-              >
-                <Picker.Item label="Selecione a idade" value="" />
-                <Picker.Item label="Filhote (até 1 ano)" value="Filhote" />
-                <Picker.Item label="Jovem (1-3 anos)" value="Jovem" />
-                <Picker.Item label="Adulto (3-7 anos)" value="Adulto" />
-                <Picker.Item label="Idoso (7+ anos)" value="Idoso" />
-              </Picker>
+          </ScrollView>
+          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
+            <View style={{ flexDirection: 'row' }}>
+              <Button
+                title="Cancelar"
+                variant="secondary"
+                onPress={() => navigation.goBack()}
+                style={{ flex: 1 }}
+              />
+              <Button
+                title="Próximo"
+                onPress={() => setStep(3)}
+                style={{ flex: 1, marginLeft: 8 }}
+              />
             </View>
-            <Input
-              label="Coleira (descrição)"
-              placeholder="Ex: Coleira azul com medalha"
-              value={animalCollar}
-              onChangeText={setAnimalCollar}
-              style={styles.input}
-            />
-            <View style={styles.input}>
-              <Text style={styles.label}>Microchipado? *</Text>
-              <Picker
-                selectedValue={animalMicrochip}
-                onValueChange={setAnimalMicrochip}
-                style={{ height: 48 }}
-              >
-                <Picker.Item label="Selecione" value="" />
-                <Picker.Item label="Sim" value="Sim" />
-                <Picker.Item label="Não" value="Não" />
-              </Picker>
+          </View>
+        </View>
+      );
+    }
+
+    // Outros tipos: formulário dinâmico
+    return (
+      <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+        <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ paddingBottom: 180 }}>
+          <View>
+            <View style={{ marginBottom: 24 }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1F2937', marginBottom: 8 }}>{editItem ? 'Editar Item' : 'Detalhes do Item'}</Text>
             </View>
-            <Input
-              label="Descrição (opcional)"
-              placeholder="Descreva detalhes importantes..."
-              value={description}
-              onChangeText={setDescription}
-              multiline={true}
-              numberOfLines={4}
-              style={styles.input}
-            />
+            {/* Status question at the top */}
             <View style={styles.statusContainer}>
-              <Text style={styles.label}>Status *</Text>
+              <Text style={styles.label}>Você perdeu ou encontrou? *</Text>
               <View style={styles.statusOptions}>
                 <TouchableOpacity
                   style={[
@@ -897,102 +1024,91 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 </TouchableOpacity>
               </View>
             </View>
+            {config.fields.required.concat(config.fields.optional)
+              .filter(field => config.fieldLabels[field] && config.placeholders[field])
+              .map((field) => {
+                let value = '';
+                let onChangeText = () => {};
+                if (field === 'title') { value = title; onChangeText = setTitle; }
+                else if (field === 'brand') { value = brand; onChangeText = setBrand; }
+                else if (field === 'color') { value = color; onChangeText = setColor; }
+                else if (field === 'serialNumber') { value = serialNumber; onChangeText = setSerialNumber; }
+                return (
+                  <Input
+                    key={field}
+                    label={config.fieldLabels[field] + (config.fields.required.includes(field) ? ' *' : '')}
+                    placeholder={config.placeholders[field]}
+                    value={value}
+                    onChangeText={onChangeText}
+                    style={styles.input}
+                  />
+                );
+              })}
+            <Input
+              label="Descrição (opcional)"
+              placeholder="Descreva detalhes importantes..."
+              value={description}
+              onChangeText={setDescription}
+              multiline={true}
+              numberOfLines={4}
+              style={styles.input}
+            />
             {error ? (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>{error}</Text>
               </View>
             ) : null}
-            <View style={styles.navigation}>
-              <Button
-                title="Cancelar"
-                variant="secondary"
-                onPress={() => navigation.goBack()}
-                style={{ flex: 1 }}
-              />
-              <Button
-                title="Próximo"
-                onPress={() => setStep(3)}
-                style={{ flex: 1, marginLeft: 8 }}
-              />
-            </View>
-          </Card>
-        </ScrollView>
-      );
-    }
 
-    // Outros tipos: formulário dinâmico
-    return (
-      <ScrollView style={styles.container}>
-        <Card style={styles.card}>
-          <Text style={styles.title}>{editItem ? 'Editar Item' : 'Detalhes do Item'}</Text>
-          {config.fields.required.concat(config.fields.optional)
-            .filter(field => config.fieldLabels[field] && config.placeholders[field])
-            .map((field) => {
-              let value = '';
-              let onChangeText = () => {};
-              if (field === 'title') { value = title; onChangeText = setTitle; }
-              else if (field === 'brand') { value = brand; onChangeText = setBrand; }
-              else if (field === 'color') { value = color; onChangeText = setColor; }
-              else if (field === 'serialNumber') { value = serialNumber; onChangeText = setSerialNumber; }
-              return (
-                <Input
-                  key={field}
-                  label={config.fieldLabels[field] + (config.fields.required.includes(field) ? ' *' : '')}
-                  placeholder={config.placeholders[field]}
-                  value={value}
-                  onChangeText={onChangeText}
-                  style={styles.input}
-                />
-              );
-            })}
-          <Input
-            label="Descrição (opcional)"
-            placeholder="Descreva detalhes importantes..."
-            value={description}
-            onChangeText={setDescription}
-            multiline={true}
-            numberOfLines={4}
-            style={styles.input}
-          />
-          <View style={styles.statusContainer}>
-            <Text style={styles.label}>Status *</Text>
-            <View style={styles.statusOptions}>
-              <TouchableOpacity
-                style={[
-                  styles.statusButton,
-                  status === 'lost' && styles.statusButtonActive,
-                ]}
-                onPress={() => setStatus('lost')}
-              >
-                <Text style={[
-                  styles.statusText,
-                  status === 'lost' && styles.statusTextActive,
-                ]}>
-                  Perdi
+            <Text style={styles.title}>Fotos do Item</Text>
+
+            {itemType === 'document' && (
+              <View style={styles.warningContainer}>
+                <Text style={styles.warningText}>
+                  ⚠️ Documentos não podem ter fotos por segurança
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.statusButton,
-                  status === 'found' && styles.statusButtonActive,
-                ]}
-                onPress={() => setStatus('found')}
-              >
-                <Text style={[
-                  styles.statusText,
-                  status === 'found' && styles.statusTextActive,
-                ]}>
-                  Achei
-                </Text>
-              </TouchableOpacity>
-            </View>
+              </View>
+            )}
+
+            {itemType !== 'document' && (
+              <>
+                <TouchableOpacity
+                  style={styles.uploadButton}
+                  onPress={pickImage}
+                >
+                  <Text style={styles.uploadButtonText}>+ Adicionar Fotos</Text>
+                </TouchableOpacity>
+
+                {photos.length > 0 && (
+                  <View style={styles.photosContainer}>
+                    <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
+                    <FlatList
+                      data={photos}
+                      keyExtractor={(_, i) => i.toString()}
+                      numColumns={3}
+                      scrollEnabled={false}
+                      renderItem={({ item, index }) => (
+                        <View style={styles.photoItem}>
+                          <Image
+                            source={{ uri: item.uri }}
+                            style={styles.photo}
+                          />
+                          <TouchableOpacity
+                            style={styles.removePhotoButton}
+                            onPress={() => removePhoto(index)}
+                          >
+                            <Text style={styles.removePhotoText}>✕</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    />
+                  </View>
+                )}
+              </>
+            )}
           </View>
-          {error ? (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          ) : null}
-          <View style={styles.navigation}>
+        </ScrollView>
+        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
+          <View style={{ flexDirection: 'row' }}>
             <Button
               title="Cancelar"
               variant="secondary"
@@ -1005,78 +1121,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
               style={{ flex: 1, marginLeft: 8 }}
             />
           </View>
-        </Card>
-      </ScrollView>
-    );
-  }
-
-  // Step 3: Fotos
-  if (step === 3) {
-    return (
-      <ScrollView style={styles.container}>
-        <Card style={styles.card}>
-          <Text style={styles.title}>Fotos do Item</Text>
-
-          {itemType === 'document' && (
-            <View style={styles.warningContainer}>
-              <Text style={styles.warningText}>
-                ⚠️ Documentos não podem ter fotos por segurança
-              </Text>
-            </View>
-          )}
-
-          {itemType !== 'document' && (
-            <>
-              <TouchableOpacity
-                style={styles.uploadButton}
-                onPress={pickImage}
-              >
-                <Text style={styles.uploadButtonText}>+ Adicionar Fotos</Text>
-              </TouchableOpacity>
-
-              {photos.length > 0 && (
-                <View style={styles.photosContainer}>
-                  <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
-                  <FlatList
-                    data={photos}
-                    keyExtractor={(_, i) => i.toString()}
-                    numColumns={3}
-                    scrollEnabled={false}
-                    renderItem={({ item, index }) => (
-                      <View style={styles.photoItem}>
-                        <Image
-                          source={{ uri: item.uri }}
-                          style={styles.photo}
-                        />
-                        <TouchableOpacity
-                          style={styles.removePhotoButton}
-                          onPress={() => removePhoto(index)}
-                        >
-                          <Text style={styles.removePhotoText}>✕</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  />
-                </View>
-              )}
-            </>
-          )}
-
-          <View style={styles.navigation}>
-            <Button
-              title="Voltar"
-              variant="secondary"
-              onPress={() => setStep(2)}
-              style={{ flex: 1 }}
-            />
-            <Button
-              title="Próximo"
-              onPress={() => setStep(4)}
-              style={{ flex: 1, marginLeft: 8 }}
-            />
-          </View>
-        </Card>
-      </ScrollView>
+        </View>
+      </View>
     );
   }
 
