@@ -94,7 +94,7 @@ const ProfileScreen = ({ navigation }) => {
         {/* Avatar centralizado e email */}
         <View style={styles.profileTopContainer}>
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-            <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.8} style={styles.avatarTouchable}>
+            <View style={styles.avatarTouchable}>
               {avatarUrl ? (
                 <Image source={{ uri: avatarUrl }} style={styles.avatarImg} />
               ) : (
@@ -103,7 +103,7 @@ const ProfileScreen = ({ navigation }) => {
                 </View>
               )}
               {uploading && <ActivityIndicator style={{ position: 'absolute', alignSelf: 'center', top: '40%' }} size="small" color="#6366F1" />}
-            </TouchableOpacity>
+            </View>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
             <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
