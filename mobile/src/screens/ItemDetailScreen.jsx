@@ -1,3 +1,35 @@
+  // Função para carregar comentários (deve vir antes de qualquer uso)
+  const loadSightings = async () => {
+    try {
+      const data = await sightingsService.getSightings(itemId);
+      setSightings(data);
+    } catch (e) {
+      setSightings([]);
+    }
+  };
+
+
+
+  // Excluir comentário
+  const handleDeleteComment = async (comment) => {
+    Alert.alert(
+      'Excluir comentário',
+      'Tem certeza que deseja excluir este comentário?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir', style: 'destructive', onPress: async () => {
+            try {
+              await sightingsService.deleteSighting(comment.id);
+              loadSightings();
+            } catch (error) {
+              console.error('Falha ao excluir comentário:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -9,6 +41,8 @@ import {
   Alert,
   Image,
   FlatList,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { MaterialIcons, FontAwesome, FontAwesome5, Entypo } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -34,6 +68,15 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [sightings, setSightings] = useState([]);
   const [sightingModalVisible, setSightingModalVisible] = useState(false);
   const [sightingLoading, setSightingLoading] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editCommentText, setEditCommentText] = useState('');
+  const [editCommentObj, setEditCommentObj] = useState(null);
+  const [editCommentLocation, setEditCommentLocation] = useState('');
+  const [editCommentInstagram, setEditCommentInstagram] = useState('');
+  const [editCommentWhatsapp, setEditCommentWhatsapp] = useState('');
+  const [editCommentFacebook, setEditCommentFacebook] = useState('');
+  const [editCommentPhotoUrl, setEditCommentPhotoUrl] = useState('');
+  const [editUploading, setEditUploading] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
@@ -103,30 +146,110 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleDeleteItem = () => {
     Alert.alert(
-      'Confirmar Exclusão',
-      'Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.',
+      'Excluir Item',
+      'Tem certeza que deseja excluir este item?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: async () => {
+          text: 'Excluir', style: 'destructive', onPress: async () => {
+            setDeleting(true);
             try {
-              setDeleting(true);
               await itemsService.deleteItem(itemId);
-              Alert.alert('Sucesso', 'Item excluído com sucesso');
+              Alert.alert('Sucesso', 'Item excluído com sucesso!');
               navigation.goBack();
             } catch (error) {
               Alert.alert('Erro', 'Falha ao excluir item: ' + error.message);
             } finally {
               setDeleting(false);
             }
-          },
-        },
+          }
+        }
       ]
     );
   };
 
+  // Abrir modal de edição
+  const handleEditComment = (comment) => {
+    setEditCommentObj(comment);
+    setEditCommentText(comment.description || '');
+    setEditCommentLocation(comment.location || '');
+    setEditCommentInstagram((comment.contact_info && comment.contact_info.instagram) || '');
+    setEditCommentWhatsapp((comment.contact_info && comment.contact_info.whatsapp) || '');
+    setEditCommentFacebook((comment.contact_info && comment.contact_info.facebook) || '');
+    setEditCommentPhotoUrl(comment.photo_url || '');
+    setEditModalVisible(true);
+  };
+
+  // Salvar edição
+  const handleSaveEditComment = async () => {
+    if (!editCommentObj || !editCommentText.trim()) {
+      setEditModalVisible(false);
+      return;
+    }
+    let photoUrlToSave = editCommentPhotoUrl;
+    // Só tenta upload se a foto for local e diferente da original
+    const isLocalPhoto = photoUrlToSave && photoUrlToSave.startsWith('file:///');
+    let uploadError = null;
+    if (isLocalPhoto && photoUrlToSave !== editCommentObj.photo_url) {
+      try {
+        if (sightingsService.uploadSightingPhoto) {
+          const uploadedUrl = await sightingsService.uploadSightingPhoto(editCommentObj.id, photoUrlToSave);
+          if (uploadedUrl && !uploadedUrl.startsWith('file:///')) {
+            photoUrlToSave = uploadedUrl;
+          } else {
+            // Upload não retornou URL pública, mantém anterior
+            photoUrlToSave = editCommentObj.photo_url || '';
+          }
+        }
+      } catch (err) {
+        uploadError = err;
+        photoUrlToSave = editCommentObj.photo_url || '';
+      }
+    }
+    // Nunca salva file:/// no banco
+    if (photoUrlToSave && photoUrlToSave.startsWith('file:///')) {
+      photoUrlToSave = editCommentObj.photo_url || '';
+    }
+    try {
+      await sightingsService.updateSighting(editCommentObj.id, {
+        description: editCommentText.trim(),
+        location: editCommentLocation,
+        contact_info: {
+          instagram: editCommentInstagram,
+          whatsapp: editCommentWhatsapp,
+          facebook: editCommentFacebook,
+        },
+        photo_url: photoUrlToSave,
+      });
+      setEditModalVisible(false);
+      setEditCommentObj(null);
+      setEditCommentText('');
+      setEditCommentLocation('');
+      setEditCommentInstagram('');
+      setEditCommentWhatsapp('');
+      setEditCommentFacebook('');
+      setEditCommentPhotoUrl('');
+      await loadSightings();
+      await loadItemDetails();
+      if (uploadError) {
+        Alert.alert('Comentário atualizado', 'Foto não foi atualizada devido a erro de upload.');
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Falha ao editar comentário: ' + error.message);
+    }
+  };
+
+  // Cancelar edição
+  const handleCancelEditComment = () => {
+    setEditModalVisible(false);
+    setEditCommentObj(null);
+    setEditCommentText('');
+    setEditCommentLocation('');
+    setEditCommentInstagram('');
+    setEditCommentWhatsapp('');
+    setEditCommentFacebook('');
+    setEditCommentPhotoUrl('');
+  };
   const handleMarkAsResolved = () => {
     Alert.alert(
       'Marcar como Resolvido',
@@ -247,10 +370,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
         </View>
 
         {/* Título e descrição */}
-        <View style={{ padding: 24, paddingBottom: 0 }}>
-          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>{item.title}</Text>
-          <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 12 }}>{item.description}</Text>
-        </View>
+    <View style={{ padding: 24, paddingBottom: 0 }}>
+      <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>{item.title}</Text>
+      <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 12 }}>{item.description}</Text>
+    </View>
 
         {/* Bairro e Data */}
         <View style={{ flexDirection: 'row', gap: 16, paddingHorizontal: 24, marginTop: 8, marginBottom: 8 }}>
@@ -314,27 +437,31 @@ const ItemDetailScreen = ({ route, navigation }) => {
         ) : item.category === 'document' ? (
           <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
             <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Documento</Text>
-            <View style={{ gap: 12 }}>
+            <View style={{ gap: 0 }}>
               <InfoRow label="Tipo de Documento" value={item.extra_fields?.brand} />
+              <Separator />
               <InfoRow label="Nome do Proprietário" value={item.extra_fields?.owner_name} />
+              <Separator />
               <InfoRow label="Número do Documento" value={item.extra_fields?.serial_number} />
             </View>
           </View>
         ) : item.category === 'object' ? (
           <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
             <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Objeto</Text>
-            <View style={{ gap: 12 }}>
+            <View style={{ gap: 0 }}>
               <InfoRow label="Marca" value={item.extra_fields?.brand} />
+              <Separator />
               <InfoRow label="Cor" value={item.extra_fields?.color} />
+              <Separator />
               <InfoRow label="Características" value={item.extra_fields?.serial_number} />
             </View>
           </View>
         ) : (
           <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
             <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Item</Text>
-            <View style={{ gap: 12 }}>
-              {item.extra_fields?.brand && <InfoRow label="Tipo" value={item.extra_fields?.brand} />}
-              {item.extra_fields?.color && <InfoRow label="Cor" value={item.extra_fields?.color} />}
+            <View style={{ gap: 0 }}>
+              {item.extra_fields?.brand && <><InfoRow label="Tipo" value={item.extra_fields?.brand} /><Separator /></>}
+              {item.extra_fields?.color && <><InfoRow label="Cor" value={item.extra_fields?.color} /><Separator /></>}
               {item.extra_fields?.serial_number && <InfoRow label="Características" value={item.extra_fields?.serial_number} />}
             </View>
           </View>
@@ -352,7 +479,20 @@ const ItemDetailScreen = ({ route, navigation }) => {
               )}
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937' }}>{owner.name}</Text>
-                <Text style={{ fontSize: 13, color: '#6B7280' }}>Membro desde {owner.created_at ? new Date(owner.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : ''}</Text>
+                   <Text style={{ fontSize: 13, color: '#6B7280' }}>Membro desde {owner.created_at ? new Date(owner.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : ''}</Text>
+                   {item.created_at && (
+                     <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>
+                       {(() => {
+                         const data = new Date(item.created_at);
+                         const dia = data.getDate().toString().padStart(2, '0');
+                         const mes = data.toLocaleString('pt-BR', { month: 'long' });
+                         const ano = data.getFullYear();
+                         const hora = data.getHours().toString().padStart(2, '0');
+                         const minuto = data.getMinutes().toString().padStart(2, '0');
+                         return `Publicado em ${dia} de ${mes} de ${ano} às ${hora}:${minuto}`;
+                       })()}
+                     </Text>
+                   )}
               </View>
             </View>
             {!isOwner && (
@@ -362,6 +502,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
             )}
           </View>
         )}
+
 
         {/* Contato Rápido */}
         {owner && owner.phone && (
@@ -396,51 +537,65 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 contatoExtra = s.contact_info;
               }
               return (
-                <View key={s.id || idx} style={{ backgroundColor: '#F9FAFB', borderRadius: 10, padding: 12, marginBottom: 12 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                    {s.profiles?.avatar_url ? (
-                      <Image source={{ uri: s.profiles.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8, backgroundColor: '#E5E7EB' }} />
-                    ) : (
-                      <View style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8, backgroundColor: '#E5E7EB' }} />
-                    )}
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontWeight: 'bold', color: '#1F2937', fontSize: 14 }}>{s.profiles?.name || 'Usuário'}</Text>
-                      <Text style={{ color: '#6B7280', fontSize: 11 }}>{new Date(s.created_at).toLocaleString('pt-BR')}</Text>
+                <React.Fragment key={s.id || idx}>
+                  <View style={{ backgroundColor: '#F9FAFB', borderRadius: 10, padding: 12, marginBottom: 12 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                      {s.profiles?.avatar_url ? (
+                        <Image source={{ uri: s.profiles.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8, backgroundColor: '#E5E7EB' }} />
+                      ) : (
+                        <View style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8, backgroundColor: '#E5E7EB' }} />
+                      )}
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontWeight: 'bold', color: '#1F2937', fontSize: 14 }}>{s.profiles?.name || 'Usuário'}</Text>
+                        <Text style={{ color: '#6B7280', fontSize: 11 }}>{new Date(s.created_at).toLocaleString('pt-BR')}</Text>
+                      </View>
+                      {/* Botões de editar/excluir se o usuário for o autor */}
+                      {user && s.user_id === user.id && (
+                        <View style={{ flexDirection: 'row', marginLeft: 8 }}>
+                          <TouchableOpacity onPress={() => handleEditComment(s)} style={{ marginRight: 8 }}>
+                            <MaterialIcons name="edit" size={18} color="#6366F1" />
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => handleDeleteComment(s)}>
+                            <MaterialIcons name="delete" size={18} color="#EF4444" />
+                          </TouchableOpacity>
+                        </View>
+                      )}
                     </View>
+                    <Text style={{ color: '#374151', marginBottom: 4, fontSize: 13 }}>{s.description}</Text>
+                    {s.photo_url ? (
+                      <Image source={{ uri: s.photo_url }} style={{ width: '100%', height: 110, borderRadius: 8, marginBottom: 4 }} />
+                    ) : null}
+                    {s.location ? <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 2 }}>Local: {s.location}</Text> : null}
+                    {(instagram || whatsapp || facebook || contatoExtra) ? (
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                        {instagram ? (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
+                            <FontAwesome name="instagram" size={14} color="#C13584" style={{ marginRight: 4 }} />
+                            <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>@{instagram}</Text>
+                          </View>
+                        ) : null}
+                        {whatsapp ? (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
+                            <FontAwesome name="whatsapp" size={14} color="#25D366" style={{ marginRight: 4 }} />
+                            <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{whatsapp}</Text>
+                          </View>
+                        ) : null}
+                        {facebook ? (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
+                            <FontAwesome name="facebook-square" size={14} color="#1877F3" style={{ marginRight: 4 }} />
+                            <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{facebook}</Text>
+                          </View>
+                        ) : null}
+                        {contatoExtra ? (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
+                            <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{contatoExtra}</Text>
+                          </View>
+                        ) : null}
+                      </View>
+                    ) : null}
                   </View>
-                  <Text style={{ color: '#374151', marginBottom: 4, fontSize: 13 }}>{s.description}</Text>
-                  {s.photo_url ? (
-                    <Image source={{ uri: s.photo_url }} style={{ width: '100%', height: 110, borderRadius: 8, marginBottom: 4 }} />
-                  ) : null}
-                  {s.location ? <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 2 }}>Local: {s.location}</Text> : null}
-                  {(instagram || whatsapp || facebook || contatoExtra) ? (
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-                      {instagram ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
-                          <FontAwesome name="instagram" size={14} color="#C13584" style={{ marginRight: 4 }} />
-                          <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>@{instagram}</Text>
-                        </View>
-                      ) : null}
-                      {whatsapp ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
-                          <FontAwesome name="whatsapp" size={14} color="#25D366" style={{ marginRight: 4 }} />
-                          <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{whatsapp}</Text>
-                        </View>
-                      ) : null}
-                      {facebook ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
-                          <FontAwesome name="facebook-square" size={14} color="#1877F3" style={{ marginRight: 4 }} />
-                          <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{facebook}</Text>
-                        </View>
-                      ) : null}
-                      {contatoExtra ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
-                          <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{contatoExtra}</Text>
-                        </View>
-                      ) : null}
-                    </View>
-                  ) : null}
-                </View>
+                  {idx < sightings.length - 1 && <Separator />}
+                </React.Fragment>
               );
             })
           )}
@@ -453,11 +608,94 @@ const ItemDetailScreen = ({ route, navigation }) => {
           loading={sightingLoading}
         />
 
+        {/* Modal de edição de comentário */}
+        <Modal
+          visible={editModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={handleCancelEditComment}
+        >
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 24, width: '85%' }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>Editar comentário</Text>
+              <TextInput
+                value={editCommentText}
+                onChangeText={setEditCommentText}
+                multiline
+                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 10, minHeight: 60, marginBottom: 10, fontSize: 15 }}
+                placeholder="Digite seu comentário"
+              />
+              <TextInput
+                value={editCommentLocation}
+                onChangeText={setEditCommentLocation}
+                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 15 }}
+                placeholder="Local (opcional)"
+              />
+              <TextInput
+                value={editCommentFacebook}
+                onChangeText={setEditCommentFacebook}
+                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 15 }}
+                placeholder="Facebook (opcional)"
+                autoCapitalize="none"
+              />
+              <TextInput
+                value={editCommentInstagram}
+                onChangeText={setEditCommentInstagram}
+                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 15 }}
+                placeholder="Instagram (opcional)"
+                autoCapitalize="none"
+              />
+              <TextInput
+                value={editCommentWhatsapp}
+                onChangeText={text => setEditCommentWhatsapp(text.replace(/[^0-9]/g, ''))}
+                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 15 }}
+                placeholder="WhatsApp (apenas números)"
+                keyboardType="numeric"
+                maxLength={15}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                onPress={async () => {
+                  const { launchImageLibraryAsync, requestMediaLibraryPermissionsAsync, MediaTypeOptions } = await import('expo-image-picker');
+                  const permissionResult = await requestMediaLibraryPermissionsAsync();
+                  if (!permissionResult.granted) {
+                    alert('Permissão para acessar fotos é necessária!');
+                    return;
+                  }
+                  setEditUploading(true);
+                  let pickerResult = await launchImageLibraryAsync({
+                    mediaTypes: MediaTypeOptions.Images,
+                    allowsEditing: true,
+                    quality: 0.7,
+                  });
+                  setEditUploading(false);
+                  if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
+                    setEditCommentPhotoUrl(pickerResult.assets[0].uri);
+                  }
+                }}
+                style={{ marginBottom: 10, backgroundColor: '#E5E7EB', borderRadius: 8, padding: 10, alignItems: 'center' }}
+              >
+                <Text style={{ color: '#4F46E5', fontWeight: 'bold' }}>{editUploading ? 'Abrindo galeria...' : (editCommentPhotoUrl ? 'Trocar foto' : 'Adicionar foto')}</Text>
+              </TouchableOpacity>
+              {editCommentPhotoUrl ? (
+                <Image source={{ uri: editCommentPhotoUrl }} style={{ width: '100%', height: 110, borderRadius: 8, marginBottom: 10 }} />
+              ) : null}
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 12 }}>
+                <TouchableOpacity onPress={handleCancelEditComment} style={{ paddingVertical: 8, paddingHorizontal: 16 }}>
+                  <Text style={{ color: '#6B7280', fontWeight: 'bold', fontSize: 15 }}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleSaveEditComment} style={{ paddingVertical: 8, paddingHorizontal: 16 }}>
+                  <Text style={{ color: '#4F46E5', fontWeight: 'bold', fontSize: 15 }}>Salvar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
         <View style={{ height: 40 }} />
       </View>
     </ScrollView>
   );
-
 // Componente InfoRow para exibir label e valor alinhados (usado para outros tipos)
 function InfoRow({ label, value }) {
   return (

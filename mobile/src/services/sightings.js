@@ -1,3 +1,31 @@
+export const updateSighting = async (sightingId, updates) => {
+  try {
+    let contact_info = updates.contact_info;
+    if (contact_info && typeof contact_info !== 'string') {
+      try {
+        contact_info = JSON.stringify(contact_info);
+      } catch {
+        contact_info = '';
+      }
+    }
+    const updatePayload = { ...updates, contact_info, updated_at: new Date().toISOString() };
+    console.log('[updateSighting] Atualizando avistamento:', sightingId, updatePayload);
+    const { data, error } = await supabase
+      .from('sightings')
+      .update(updatePayload)
+      .eq('id', sightingId)
+      .select();
+    if (error) {
+      console.log('[updateSighting] Erro:', error.message);
+      throw error;
+    }
+    console.log('[updateSighting] Avistamento atualizado com sucesso:', data);
+    return { success: true, data };
+  } catch (error) {
+    console.log('[updateSighting] Exceção:', error.message);
+    throw error;
+  }
+};
 import { supabase } from '../lib/supabase';
 
 export const createSighting = async (sightingData) => {
