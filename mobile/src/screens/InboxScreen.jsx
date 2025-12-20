@@ -5,6 +5,7 @@ import { Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, TextInput } from 'react-native';
 import { getConversations } from '../services/messages';
+import { getItemById } from '../services/items';
 import { useAuth } from '../contexts/AuthContext';
 import Card from '../components/Card';
 import { Feather } from '@expo/vector-icons';
@@ -30,8 +31,16 @@ const InboxScreen = () => {
     try {
       if (!user?.id) throw new Error('Usuário não autenticado');
       const convs = await getConversations(user.id);
-      setConversations(convs);
-      setFiltered(convs);
+      // Buscar título do item se não estiver presente
+      const convsWithTitles = await Promise.all(convs.map(async (conv) => {
+        if (!conv.itemTitle && conv.itemId) {
+          const item = await getItemById(conv.itemId);
+          return { ...conv, itemTitle: item?.title || '' };
+        }
+        return conv;
+      }));
+      setConversations(convsWithTitles);
+      setFiltered(convsWithTitles);
     } catch (err) {
       setError(err.message || 'Erro ao carregar conversas');
     } finally {
