@@ -1,5 +1,5 @@
-import React from 'react';
-import { TouchableOpacity, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { TouchableOpacity, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -179,40 +179,28 @@ const PublicStack = () => {
 
 
 
-// Auth Stack
-const AuthStack = () => {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        cardStyle: { backgroundColor: '#F9FAFB' },
-      }}
-    >
-      {/* WelcomeScreen removido do AuthStack */}
-      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
-    </Stack.Navigator>
-  );
-};
+
 
 // Main App Stack with Tabs
+import { getUnreadCount } from '../services/messages';
+
 const MainAppTabs = ({ navigation }) => {
-        <Tab.Screen
-          name="ChatTab"
-          component={InboxScreen}
-          options={{
-            title: 'Mensagens',
-            tabBarLabel: 'Mensagens',
-            headerTitle: 'Mensagens',
-            headerStyle: { backgroundColor: '#4F46E5' },
-            headerTintColor: '#fff',
-            headerTitleStyle: { fontWeight: 'bold' },
-            tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="chat" size={size} color={color} />
-            ),
-          }}
-        />
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchUnread() {
+      if (user?.id) {
+        const count = await getUnreadCount(user.id);
+        if (isMounted) setUnreadCount(count);
+      }
+    }
+    fetchUnread();
+    // Opcional: polling a cada 30s
+    const interval = setInterval(fetchUnread, 30000);
+    return () => { isMounted = false; clearInterval(interval); };
+  }, [user]);
 
   return (
     <Tab.Navigator
@@ -250,7 +238,30 @@ const MainAppTabs = ({ navigation }) => {
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="chat" size={size} color={color} />
+            <View style={{ width: size + 10, height: size + 10, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+              <MaterialIcons name="chat" size={size} color={color} />
+              {unreadCount > 0 && (
+                <View style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -4,
+                  backgroundColor: '#EF4444',
+                  borderRadius: 10,
+                  minWidth: 18,
+                  height: 18,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  paddingHorizontal: 4,
+                  zIndex: 99,
+                  borderWidth: 2,
+                  borderColor: '#fff',
+                }}>
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 11 }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </View>
           ),
         }}
       />
@@ -350,14 +361,11 @@ const MainStack = () => {
       <Stack.Screen
         name="RegisterItem"
         component={RegisterItemScreen}
-        options={({ route }) => {
-          const isEdit = !!(route?.params && (route.params.editItem || route.params.isEdit));
-          return {
-            title: isEdit ? 'Editar Item' : 'Registrar Item',
-            headerStyle: { backgroundColor: '#4F46E5' },
-            headerTintColor: '#fff',
-            headerTitleStyle: { fontWeight: 'bold' },
-          };
+        options={{
+          title: 'Registrar/Editar Item',
+          headerStyle: { backgroundColor: '#4F46E5' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
       <Stack.Screen

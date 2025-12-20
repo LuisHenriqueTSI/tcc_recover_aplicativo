@@ -256,12 +256,20 @@ const ItemDetailScreen = ({ route, navigation }) => {
       return;
     }
     if (!item) return;
-    // Mensagem pronta conforme status
+    // Mensagem automática depende do papel do usuário
     let initialMessage = '';
     if (item.status === 'lost') {
-      initialMessage = 'Oi, você achou meu item?';
+      if (user.id === item.owner_id) {
+        initialMessage = 'Oi, você achou meu item?';
+      } else {
+        initialMessage = 'Oi, eu encontrei seu item!';
+      }
     } else if (item.status === 'found') {
-      initialMessage = 'Oi, eu encontrei seu item!';
+      if (user.id === item.owner_id) {
+        initialMessage = 'Oi, você encontrou meu item?';
+      } else {
+        initialMessage = 'Oi, você achou meu item?';
+      }
     }
     navigation.navigate('ChatScreen', {
       conversation: {
