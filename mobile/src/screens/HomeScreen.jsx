@@ -475,25 +475,25 @@ const HomeScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       )}
       {/* App Bar ajustada: filtro de localidade ao lado da busca */}
-      <View style={{ backgroundColor: '#fff', paddingTop: 56, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }}>
+      <View style={{ backgroundColor: '#4F46E5', paddingTop: 56, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#4F46E5' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-            <Text style={{ color: '#1F2937', fontWeight: 'bold', fontSize: 22, marginBottom: 2 }}>Recover</Text>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22, marginBottom: 2 }}>Recover</Text>
             {userProfile?.city && userProfile?.state && (
               <TouchableOpacity
                 style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}
                 onPress={() => setShowProfileLocationModal(true)}
                 accessibilityLabel={`Localidade do perfil: ${userProfile.city}, ${userProfile.state}`}
               >
-                <MaterialIcons name="place" size={16} color="#9CA3AF" style={{ marginRight: 2 }} />
-                <Text style={{ color: '#9CA3AF', fontSize: 14, fontWeight: '400' }}>{userProfile.city}, {userProfile.state}</Text>
+                <MaterialIcons name="place" size={16} color="#fff" style={{ marginRight: 2 }} />
+                <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>{userProfile.city}, {userProfile.state}</Text>
               </TouchableOpacity>
             )}
           </View>
           {user && (
             <TouchableOpacity
               onPress={() => setShowProfileMenu((prev) => !prev)}
-              style={{ marginLeft: 12 }}
+              style={{ marginLeft: 12, borderWidth: 2, borderColor: '#fff', borderRadius: 22, padding: 2 }}
               accessibilityLabel="Abrir menu do perfil"
             >
               {userProfile?.avatar_url ? (
@@ -528,19 +528,13 @@ const HomeScreen = ({ navigation, route }) => {
               >
                 <Text style={{ color: '#DC2626', fontWeight: 'bold', fontSize: 16 }}>Sair</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setShowProfileMenu(false)}
-                style={{ paddingVertical: 8 }}
-              >
-                <Text style={{ color: '#6B7280', fontWeight: 'bold', fontSize: 16 }}>Cancelar</Text>
-              </TouchableOpacity>
             </View>
           )}
         </View>
         {/* Barra de pesquisa única, fundo branco */}
         <View style={{ marginTop: 16 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 14, paddingHorizontal: 16, height: 44 }}>
-            <MaterialIcons name="search" size={22} color="#6B7280" style={{ marginRight: 8 }} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 16, height: 44 }}>
+            <MaterialIcons name="search" size={22} color="#4F46E5" style={{ marginRight: 8 }} />
             <Input
               placeholder="Buscar itens perdidos ou encontrados."
               value={searchTerm}
