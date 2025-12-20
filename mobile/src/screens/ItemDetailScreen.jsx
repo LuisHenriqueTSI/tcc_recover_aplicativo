@@ -107,8 +107,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleEditItem = () => {
     if (!item) return;
+    console.log('[Editar publicação] Navegando para edição com item:', item);
     navigation.navigate('RegisterItem', {
       editItem: item,
+      modo: 'editar', // opcional: pode ser útil para debug
     });
   };
 
@@ -437,22 +439,22 @@ const ItemDetailScreen = ({ route, navigation }) => {
           <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
             <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Documento</Text>
             <View style={{ gap: 0 }}>
-              <InfoRow label="Tipo de Documento" value={item.extra_fields?.brand} />
+              <InfoRow label="Tipo de Documento" value={item.brand || item.extra_fields?.brand || 'Não informado'} />
               <Separator />
               <InfoRow label="Nome do Proprietário" value={item.extra_fields?.owner_name} />
               <Separator />
-              <InfoRow label="Número do Documento" value={item.extra_fields?.serial_number} />
+              <InfoRow label="Número do Documento" value={item.serial_number || item.extra_fields?.serial_number || 'Não informado'} />
             </View>
           </View>
         ) : item.category === 'object' ? (
           <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
             <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Objeto</Text>
             <View style={{ gap: 0 }}>
-              <InfoRow label="Marca" value={item.extra_fields?.brand} />
+              <InfoRow label="Marca" value={item.brand || item.extra_fields?.brand || 'Não informado'} />
               <Separator />
-              <InfoRow label="Cor" value={item.extra_fields?.color} />
+              <InfoRow label="Cor" value={item.color || item.extra_fields?.color || 'Não informado'} />
               <Separator />
-              <InfoRow label="Características" value={item.extra_fields?.serial_number} />
+              <InfoRow label="Características" value={item.serial_number || item.extra_fields?.serial_number || 'Não informado'} />
             </View>
           </View>
         ) : (
@@ -494,19 +496,28 @@ const ItemDetailScreen = ({ route, navigation }) => {
                    )}
               </View>
             </View>
+            {isOwner && (
+              <View style={{ flexDirection: 'row', gap: 12, marginTop: 8, justifyContent: 'flex-end' }}>
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EEF2FF', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, marginRight: 8 }}
+                  onPress={handleEditItem}
+                >
+                  <MaterialIcons name="edit" size={20} color="#6366F1" />
+                  <Text style={{ color: '#6366F1', fontWeight: 'bold', fontSize: 15, marginLeft: 6 }}>Editar publicação</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#DC2626', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16 }}
+                  onPress={handleDeleteItem}
+                  disabled={deleting}
+                >
+                  <MaterialIcons name="delete" size={20} color="#fff" />
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15, marginLeft: 6 }}>{deleting ? 'Excluindo...' : 'Excluir publicação'}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
             {!isOwner && (
               <TouchableOpacity style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingVertical: 10, alignItems: 'center', backgroundColor: '#fff' }} onPress={handleSendMessage}>
                 <Text style={{ color: '#374151', fontWeight: 'bold', fontSize: 15 }}>Enviar Mensagem</Text>
-              </TouchableOpacity>
-            )}
-            {canDelete && (
-              <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#DC2626', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, marginTop: 12, alignSelf: 'flex-end' }}
-                onPress={handleDeleteItem}
-                disabled={deleting}
-              >
-                <MaterialIcons name="delete" size={20} color="#fff" />
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15, marginLeft: 6 }}>{deleting ? 'Excluindo...' : 'Excluir publicação'}</Text>
               </TouchableOpacity>
             )}
           </View>

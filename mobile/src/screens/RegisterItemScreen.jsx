@@ -182,6 +182,12 @@ const ITEM_TYPES = {
 const RegisterItemScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
   const editItem = route?.params?.editItem || null;
+  // Debug: verifique se editItem está chegando corretamente
+  useEffect(() => {
+    if (editItem) {
+      console.log('Editando item:', editItem);
+    }
+  }, [editItem]);
   // Prioriza tipo vindo por parâmetro, depois do editItem, nunca deixa nulo se veio por navegação
   // Normaliza categoria para minúsculo e garante fallback para 'outro'
   function normalizeCategory(cat) {
@@ -207,9 +213,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   
   // Campos genéricos
-  const [brand, setBrand] = useState(editItem?.extra_fields?.brand || '');
-  const [color, setColor] = useState(editItem?.extra_fields?.color || '');
-  const [serialNumber, setSerialNumber] = useState(editItem?.extra_fields?.serial_number || '');
+  const [brand, setBrand] = useState(editItem?.brand || editItem?.extra_fields?.brand || '');
+  const [color, setColor] = useState(editItem?.color || editItem?.extra_fields?.color || '');
+  const [serialNumber, setSerialNumber] = useState(editItem?.serial_number || editItem?.extra_fields?.serial_number || '');
 
   // Campos detalhados para animal
   const [animalSpecies, setAnimalSpecies] = useState(editItem?.extra_fields?.species || 'Cachorro');
@@ -229,6 +235,15 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [rewardAmount, setRewardAmount] = useState('');
   const [rewardDescription, setRewardDescription] = useState('');
 
+  // Modal para perguntar se encontrou o item
+  const [showFoundModal, setShowFoundModal] = useState(false);
+  const [lastCreatedItemId, setLastCreatedItemId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [foundModalMessage, setFoundModalMessage] = useState('');
+  const [foundModalTitle, setFoundModalTitle] = useState('');
+  const [foundModalVisible, setFoundModalVisible] = useState(false);
+  const [foundModalItemId, setFoundModalItemId] = useState(null);
+
   // Carregar fotos e todos os dados antigos quando editar item
   useEffect(() => {
     if (editItem) {
@@ -243,14 +258,28 @@ const RegisterItemScreen = ({ navigation, route }) => {
         setPhotos(oldPhotos);
       }
       // Garantir que todos os dados estão carregados
-      if (!title && editItem.title) setTitle(editItem.title);
-      if (!description && editItem.description) setDescription(editItem.description);
-      if (!state && editItem.state) setState(editItem.state);
-      if (!city && editItem.city) setCity(editItem.city);
-      if (!neighborhood && editItem.neighborhood) setNeighborhood(editItem.neighborhood);
-      if (!brand && editItem.extra_fields?.brand) setBrand(editItem.extra_fields.brand);
-      if (!color && editItem.extra_fields?.color) setColor(editItem.extra_fields.color);
-      if (!serialNumber && editItem.extra_fields?.serial_number) setSerialNumber(editItem.extra_fields.serial_number);
+      if (editItem.title) setTitle(editItem.title);
+      if (editItem.description) setDescription(editItem.description);
+      if (editItem.state) setState(editItem.state);
+      if (editItem.city) setCity(editItem.city);
+      if (editItem.neighborhood) setNeighborhood(editItem.neighborhood);
+      // Preencher campos genéricos a partir das colunas principais OU extra_fields
+      if (typeof editItem.brand !== 'undefined') setBrand(editItem.brand);
+      else if (editItem.extra_fields && typeof editItem.extra_fields.brand !== 'undefined') setBrand(editItem.extra_fields.brand);
+      if (typeof editItem.color !== 'undefined') setColor(editItem.color);
+      else if (editItem.extra_fields && typeof editItem.extra_fields.color !== 'undefined') setColor(editItem.extra_fields.color);
+      if (typeof editItem.serial_number !== 'undefined') setSerialNumber(editItem.serial_number);
+      else if (editItem.extra_fields && typeof editItem.extra_fields.serial_number !== 'undefined') setSerialNumber(editItem.extra_fields.serial_number);
+      // Campos de animal
+      if (editItem.extra_fields) {
+        if (typeof editItem.extra_fields.species !== 'undefined') setAnimalSpecies(editItem.extra_fields.species);
+        if (typeof editItem.extra_fields.breed !== 'undefined') setAnimalBreed(editItem.extra_fields.breed);
+        if (typeof editItem.extra_fields.size !== 'undefined') setAnimalSize(editItem.extra_fields.size);
+        if (typeof editItem.extra_fields.age !== 'undefined') setAnimalAge(editItem.extra_fields.age);
+        if (typeof editItem.extra_fields.collar !== 'undefined') setAnimalCollar(editItem.extra_fields.collar);
+        if (typeof editItem.extra_fields.microchip !== 'undefined') setAnimalMicrochip(editItem.extra_fields.microchip);
+        if (typeof editItem.extra_fields.animal_name !== 'undefined') setAnimalName(editItem.extra_fields.animal_name);
+      }
     } else {
       // Se não estiver editando, preenche cidade/estado do perfil
       if (userProfile?.state) setState(userProfile.state);
@@ -402,18 +431,30 @@ const RegisterItemScreen = ({ navigation, route }) => {
         category: toNull(itemType) || editItem?.category,
         item_type: toNull(itemType) || editItem?.item_type,
         date: date ? `${date}T00:00:00-03:00` : editItem?.date,
-        // Campos genéricos
-        brand: toNull(brand) || (editItem?.brand ?? null),
-        color: toNull(color) || (editItem?.color ?? null),
-        serial_number: toNull(serialNumber) || (editItem?.serial_number ?? null),
-        // Campos de animal
-        species: toNull(animalSpecies) || (editItem?.species ?? null),
-        breed: toNull(animalBreed) || (editItem?.breed ?? null),
-        size: toNull(animalSize) || (editItem?.size ?? null),
-        age: toNull(animalAge) || (editItem?.age ?? null),
-        collar: toNull(animalCollar) || (editItem?.collar ?? null),
-        microchip: toNull(animalMicrochip) || (editItem?.microchip ?? null),
-        animal_name: toNull(animalName) || (editItem?.animal_name ?? null),
+        // Características em colunas específicas
+        brand: toNull(brand),
+        color: toNull(color),
+        serial_number: toNull(serialNumber),
+        species: toNull(animalSpecies),
+        breed: toNull(animalBreed),
+        size: toNull(animalSize),
+        age: toNull(animalAge),
+        collar: toNull(animalCollar),
+        microchip: toNull(animalMicrochip),
+        animal_name: toNull(animalName),
+        // Também salva em extra_fields para compatibilidade
+        extra_fields: {
+          brand: toNull(brand),
+          color: toNull(color),
+          serial_number: toNull(serialNumber),
+          species: toNull(animalSpecies),
+          breed: toNull(animalBreed),
+          size: toNull(animalSize),
+          age: toNull(animalAge),
+          collar: toNull(animalCollar),
+          microchip: toNull(animalMicrochip),
+          animal_name: toNull(animalName),
+        },
       };
 
       if (!editItem) {
@@ -504,6 +545,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           });
         }
 
+        // Sempre mostrar mensagem de sucesso e redirecionar
         Alert.alert('Sucesso', 'Item registrado com sucesso!', [
           {
             text: 'Ir para Home',
@@ -526,9 +568,98 @@ const RegisterItemScreen = ({ navigation, route }) => {
               setOfferReward(false);
               setError('');
               navigation.navigate('MainApp', { screen: 'HomeTab', params: { refresh: true } });
+              // Se for item perdido, mostrar modal após redirecionar
+              if (status === 'lost') {
+                setTimeout(() => {
+                  setFoundModalTitle('Você encontrou seu item?');
+                  setFoundModalMessage('Você acabou de registrar que perdeu um item. Caso você encontre, pode excluir a publicação. Você já encontrou seu item?');
+                  setFoundModalItemId(resultItem.id);
+                  setFoundModalVisible(true);
+                }, 1000);
+              }
             },
           },
         ]);
+        // Função para excluir item se usuário confirmar que encontrou
+        const handleFoundItemConfirm = async () => {
+          if (!foundModalItemId) return;
+          setDeleting(true);
+          try {
+            await itemsService.deleteItem(foundModalItemId);
+            setFoundModalVisible(false);
+            Alert.alert('Publicação excluída', 'Sua publicação foi removida com sucesso.');
+            // Resetar formulário
+            setItemType(null);
+            setStep(1);
+            setTitle('');
+            setDescription('');
+            setState('');
+            setCity('');
+            setNeighborhood('');
+            setDate(new Date().toISOString().split('T')[0]);
+            setBrand('');
+            setColor('');
+            setSerialNumber('');
+            setPhotos([]);
+            setRewardAmount('');
+            setRewardDescription('');
+            setOfferReward(false);
+            setError('');
+            navigation.navigate('MainApp', { screen: 'HomeTab', params: { refresh: true } });
+          } catch (err) {
+            Alert.alert('Erro', 'Não foi possível excluir a publicação. Tente novamente.');
+          } finally {
+            setDeleting(false);
+          }
+        };
+        {/* Modal de confirmação se encontrou o item */}
+        <Modal
+          visible={foundModalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setFoundModalVisible(false)}
+        >
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 28, width: '85%', alignItems: 'center' }}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>{foundModalTitle}</Text>
+              <Text style={{ fontSize: 16, color: '#374151', marginBottom: 24, textAlign: 'center' }}>{foundModalMessage}</Text>
+              <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between' }}>
+                <Button
+                  title="Ainda não"
+                  variant="secondary"
+                  onPress={() => {
+                    setFoundModalVisible(false);
+                    // Resetar formulário
+                    setItemType(null);
+                    setStep(1);
+                    setTitle('');
+                    setDescription('');
+                    setState('');
+                    setCity('');
+                    setNeighborhood('');
+                    setDate(new Date().toISOString().split('T')[0]);
+                    setBrand('');
+                    setColor('');
+                    setSerialNumber('');
+                    setPhotos([]);
+                    setRewardAmount('');
+                    setRewardDescription('');
+                    setOfferReward(false);
+                    setError('');
+                    navigation.navigate('MainApp', { screen: 'HomeTab', params: { refresh: true } });
+                  }}
+                  style={{ flex: 1, marginRight: 8 }}
+                />
+                <Button
+                  title={deleting ? 'Excluindo...' : 'Sim, já encontrei'}
+                  onPress={handleFoundItemConfirm}
+                  disabled={deleting}
+                  style={{ flex: 1, marginLeft: 8 }}
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
       }
     } catch (err) {
       const errorMsg = err.message || 'Erro ao registrar item';
