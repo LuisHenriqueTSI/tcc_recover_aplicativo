@@ -78,9 +78,9 @@ export const uploadAvatar = async (userId, photoUri) => {
     let uri = photoUri;
     if (!uri.startsWith('file://')) uri = 'file://' + uri;
 
-    const filename = uri.split('/').pop() || `avatar_${Date.now()}.jpg`;
-    const ext = filename.includes('.') ? filename.split('.').pop() : 'jpg';
-    const filepath = `${userId}/avatar.${ext}`;
+    const ext = photoUri.split('.').pop() || 'jpg';
+    const timestamp = Date.now();
+    const filepath = `${userId}/avatar_${timestamp}.${ext}`;
 
     // Usa expo-file-system para ler o arquivo como Uint8Array (base64 -> Uint8Array)
     let fileBuffer;
@@ -112,6 +112,8 @@ export const uploadAvatar = async (userId, photoUri) => {
     const { data: urlData } = supabase.storage
       .from('profile-photos')
       .getPublicUrl(filepath);
+
+    console.log('[uploadAvatar] URL pública gerada:', urlData?.publicUrl);
 
     // Atualiza o campo avatar_url no perfil do usuário
     const { error: updateError } = await supabase

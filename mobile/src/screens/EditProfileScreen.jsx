@@ -36,14 +36,12 @@ const EditProfileScreen = ({ navigation }) => {
       setProfileState(userProfile.state || '');
       setProfileCity(userProfile.city || '');
       // Avatar
-      if (userProfile.avatar_path) {
-        // Gera url pública
-        const { data: urlData } = userService.supabase.storage
-          .from('profile-photos')
-          .getPublicUrl(userProfile.avatar_path);
-        setAvatarUrl(urlData?.publicUrl || null);
+      if (userProfile.avatar_url) {
+        setAvatarUrl(userProfile.avatar_url);
+        console.log('[EditProfileScreen] avatarUrl atualizado:', userProfile.avatar_url);
       } else {
         setAvatarUrl(null);
+        console.log('[EditProfileScreen] avatarUrl está nulo');
       }
     }
   }, [userProfile]);
