@@ -1,35 +1,3 @@
-  // Função para carregar comentários (deve vir antes de qualquer uso)
-  const loadSightings = async () => {
-    try {
-      const data = await sightingsService.getSightings(itemId);
-      setSightings(data);
-    } catch (e) {
-      setSightings([]);
-    }
-  };
-
-
-
-  // Excluir comentário
-  const handleDeleteComment = async (comment) => {
-    Alert.alert(
-      'Excluir comentário',
-      'Tem certeza que deseja excluir este comentário?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Excluir', style: 'destructive', onPress: async () => {
-            try {
-              await sightingsService.deleteSighting(comment.id);
-              loadSightings();
-            } catch (error) {
-              console.error('Falha ao excluir comentário:', error);
-            }
-          }
-        }
-      ]
-    );
-  };
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -332,6 +300,29 @@ const ItemDetailScreen = ({ route, navigation }) => {
     } finally {
       setSightingLoading(false);
     }
+  };
+
+  // Excluir comentário
+  const handleDeleteCommentConfirmed = async (comment) => {
+    try {
+      await sightingsService.deleteSighting(comment.id);
+      setSightings(prev => prev.filter(c => c.id !== comment.id));
+      loadSightings();
+    } catch (error) {
+      console.error('Falha ao excluir comentário:', error);
+    }
+  };
+
+  const handleDeleteComment = (comment) => {
+    Alert.alert(
+      'Excluir comentário',
+      'Tem certeza que deseja excluir este comentário?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir', style: 'destructive', onPress: () => handleDeleteCommentConfirmed(comment) }
+      ]
+    );
   };
 
   const isOwner = user && item && item.owner_id === user.id;
