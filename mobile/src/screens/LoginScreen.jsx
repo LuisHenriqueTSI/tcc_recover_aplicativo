@@ -92,7 +92,7 @@ const LoginScreen = ({ navigation }) => {
             style={styles.input}
             inputStyle={styles.inputField}
           />
-          <Text style={styles.forgotPassword} onPress={() => navigation.navigate('ResetPassword')}>Esqueceu sua senha?</Text>
+          <Text style={styles.forgotPassword} onPress={() => navigation.navigate('EsqueciSenha')}>Esqueceu sua senha?</Text>
           <Button
             title={loading ? 'Entrar...' : 'Entrar'}
             onPress={handleLogin}

@@ -155,8 +155,13 @@ const PublicStack = () => {
       <Stack.Screen
         name="Login"
         component={LoginScreen}
-          options={{ headerShown: false }}
+        options={{ headerShown: false }}
         initialParams={{}} // Garante que seja a primeira tela
+      />
+      <Stack.Screen
+        name="EsqueciSenha"
+        component={require('../screens/EsqueciSenhaScreen').default}
+        options={{ title: 'Redefinir senha' }}
       />
       <Stack.Screen
         name="Register"

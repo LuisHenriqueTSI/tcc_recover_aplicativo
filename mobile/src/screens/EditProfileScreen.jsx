@@ -12,36 +12,35 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import Card from '../components/Card';
 import { Alert } from 'react-native';
-import * as supabaseAuth from '../services/supabaseAuth';
+import { sendPasswordReset } from '../services/supabaseAuth';
 import { Picker } from '@react-native-picker/picker';
 import { states, citiesByState } from '../lib/br-locations';
 
 const EditProfileScreen = ({ navigation }) => {
   const { user, userProfile, refreshProfile } = useAuth();
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  // Removido Telefone
   const [instagram, setInstagram] = useState('');
   const [facebook, setFacebook] = useState('');
-  const [twitter, setTwitter] = useState('');
+  // Removido Twitter
   const [whatsapp, setWhatsapp] = useState('');
-  const [linkedin, setLinkedin] = useState('');
+  // Removido LinkedIn
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [profileState, setProfileState] = useState('');
   const [profileCity, setProfileCity] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  // Removido campos de senha
 
   useEffect(() => {
     if (userProfile) {
       console.log('[EditProfileScreen] Dados carregados do perfil:', userProfile);
       setName(userProfile.name || '');
-      setPhone(userProfile.phone || '');
+      // Removido Telefone
       setInstagram(userProfile.instagram || '');
       setFacebook(userProfile.facebook || '');
-      setTwitter(userProfile.twitter || '');
+      // Removido Twitter
       setWhatsapp(userProfile.whatsapp || '');
-      setLinkedin(userProfile.linkedin || '');
+      // Removido LinkedIn
       setProfileState(userProfile.state || '');
       setProfileCity(userProfile.city || '');
     }
@@ -57,52 +56,21 @@ const EditProfileScreen = ({ navigation }) => {
       setSaving(false);
       return;
     }
-    // Validação de senha
-    if (password || confirmPassword) {
-      if (password.length < 6) {
-        setErrorMsg('A senha deve ter pelo menos 6 caracteres.');
-        setSaving(false);
-        return;
-      }
-      if (password !== confirmPassword) {
-        setErrorMsg('As senhas não coincidem.');
-        setSaving(false);
-        return;
-      }
-    }
+    // Não valida mais senha aqui
     try {
       setSaving(true);
       const result = await userService.updateProfile(user.id, {
         name,
-        phone,
+        // phone removido
         instagram,
         facebook,
-        twitter,
+        // twitter removido
         whatsapp,
-        linkedin,
+        // linkedin removido
         state: profileState,
         city: profileCity,
       });
-      if (password) {
-        try {
-          await supabaseAuth.updatePassword(password);
-          setPassword('');
-          setConfirmPassword('');
-          Alert.alert('Sucesso', 'Senha alterada com sucesso!');
-        } catch (err) {
-          // Se erro de autenticação, força login e tenta novamente
-          if (err.status === 401 || (err.message && err.message.toLowerCase().includes('auth'))) {
-            setErrorMsg('Sua sessão expirou. Faça login novamente para alterar a senha.');
-            setSaving(false);
-            navigation.navigate('Login');
-            return;
-          } else {
-            setErrorMsg(err.message || 'Erro ao atualizar senha.');
-            setSaving(false);
-            return;
-          }
-        }
-      }
+      // Não altera mais senha diretamente
       console.log('[EditProfileScreen] Perfil atualizado:', result);
       await refreshProfile();
       navigation.goBack();
@@ -115,16 +83,28 @@ const EditProfileScreen = ({ navigation }) => {
   };
 
   const handleChangePassword = async () => {
-    // Pode abrir modal ou navegar para tela de alteração de senha
-    Alert.prompt('Alterar Senha', 'Digite a nova senha:', async (newPassword) => {
-      if (!newPassword) return;
-      try {
-        await supabaseAuth.updatePassword(newPassword);
-        Alert.alert('Sucesso', 'Senha alterada com sucesso!');
-      } catch (e) {
-        Alert.alert('Erro', e.message || 'Erro ao alterar senha');
-      }
-    });
+    Alert.alert(
+      'Redefinir senha',
+      'Você receberá um e-mail para redefinir sua senha. Deseja continuar?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Enviar',
+          onPress: async () => {
+            try {
+              const error = await sendPasswordReset(user.email);
+              if (!error) {
+                Alert.alert('Sucesso', 'Verifique seu e-mail para redefinir sua senha.');
+              } else {
+                Alert.alert('Erro', error.message || 'Não foi possível enviar o e-mail.');
+              }
+            } catch (e) {
+              Alert.alert('Erro', e.message || 'Erro ao solicitar redefinição.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleChangeEmail = async () => {
@@ -183,14 +163,7 @@ const EditProfileScreen = ({ navigation }) => {
           editable={false}
           style={styles.input}
         />
-        <Input
-          label="Telefone"
-          placeholder="(XX) XXXXX-XXXX"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          style={styles.input}
-        />
+        {/* Telefone removido */}
         <Text style={{ fontWeight: 'bold', marginTop: 12, marginBottom: 4 }}>Localidade</Text>
         <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 4 }}>Selecione o estado e a cidade do seu perfil:</Text>
         <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 220, maxWidth: '100%', width: '100%', height: 48, justifyContent: 'center' }}>
@@ -221,21 +194,10 @@ const EditProfileScreen = ({ navigation }) => {
             ))}
           </Picker>
         </View>
-        <Input
-          label="Nova Senha"
-          placeholder="Digite a nova senha"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-        />
-        <Input
-          label="Confirmar Nova Senha"
-          placeholder="Confirme a nova senha"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-          style={styles.input}
+        <Button
+          title="Redefinir senha"
+          onPress={handleChangePassword}
+          style={[styles.input, { marginBottom: 12 }]}
         />
 
         <Text style={styles.sectionTitle}>Redes Sociais</Text>
@@ -253,13 +215,7 @@ const EditProfileScreen = ({ navigation }) => {
           onChangeText={setFacebook}
           style={styles.input}
         />
-        <Input
-          label="Twitter"
-          placeholder="seu_usuario"
-          value={twitter}
-          onChangeText={setTwitter}
-          style={styles.input}
-        />
+        {/* Twitter removido */}
         <Input
           label="WhatsApp"
           placeholder="(XX) XXXXX-XXXX"
@@ -268,13 +224,7 @@ const EditProfileScreen = ({ navigation }) => {
           keyboardType="phone-pad"
           style={styles.input}
         />
-        <Input
-          label="LinkedIn"
-          placeholder="seu_usuario"
-          value={linkedin}
-          onChangeText={setLinkedin}
-          style={styles.input}
-        />
+        {/* LinkedIn removido */}
         <View style={[styles.actions, { marginBottom: 32 }]}> 
           <Button
             title="Cancelar"
@@ -292,7 +242,7 @@ const EditProfileScreen = ({ navigation }) => {
         </View>
 
         {/* Seção de exclusão de conta */}
-        <View style={{ marginTop: 32, alignItems: 'center' }}>
+        <View style={{ marginTop: 32, alignItems: 'center', marginBottom: 32 }}>
           <Text style={{ color: '#EF4444', fontWeight: 'bold', marginBottom: 8, fontSize: 16 }}>Excluir Conta</Text>
           <Text style={{ color: '#6B7280', fontSize: 13, marginBottom: 12, textAlign: 'center' }}>
             Esta ação é irreversível. Todos os seus dados serão apagados.

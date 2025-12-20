@@ -150,23 +150,14 @@ export const signOut = async () => {
   }
 };
 
-export const resetPassword = async (email) => {
+export const sendPasswordReset = async (email) => {
   try {
-    console.log('[resetPassword] Enviando email de recuperação para:', email);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: 'recover://reset-password',
     });
-
-    if (error) {
-      console.log('[resetPassword] Erro:', error.message);
-      throw error;
-    }
-
-    console.log('[resetPassword] Email enviado com sucesso');
-    return { success: true };
+    return error;
   } catch (error) {
-    console.log('[resetPassword] Exceção:', error.message);
-    throw error;
+    return error;
   }
 };
 
