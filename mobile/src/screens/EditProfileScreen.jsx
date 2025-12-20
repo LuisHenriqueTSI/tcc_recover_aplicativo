@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import { Image, TouchableOpacity, View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../contexts/AuthContext';
 import * as userService from '../services/user';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import Card from '../components/Card';
-import { Alert } from 'react-native';
 import { sendPasswordReset } from '../services/supabaseAuth';
 import { Picker } from '@react-native-picker/picker';
 import { states, citiesByState } from '../lib/br-locations';
@@ -19,6 +13,8 @@ import { states, citiesByState } from '../lib/br-locations';
 const EditProfileScreen = ({ navigation }) => {
   const { user, userProfile, refreshProfile } = useAuth();
   const [name, setName] = useState('');
+  const [avatar, setAvatar] = useState(null); // uri local
+  const [avatarUrl, setAvatarUrl] = useState(null); // url pública
   // Removido Telefone
   const [instagram, setInstagram] = useState('');
   const [facebook, setFacebook] = useState('');
@@ -33,18 +29,51 @@ const EditProfileScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (userProfile) {
-      console.log('[EditProfileScreen] Dados carregados do perfil:', userProfile);
       setName(userProfile.name || '');
-      // Removido Telefone
       setInstagram(userProfile.instagram || '');
       setFacebook(userProfile.facebook || '');
-      // Removido Twitter
       setWhatsapp(userProfile.whatsapp || '');
-      // Removido LinkedIn
       setProfileState(userProfile.state || '');
       setProfileCity(userProfile.city || '');
+      // Avatar
+      if (userProfile.avatar_path) {
+        // Gera url pública
+        const { data: urlData } = userService.supabase.storage
+          .from('profile-photos')
+          .getPublicUrl(userProfile.avatar_path);
+        setAvatarUrl(urlData?.publicUrl || null);
+      } else {
+        setAvatarUrl(null);
+      }
     }
   }, [userProfile]);
+  // Selecionar nova foto
+  const handlePickAvatar = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setAvatar(result.assets[0].uri);
+    }
+  };
+
+  // Upload da foto
+  const handleUploadAvatar = async () => {
+    if (!avatar || !user) return;
+    setSaving(true);
+    try {
+      await userService.uploadAvatar(user.id, avatar);
+      setAvatar(null);
+      await refreshProfile();
+    } catch (e) {
+      Alert.alert('Erro', e.message || 'Erro ao enviar foto');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const [errorMsg, setErrorMsg] = useState('');
   const handleSave = async () => {
@@ -146,6 +175,30 @@ const EditProfileScreen = ({ navigation }) => {
     <ScrollView style={styles.container}>
 
       <Card style={{ paddingBottom: 32 }}>
+        {/* Avatar */}
+        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+          <TouchableOpacity onPress={handlePickAvatar} disabled={saving}>
+            {avatar ? (
+              <Image source={{ uri: avatar }} style={{ width: 96, height: 96, borderRadius: 48, marginBottom: 8 }} />
+            ) : avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} style={{ width: 96, height: 96, borderRadius: 48, marginBottom: 8 }} />
+            ) : (
+              <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                <Text style={{ fontSize: 32, color: '#6B7280' }}>{name?.charAt(0) || '?'}</Text>
+              </View>
+            )}
+            <Text style={{ color: '#6366F1', textAlign: 'center' }}>Alterar foto</Text>
+          </TouchableOpacity>
+          {avatar && (
+            <Button
+              title={saving ? 'Enviando...' : 'Salvar foto'}
+              onPress={handleUploadAvatar}
+              disabled={saving}
+              loading={saving}
+              style={{ marginTop: 8, minWidth: 120 }}
+            />
+          )}
+        </View>
         <Text style={styles.sectionTitle}>Meus Dados</Text>
         <Input
           label="Nome"

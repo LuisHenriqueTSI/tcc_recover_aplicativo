@@ -35,14 +35,8 @@ export const getUserById = async (userId) => {
       return null;
     }
 
-    // Adiciona avatarUrl público se existir avatar
-    let avatarUrl = null;
-    if (data && data.avatar_path) {
-      const { data: urlData } = supabase.storage
-        .from('profile-photos')
-        .getPublicUrl(data.avatar_path);
-      avatarUrl = urlData?.publicUrl || null;
-    }
+    // avatar_url já é a url pública
+    let avatarUrl = data?.avatar_url || null;
     return { ...data, avatarUrl };
   } catch (error) {
     console.log('[getUserById] Exception:', error.message);
@@ -118,6 +112,16 @@ export const uploadAvatar = async (userId, photoUri) => {
     const { data: urlData } = supabase.storage
       .from('profile-photos')
       .getPublicUrl(filepath);
+
+    // Atualiza o campo avatar_url no perfil do usuário
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: urlData?.publicUrl || null })
+      .eq('id', userId);
+    if (updateError) {
+      console.log('[uploadAvatar] Erro ao atualizar avatar_url no perfil:', updateError.message);
+      throw updateError;
+    }
 
     console.log('[uploadAvatar] Avatar uploaded successfully');
     return urlData.publicUrl;
