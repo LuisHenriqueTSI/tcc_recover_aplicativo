@@ -39,15 +39,16 @@ const ItemDetailScreen = ({ route, navigation }) => {
     navigation.setOptions({
       title: 'Detalhes do Item',
       headerStyle: {
-        backgroundColor: '#fff',
+        backgroundColor: '#4F46E5',
       },
-      headerTintColor: '#1F2937',
+      headerTintColor: '#fff',
       headerTitleStyle: {
         fontWeight: 'bold',
+        color: '#fff',
       },
       headerLeft: () => (
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginLeft: 8 }}>
-          <MaterialIcons name="arrow-back" size={26} color="#1F2937" />
+          <MaterialIcons name="arrow-back" size={26} color="#fff" />
         </TouchableOpacity>
       ),
     });
@@ -226,7 +227,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
     <ScrollView style={{ backgroundColor: '#F9FAFB' }} showsVerticalScrollIndicator={false}>
       <View style={{ padding: 0, margin: 0 }}>
         {/* Fotos do animal no topo */}
-        <View style={{ width: '100%', height: 240, backgroundColor: '#E5E7EB', borderBottomLeftRadius: 24, borderBottomRightRadius: 24, overflow: 'hidden', marginBottom: 0 }}>
+        <View style={{ width: '100%', height: 240, backgroundColor: '#E5E7EB', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, overflow: 'hidden', marginBottom: 0 }}>
           {photos && photos.length > 0 ? (
             <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={{ width: '100%', height: 240 }}>
               {photos.map((photo, idx) => (
