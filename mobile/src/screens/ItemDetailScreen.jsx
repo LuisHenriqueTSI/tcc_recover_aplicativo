@@ -26,7 +26,7 @@ import * as sightingsService from '../services/sightings';
 
 const ItemDetailScreen = ({ route, navigation }) => {
   const { itemId } = route.params;
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [item, setItem] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [owner, setOwner] = useState(null);
@@ -326,6 +326,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
   };
 
   const isOwner = user && item && item.owner_id === user.id;
+  const canDelete = isOwner || isAdmin;
 
   if (loading) {
     return (
@@ -496,6 +497,16 @@ const ItemDetailScreen = ({ route, navigation }) => {
             {!isOwner && (
               <TouchableOpacity style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingVertical: 10, alignItems: 'center', backgroundColor: '#fff' }} onPress={handleSendMessage}>
                 <Text style={{ color: '#374151', fontWeight: 'bold', fontSize: 15 }}>Enviar Mensagem</Text>
+              </TouchableOpacity>
+            )}
+            {canDelete && (
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#DC2626', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, marginTop: 12, alignSelf: 'flex-end' }}
+                onPress={handleDeleteItem}
+                disabled={deleting}
+              >
+                <MaterialIcons name="delete" size={20} color="#fff" />
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15, marginLeft: 6 }}>{deleting ? 'Excluindo...' : 'Excluir publicação'}</Text>
               </TouchableOpacity>
             )}
           </View>
