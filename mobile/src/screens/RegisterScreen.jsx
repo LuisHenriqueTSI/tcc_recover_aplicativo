@@ -72,8 +72,7 @@ const RegisterScreen = ({ navigation }) => {
     if (!validateForm()) return;
 
     try {
-      const location = `${selectedCity}, ${selectedState}`;
-      const { user } = await signUp(email, password, name, location);
+      const { user } = await signUp(email, password, name, selectedCity, selectedState);
       Alert.alert(
         'Confirmação necessária',
         'Conta criada! Verifique seu e-mail para confirmar antes de fazer login.'

@@ -71,10 +71,10 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const signUp = useCallback(async (email, password, name, location) => {
+  const signUp = useCallback(async (email, password, name, city, state) => {
     try {
       console.log('[signUp] Registrando novo usuário...');
-      const result = await supabaseAuth.signUp(email, password, name, location);
+      const result = await supabaseAuth.signUp(email, password, name, city, state);
       // NÃO atualize o estado do usuário após registro
       // Removido setUser(result.user);
       // Não busca perfil nem define isAdmin

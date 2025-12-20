@@ -72,7 +72,7 @@ export const signIn = async (email, password) => {
   }
 };
 
-export const signUp = async (email, password, name, location) => {
+export const signUp = async (email, password, name, city, state) => {
   try {
     console.log('[signUp] Iniciando registro...');
     console.log('[signUp] Chamando supabase.auth.signUp...');
@@ -83,7 +83,8 @@ export const signUp = async (email, password, name, location) => {
       options: {
         data: {
           name,
-          location,
+          city,
+          state,
         },
       },
     });
@@ -108,7 +109,8 @@ export const signUp = async (email, password, name, location) => {
         id: userId,
         name: name,
         email: email,
-        location: location,
+        city: city,
+        state: state,
         points: 0,
         level: 1,
       })
