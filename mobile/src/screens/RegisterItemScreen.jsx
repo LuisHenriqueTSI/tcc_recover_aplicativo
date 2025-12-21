@@ -1244,9 +1244,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
   // Step 4: Localização e Recompensa
   if (step === 4) {
     return (
-      <ScrollView style={styles.container}>
-        <Card style={styles.card}>
-          <Text style={styles.title}>Localização e Tipo</Text>
+      <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 0 }} keyboardShouldPersistTaps="handled">
+          <Text style={styles.title}>Localização e Recompensa</Text>
 
           {/* Estado (opcional) */}
           <View style={styles.input}>
@@ -1405,27 +1405,26 @@ const RegisterItemScreen = ({ navigation, route }) => {
               <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
-
-          <View style={styles.navigation}>
-            <Button
-              title="Voltar"
-              variant="secondary"
-              onPress={() => setStep(2)}
-              style={{ flex: 1 }}
-            />
-            <Button
-              title={loading ? 'Publicando...' : 'Publicar'}
-              onPress={handlePublish}
-              disabled={loading}
-              style={{ flex: 1, marginLeft: 8 }}
-            />
-          </View>
-
-          {loading && (
-            <ActivityIndicator size="large" color="#4F46E5" style={{ marginTop: 20 }} />
-          )}
-        </Card>
-      </ScrollView>
+        </ScrollView>
+        {/* Botões fixos na base, igual aos outros passos */}
+        <View style={[styles.navigation, { position: 'absolute', left: 0, right: 0, bottom: 44, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E5E7EB', padding: 16, zIndex: 10 }]}> 
+          <Button
+            title="Voltar"
+            variant="secondary"
+            onPress={() => setStep(2)}
+            style={{ flex: 1 }}
+          />
+          <Button
+            title={loading ? 'Publicando...' : 'Publicar'}
+            onPress={handlePublish}
+            disabled={loading}
+            style={{ flex: 1, marginLeft: 8 }}
+          />
+        </View>
+        {loading && (
+          <ActivityIndicator size="large" color="#4F46E5" style={{ marginTop: 20 }} />
+        )}
+      </View>
     );
   }
 };
