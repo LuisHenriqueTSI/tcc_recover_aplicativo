@@ -535,6 +535,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
         // Criar recompensa se necessário
         if (offerReward && rewardAmount && rewardDescription) {
+          console.log('[RegisterItem] Criando recompensa para item_id:', resultItem.id, 'valor:', rewardAmount, 'desc:', rewardDescription);
           await rewardsService.createReward({
             item_id: resultItem.id,
             owner_id: user.id,

@@ -321,6 +321,7 @@ export const getItemById = async (itemId) => {
       .select('id, url')
       .eq('item_id', itemId);
 
+
     // Get owner profile separately
     const { data: ownerProfile } = await supabase
       .from('profiles')
@@ -404,10 +405,10 @@ export const getItemDetails = async (itemId) => {
       .select('id, url')
       .eq('item_id', itemId);
 
-    // Get owner profile
+    // Get owner profile (incluindo created_at)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, name, avatar_url, email')
+      .select('id, name, avatar_url, email, created_at')
       .eq('id', item.owner_id)
       .single();
 

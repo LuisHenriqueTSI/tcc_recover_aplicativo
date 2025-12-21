@@ -16,6 +16,7 @@ import { MaterialIcons, FontAwesome, FontAwesome5, Entypo } from '@expo/vector-i
 import { useAuth } from '../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import * as itemsService from '../services/items';
+import { formatarDataMembro } from './_dateUtils';
 
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -85,7 +86,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const loadItemDetails = async () => {
     try {
       setLoading(true);
-      const itemData = await itemsService.getItemById(itemId);
+      const itemData = await itemsService.getItemDetails(itemId);
       if (itemData) {
         setItem(itemData);
         // Log para depuração do array de fotos
@@ -97,9 +98,17 @@ const ItemDetailScreen = ({ route, navigation }) => {
         } else {
           console.log('[ItemDetailScreen] Nenhuma foto retornada ou formato inesperado:', itemData.item_photos);
         }
+        // Log para depuração das recompensas
+        console.log('[ItemDetailScreen] Rewards retornadas:', itemData.rewards);
+        // Log para depuração do created_at do owner
+        if (itemData.profiles) {
+          console.log('[ItemDetailScreen] Owner created_at:', itemData.profiles.created_at);
+        } else {
+          console.log('[ItemDetailScreen] Owner não encontrado');
+        }
         setPhotos(itemData.item_photos || []);
         setOwner(itemData.profiles);
-        // Rewards would come from a separate query if needed
+        setRewards(itemData.rewards || []);
       } else {
         Alert.alert('Erro', 'Item não encontrado');
         navigation.goBack();
@@ -387,11 +396,24 @@ const ItemDetailScreen = ({ route, navigation }) => {
           )}
         </View>
 
-        {/* Título e descrição */}
-    <View style={{ padding: 24, paddingBottom: 0 }}>
-      <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>{item.title}</Text>
-      <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 12 }}>{item.description}</Text>
-    </View>
+
+        {/* Título, descrição e recompensa */}
+        <View style={{ padding: 24, paddingBottom: 0 }}>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>{item.title}</Text>
+          <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 12 }}>{item.description}</Text>
+          {/* Bloco de recompensa */}
+          {rewards && rewards.length > 0 && rewards[0].status === 'active' && (
+            <View style={{ backgroundColor: '#FEF3C7', borderRadius: 10, padding: 16, marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <MaterialIcons name="emoji-events" size={28} color="#F59E42" style={{ marginRight: 8 }} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 16 }}>Recompensa oferecida</Text>
+                <Text style={{ color: '#B45309', fontSize: 15, marginTop: 2 }}>
+                  {rewards[0].amount ? `R$ ${parseFloat(rewards[0].amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : ''} {rewards[0].description ? `- ${rewards[0].description}` : ''}
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
 
         {/* Bairro e Data */}
         <View style={{ flexDirection: 'row', gap: 16, paddingHorizontal: 24, marginTop: 8, marginBottom: 8 }}>
@@ -532,7 +554,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
               )}
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937' }}>{owner.name}</Text>
-                <Text style={{ fontSize: 13, color: '#6B7280' }}>Membro desde {owner.created_at ? new Date(owner.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : ''}</Text>
+                {owner.created_at && formatarDataMembro(owner.created_at) && formatarDataMembro(owner.created_at) !== 'não informado' && (
+                  <Text style={{ fontSize: 13, color: '#6B7280' }}>Membro desde {formatarDataMembro(owner.created_at)}</Text>
+                )}
                 {item.created_at && (
                   <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>
                     {(() => {

@@ -36,18 +36,17 @@ export const getRewardByItemId = async (itemId) => {
     const { data, error } = await supabase
       .from('rewards')
       .select('*')
-      .eq('item_id', itemId)
-      .single();
+      .eq('item_id', itemId);
 
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       console.log('[getRewardByItemId] Erro:', error.message);
-      return null;
+      return [];
     }
 
-    return data || null;
+    return data || [];
   } catch (error) {
     console.log('[getRewardByItemId] Exceção:', error.message);
-    return null;
+    return [];
   }
 };
 
