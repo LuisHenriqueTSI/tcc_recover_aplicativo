@@ -218,7 +218,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [serialNumber, setSerialNumber] = useState(editItem?.serial_number || editItem?.extra_fields?.serial_number || '');
 
   // Campos detalhados para animal
-  const [animalSpecies, setAnimalSpecies] = useState(editItem?.extra_fields?.species || 'Cachorro');
+  const [animalSpecies, setAnimalSpecies] = useState(editItem?.extra_fields?.species || '');
   const [animalBreed, setAnimalBreed] = useState(editItem?.extra_fields?.breed || '');
   const [animalSize, setAnimalSize] = useState(editItem?.extra_fields?.size || '');
   const [animalAge, setAnimalAge] = useState(editItem?.extra_fields?.age || '');
