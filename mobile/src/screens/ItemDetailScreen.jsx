@@ -572,15 +572,17 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 )}
               </View>
             </View>
-            {isOwner && (
+            {(isOwner || isAdmin) && (
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 0, justifyContent: 'flex-end', paddingTop: 8, borderTopWidth: 1, borderTopColor: '#F3F4F6' }}>
-                <TouchableOpacity
-                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EEF2FF', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10, marginRight: 4 }}
-                  onPress={handleEditItem}
-                >
-                  <MaterialIcons name="edit" size={18} color="#6366F1" />
-                  <Text style={{ color: '#6366F1', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Editar</Text>
-                </TouchableOpacity>
+                {isOwner && (
+                  <TouchableOpacity
+                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EEF2FF', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10, marginRight: 4 }}
+                    onPress={handleEditItem}
+                  >
+                    <MaterialIcons name="edit" size={18} color="#6366F1" />
+                    <Text style={{ color: '#6366F1', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Editar</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#DC2626', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10 }}
                   onPress={handleDeleteItem}
@@ -591,7 +593,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 </TouchableOpacity>
               </View>
             )}
-            {!isOwner && (
+            {!isOwner && !isAdmin && (
               <TouchableOpacity style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingVertical: 10, alignItems: 'center', backgroundColor: '#fff', marginTop: 8 }} onPress={handleSendMessage}>
                 <Text style={{ color: '#374151', fontWeight: 'bold', fontSize: 15 }}>Enviar Mensagem</Text>
               </TouchableOpacity>
