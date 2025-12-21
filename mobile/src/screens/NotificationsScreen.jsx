@@ -3,7 +3,7 @@ import { View, Text, ActivityIndicator, FlatList, TouchableOpacity, StyleSheet }
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { getUnreadCount, getConversations } from '../services/messages';
-import { listItems, markItemAsResolved } from '../services/items';
+import { listItems, markItemAsResolved, deleteItem } from '../services/items';
 
 
 
@@ -52,8 +52,10 @@ export default function NotificationsScreen() {
       bgColor: '#FFF7ED',
     })));
     // Itens não resolvidos
-    const items = await listItems({ owner_id: user.id, resolved: false });
-    setPendingItems((items || []).map(item => ({
+    let items = await listItems({ owner_id: user.id, resolved: false });
+    // Filtrar itens que realmente existem (evitar mostrar excluídos)
+    items = (items || []).filter(item => item && item.id);
+    setPendingItems(items.map(item => ({
       id: item.id,
       type: 'match',
       title: 'Possível correspondência!',
@@ -83,9 +85,17 @@ export default function NotificationsScreen() {
   async function handleNotificationPress(notification) {
     // Aqui você pode navegar ou abrir detalhes se quiser
     if (notification.type === 'match' && notification.item) {
-      // Exemplo: marcar como resolvido
-      await markItemAsResolved(notification.item.id, user.id);
-      await fetchNotifications();
+      // Excluir publicação correspondente ao marcar como encontrado
+      try {
+        console.log('[Notifications] Marcando item como resolvido:', notification.item.id);
+        await markItemAsResolved(notification.item.id, user.id);
+        console.log('[Notifications] Chamando deleteItem para:', notification.item.id);
+        const result = await deleteItem(notification.item.id);
+        console.log('[Notifications] Resultado deleteItem:', result);
+        await fetchNotifications();
+      } catch (err) {
+        console.error('Erro ao excluir item após marcar como encontrado:', err);
+      }
     }
     // Para mensagens, abrir chat, etc.
   }
