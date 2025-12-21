@@ -478,7 +478,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
         {/* Publicado por */}
         {owner && (
-          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 14, marginHorizontal: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
             <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937', marginBottom: 10 }}>Publicado por</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
               {owner.avatar_url ? (
@@ -488,43 +488,43 @@ const ItemDetailScreen = ({ route, navigation }) => {
               )}
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937' }}>{owner.name}</Text>
-                   <Text style={{ fontSize: 13, color: '#6B7280' }}>Membro desde {owner.created_at ? new Date(owner.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : ''}</Text>
-                   {item.created_at && (
-                     <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>
-                       {(() => {
-                         const data = new Date(item.created_at);
-                         const dia = data.getDate().toString().padStart(2, '0');
-                         const mes = data.toLocaleString('pt-BR', { month: 'long' });
-                         const ano = data.getFullYear();
-                         const hora = data.getHours().toString().padStart(2, '0');
-                         const minuto = data.getMinutes().toString().padStart(2, '0');
-                         return `Publicado em ${dia} de ${mes} de ${ano} às ${hora}:${minuto}`;
-                       })()}
-                     </Text>
-                   )}
+                <Text style={{ fontSize: 13, color: '#6B7280' }}>Membro desde {owner.created_at ? new Date(owner.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : ''}</Text>
+                {item.created_at && (
+                  <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>
+                    {(() => {
+                      const data = new Date(item.created_at);
+                      const dia = data.getDate().toString().padStart(2, '0');
+                      const mes = data.toLocaleString('pt-BR', { month: 'long' });
+                      const ano = data.getFullYear();
+                      const hora = data.getHours().toString().padStart(2, '0');
+                      const minuto = data.getMinutes().toString().padStart(2, '0');
+                      return `Publicado em ${dia} de ${mes} de ${ano} às ${hora}:${minuto}`;
+                    })()}
+                  </Text>
+                )}
               </View>
             </View>
             {isOwner && (
-              <View style={{ flexDirection: 'row', gap: 12, marginTop: 8, justifyContent: 'flex-end' }}>
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 0, justifyContent: 'flex-end', paddingTop: 8, borderTopWidth: 1, borderTopColor: '#F3F4F6' }}>
                 <TouchableOpacity
-                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EEF2FF', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, marginRight: 8 }}
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EEF2FF', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10, marginRight: 4 }}
                   onPress={handleEditItem}
                 >
-                  <MaterialIcons name="edit" size={20} color="#6366F1" />
-                  <Text style={{ color: '#6366F1', fontWeight: 'bold', fontSize: 15, marginLeft: 6 }}>Editar publicação</Text>
+                  <MaterialIcons name="edit" size={18} color="#6366F1" />
+                  <Text style={{ color: '#6366F1', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Editar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#DC2626', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16 }}
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#DC2626', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10 }}
                   onPress={handleDeleteItem}
                   disabled={deleting}
                 >
-                  <MaterialIcons name="delete" size={20} color="#fff" />
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15, marginLeft: 6 }}>{deleting ? 'Excluindo...' : 'Excluir publicação'}</Text>
+                  <MaterialIcons name="delete" size={18} color="#fff" />
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>{deleting ? 'Excluindo...' : 'Excluir'}</Text>
                 </TouchableOpacity>
               </View>
             )}
             {!isOwner && (
-              <TouchableOpacity style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingVertical: 10, alignItems: 'center', backgroundColor: '#fff' }} onPress={handleSendMessage}>
+              <TouchableOpacity style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingVertical: 10, alignItems: 'center', backgroundColor: '#fff', marginTop: 8 }} onPress={handleSendMessage}>
                 <Text style={{ color: '#374151', fontWeight: 'bold', fontSize: 15 }}>Enviar Mensagem</Text>
               </TouchableOpacity>
             )}
