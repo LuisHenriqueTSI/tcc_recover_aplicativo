@@ -36,10 +36,25 @@
         "backgroundColor": "#4F46E5"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.recover.app"
+      "package": "com.recover.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "09309284-b769-44a6-ae58-7eb3a83c56ca"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/09309284-b769-44a6-ae58-7eb3a83c56ca"
     }
   }
 }

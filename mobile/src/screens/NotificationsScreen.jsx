@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { getUnreadCount, getConversations } from '../services/messages';
 import { listItems, markItemAsResolved, deleteItem } from '../services/items';
+import { getUserNotifications, markNotificationRead } from '../services/notifications';
 
 
 
@@ -28,6 +29,8 @@ export default function NotificationsScreen() {
   const [loading, setLoading] = useState(false);
   const [messageNotifications, setMessageNotifications] = useState([]);
   const [pendingItems, setPendingItems] = useState([]);
+  const [systemNotifications, setSystemNotifications] = useState([]);
+  const [showFoundNotification, setShowFoundNotification] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -53,7 +56,6 @@ export default function NotificationsScreen() {
     })));
     // Itens não resolvidos
     let items = await listItems({ owner_id: user.id, resolved: false });
-    // Filtrar itens que realmente existem (evitar mostrar excluídos)
     items = (items || []).filter(item => item && item.id);
     setPendingItems(items.map(item => ({
       id: item.id,
@@ -67,13 +69,39 @@ export default function NotificationsScreen() {
       bgColor: '#FFF7ED',
       item,
     })));
+    // Notificações do sistema (tabela notifications)
+    const sysNotifs = await getUserNotifications(user.id);
+    setSystemNotifications((sysNotifs || []).filter(n => !n.read).map(n => ({
+      id: n.id,
+      type: 'alert',
+      title: 'Alerta do sistema',
+      message: n.message,
+      time: getRelativeTime(n.created_at),
+      read: n.read,
+      icon: 'bell',
+      iconColor: '#4F46E5',
+      bgColor: '#E0E7FF',
+    })));
     setLoading(false);
   }
 
 
 
   // Junta todas as notificações
-  const allNotifications = [...messageNotifications, ...pendingItems];
+  const foundNotification = showFoundNotification
+    ? [{
+        id: 'found-success',
+        type: 'found-success',
+        title: 'Que legal que seu item foi encontrado!',
+        message: 'Sua publicação foi removida e você não receberá mais notificações sobre este item.',
+        time: 'Agora',
+        read: false,
+        icon: 'smile',
+        iconColor: '#22C55E',
+        bgColor: '#ECFDF5',
+      }]
+    : [];
+  const allNotifications = [...foundNotification, ...systemNotifications, ...messageNotifications, ...pendingItems];
   const unread = allNotifications.length;
 
   async function handleMarkAllRead() {
@@ -84,6 +112,16 @@ export default function NotificationsScreen() {
 
   async function handleNotificationPress(notification) {
     // Aqui você pode navegar ou abrir detalhes se quiser
+    // Se for uma notificação do sistema (vinda da tabela notifications)
+    if (notification.type === 'alert' && notification.id) {
+      try {
+        await markNotificationRead(notification.id);
+        await fetchNotifications();
+      } catch (err) {
+        console.error('Erro ao marcar notificação como lida:', err);
+      }
+      return;
+    }
     if (notification.type === 'match' && notification.item) {
       Alert.alert(
         'Seu item foi encontrado?',
@@ -101,6 +139,8 @@ export default function NotificationsScreen() {
                 const result = await deleteItem(notification.item.id);
                 console.log('[Notifications] Resultado deleteItem:', result);
                 await fetchNotifications();
+                setShowFoundNotification(true);
+                setTimeout(() => setShowFoundNotification(false), 5000);
               } catch (err) {
                 console.error('Erro ao excluir item após marcar como encontrado:', err);
               }

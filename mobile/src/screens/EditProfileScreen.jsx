@@ -215,6 +215,13 @@ const EditProfileScreen = ({ navigation }) => {
           style={styles.input}
         />
         {/* Telefone removido */}
+        {/* Redefinir senha como texto colorido */}
+        <Text
+          style={{ color: '#2563EB', fontWeight: 'bold', marginTop: 8, marginBottom: 12, fontSize: 15 }}
+          onPress={handleChangePassword}
+        >
+          Redefinir senha
+        </Text>
         <Text style={{ fontWeight: 'bold', marginTop: 12, marginBottom: 4 }}>Localidade</Text>
         <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 4 }}>Selecione o estado e a cidade do seu perfil:</Text>
         <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 220, maxWidth: '100%', width: '100%', height: 48, justifyContent: 'center' }}>
@@ -245,11 +252,6 @@ const EditProfileScreen = ({ navigation }) => {
             ))}
           </Picker>
         </View>
-        <Button
-          title="Redefinir senha"
-          onPress={handleChangePassword}
-          style={[styles.input, { marginBottom: 12 }]}
-        />
 
         <Text style={styles.sectionTitle}>Redes Sociais</Text>
         <Input

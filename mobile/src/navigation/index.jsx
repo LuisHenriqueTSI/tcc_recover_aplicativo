@@ -183,22 +183,43 @@ const PublicStack = () => {
 
 // Main App Stack with Tabs
 import { getUnreadCount } from '../services/messages';
+import { listItems } from '../services/items';
+import { getUserNotifications } from '../services/notifications';
 
 const MainAppTabs = ({ navigation }) => {
   const { isAdmin, user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadAlerts, setUnreadAlerts] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
-    async function fetchUnread() {
+    async function fetchUnreadAndAlerts() {
+      console.log('[DEBUG][MainAppTabs] fetchUnreadAndAlerts called. user:', user);
       if (user?.id) {
-        const count = await getUnreadCount(user.id);
-        if (isMounted) setUnreadCount(count);
+        try {
+          const count = await getUnreadCount(user.id);
+          console.log('[DEBUG][MainAppTabs] getUnreadCount:', count);
+          if (isMounted) setUnreadCount(count);
+        } catch (err) {
+          console.log('[DEBUG][MainAppTabs] getUnreadCount error:', err);
+        }
+        try {
+          const notifications = await getUserNotifications(user.id);
+          console.log('[DEBUG][MainAppTabs] getUserNotifications:', notifications);
+          // Filtra apenas notificações do sistema (type = 'alerta_sistema', 'alert' ou 'teste') não lidas
+          const unread = (notifications || []).filter(n => n.read === false && (n.type === 'alerta_sistema' || n.type === 'alert' || n.type === 'teste')).length;
+          console.log('[DEBUG][MainAppTabs] unread system alerts count:', unread);
+          if (isMounted) setUnreadAlerts(unread);
+        } catch (err) {
+          console.log('[DEBUG][MainAppTabs] getUserNotifications error:', err);
+        }
+      } else {
+        console.log('[DEBUG][MainAppTabs] user.id not found');
       }
     }
-    fetchUnread();
+    fetchUnreadAndAlerts();
     // Opcional: polling a cada 30s
-    const interval = setInterval(fetchUnread, 30000);
+    const interval = setInterval(fetchUnreadAndAlerts, 30000);
     return () => { isMounted = false; clearInterval(interval); };
   }, [user]);
 
@@ -237,32 +258,35 @@ const MainAppTabs = ({ navigation }) => {
           headerStyle: { backgroundColor: '#4F46E5' },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
-          tabBarIcon: ({ color, size }) => (
-            <View style={{ width: size + 10, height: size + 10, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-              <MaterialIcons name="chat" size={size} color={color} />
-              {unreadCount > 0 && (
-                <View style={{
-                  position: 'absolute',
-                  top: -4,
-                  right: -4,
-                  backgroundColor: '#EF4444',
-                  borderRadius: 10,
-                  minWidth: 18,
-                  height: 18,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingHorizontal: 4,
-                  zIndex: 99,
-                  borderWidth: 2,
-                  borderColor: '#fff',
-                }}>
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 11 }}>
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </Text>
-                </View>
-              )}
-            </View>
-          ),
+          tabBarIcon: ({ color, size }) => {
+            console.log('[DEBUG][MainAppTabs] Render tabBarIcon ChatTab. unreadCount:', unreadCount);
+            return (
+              <View style={{ width: size + 10, height: size + 10, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <MaterialIcons name="chat" size={size} color={color} />
+                {unreadCount > 0 && (
+                  <View style={{
+                    position: 'absolute',
+                    top: -4,
+                    right: -4,
+                    backgroundColor: '#EF4444',
+                    borderRadius: 10,
+                    minWidth: 18,
+                    height: 18,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 4,
+                    zIndex: 99,
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                  }}>
+                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 11 }}>
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            );
+          },
         }}
       />
       <Tab.Screen
@@ -292,9 +316,35 @@ const MainAppTabs = ({ navigation }) => {
           headerStyle: { backgroundColor: '#4F46E5' },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="notifications" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => {
+            console.log('[DEBUG][MainAppTabs] Render tabBarIcon NotificationsTab. unreadAlerts:', unreadAlerts);
+            return (
+              <View style={{ width: size + 10, height: size + 10, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <MaterialIcons name="notifications" size={size} color={color} />
+                {unreadAlerts > 0 && (
+                  <View style={{
+                    position: 'absolute',
+                    top: -4,
+                    right: -4,
+                    backgroundColor: '#EF4444',
+                    borderRadius: 10,
+                    minWidth: 18,
+                    height: 18,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 4,
+                    zIndex: 99,
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                  }}>
+                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 11 }}>
+                      {unreadAlerts > 9 ? '9+' : unreadAlerts}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            );
+          },
         }}
       />
       <Tab.Screen

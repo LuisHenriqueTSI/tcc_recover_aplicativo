@@ -827,10 +827,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     ];
     return (
       <ScrollView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
-        <View style={{ alignItems: 'center', marginTop: 32, marginBottom: 12 }}>
-          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>Registrar Item</Text>
-          <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 16 }}>Primeiro, selecione a categoria do item</Text>
-        </View>
+        <View style={{ alignItems: 'center', marginTop: 8, marginBottom: 12 }} />
         <View style={{ gap: 18, marginHorizontal: 12, marginBottom: 32 }}>
           {typeOptions.map((opt) => (
             <TouchableOpacity
