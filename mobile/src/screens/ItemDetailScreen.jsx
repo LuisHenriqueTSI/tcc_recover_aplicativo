@@ -86,9 +86,17 @@ const ItemDetailScreen = ({ route, navigation }) => {
     try {
       setLoading(true);
       const itemData = await itemsService.getItemById(itemId);
-      
       if (itemData) {
         setItem(itemData);
+        // Log para depuração do array de fotos
+        if (itemData.item_photos && Array.isArray(itemData.item_photos)) {
+          console.log('[ItemDetailScreen] Fotos retornadas:', itemData.item_photos);
+          itemData.item_photos.forEach((photo, idx) => {
+            console.log(`[ItemDetailScreen] Foto[${idx}]:`, photo);
+          });
+        } else {
+          console.log('[ItemDetailScreen] Nenhuma foto retornada ou formato inesperado:', itemData.item_photos);
+        }
         setPhotos(itemData.item_photos || []);
         setOwner(itemData.profiles);
         // Rewards would come from a separate query if needed
@@ -361,13 +369,14 @@ const ItemDetailScreen = ({ route, navigation }) => {
         {/* Fotos do animal no topo */}
         <View style={{ width: '100%', height: 240, backgroundColor: '#E5E7EB', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, overflow: 'hidden', marginBottom: 0 }}>
           {photos && photos.length > 0 ? (
-            <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={{ width: '100%', height: 240 }}>
+            <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={{ width: '100%', height: 240 }} contentContainerStyle={{ flexGrow: 1 }}>
               {photos.map((photo, idx) => (
-                <Image
-                  key={photo.id || idx}
-                  source={{ uri: photo.url }}
-                  style={{ width: 360, height: 240, resizeMode: 'cover' }}
-                />
+                <View key={photo.id || idx} style={{ width: '100%', height: 240 }}>
+                  <Image
+                    source={{ uri: photo.url }}
+                    style={{ width: '100%', height: 240, resizeMode: 'cover' }}
+                  />
+                </View>
               ))}
             </ScrollView>
           ) : (
