@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { getUnreadCount, getConversations } from '../services/messages';
@@ -85,17 +85,29 @@ export default function NotificationsScreen() {
   async function handleNotificationPress(notification) {
     // Aqui você pode navegar ou abrir detalhes se quiser
     if (notification.type === 'match' && notification.item) {
-      // Excluir publicação correspondente ao marcar como encontrado
-      try {
-        console.log('[Notifications] Marcando item como resolvido:', notification.item.id);
-        await markItemAsResolved(notification.item.id, user.id);
-        console.log('[Notifications] Chamando deleteItem para:', notification.item.id);
-        const result = await deleteItem(notification.item.id);
-        console.log('[Notifications] Resultado deleteItem:', result);
-        await fetchNotifications();
-      } catch (err) {
-        console.error('Erro ao excluir item após marcar como encontrado:', err);
-      }
+      Alert.alert(
+        'Seu item foi encontrado?',
+        'Se você recuperou seu item, podemos excluir sua publicação para evitar novas notificações. Deseja realmente excluir?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Sim, pode excluir',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                console.log('[Notifications] Marcando item como resolvido:', notification.item.id);
+                await markItemAsResolved(notification.item.id, user.id);
+                console.log('[Notifications] Chamando deleteItem para:', notification.item.id);
+                const result = await deleteItem(notification.item.id);
+                console.log('[Notifications] Resultado deleteItem:', result);
+                await fetchNotifications();
+              } catch (err) {
+                console.error('Erro ao excluir item após marcar como encontrado:', err);
+              }
+            },
+          },
+        ]
+      );
     }
     // Para mensagens, abrir chat, etc.
   }
