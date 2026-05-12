@@ -2,13 +2,41 @@
 
 ## ⚡ Começar em 3 Minutos
 
-### 1️⃣ Clonar e Instalar
+### 1️⃣ Abrir o projeto
 ```bash
 cd recover-APP/tcc_recover/recover/mobile
+```
+
+### 2️⃣ Conferir Node.js e npm
+```bash
+node -v
+npm -v
+```
+
+Se aparecer uma versão nos dois comandos, o Node.js e o npm estão instalados.
+
+> **Se estiver no Windows PowerShell** e receber o erro `npm.ps1 não pode ser carregado porque a execução de scripts foi desabilitada neste sistema`, o npm está instalado, mas o PowerShell está bloqueando scripts.
+>
+> Corrija com:
+>
+> ```powershell
+> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+> ```
+>
+> Depois feche e abra o PowerShell novamente e rode `npm install`.
+>
+> Se quiser apenas contornar o problema, use:
+>
+> ```powershell
+> npm.cmd install
+> ```
+
+### 3️⃣ Instalar dependências
+```bash
 npm install
 ```
 
-### 2️⃣ Configurar Variáveis
+### 4️⃣ Configurar Variáveis
 ```bash
 # Copiar template
 cp .env.example .env
@@ -18,7 +46,7 @@ cp .env.example .env
 # EXPO_PUBLIC_SUPABASE_ANON_KEY=sua_key
 ```
 
-### 3️⃣ Rodar o App
+### 5️⃣ Rodar o App
 ```bash
 npm start
 ```
@@ -148,6 +176,7 @@ const primaryColor = '#3B82F6';  // Blue
 | Erro | Solução |
 |------|---------|
 | "Module not found" | `npm install` + `npm start -- --clear` |
+| `npm.ps1 não pode ser carregado` | `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned` ou `npm.cmd install` |
 | "Auth error" | Cheque .env com credenciais Supabase |
 | "Port in use" | `npm start` usa porta alternativa automaticamente |
 | "App crashes" | Abra console (j) para ver erro exato |
