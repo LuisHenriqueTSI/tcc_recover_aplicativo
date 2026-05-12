@@ -52,12 +52,36 @@ git clone https://github.com/luish/recover-APP.git
 cd recover-APP/tcc_recover/recover/mobile
 ```
 
-### 2. **Instalar Dependências**
+### 2. **Verificar Node.js e npm**
+```bash
+node -v
+npm -v
+```
+
+Se os dois comandos retornarem uma versão, o Node.js e o npm estão instalados.
+
+> **Windows / PowerShell:** se aparecer o erro `npm.ps1 não pode ser carregado porque a execução de scripts foi desabilitada neste sistema`, o npm está instalado, mas o PowerShell bloqueou a execução do script.
+>
+> Use uma destas opções:
+>
+> ```powershell
+> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+> ```
+>
+> Feche e abra o PowerShell novamente antes de rodar `npm install`.
+>
+> Ou, sem alterar a política de execução:
+>
+> ```powershell
+> npm.cmd install
+> ```
+
+### 3. **Instalar Dependências**
 ```bash
 npm install
 ```
 
-### 3. **Configurar Variáveis de Ambiente**
+### 4. **Configurar Variáveis de Ambiente**
 
 Copie `.env.example` para `.env`:
 ```bash
@@ -70,12 +94,12 @@ EXPO_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
 ```
 
-### 4. **Iniciar o Servidor Expo**
+### 5. **Iniciar o Servidor Expo**
 ```bash
 npm start
 ```
 
-### 5. **Rodar no Dispositivo Mobile**
+### 6. **Rodar no Dispositivo Mobile**
 
 **Android (com Expo Go):**
 - Instale Expo Go na Google Play Store
@@ -89,7 +113,7 @@ npm start
 - Escaneie o QR code com a câmera do iOS
 - Toque na notificação para abrir
 
-### 6. **Rodar no Navegador (Web)**
+### 7. **Rodar no Navegador (Web)**
 ```bash
 npm start
 # Pressione 'w' no terminal para abrir web
@@ -242,6 +266,27 @@ eas submit --platform ios      # App Store
 rm -rf node_modules package-lock.json
 npm install
 npm start -- --clear
+```
+
+### Erro: `npm.ps1 não pode ser carregado`
+Esse erro acontece no **Windows PowerShell** quando a política de execução de scripts está bloqueando o `npm.ps1`.
+
+Se `node -v` e `npm -v` mostram uma versão, então o npm está instalado. Para corrigir:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+Feche e abra o PowerShell novamente e rode:
+
+```powershell
+npm install
+```
+
+Se preferir não mudar a política de execução, use:
+
+```powershell
+npm.cmd install
 ```
 
 ### Erro: "Port already in use"
