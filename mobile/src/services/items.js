@@ -58,14 +58,65 @@ import { removeItemPhoto } from './removeItemPhoto';
 export { removeItemPhoto };
 import * as FileSystem from 'expo-file-system/legacy';
 
+const getMimeTypeFromExt = (extension) => {
+  const normalizedExt = String(extension || '').toLowerCase();
+  const mimeTypes = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    heic: 'image/heic',
+    heif: 'image/heif',
+    bmp: 'image/bmp',
+    svg: 'image/svg+xml',
+  };
+
+  return mimeTypes[normalizedExt] || 'application/octet-stream';
+};
+
+const getNextItemId = async () => {
+  const { data, error } = await supabase
+    .from('items')
+    .select('id')
+    .order('id', { ascending: false })
+    .limit(1);
+
+  if (error) {
+    throw error;
+  }
+
+  const lastId = Array.isArray(data) && data.length > 0 ? Number(data[0].id) : 0;
+  return Number.isFinite(lastId) ? lastId + 1 : 1;
+};
+
+const getNextItemPhotoId = async () => {
+  const { data, error } = await supabase
+    .from('item_photos')
+    .select('id')
+    .order('id', { ascending: false })
+    .limit(1);
+
+  if (error) {
+    throw error;
+  }
+
+  const lastId = Array.isArray(data) && data.length > 0 ? Number(data[0].id) : 0;
+  return Number.isFinite(lastId) ? lastId + 1 : 1;
+};
+
 export const registerItem = async (itemData, photos = []) => {
   try {
     console.log('[registerItem] Registrando novo item...');
     console.log('[registerItem] Dados do item:', itemData);
 
+    const nextItemId = await getNextItemId();
+    console.log('[registerItem] Próximo ID calculado:', nextItemId);
+
     const { data, error } = await supabase
       .from('items')
       .insert({
+        id: nextItemId,
         owner_id: itemData.owner_id,
         title: itemData.title,
         description: itemData.description,
@@ -176,6 +227,7 @@ export const saveItemPhoto = async (itemId, photo) => {
     const photoName = photo.name || `photo_${Date.now()}.jpg`;
     const ext = photoName.split('.').pop() || 'jpg';
     const filepath = `${itemId}/${Date.now()}.${ext}`;
+    const contentType = getMimeTypeFromExt(ext);
 
     console.log('[saveItemPhoto] Photo URI:', photoUri);
     console.log('[saveItemPhoto] File path:', filepath);
@@ -200,7 +252,7 @@ export const saveItemPhoto = async (itemId, photo) => {
       httpMethod: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': photo.type || `image/${ext}`,
+        'Content-Type': contentType,
         'x-upsert': 'false',
       },
       uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
@@ -222,9 +274,12 @@ export const saveItemPhoto = async (itemId, photo) => {
     console.log('[saveItemPhoto] Public URL:', urlData.publicUrl);
 
     // Save reference to database
+    const nextPhotoId = await getNextItemPhotoId();
+    console.log('[saveItemPhoto] Próximo ID da foto calculado:', nextPhotoId);
     const { error: dbError } = await supabase
       .from('item_photos')
       .insert({
+        id: nextPhotoId,
         item_id: itemId,
         url: urlData.publicUrl,
       });
