@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import { getUnreadCount, getConversations } from '../services/messages';
-import { listItems, markItemAsResolved, deleteItem } from '../services/items';
+import { getUnreadCount, getConversations, markMessagesAsRead, markAllMessagesAsRead } from '../services/messages';
+import { listItems, markItemAsResolved, deleteItem, cleanupExpiredItems } from '../services/items';
+import { getUserNotifications, markAllNotificationsRead, markNotificationRead, buildRenewalAlerts } from '../services/notifications';
+import { renewItem } from '../services/items';
 
 
 
@@ -23,39 +25,57 @@ function getRelativeTime(dateString) {
 
 
 
-export default function NotificationsScreen() {
+export default function NotificationsScreen({ navigation, onNotificationsUpdated }) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [messageNotifications, setMessageNotifications] = useState([]);
   const [pendingItems, setPendingItems] = useState([]);
+  const [systemAlerts, setSystemAlerts] = useState([]);
+  const [renewingItemId, setRenewingItemId] = useState(null);
+
+  const allNotifications = [...systemAlerts, ...messageNotifications];
+  const unreadCount = allNotifications.filter(notification => !notification.read).length;
+  const notificationList = [...systemAlerts, ...messageNotifications, ...pendingItems];
 
   useEffect(() => {
     if (!user) return;
-    fetchNotifications();
+    const load = async () => {
+      await cleanupExpiredItems();
+      await fetchNotifications();
+      if (typeof onNotificationsUpdated === 'function') {
+        onNotificationsUpdated();
+      }
+    };
+    load();
   }, [user]);
 
   async function fetchNotifications() {
     if (!user) return;
     setLoading(true);
-    // Mensagens não lidas
     const conversations = await getConversations(user.id);
     const unreadMsgs = conversations.filter(c => c.unread);
-    setMessageNotifications(unreadMsgs.map(msg => ({
+    const systemAlertsData = await getUserNotifications(user.id);
+
+    const mappedMessageNotifications = unreadMsgs.map(msg => ({
       id: msg.itemId + '_' + msg.otherId,
       type: 'message',
       title: 'Nova mensagem',
       message: `Nova mensagem sobre "${msg.itemTitle || 'item'}" de ${msg.otherName}`,
       time: getRelativeTime(msg.lastMessageAt),
       read: false,
+      otherId: msg.otherId,
       icon: 'message-circle',
       iconColor: '#F59E42',
       bgColor: '#FFF7ED',
-    })));
-    // Itens não resolvidos
+    }));
+
+    setMessageNotifications(mappedMessageNotifications);
+
     let items = await listItems({ owner_id: user.id, resolved: false });
-    // Filtrar itens que realmente existem (evitar mostrar excluídos)
     items = (items || []).filter(item => item && item.id);
-    setPendingItems(items.map(item => ({
+    const renewalAlerts = buildRenewalAlerts(items);
+
+    const mappedPendingItems = items.map(item => ({
       id: item.id,
       type: 'match',
       title: 'Possível correspondência!',
@@ -66,24 +86,67 @@ export default function NotificationsScreen() {
       iconColor: '#F59E42',
       bgColor: '#FFF7ED',
       item,
-    })));
+    }));
+
+    setPendingItems(mappedPendingItems);
+
+    const mappedSystemAlerts = [...renewalAlerts, ...(systemAlertsData || [])]
+      .filter(alert => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed'))
+      .map(alert => ({
+        id: `system_${alert.id}`,
+        type: alert.type,
+        title: alert.type === 'item_removed' ? 'Sua publicação foi removida' : 'Renove seu anúncio',
+        message: alert.message,
+        time: getRelativeTime(alert.created_at),
+        read: Boolean(alert.read),
+        icon: alert.type === 'item_removed' ? 'trash-2' : 'alert-triangle',
+        iconColor: alert.type === 'item_removed' ? '#DC2626' : '#F59E42',
+        bgColor: alert.type === 'item_removed' ? '#FEF2F2' : '#FFF7ED',
+        critical: alert.type === 'renewal_reminder' || alert.type === 'item_removed',
+        itemId: alert.item_id,
+      }));
+
+    setSystemAlerts(mappedSystemAlerts);
     setLoading(false);
   }
 
-
-
-  // Junta todas as notificações
-  const allNotifications = [...messageNotifications, ...pendingItems];
-  const unread = allNotifications.length;
-
   async function handleMarkAllRead() {
-    // Não há marcação real, apenas limpa a lista visualmente
+    if (!user) return;
+    await Promise.all([
+      markAllNotificationsRead(user.id),
+      markAllMessagesAsRead(user.id),
+    ]);
     setMessageNotifications([]);
     setPendingItems([]);
+    setSystemAlerts([]);
+    if (typeof onNotificationsUpdated === 'function') {
+      onNotificationsUpdated();
+    }
   }
 
   async function handleNotificationPress(notification) {
-    // Aqui você pode navegar ou abrir detalhes se quiser
+    if (notification.type === 'renewal_reminder' && notification.itemId) {
+      try {
+        setRenewingItemId(notification.itemId);
+        await renewItem(notification.itemId);
+        await markNotificationRead(notification.id.replace('system_', ''));
+        Alert.alert('Sucesso', 'Sua publicação foi renovada com sucesso.');
+        await fetchNotifications();
+      } catch (err) {
+        console.error('Erro ao renovar anúncio pelo alerta:', err);
+        Alert.alert('Erro', 'Não foi possível renovar o anúncio neste momento.');
+      } finally {
+        setRenewingItemId(null);
+      }
+      return;
+    }
+
+    if (notification.type === 'item_removed' && notification.itemId) {
+      await markNotificationRead(notification.id.replace('system_', ''));
+      navigation.navigate('ItemDetail', { itemId: notification.itemId });
+      return;
+    }
+
     if (notification.type === 'match' && notification.item) {
       Alert.alert(
         'Seu item foi encontrado?',
@@ -100,7 +163,7 @@ export default function NotificationsScreen() {
                 console.log('[Notifications] Chamando deleteItem para:', notification.item.id);
                 const result = await deleteItem(notification.item.id);
                 console.log('[Notifications] Resultado deleteItem:', result);
-                await fetchNotifications();
+                setPendingItems(prev => prev.filter(item => item.id !== notification.id));
               } catch (err) {
                 console.error('Erro ao excluir item após marcar como encontrado:', err);
               }
@@ -108,18 +171,49 @@ export default function NotificationsScreen() {
           },
         ]
       );
+      return;
     }
-    // Para mensagens, abrir chat, etc.
+
+    if (notification.type === 'message') {
+      if (notification.otherId) {
+        await markMessagesAsRead(user.id, notification.otherId);
+      }
+      setMessageNotifications(prev => prev.filter(item => item.id !== notification.id));
+      if (typeof onNotificationsUpdated === 'function') {
+        onNotificationsUpdated();
+      }
+      return;
+    }
+
+    // Marca notificações persistentes como lidas quando tocadas, se houver id válido
+    if (notification.id?.startsWith('system_')) {
+      await markNotificationRead(notification.id.replace('system_', ''));
+      await fetchNotifications();
+      if (typeof onNotificationsUpdated === 'function') {
+        onNotificationsUpdated();
+      }
+    }
   }
 
   return (
     <View style={styles.container}>
+      {unreadCount > 0 && (
+        <View style={styles.unreadBanner}>
+          <View style={styles.unreadBannerTextContainer}>
+            <Text style={styles.unreadBannerTitle}>{unreadCount} notificações não lidas</Text>
+            <Text style={styles.unreadBannerSubtitle}>Toque em cada notificação para marcar como lida.</Text>
+          </View>
+          <TouchableOpacity style={styles.unreadBannerButton} onPress={handleMarkAllRead}>
+            <Text style={styles.unreadBannerButtonText}>Marcar todas</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       {/* Notifications List */}
       {loading ? (
         <ActivityIndicator size="large" color="#F59E42" style={{ marginVertical: 24 }} />
-      ) : allNotifications.length > 0 ? (
+      ) : notificationList.length > 0 ? (
         <FlatList
-          data={allNotifications}
+          data={notificationList}
           keyExtractor={item => item.id.toString()}
           renderItem={({ item, index }) => (
             <TouchableOpacity
@@ -127,6 +221,7 @@ export default function NotificationsScreen() {
               style={[
                 styles.notificationCard,
                 { backgroundColor: item.bgColor },
+                item.critical ? styles.criticalCard : {},
                 index === 0 ? { borderTopWidth: 0 } : {},
               ]}
               activeOpacity={0.85}
@@ -137,11 +232,21 @@ export default function NotificationsScreen() {
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <Text style={[styles.notifTitle, { color: '#1F2937' }]} numberOfLines={1}>{item.title}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.notifTitle, { color: '#1F2937' }]} numberOfLines={1}>{item.title}</Text>
+                    {item.critical && (
+                      <View style={styles.criticalBadge}>
+                        <Text style={styles.criticalBadgeText}>Urgente</Text>
+                      </View>
+                    )}
+                  </View>
                   <Text style={styles.notifTime}>{item.time}</Text>
                 </View>
                 <Text style={styles.notifMsg} numberOfLines={2}>{item.message}</Text>
               </View>
+              {renewingItemId === item.itemId && (
+                <ActivityIndicator size="small" color="#F59E42" style={{ marginLeft: 8 }} />
+              )}
               <View style={styles.unreadDot} />
             </TouchableOpacity>
           )}
@@ -203,6 +308,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     position: 'relative',
   },
+  criticalCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#DC2626',
+    backgroundColor: '#FFF7ED',
+  },
   iconCircle: {
     width: 32,
     height: 32,
@@ -229,6 +339,19 @@ const styles = StyleSheet.create({
     color: '#444',
     fontSize: 13,
     marginTop: 0,
+  },
+  criticalBadge: {
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    backgroundColor: '#DC2626',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  criticalBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 'bold',
   },
   unreadDot: {
     width: 10,
@@ -288,5 +411,42 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
     maxWidth: 260,
+  },
+  unreadBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#EEF2FF',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  unreadBannerTextContainer: {
+    flex: 1,
+    marginRight: 12,
+  },
+  unreadBannerTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#1D4ED8',
+    marginBottom: 2,
+  },
+  unreadBannerSubtitle: {
+    fontSize: 13,
+    color: '#1E40AF',
+  },
+  unreadBannerButton: {
+    backgroundColor: '#1D4ED8',
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  unreadBannerButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: 'bold',
   },
 });

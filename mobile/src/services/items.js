@@ -25,9 +25,28 @@ export const removeAllItemPhotos = async (itemId) => {
     console.error('[removeAllItemPhotos] Erro geral:', err);
   }
 };
+const CLEANUP_THROTTLE_MS = 60 * 60 * 1000; // 1 hora
+let lastCleanupTimestamp = 0;
+
+const ensureCleanupExpiredItems = async () => {
+  try {
+    const now = Date.now();
+    if (now - lastCleanupTimestamp < CLEANUP_THROTTLE_MS) {
+      return { skipped: true };
+    }
+
+    lastCleanupTimestamp = now;
+    return await cleanupExpiredItems();
+  } catch (error) {
+    console.log('[ensureCleanupExpiredItems] Falha ao verificar limpeza:', error.message);
+    return { skipped: false, removed: 0, ids: [] };
+  }
+};
+
 // Busca itens já com fotos e nome do dono em uma única query (para Home)
 export const listItemsWithPhotosAndOwner = async (filters = {}) => {
   try {
+    await ensureCleanupExpiredItems();
     console.log('[listItemsWithPhotosAndOwner] Carregando itens otimizados:', filters);
     let query = supabase
       .from('items')
@@ -47,16 +66,50 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
       console.log('[listItemsWithPhotosAndOwner] Erro:', error.message);
       return [];
     }
-    return data || [];
+
+    const visibleItems = (data || []).filter(item => {
+      if (filters.owner_id) return true;
+      return !shouldHideItem(item);
+    });
+    return visibleItems
+      .map(item => ({ ...item, renewalInfo: getRenewalInfo(item) }))
+      .sort((a, b) => {
+        const aNeedsAttention = a.renewalInfo?.needsRenewal ? 1 : 0;
+        const bNeedsAttention = b.renewalInfo?.needsRenewal ? 1 : 0;
+
+        if (aNeedsAttention !== bNeedsAttention) {
+          return bNeedsAttention - aNeedsAttention;
+        }
+
+        const aDate = new Date(a.created_at || 0).getTime();
+        const bDate = new Date(b.created_at || 0).getTime();
+        return bDate - aDate;
+      });
   } catch (error) {
     console.log('[listItemsWithPhotosAndOwner] Exceção:', error.message);
     return [];
   }
 };
+import Constants from 'expo-constants';
 import { supabase } from '../lib/supabase';
 import { removeItemPhoto } from './removeItemPhoto';
+import { shouldHideItem, getExpiredItemIds, getExpirationDays, getRenewalInfo, getPermanentDeleteDays, shouldDeletePermanently } from './itemExpiration';
+import { createItemRemovedNotification } from './notifications';
 export { removeItemPhoto };
 import * as FileSystem from 'expo-file-system/legacy';
+
+const expoExtra = Constants.expoConfig?.extra || {};
+const supabaseUrl =
+  process.env.EXPO_PUBLIC_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
+  expoExtra.EXPO_PUBLIC_SUPABASE_URL ||
+  expoExtra.SUPABASE_URL ||
+  '';
+
+const getCleanupFunctionUrl = () => {
+  if (!supabaseUrl) return '';
+  return `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/cleanup-expired-items`;
+};
 
 const getMimeTypeFromExt = (extension) => {
   const normalizedExt = String(extension || '').toLowerCase();
@@ -103,6 +156,24 @@ const getNextItemPhotoId = async () => {
 
   const lastId = Array.isArray(data) && data.length > 0 ? Number(data[0].id) : 0;
   return Number.isFinite(lastId) ? lastId + 1 : 1;
+};
+
+const trySetItemExpiry = async (itemId, date = new Date()) => {
+  try {
+    const expiresAt = new Date(date);
+    expiresAt.setDate(expiresAt.getDate() + getExpirationDays());
+
+    const { error } = await supabase
+      .from('items')
+      .update({ expires_at: expiresAt.toISOString() })
+      .eq('id', itemId);
+
+    if (error) {
+      console.log('[trySetItemExpiry] Campo expires_at não disponível ou indisponível:', error.message);
+    }
+  } catch (error) {
+    console.log('[trySetItemExpiry] Exceção:', error.message);
+  }
 };
 
 export const registerItem = async (itemData, photos = []) => {
@@ -158,6 +229,8 @@ export const registerItem = async (itemData, photos = []) => {
     console.log('[registerItem] Item criado com ID:', createdItem.id);
     const itemId = createdItem.id;
 
+    await trySetItemExpiry(itemId, new Date());
+
     // Upload photos if provided
     for (const photo of photos) {
       await saveItemPhoto(itemId, photo);
@@ -209,6 +282,8 @@ export const updateItem = async (itemId, itemData) => {
       console.log('[updateItem] Erro:', error.message);
       throw error;
     }
+
+    await trySetItemExpiry(itemId, new Date());
 
     console.log('[updateItem] Item atualizado com sucesso');
     return data;
@@ -401,6 +476,7 @@ export const getItemById = async (itemId) => {
 
 export const listItems = async (filters = {}) => {
   try {
+    await ensureCleanupExpiredItems();
     console.log('[listItems] Carregando itens com filtros:', filters);
     
     // Query básica sem joins para evitar erro 400 de RLS
@@ -429,8 +505,25 @@ export const listItems = async (filters = {}) => {
       return [];
     }
 
-    console.log('[listItems] Itens carregados:', data?.length || 0);
-    return data || [];
+    const visibleItems = (data || []).filter(item => {
+      if (filters.owner_id) return true;
+      return !shouldHideItem(item);
+    });
+    const sortedItems = visibleItems
+      .map(item => ({ ...item, renewalInfo: getRenewalInfo(item) }))
+      .sort((a, b) => {
+        const aNeedsAttention = a.renewalInfo?.needsRenewal ? 1 : 0;
+        const bNeedsAttention = b.renewalInfo?.needsRenewal ? 1 : 0;
+        if (aNeedsAttention !== bNeedsAttention) {
+          return bNeedsAttention - aNeedsAttention;
+        }
+        const aDate = new Date(a.created_at || 0).getTime();
+        const bDate = new Date(b.created_at || 0).getTime();
+        return bDate - aDate;
+      });
+
+    console.log('[listItems] Itens carregados:', sortedItems.length);
+    return sortedItems;
   } catch (error) {
     console.log('[listItems] Exceção:', error.message);
     return [];
@@ -541,6 +634,8 @@ export const getItemThumbnails = async (itemIds = []) => {
 
 export const getUserItems = async (userId) => {
   try {
+    await ensureCleanupExpiredItems();
+
     const { data, error } = await supabase
       .from('items')
       .select(`
@@ -560,6 +655,112 @@ export const getUserItems = async (userId) => {
   } catch (error) {
     console.log('[getUserItems] Exceção:', error.message);
     return [];
+  }
+};
+
+export const renewItem = async (itemId) => {
+  try {
+    console.log('[renewItem] Renovando item:', itemId);
+    const now = new Date().toISOString();
+
+    const { error } = await supabase
+      .from('items')
+      .update({
+        created_at: now,
+      })
+      .eq('id', itemId);
+
+    if (error) {
+      console.log('[renewItem] Erro:', error.message);
+      throw error;
+    }
+
+    await trySetItemExpiry(itemId, new Date());
+    return { success: true };
+  } catch (error) {
+    console.log('[renewItem] Exceção:', error.message);
+    throw error;
+  }
+};
+
+const cleanupExpiredItemsClientSide = async () => {
+  try {
+    console.log('[cleanupExpiredItemsClientSide] Buscando itens permanentes para remoção...');
+
+    const cutoffDate = new Date(Date.now() - getPermanentDeleteDays() * 24 * 60 * 60 * 1000).toISOString();
+    console.log('[cleanupExpiredItemsClientSide] cutoffDate (created_at):', cutoffDate);
+
+    const { data, error } = await supabase
+      .from('items')
+      .select('id, owner_id, title, created_at, resolved')
+      .lte('created_at', cutoffDate);
+
+    if (error) {
+      console.log('[cleanupExpiredItemsClientSide] Erro ao buscar itens:', error.message);
+      throw error;
+    }
+
+    const expiredItems = (data || []).filter(item => item && item.id && shouldDeletePermanently(item));
+    if (expiredItems.length === 0) {
+      console.log('[cleanupExpiredItemsClientSide] Nenhum item permanente para remover.');
+      return { removed: 0, ids: [] };
+    }
+
+    const expiredIds = expiredItems.map(item => item.id).filter(Boolean);
+    console.log('[cleanupExpiredItemsClientSide] Itens permanentes para remoção encontrados:', expiredIds);
+
+    for (const item of expiredItems) {
+      try {
+        if (item.owner_id) {
+          await createItemRemovedNotification(item, item.owner_id);
+        }
+        await deleteItem(item.id);
+      } catch (cleanupError) {
+        console.log('[cleanupExpiredItemsClientSide] Erro ao remover item', item.id, cleanupError.message);
+      }
+    }
+
+    return { removed: expiredIds.length, ids: expiredIds };
+  } catch (error) {
+    console.log('[cleanupExpiredItemsClientSide] Exceção:', error.message);
+    throw error;
+  }
+};
+
+export const cleanupExpiredItems = async () => {
+  const functionUrl = getCleanupFunctionUrl();
+  if (!functionUrl) {
+    console.log('[cleanupExpiredItems] Supabase URL não configurada, usando fallback local.');
+    return cleanupExpiredItemsClientSide();
+  }
+
+  try {
+    console.log('[cleanupExpiredItems] Chamando Edge Function de limpeza permanente...');
+
+    const response = await fetch(functionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.log('[cleanupExpiredItems] Erro na função de limpeza:', result.error || response.status);
+      if (response.status === 404) {
+        console.log('[cleanupExpiredItems] Função não encontrada, usando fallback local.');
+        return cleanupExpiredItemsClientSide();
+      }
+      throw new Error(result.error || 'Erro ao executar cleanupExpiredItems');
+    }
+
+    console.log('[cleanupExpiredItems] Itens removidos pela função:', result.ids || []);
+    return result;
+  } catch (error) {
+    console.log('[cleanupExpiredItems] Exceção:', error.message);
+    console.log('[cleanupExpiredItems] Usando fallback local de exclusão.');
+    return cleanupExpiredItemsClientSide();
   }
 };
 

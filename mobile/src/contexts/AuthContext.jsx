@@ -22,8 +22,13 @@ export const AuthProvider = ({ children }) => {
           console.log('[Auth] Usuário encontrado:', currentUser.id);
           setUser(currentUser);
 
-          // Fetch user profile
-          const profile = await userService.getUser(currentUser.id);
+          // Garante que o perfil exista após restaurar a sessão
+          const profile = await userService.createProfileIfMissing(currentUser.id, {
+            name: currentUser.user_metadata?.name,
+            email: currentUser.email,
+            city: currentUser.user_metadata?.city,
+            state: currentUser.user_metadata?.state,
+          });
           if (profile) {
             setUserProfile(profile);
             setIsAdmin(profile.role === 'admin');
@@ -52,7 +57,12 @@ export const AuthProvider = ({ children }) => {
         if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
           if (session?.user) {
             setUser(session.user);
-            const profile = await userService.getUser(session.user.id);
+            const profile = await userService.createProfileIfMissing(session.user.id, {
+              name: session.user.user_metadata?.name,
+              email: session.user.email,
+              city: session.user.user_metadata?.city,
+              state: session.user.user_metadata?.state,
+            });
             if (profile) {
               setUserProfile(profile);
               setIsAdmin(profile.role === 'admin');
@@ -91,8 +101,13 @@ export const AuthProvider = ({ children }) => {
       const result = await supabaseAuth.signIn(email, password);
       setUser(result.user);
       
-      // Fetch user profile
-      const profile = await userService.getUser(result.user.id);
+      // Garante que o perfil exista após autenticação válida
+      const profile = await userService.createProfileIfMissing(result.user.id, {
+        name: result.user.user_metadata?.name,
+        email: result.user.email,
+        city: result.user.user_metadata?.city,
+        state: result.user.user_metadata?.state,
+      });
       if (profile) {
         setUserProfile(profile);
         setIsAdmin(profile.role === 'admin');

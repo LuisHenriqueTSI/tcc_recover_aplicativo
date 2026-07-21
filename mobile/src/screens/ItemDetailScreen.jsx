@@ -23,6 +23,8 @@ import Button from '../components/Button';
 
 import SightingModal from '../components/SightingModal';
 import * as sightingsService from '../services/sightings';
+import { getRenewalInfo } from '../services/itemExpiration';
+import { createRenewalReminderNotification } from '../services/notifications';
 
 
 const ItemDetailScreen = ({ route, navigation }) => {
@@ -46,6 +48,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [editCommentFacebook, setEditCommentFacebook] = useState('');
   const [editCommentPhotoUrl, setEditCommentPhotoUrl] = useState('');
   const [editUploading, setEditUploading] = useState(false);
+  const [renewing, setRenewing] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
@@ -89,6 +92,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
       const itemData = await itemsService.getItemDetails(itemId);
       if (itemData) {
         setItem(itemData);
+        if (isOwner && itemData && itemData.owner_id === user?.id) {
+          const renewalInfo = getRenewalInfo(itemData);
+          if (renewalInfo.needsRenewal) {
+            await createRenewalReminderNotification(itemData, user.id);
+          }
+        }
         // Log para depuração do array de fotos
         if (itemData.item_photos && Array.isArray(itemData.item_photos)) {
           console.log('[ItemDetailScreen] Fotos retornadas:', itemData.item_photos);
@@ -131,6 +140,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
     });
   };
 
+  const renewalInfo = item ? getRenewalInfo(item) : { canRenew: false, daysRemaining: 0, expired: false };
+
   const handleDeleteItem = () => {
     Alert.alert(
       'Excluir Item',
@@ -153,6 +164,20 @@ const ItemDetailScreen = ({ route, navigation }) => {
         }
       ]
     );
+  };
+
+  const handleRenewItem = async () => {
+    if (!item) return;
+    setRenewing(true);
+    try {
+      await itemsService.renewItem(item.id);
+      await loadItemDetails();
+      Alert.alert('Sucesso', 'Anúncio renovado com sucesso!');
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível renovar o anúncio: ' + error.message);
+    } finally {
+      setRenewing(false);
+    }
   };
 
   // Abrir modal de edição
@@ -570,6 +595,11 @@ const ItemDetailScreen = ({ route, navigation }) => {
                     })()}
                   </Text>
                 )}
+                {renewalInfo.canRenew && (
+                  <Text style={{ fontSize: 13, color: '#F59E0B', marginTop: 2 }}>
+                    {renewalInfo.expired ? 'Este anúncio expirou.' : `Expira em ${renewalInfo.daysRemaining} dia${renewalInfo.daysRemaining === 1 ? '' : 's'}`}
+                  </Text>
+                )}
               </View>
             </View>
             {(isOwner || isAdmin) && (
@@ -581,6 +611,16 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   >
                     <MaterialIcons name="edit" size={18} color="#6366F1" />
                     <Text style={{ color: '#6366F1', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Editar</Text>
+                  </TouchableOpacity>
+                )}
+                {isOwner && renewalInfo.canRenew && (
+                  <TouchableOpacity
+                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F59E0B', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10, marginRight: 4 }}
+                    onPress={handleRenewItem}
+                    disabled={renewing}
+                  >
+                    <MaterialIcons name="refresh" size={18} color="#fff" />
+                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>{renewing ? 'Renovando...' : 'Renovar'}</Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity

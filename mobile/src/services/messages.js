@@ -127,6 +127,29 @@ export const markMessagesAsRead = async (userId, otherUserId) => {
   }
 };
 
+export const markAllMessagesAsRead = async (userId) => {
+  try {
+    console.log('[markAllMessagesAsRead] Marcando todas mensagens como lidas...');
+
+    const { error } = await supabase
+      .from('messages')
+      .update({ read: true })
+      .eq('receiver_id', userId)
+      .eq('read', false);
+
+    if (error) {
+      console.log('[markAllMessagesAsRead] Erro:', error.message);
+      throw error;
+    }
+
+    console.log('[markAllMessagesAsRead] Todas as mensagens foram marcadas como lidas');
+    return { success: true };
+  } catch (error) {
+    console.log('[markAllMessagesAsRead] Exceção:', error.message);
+    throw error;
+  }
+};
+
 export const getUnreadCount = async (userId) => {
   try {
     const { count, error } = await supabase

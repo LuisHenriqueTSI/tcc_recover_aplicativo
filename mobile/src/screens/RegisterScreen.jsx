@@ -25,6 +25,10 @@ const RegisterScreen = ({ navigation }) => {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cooldownUntil, setCooldownUntil] = useState(0);
+  const isBusy = loading || isSubmitting;
+  const cooldownActive = Date.now() < cooldownUntil;
 
   // Validação simples: ambos selecionados
   const isValidLocation = () => selectedState && selectedCity;
@@ -70,25 +74,31 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     if (!validateForm()) return;
+    if (isSubmitting || cooldownActive) return;
+
+    setIsSubmitting(true);
 
     try {
-      const { user } = await signUp(email, password, name, selectedCity, selectedState);
+      await signUp(email, password, name, selectedCity, selectedState);
       Alert.alert(
         'Confirmação necessária',
         'Conta criada! Verifique seu e-mail para confirmar antes de fazer login.'
-      ); // Remove navegação após registro
+      );
     } catch (error) {
-      const msg = error.message ? error.message.toLowerCase() : '';
-      if (
-        msg.includes('already registered') ||
-        msg.includes('already exists') ||
-        msg.includes('duplicate key') ||
-        (msg.includes('email') && (msg.includes('exists') || msg.includes('used') || msg.includes('já está em uso')))
-      ) {
+      const msg = error?.message || 'Falha ao criar conta';
+      const isDuplicateEmailError = /already registered|already exists|already in use|duplicate|taken|já está em uso|já está registrado/i.test(msg);
+      const isRateLimitError = /rate limit|too many requests|temporarily blocked|spam|excesso de tentativas|aguarde alguns minutos/i.test(msg);
+
+      if (isDuplicateEmailError) {
         Alert.alert('Erro de Cadastro', 'Este e-mail já está em uso. Tente outro.');
+      } else if (isRateLimitError) {
+        setCooldownUntil(Date.now() + 60000);
+        Alert.alert('Erro de Cadastro', 'O cadastro foi bloqueado temporariamente por excesso de tentativas. Aguarde cerca de 1 minuto e tente novamente.');
       } else {
-        Alert.alert('Erro de Cadastro', error.message || 'Falha ao criar conta');
+        Alert.alert('Erro de Cadastro', msg);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -176,10 +186,10 @@ const RegisterScreen = ({ navigation }) => {
             inputStyle={styles.inputField}
           />
           <Button
-            title={loading ? 'Criando conta...' : 'Cadastrar-se'}
+            title={isBusy ? 'Criando conta...' : cooldownActive ? 'Aguarde...' : 'Cadastrar-se'}
             onPress={handleRegister}
-            disabled={loading}
-            loading={loading}
+            disabled={isBusy || cooldownActive}
+            loading={isBusy}
             style={styles.loginButton}
             textStyle={styles.loginButtonText}
           />

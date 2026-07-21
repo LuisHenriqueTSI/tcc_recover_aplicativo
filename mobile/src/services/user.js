@@ -22,6 +22,39 @@ export const getUser = async (userId) => {
   }
 };
 
+export const createProfileIfMissing = async (userId, profileData = {}) => {
+  try {
+    const existingProfile = await getUser(userId);
+    if (existingProfile) {
+      return existingProfile;
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert({
+        id: userId,
+        name: profileData.name || '',
+        email: profileData.email || '',
+        city: profileData.city || '',
+        state: profileData.state || '',
+        points: 0,
+        level: 1,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.log('[createProfileIfMissing] Error:', error.message);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.log('[createProfileIfMissing] Exception:', error.message);
+    throw error;
+  }
+};
+
 export const getUserById = async (userId) => {
   try {
     const { data, error } = await supabase

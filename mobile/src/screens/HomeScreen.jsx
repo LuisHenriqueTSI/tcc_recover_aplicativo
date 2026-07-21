@@ -22,6 +22,7 @@ import * as itemsService from '../services/items';
 import { supabase } from '../lib/supabase';
 import { getUser } from '../services/user';
 import { sendMessage } from '../services/messages';
+import * as notificationsService from '../services/notifications';
 import Card from '../components/Card';
 import ShareButton from '../components/ShareButton';
 // Get screen width for carousel
@@ -79,6 +80,13 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 13 }}>{cat.label}</Text>
           </View>
         </View>
+        {item.renewalInfo?.needsRenewal && (
+          <View style={{ position: 'absolute', bottom: 12, left: 12, right: 12, backgroundColor: 'rgba(245, 158, 11, 0.95)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>
+              Renove este anúncio em {item.renewalInfo.daysRemaining} dia{item.renewalInfo.daysRemaining === 1 ? '' : 's'}
+            </Text>
+          </View>
+        )}
         {/* Botão de Compartilhar no canto superior direito */}
         <View style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>
           <ShareButton item={item} imageUrl={photos[0]?.url} />
@@ -241,6 +249,9 @@ const HomeScreen = ({ navigation, route }) => {
           owner_name: item.profiles?.name || item.profiles?.email || 'Usuário',
           item_photos: item.item_photos || [],
         }));
+      }
+      if (user?.id) {
+        await notificationsService.syncRenewalNotifications(user.id, allItems);
       }
       setItems(allItems);
       applyFilters(allItems);

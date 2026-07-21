@@ -1,3 +1,14 @@
+import Constants from 'expo-constants';
+import { supabase } from '../lib/supabase';
+
+const expoExtra = Constants.expoConfig?.extra || {};
+const supabaseAnonKey =
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_KEY ||
+  expoExtra.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
+  expoExtra.SUPABASE_KEY ||
+  '';
+
 // Atualiza o email do usuário autenticado
 export const updateEmail = async (newEmail) => {
   try {
@@ -18,7 +29,18 @@ export const deleteUser = async () => {
   const accessToken = session?.access_token;
   if (!accessToken) throw new Error('Usuário não autenticado');
 
-  const response = await fetch('https://uiegfwnlphfblvzupziu.supabase.co/functions/v1/delete-user', {
+  const supabaseUrl =
+    process.env.EXPO_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    expoExtra.EXPO_PUBLIC_SUPABASE_URL ||
+    expoExtra.SUPABASE_URL ||
+    '';
+
+  if (!supabaseUrl) {
+    throw new Error('Supabase URL não encontrada para excluir usuário. Verifique a configuração.');
+  }
+
+  const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/functions/v1/delete-user`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -29,10 +51,18 @@ export const deleteUser = async () => {
   if (!response.ok) throw new Error(data.error || 'Erro ao excluir conta');
   return data;
 };
-import { supabase } from '../lib/supabase';
 
 export const getUser = async () => {
   try {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.log('[getUser] session error:', sessionError.message);
+    }
+
+    if (session?.user) {
+      return session.user;
+    }
+
     const { data: { user }, error } = await supabase.auth.getUser();
     if (error) {
       console.log('[getUser] auth error:', error.message);
@@ -75,59 +105,73 @@ export const signIn = async (email, password) => {
 export const signUp = async (email, password, name, city, state) => {
   try {
     console.log('[signUp] Iniciando registro...');
-    console.log('[signUp] Chamando supabase.auth.signUp...');
 
-    const { data, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name,
-          city,
-          state,
+    const supabaseUrl =
+      process.env.EXPO_PUBLIC_SUPABASE_URL ||
+      process.env.SUPABASE_URL ||
+      expoExtra.EXPO_PUBLIC_SUPABASE_URL ||
+      expoExtra.SUPABASE_URL ||
+      '';
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      const missingKey = !supabaseAnonKey ? 'EXPO_PUBLIC_SUPABASE_ANON_KEY' : 'EXPO_PUBLIC_SUPABASE_URL';
+      throw new Error(`Supabase config não encontrada. Verifique ${missingKey} e tente novamente.`);
+    }
+
+    const functionUrl = `${supabaseUrl.replace(/\/$/, '')}/functions/v1/create-user`;
+
+    let payload = null;
+    let response;
+
+    try {
+      response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: supabaseAnonKey,
         },
-      },
-    });
+        body: JSON.stringify({ email, password, name, city, state }),
+      });
 
-    if (authError) {
-      // Trata erro de email já existente
-      if (authError.message && authError.message.toLowerCase().includes('email')) {
-        throw new Error('Este e-mail já está em uso. Tente outro.');
+      try {
+        payload = await response.json();
+      } catch (parseError) {
+        const text = await response.text();
+        payload = { error: text || parseError.message };
       }
-      console.log('[signUp] Erro auth:', authError.message);
-      throw authError;
+
+      console.log('[signUp] Função URL:', functionUrl, 'status:', response.status, 'payload:', payload);
+    } catch (networkError) {
+      console.log('[signUp] Erro de rede:', networkError.message);
+      throw new Error('Não foi possível conectar à função de cadastro do Supabase. Verifique se a Edge Function foi implantada.');
     }
 
-    console.log('[signUp] Resposta do Supabase:', JSON.stringify(data));
-    const userId = data.user.id;
+    if (!response.ok) {
+      const message = payload?.error || `Falha ao criar conta. Status ${response.status}`;
+      console.log('[signUp] Erro auth:', message);
+      if (response.status === 404 || message.toLowerCase().includes('requested function was not found')) {
+        console.log('[signUp] Função não encontrada, tentando cadastro direto pelo Supabase Auth');
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { name, city, state },
+          },
+        });
 
-    // Create user profile
-    console.log('[signUp] Criando perfil para usuário:', userId);
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({
-        id: userId,
-        name: name,
-        email: email,
-        city: city,
-        state: state,
-        points: 0,
-        level: 1,
-      })
-      .select()
-      .single();
+        if (error) {
+          console.log('[signUp] Erro ao cadastrar diretamente:', error.message);
+          throw error;
+        }
 
-    if (profileError) {
-      if (profileError.message && profileError.message.toLowerCase().includes('duplicate key')) {
-        console.log('[signUp] Perfil já existe, ignorando erro de chave duplicada.');
-      } else {
-        console.log('[signUp] Erro ao criar perfil:', profileError.message);
-        throw profileError;
+        return { user: data.user, session: data.session };
       }
-    } else {
-      console.log('[signUp] Perfil criado com sucesso');
+
+      throw new Error(message);
     }
-    return { user: data.user, session: data.session };
+
+    console.log('[signUp] Usuário criado pela função:', payload?.user?.id);
+    return { user: payload.user, session: null };
   } catch (error) {
     console.log('[signUp] Exceção:', error.message);
     throw error;

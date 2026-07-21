@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../contexts/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../lib/supabase';
 
 // Auth Screens
 import WelcomeScreen from '../screens/WelcomeScreen';
@@ -31,6 +32,8 @@ import ConfigScreen from '../screens/ConfigScreen';
 import AjudaSuporteScreen from '../screens/AjudaSuporteScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import SobreScreen from '../screens/SobreScreen';
+import { listItems } from '../services/items';
+import { buildRenewalAlerts } from '../services/notifications';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -183,23 +186,112 @@ const PublicStack = () => {
 
 // Main App Stack with Tabs
 import { getUnreadCount } from '../services/messages';
+import { getUserNotifications } from '../services/notifications';
 
 const MainAppTabs = ({ navigation }) => {
   const { isAdmin, user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [systemAlertCount, setSystemAlertCount] = useState(0);
+  const [pendingItemCount, setPendingItemCount] = useState(0);
+  const [renewalAlertCount, setRenewalAlertCount] = useState(0);
+
+  const fetchUnread = async () => {
+    if (!user?.id) return;
+    const [messageCount, notifications, items] = await Promise.all([
+      getUnreadCount(user.id),
+      getUserNotifications(user.id),
+      listItems({ owner_id: user.id, resolved: false }),
+    ]);
+
+    const unreadSystemAlerts = (notifications || []).filter(alert => alert?.read !== true && alert?.read !== 'true').length;
+    const pendingCount = Array.isArray(items) ? items.length : 0;
+    const renewalAlerts = buildRenewalAlerts(items || []);
+    const renewalCount = renewalAlerts.length;
+
+    console.log('[MainAppTabs] fetchUnread', {
+      messageCount,
+      unreadSystemAlerts,
+      pendingCount,
+      renewalCount,
+      notificationsCount: notifications?.length,
+    });
+
+    setUnreadCount(messageCount);
+    setSystemAlertCount(unreadSystemAlerts);
+    setPendingItemCount(pendingCount);
+    setRenewalAlertCount(renewalCount);
+  };
 
   useEffect(() => {
-    let isMounted = true;
-    async function fetchUnread() {
-      if (user?.id) {
-        const count = await getUnreadCount(user.id);
-        if (isMounted) setUnreadCount(count);
-      }
-    }
+    if (!user?.id) return;
+
     fetchUnread();
-    // Opcional: polling a cada 30s
-    const interval = setInterval(fetchUnread, 30000);
-    return () => { isMounted = false; clearInterval(interval); };
+
+    const handleNotificationEvent = (payload) => {
+      console.log('[MainAppTabs] realtime notification event', payload);
+      fetchUnread();
+    };
+
+    const handleMessageEvent = (payload) => {
+      console.log('[MainAppTabs] realtime message event', payload);
+      fetchUnread();
+    };
+
+    console.log('[MainAppTabs] subscribing realtime for user', user.id);
+
+    const notificationChannel = supabase.channel(`notifications-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        handleNotificationEvent
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        handleNotificationEvent
+      )
+      .subscribe();
+
+    const messageChannel = supabase.channel(`messages-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${user.id}`,
+        },
+        handleMessageEvent
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${user.id}`,
+        },
+        handleMessageEvent
+      )
+      .subscribe();
+
+    const interval = setInterval(fetchUnread, 5000);
+
+    return () => {
+      clearInterval(interval);
+      if (notificationChannel) supabase.removeChannel(notificationChannel);
+      if (messageChannel) supabase.removeChannel(messageChannel);
+    };
   }, [user]);
 
   return (
@@ -284,7 +376,6 @@ const MainAppTabs = ({ navigation }) => {
       />
       <Tab.Screen
         name="NotificationsTab"
-        component={NotificationsScreen}
         options={{
           title: 'Alertas',
           tabBarLabel: 'Alertas',
@@ -292,11 +383,38 @@ const MainAppTabs = ({ navigation }) => {
           headerStyle: { backgroundColor: '#4F46E5' },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="notifications" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size, focused }) => {
+            const notificationCount = focused ? 0 : (unreadCount + systemAlertCount + pendingItemCount + renewalAlertCount);
+            return (
+              <View style={{ width: size + 24, height: size + 24, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <MaterialIcons name="notifications" size={size} color={color} />
+                {notificationCount > 0 && (
+                  <View style={{
+                    position: 'absolute',
+                    top: -3,
+                    right: -3,
+                    backgroundColor: '#EF4444',
+                    borderRadius: 8,
+                    minWidth: 16,
+                    height: 16,
+                    paddingHorizontal: 4,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: '#fff',
+                  }}>
+                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 10 }}>
+                      {notificationCount > 9 ? '9+' : notificationCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            );
+          },
         }}
-      />
+      >
+        {(props) => <NotificationsScreen {...props} onNotificationsUpdated={fetchUnread} />}
+      </Tab.Screen>
       <Tab.Screen
         name="ProfileTab"
         component={ProfileScreen}
