@@ -595,7 +595,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                     })()}
                   </Text>
                 )}
-                {renewalInfo.canRenew && (
+                {isOwner && renewalInfo.canRenew && (
                   <Text style={{ fontSize: 13, color: '#F59E0B', marginTop: 2 }}>
                     {renewalInfo.expired ? 'Esta publicação expirou.' : `Expira em ${renewalInfo.daysRemaining} dia${renewalInfo.daysRemaining === 1 ? '' : 's'}`}
                   </Text>

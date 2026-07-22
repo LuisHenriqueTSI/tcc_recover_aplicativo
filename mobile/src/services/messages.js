@@ -2,18 +2,43 @@ import { supabase } from '../lib/supabase';
 import { uploadMessagePhoto as uploadMessagePhotoFS } from './uploadMessagePhoto';
 import { getUserById } from './user';
 
+const getNextMessageId = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      throw error;
+    }
+
+    const lastId = Array.isArray(data) && data.length > 0 ? Number(data[0].id) : 0;
+    return Number.isFinite(lastId) ? lastId + 1 : 1;
+  } catch (error) {
+    console.log('[getNextMessageId] Erro:', error.message);
+    return Date.now();
+  }
+};
+
 export const sendMessage = async (messageData) => {
   try {
     console.log('[sendMessage] Enviando mensagem...');
 
+    const nextMessageId = await getNextMessageId();
+    const sentAt = new Date().toISOString();
+
     const { data, error } = await supabase
       .from('messages')
       .insert({
+        id: nextMessageId,
         sender_id: messageData.sender_id,
         receiver_id: messageData.receiver_id,
         item_id: messageData.item_id,
         content: messageData.content,
         photo_url: messageData.photo_url,
+        sent_at: sentAt,
         read: false,
       })
       .select()
