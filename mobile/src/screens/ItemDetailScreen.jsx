@@ -427,14 +427,18 @@ const ItemDetailScreen = ({ route, navigation }) => {
           <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>{item.title}</Text>
           <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 12 }}>{item.description}</Text>
           {/* Bloco de recompensa */}
-          {rewards && rewards.length > 0 && rewards[0].status === 'active' && (
+          {Array.isArray(rewards) && rewards.some(reward => reward?.status === 'active') && (
             <View style={{ backgroundColor: '#FEF3C7', borderRadius: 10, padding: 16, marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <MaterialIcons name="emoji-events" size={28} color="#F59E42" style={{ marginRight: 8 }} />
               <View style={{ flex: 1 }}>
                 <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 16 }}>Recompensa oferecida</Text>
-                <Text style={{ color: '#B45309', fontSize: 15, marginTop: 2 }}>
-                  {rewards[0].amount ? `R$ ${parseFloat(rewards[0].amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : ''} {rewards[0].description ? `- ${rewards[0].description}` : ''}
-                </Text>
+                {rewards
+                  .filter(reward => reward?.status === 'active')
+                  .map((reward, index) => (
+                    <Text key={reward?.id || index} style={{ color: '#B45309', fontSize: 15, marginTop: 2 }}>
+                      {reward?.amount ? `R$ ${parseFloat(reward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : ''}{reward?.description ? ` - ${reward.description}` : ''}
+                    </Text>
+                  ))}
               </View>
             </View>
           )}

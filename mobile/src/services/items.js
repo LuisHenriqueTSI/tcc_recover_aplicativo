@@ -67,12 +67,40 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
       return [];
     }
 
+    const itemIds = (data || []).map(item => item.id).filter(Boolean);
+    const rewardsByItemId = {};
+
+    if (itemIds.length > 0) {
+      const { data: rewardsData, error: rewardsError } = await supabase
+        .from('rewards')
+        .select('id, item_id, amount, currency, status, description')
+        .in('item_id', itemIds);
+
+      if (rewardsError) {
+        console.log('[listItemsWithPhotosAndOwner] Erro ao buscar rewards:', rewardsError.message);
+      } else {
+        for (const reward of rewardsData || []) {
+          if (!rewardsByItemId[reward.item_id]) {
+            rewardsByItemId[reward.item_id] = [];
+          }
+          rewardsByItemId[reward.item_id].push(reward);
+        }
+      }
+    }
+
     const visibleItems = (data || []).filter(item => {
       if (filters.owner_id) return true;
       return !shouldHideItem(item);
     });
     return visibleItems
-      .map(item => ({ ...item, renewalInfo: getRenewalInfo(item) }))
+      .map(item => ({
+        ...item,
+        rewards: normalizeItemRewards({
+          ...item,
+          rewards: rewardsByItemId[item.id] || [],
+        }),
+        renewalInfo: getRenewalInfo(item),
+      }))
       .sort((a, b) => {
         const aNeedsAttention = a.renewalInfo?.needsRenewal ? 1 : 0;
         const bNeedsAttention = b.renewalInfo?.needsRenewal ? 1 : 0;
@@ -109,6 +137,28 @@ const supabaseUrl =
 const getCleanupFunctionUrl = () => {
   if (!supabaseUrl) return '';
   return `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/cleanup-expired-items`;
+};
+
+const normalizeItemRewards = (item = {}) => {
+  const explicitRewards = Array.isArray(item.rewards) ? item.rewards : [];
+  if (explicitRewards.length > 0) {
+    return explicitRewards;
+  }
+
+  const extraFields = item.extra_fields || {};
+  const hasReward = Boolean(extraFields.offer_reward || extraFields.reward_amount || extraFields.reward_description);
+  if (!hasReward) {
+    return [];
+  }
+
+  return [{
+    id: `extra-${item.id || 'item'}`,
+    item_id: item.id,
+    amount: extraFields.reward_amount || null,
+    description: extraFields.reward_description || null,
+    currency: 'BRL',
+    status: 'active',
+  }];
 };
 
 const isJwtClockSkewError = (error = null) => {
@@ -577,14 +627,17 @@ export const getItemDetails = async (itemId) => {
     // Get rewards
     const { data: rewards } = await supabase
       .from('rewards')
-      .select('id, amount, currency, status')
+      .select('id, amount, currency, status, description')
       .eq('item_id', itemId);
 
     return {
       ...item,
       item_photos: photos || [],
       profiles: profile,
-      rewards: rewards || []
+      rewards: normalizeItemRewards({
+        ...item,
+        rewards: rewards || [],
+      })
     };
   } catch (error) {
     console.log('[getItemDetails] Exceção:', error.message);
@@ -654,8 +707,7 @@ export const getUserItems = async (userId) => {
       .from('items')
       .select(`
         *,
-        item_photos(id, url),
-        rewards(id, amount, currency, status)
+        item_photos(id, url)
       `)
       .eq('owner_id', userId)
       .order('created_at', { ascending: false });
@@ -665,7 +717,34 @@ export const getUserItems = async (userId) => {
       return [];
     }
 
-    return data || [];
+    const itemIds = (data || []).map(item => item.id).filter(Boolean);
+    const rewardsByItemId = {};
+
+    if (itemIds.length > 0) {
+      const { data: rewardsData, error: rewardsError } = await supabase
+        .from('rewards')
+        .select('id, item_id, amount, currency, status, description')
+        .in('item_id', itemIds);
+
+      if (rewardsError) {
+        console.log('[getUserItems] Erro ao buscar rewards:', rewardsError.message);
+      } else {
+        for (const reward of rewardsData || []) {
+          if (!rewardsByItemId[reward.item_id]) {
+            rewardsByItemId[reward.item_id] = [];
+          }
+          rewardsByItemId[reward.item_id].push(reward);
+        }
+      }
+    }
+
+    return (data || []).map(item => ({
+      ...item,
+      rewards: normalizeItemRewards({
+        ...item,
+        rewards: rewardsByItemId[item.id] || [],
+      }),
+    }));
   } catch (error) {
     console.log('[getUserItems] Exceção:', error.message);
     return [];

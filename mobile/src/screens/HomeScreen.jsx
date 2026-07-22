@@ -56,6 +56,9 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
   const safeCity = item.city != null ? String(item.city) : '';
   const safeState = item.state != null ? String(item.state) : '';
   const safeNeighborhood = item.neighborhood != null ? String(item.neighborhood) : '';
+  const activeReward = Array.isArray(item.rewards)
+    ? item.rewards.find(reward => reward?.status === 'active')
+    : null;
   return (
     <Card style={{ padding: 0, marginHorizontal: 8, marginVertical: 10, borderRadius: 18, overflow: 'hidden', backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
       {/* Imagem */}
@@ -96,7 +99,15 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
       <View style={{ padding: 16, paddingBottom: 10 }}>
         <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#374151', marginBottom: 16 }}>{safeTitle}</Text>
         <Text style={{ fontSize: 14, color: '#6B7280', marginBottom: 16 }}>{safeDescription}</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+        {activeReward && (
+          <View style={styles.rewardBadge}>
+            <Text style={styles.rewardBadgeText}>
+              {activeReward.amount ? `Recompensa: R$ ${parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Recompensa oferecida'}
+              {activeReward.description ? ` • ${activeReward.description}` : ''}
+            </Text>
+          </View>
+        )}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, marginTop: 14 }}>
           <MaterialIcons name="place" size={16} color="#9CA3AF" style={{ marginRight: 2 }} />
           <Text style={{ fontSize: 13, color: '#6B7280', marginRight: 12, fontWeight: 500 }}>{
             (safeCity && safeState ? `${safeCity}, ${safeState}` : (safeCity || safeState || '-')) + (safeNeighborhood ? ` - ${safeNeighborhood}` : '')

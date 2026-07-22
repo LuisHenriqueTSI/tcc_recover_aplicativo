@@ -454,6 +454,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
           collar: toNull(animalCollar),
           microchip: toNull(animalMicrochip),
           animal_name: toNull(animalName),
+          reward_amount: toNull(rewardAmount) || null,
+          reward_description: toNull(rewardDescription) || null,
+          offer_reward: Boolean(offerReward && (rewardAmount || rewardDescription)),
         },
       };
 
@@ -467,13 +470,14 @@ const RegisterItemScreen = ({ navigation, route }) => {
         resultItem = await itemsService.updateItem(editItem.id, itemData);
 
         // Atualizar ou criar recompensa se necessário
-        if (offerReward && rewardAmount && rewardDescription) {
+        if (offerReward && (rewardAmount || rewardDescription)) {
           // Buscar recompensa existente
-          const existingReward = await rewardsService.getRewardByItemId(editItem.id);
-          if (existingReward) {
+          const existingRewards = await rewardsService.getRewardByItemId(editItem.id);
+          const existingReward = Array.isArray(existingRewards) ? existingRewards[0] : existingRewards;
+          if (existingReward?.id) {
             await rewardsService.updateReward(existingReward.id, {
-              amount: rewardAmount,
-              description: rewardDescription,
+              amount: rewardAmount || null,
+              description: rewardDescription || null,
               currency: 'BRL',
               status: 'active',
             });
@@ -481,9 +485,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
             await rewardsService.createReward({
               item_id: editItem.id,
               owner_id: user.id,
-              amount: rewardAmount,
+              amount: rewardAmount || null,
               currency: 'BRL',
-              description: rewardDescription,
+              description: rewardDescription || null,
               status: 'active',
             });
           }
@@ -534,14 +538,14 @@ const RegisterItemScreen = ({ navigation, route }) => {
         resultItem = await itemsService.registerItem(itemData, photos);
 
         // Criar recompensa se necessário
-        if (offerReward && rewardAmount && rewardDescription) {
+        if (offerReward && (rewardAmount || rewardDescription)) {
           console.log('[RegisterItem] Criando recompensa para item_id:', resultItem.id, 'valor:', rewardAmount, 'desc:', rewardDescription);
           await rewardsService.createReward({
             item_id: resultItem.id,
             owner_id: user.id,
-            amount: rewardAmount,
+            amount: rewardAmount || null,
             currency: 'BRL',
-            description: rewardDescription,
+            description: rewardDescription || null,
             status: 'active',
           });
         }
@@ -702,13 +706,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   const createdItem = await itemsService.registerItem(itemData, []);
 
                   // Criar recompensa se necessário
-                  if (offerReward && rewardAmount && rewardDescription) {
+                  if (offerReward && (rewardAmount || rewardDescription)) {
                     await rewardsService.createReward({
                       item_id: createdItem.id,
                       owner_id: user.id,
-                      amount: rewardAmount,
+                      amount: rewardAmount || null,
                       currency: 'BRL',
-                      description: rewardDescription,
+                      description: rewardDescription || null,
                       status: 'active',
                     });
                   }
