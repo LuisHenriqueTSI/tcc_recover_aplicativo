@@ -80,7 +80,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 13 }}>{cat.label}</Text>
           </View>
         </View>
-        {item.owner_id === user?.id && item.renewalInfo?.needsRenewal && (
+        {item.owner_id === user?.id && item.renewalInfo?.needsRenewal && Number.isFinite(item.renewalInfo?.daysRemaining) && (
           <View style={{ position: 'absolute', bottom: 12, left: 12, right: 12, backgroundColor: 'rgba(245, 158, 11, 0.95)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 }}>
             <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>
               Renove esta publicação em {item.renewalInfo.daysRemaining} dia{item.renewalInfo.daysRemaining === 1 ? '' : 's'}

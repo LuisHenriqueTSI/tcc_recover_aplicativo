@@ -383,8 +383,8 @@ const MainAppTabs = ({ navigation }) => {
           headerStyle: { backgroundColor: '#4F46E5' },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
-          tabBarIcon: ({ color, size, focused }) => {
-            const notificationCount = focused ? 0 : (unreadCount + systemAlertCount + pendingItemCount + renewalAlertCount);
+          tabBarIcon: ({ color, size }) => {
+            const notificationCount = systemAlertCount + pendingItemCount + renewalAlertCount;
             return (
               <View style={{ width: size + 24, height: size + 24, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 <MaterialIcons name="notifications" size={size} color={color} />

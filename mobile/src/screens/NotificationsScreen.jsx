@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import { getUnreadCount, getConversations, markMessagesAsRead, markAllMessagesAsRead } from '../services/messages';
+import { getUnreadCount, getConversations, markMessagesAsRead } from '../services/messages';
 import { listItems, markItemAsResolved, deleteItem, cleanupExpiredItems } from '../services/items';
 import { getUserNotifications, markAllNotificationsRead, markNotificationRead, buildRenewalAlerts } from '../services/notifications';
 import { renewItem } from '../services/items';
@@ -34,7 +34,8 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
   const [renewingItemId, setRenewingItemId] = useState(null);
 
   const allNotifications = [...systemAlerts, ...messageNotifications];
-  const unreadCount = allNotifications.filter(notification => !notification.read).length;
+  const systemUnreadCount = systemAlerts.filter(notification => !notification.read).length;
+  const unreadCount = systemUnreadCount;
   const notificationList = [...systemAlerts, ...messageNotifications, ...pendingItems];
 
   useEffect(() => {
@@ -112,13 +113,11 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
 
   async function handleMarkAllRead() {
     if (!user) return;
-    await Promise.all([
-      markAllNotificationsRead(user.id),
-      markAllMessagesAsRead(user.id),
-    ]);
-    setMessageNotifications([]);
-    setPendingItems([]);
-    setSystemAlerts([]);
+
+    await markAllNotificationsRead(user.id);
+    setSystemAlerts(prev => prev.map(alert => ({ ...alert, read: true })));
+    await fetchNotifications();
+
     if (typeof onNotificationsUpdated === 'function') {
       onNotificationsUpdated();
     }
@@ -158,14 +157,21 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
             style: 'destructive',
             onPress: async () => {
               try {
-                console.log('[Notifications] Marcando item como resolvido:', notification.item.id);
-                await markItemAsResolved(notification.item.id, user.id);
-                console.log('[Notifications] Chamando deleteItem para:', notification.item.id);
-                const result = await deleteItem(notification.item.id);
+                const itemId = notification.item?.id;
+                console.log('[Notifications] Marcando item como resolvido:', itemId);
+                await markItemAsResolved(itemId, user.id);
+                console.log('[Notifications] Chamando deleteItem para:', itemId);
+                const result = await deleteItem(itemId);
                 console.log('[Notifications] Resultado deleteItem:', result);
-                setPendingItems(prev => prev.filter(item => item.id !== notification.id));
+                setPendingItems(prev => prev.filter(item => item.id !== itemId));
+                await fetchNotifications();
+                if (typeof onNotificationsUpdated === 'function') {
+                  onNotificationsUpdated();
+                }
               } catch (err) {
-                console.error('Erro ao excluir item após marcar como encontrado:', err);
+                console.error('[Notifications] Falha ao excluir item após marcar como encontrado:', err);
+                const message = err?.message || String(err || 'Erro desconhecido');
+                Alert.alert('Erro ao excluir publicação', message);
               }
             },
           },

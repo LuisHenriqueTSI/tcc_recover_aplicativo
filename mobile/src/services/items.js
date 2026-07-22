@@ -804,7 +804,6 @@ export const markItemAsResolved = async (itemId, userId) => {
       .from('items')
       .update({
         resolved: true,
-        resolved_at: new Date().toISOString(),
       })
       .eq('id', itemId);
 

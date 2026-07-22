@@ -33,22 +33,8 @@ export const getItemExpirationDate = (item) => {
 
 export const getRenewalInfo = (item = {}) => {
   const createdAt = normalizeDate(item?.created_at) || new Date();
-  const expiresAt = getExpirationDate(item);
+  const expiresAt = getItemExpirationDate(item);
   const canRenew = item?.resolved !== true;
-
-  if (!expiresAt) {
-    return {
-      canRenew,
-      daysRemaining: null,
-      expired: false,
-      needsRenewal: false,
-      inactive: false,
-      willBePermanentlyDeletedSoon: false,
-      deleteDaysRemaining: null,
-      expiresAt: null,
-      permanentDeleteDate: new Date(createdAt.getTime() + getPermanentDeleteDays() * DAY_MS),
-    };
-  }
 
   const now = Date.now();
   const daysRemaining = Math.ceil((expiresAt.getTime() - now) / DAY_MS);

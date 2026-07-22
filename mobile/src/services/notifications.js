@@ -84,9 +84,9 @@ export async function getUnreadNotificationCount(userId) {
 
 // Marca todas como lidas
 export async function markAllNotificationsRead(userId) {
-  if (!userId) return;
+  if (!userId) return false;
   const supabase = await getSupabaseClient();
-  if (!supabase) return;
+  if (!supabase) return false;
 
   try {
     const { error } = await supabase
@@ -95,21 +95,29 @@ export async function markAllNotificationsRead(userId) {
       .eq('user_id', userId)
       .eq('read', false);
 
-    if (error && !shouldIgnoreNotificationError(error)) {
+    if (error) {
+      if (shouldIgnoreNotificationError(error)) {
+        return true;
+      }
       console.error('[notifications] Erro ao marcar notificações como lidas:', error);
+      return false;
     }
+
+    return true;
   } catch (error) {
-    if (!shouldIgnoreNotificationError(error)) {
-      console.error('[notifications] Exceção ao marcar notificações como lidas:', error);
+    if (shouldIgnoreNotificationError(error)) {
+      return true;
     }
+    console.error('[notifications] Exceção ao marcar notificações como lidas:', error);
+    return false;
   }
 }
 
 // Marca uma notificação como lida
 export async function markNotificationRead(notificationId) {
-  if (!notificationId) return;
+  if (!notificationId) return false;
   const supabase = await getSupabaseClient();
-  if (!supabase) return;
+  if (!supabase) return false;
 
   try {
     const { error } = await supabase
@@ -117,13 +125,21 @@ export async function markNotificationRead(notificationId) {
       .update({ read: true })
       .eq('id', notificationId);
 
-    if (error && !shouldIgnoreNotificationError(error)) {
+    if (error) {
+      if (shouldIgnoreNotificationError(error)) {
+        return true;
+      }
       console.error('[notifications] Erro ao marcar notificação como lida:', error);
+      return false;
     }
+
+    return true;
   } catch (error) {
-    if (!shouldIgnoreNotificationError(error)) {
-      console.error('[notifications] Exceção ao marcar notificação como lida:', error);
+    if (shouldIgnoreNotificationError(error)) {
+      return true;
     }
+    console.error('[notifications] Exceção ao marcar notificação como lida:', error);
+    return false;
   }
 }
 
