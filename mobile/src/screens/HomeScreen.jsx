@@ -83,7 +83,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
         {item.renewalInfo?.needsRenewal && (
           <View style={{ position: 'absolute', bottom: 12, left: 12, right: 12, backgroundColor: 'rgba(245, 158, 11, 0.95)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 }}>
             <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>
-              Renove este anúncio em {item.renewalInfo.daysRemaining} dia{item.renewalInfo.daysRemaining === 1 ? '' : 's'}
+              Renove esta publicação em {item.renewalInfo.daysRemaining} dia{item.renewalInfo.daysRemaining === 1 ? '' : 's'}
             </Text>
           </View>
         )}
@@ -194,7 +194,7 @@ const HomeScreen = ({ navigation, route }) => {
         setEditState(userProfile.state);
         setEditCity(userProfile.city);
         setEditNeighborhood(userProfile.neighborhood || '');
-        setLocationFilter(`${userProfile.state}, ${userProfile.city}${userProfile.neighborhood ? ', ' + userProfile.neighborhood : ''}`);
+        setLocationFilter(`${userProfile.city}, ${userProfile.state}${userProfile.neighborhood ? ', ' + userProfile.neighborhood : ''}`);
       }
     }, [userProfile, locationFilterTouched])
   );
@@ -318,13 +318,26 @@ const HomeScreen = ({ navigation, route }) => {
     }
 
     if (locationFilter && locationFilter.trim().length > 0) {
-      const [city, state] = locationFilter.split(',').map(s => s.trim().toLowerCase());
+      const locationParts = locationFilter
+        .split(',')
+        .map(part => part.trim())
+        .filter(Boolean);
+
+      const normalizedParts = locationParts.map(part => part.toLowerCase());
+      const stateToken = normalizedParts.find(part => states.some(stateName => stateName.toLowerCase() === part || stateName.toLowerCase().replace(/\s+/g, '') === part));
+      const cityToken = normalizedParts.find(part => part !== stateToken);
+      const neighborhoodToken = normalizedParts.find(part => part !== stateToken && part !== cityToken);
+
       filtered = filtered.filter(item => {
         const itemCity = (item.city || '').toLowerCase();
         const itemState = (item.state || '').toLowerCase();
-        return (
-          (!city || itemCity === city) && (!state || itemState === state)
-        );
+        const itemNeighborhood = (item.neighborhood || '').toLowerCase();
+
+        const matchesCity = !cityToken || itemCity === cityToken;
+        const matchesState = !stateToken || itemState === stateToken;
+        const matchesNeighborhood = !neighborhoodToken || itemNeighborhood === neighborhoodToken;
+
+        return matchesCity && matchesState && matchesNeighborhood;
       });
     }
 
@@ -712,7 +725,7 @@ const HomeScreen = ({ navigation, route }) => {
               <TouchableOpacity onPress={async () => {
                 setLocationFilterTouched(true);
                 setEditLocationModal(false);
-                setLocationFilter(`${editState}, ${editCity}${editNeighborhood ? ', ' + editNeighborhood : ''}`);
+                setLocationFilter(`${editCity}, ${editState}${editNeighborhood ? ', ' + editNeighborhood : ''}`);
                 loadItems(); // Carrega imediatamente após salvar
                 // Atualiza localidade no perfil do usuário
                 try {

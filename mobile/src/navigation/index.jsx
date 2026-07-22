@@ -494,7 +494,7 @@ const MainStack = () => {
       <Stack.Screen
         name="MeusAnuncios"
         component={MeusAnunciosScreen}
-        options={{ title: 'Meus Anúncios' }}
+        options={{ title: 'Minhas Publicações' }}
       />
       <Stack.Screen
         name="Config"

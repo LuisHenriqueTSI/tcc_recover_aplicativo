@@ -28,7 +28,7 @@ const MeusAnunciosScreen = ({ navigation }) => {
       await renewItem(itemId);
       await loadItems();
     } catch (error) {
-      console.error('Erro ao renovar anúncio:', error);
+      console.error('Erro ao renovar publicação:', error);
     } finally {
       setRenewingId(null);
     }
@@ -70,13 +70,13 @@ const MeusAnunciosScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Meus anúncios</Text>
-      <Text style={styles.description}>Seus anúncios aparecem aqui com status claro para renovação ou exclusão futura.</Text>
+      <Text style={styles.title}>Minhas publicações</Text>
+      <Text style={styles.description}>Suas publicações aparecem aqui com status claro para renovação ou exclusão futura.</Text>
       {loading ? <ActivityIndicator size="large" color="#4F46E5" style={{ marginTop: 20 }} /> : null}
-      {renderSection('Ativos', 'ativos')}
-      {renderSection('Prontos para renovar', 'renovar')}
-      {renderSection('Inativos', 'inativos')}
-      {!loading && !items.length && <Text style={styles.empty}>Nenhum anúncio encontrado.</Text>}
+      {renderSection('Ativas', 'ativos')}
+      {renderSection('Prontas para renovar', 'renovar')}
+      {renderSection('Inativas', 'inativos')}
+      {!loading && !items.length && <Text style={styles.empty}>Nenhuma publicação encontrada.</Text>}
     </ScrollView>
   );
 };

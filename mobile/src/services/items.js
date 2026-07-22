@@ -111,6 +111,20 @@ const getCleanupFunctionUrl = () => {
   return `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/cleanup-expired-items`;
 };
 
+const isJwtClockSkewError = (error = null) => {
+  const message = String(error?.message || error || '');
+  return message.toLowerCase().includes('jwt issued at future') || message.toLowerCase().includes('issued at future');
+};
+
+const getAuthAccessToken = async () => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || '';
+  } catch (error) {
+    return '';
+  }
+};
+
 const getMimeTypeFromExt = (extension) => {
   const normalizedExt = String(extension || '').toLowerCase();
   const mimeTypes = {
@@ -696,6 +710,11 @@ const cleanupExpiredItemsClientSide = async () => {
       .lte('created_at', cutoffDate);
 
     if (error) {
+      if (isJwtClockSkewError(error)) {
+        console.log('[cleanupExpiredItemsClientSide] Sessão Supabase inválida por descompasso de relógio do dispositivo. Pulando limpeza local.');
+        return { removed: 0, ids: [], skipped: true };
+      }
+
       console.log('[cleanupExpiredItemsClientSide] Erro ao buscar itens:', error.message);
       throw error;
     }
@@ -737,16 +756,23 @@ export const cleanupExpiredItems = async () => {
   try {
     console.log('[cleanupExpiredItems] Chamando Edge Function de limpeza permanente...');
 
+    const accessToken = await getAuthAccessToken();
     const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
     });
 
     const result = await response.json();
 
     if (!response.ok) {
+      if (isJwtClockSkewError(result?.error || result)) {
+        console.log('[cleanupExpiredItems] Token Supabase rejeitado por descompasso de relógio do dispositivo. Pulando limpeza remota.');
+        return { removed: 0, ids: [], skipped: true };
+      }
+
       console.log('[cleanupExpiredItems] Erro na função de limpeza:', result.error || response.status);
       if (response.status === 404) {
         console.log('[cleanupExpiredItems] Função não encontrada, usando fallback local.');
@@ -758,6 +784,11 @@ export const cleanupExpiredItems = async () => {
     console.log('[cleanupExpiredItems] Itens removidos pela função:', result.ids || []);
     return result;
   } catch (error) {
+    if (isJwtClockSkewError(error)) {
+      console.log('[cleanupExpiredItems] Descompasso de relógio do dispositivo bloqueou a limpeza remota.');
+      return { removed: 0, ids: [], skipped: true };
+    }
+
     console.log('[cleanupExpiredItems] Exceção:', error.message);
     console.log('[cleanupExpiredItems] Usando fallback local de exclusão.');
     return cleanupExpiredItemsClientSide();

@@ -13,7 +13,7 @@ const statIcons = {
 };
 
 const menuItems = [
-  { label: 'Meus Anúncios', icon: 'package', route: 'MeusAnuncios' },
+  { label: 'Minhas Publicações', icon: 'package', route: 'MeusAnuncios' },
   { label: 'Configurações', icon: 'settings', route: 'Config' },
   { label: 'Ajuda e Suporte', icon: 'help-circle', route: 'AjudaSuporte' },
 ];

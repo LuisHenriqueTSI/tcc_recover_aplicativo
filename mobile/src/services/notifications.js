@@ -31,38 +31,55 @@ export async function getUserNotifications(userId) {
   if (!userId) return [];
   const supabase = await getSupabaseClient();
   if (!supabase) return [];
-  const { data, error } = await supabase
-    .from('notifications')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-  if (error) {
+  try {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      if (!shouldIgnoreNotificationError(error)) {
+        console.error('[notifications] Erro ao buscar notificações:', error);
+      }
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
     if (!shouldIgnoreNotificationError(error)) {
-      console.error('[notifications] Erro ao buscar notificações:', error);
+      console.error('[notifications] Exceção ao buscar notificações:', error);
     }
     return [];
   }
-  return data;
 }
 
 export async function getUnreadNotificationCount(userId) {
   if (!userId) return 0;
   const supabase = await getSupabaseClient();
   if (!supabase) return 0;
-  const { count, error } = await supabase
-    .from('notifications')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .eq('read', false);
 
-  if (error) {
+  try {
+    const { count, error } = await supabase
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('read', false);
+
+    if (error) {
+      if (!shouldIgnoreNotificationError(error)) {
+        console.error('[notifications] Erro ao contar notificações não lidas:', error);
+      }
+      return 0;
+    }
+
+    return count || 0;
+  } catch (error) {
     if (!shouldIgnoreNotificationError(error)) {
-      console.error('[notifications] Erro ao contar notificações não lidas:', error);
+      console.error('[notifications] Exceção ao contar notificações não lidas:', error);
     }
     return 0;
   }
-
-  return count || 0;
 }
 
 // Marca todas como lidas
@@ -70,13 +87,21 @@ export async function markAllNotificationsRead(userId) {
   if (!userId) return;
   const supabase = await getSupabaseClient();
   if (!supabase) return;
-  const { error } = await supabase
-    .from('notifications')
-    .update({ read: true })
-    .eq('user_id', userId)
-    .eq('read', false);
-  if (error && !shouldIgnoreNotificationError(error)) {
-    console.error('[notifications] Erro ao marcar notificações como lidas:', error);
+
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', userId)
+      .eq('read', false);
+
+    if (error && !shouldIgnoreNotificationError(error)) {
+      console.error('[notifications] Erro ao marcar notificações como lidas:', error);
+    }
+  } catch (error) {
+    if (!shouldIgnoreNotificationError(error)) {
+      console.error('[notifications] Exceção ao marcar notificações como lidas:', error);
+    }
   }
 }
 
@@ -85,12 +110,20 @@ export async function markNotificationRead(notificationId) {
   if (!notificationId) return;
   const supabase = await getSupabaseClient();
   if (!supabase) return;
-  const { error } = await supabase
-    .from('notifications')
-    .update({ read: true })
-    .eq('id', notificationId);
-  if (error && !shouldIgnoreNotificationError(error)) {
-    console.error('[notifications] Erro ao marcar notificação como lida:', error);
+
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', notificationId);
+
+    if (error && !shouldIgnoreNotificationError(error)) {
+      console.error('[notifications] Erro ao marcar notificação como lida:', error);
+    }
+  } catch (error) {
+    if (!shouldIgnoreNotificationError(error)) {
+      console.error('[notifications] Exceção ao marcar notificação como lida:', error);
+    }
   }
 }
 
@@ -115,16 +148,16 @@ export async function createRenewalReminderNotification(item, userId) {
   }
 
   const title = renewalInfo.willBePermanentlyDeletedSoon
-    ? `URGENTE: seu anúncio será excluído permanentemente em ${renewalInfo.deleteDaysRemaining} dia${renewalInfo.deleteDaysRemaining === 1 ? '' : 's'}`
+    ? `URGENTE: sua publicação será excluída permanentemente em ${renewalInfo.deleteDaysRemaining} dia${renewalInfo.deleteDaysRemaining === 1 ? '' : 's'}`
     : renewalInfo.daysRemaining <= 3
-      ? 'URGENTE: renove seu anúncio'
-      : 'Atenção: renove seu anúncio';
+      ? 'URGENTE: renove sua publicação'
+      : 'Atenção: renove sua publicação';
 
   const message = renewalInfo.willBePermanentlyDeletedSoon
-    ? `Seu anúncio "${item.title || 'sem título'}" será excluído permanentemente em ${renewalInfo.deleteDaysRemaining} dia${renewalInfo.deleteDaysRemaining === 1 ? '' : 's'}. Renove agora para evitar a perda definitiva.`
+    ? `Sua publicação "${item.title || 'sem título'}" será excluída permanentemente em ${renewalInfo.deleteDaysRemaining} dia${renewalInfo.deleteDaysRemaining === 1 ? '' : 's'}. Renove agora para evitar a perda definitiva.`
     : renewalInfo.daysRemaining <= 3
-      ? `Seu anúncio "${item.title || 'sem título'}" expira em ${renewalInfo.daysRemaining} dia${renewalInfo.daysRemaining === 1 ? '' : 's'}. Renovar agora é essencial para manter sua publicação visível.`
-      : `Seu anúncio "${item.title || 'sem título'}" expira em ${renewalInfo.daysRemaining} dia${renewalInfo.daysRemaining === 1 ? '' : 's'}. Renove para mantê-lo no topo.`;
+      ? `Sua publicação "${item.title || 'sem título'}" expira em ${renewalInfo.daysRemaining} dia${renewalInfo.daysRemaining === 1 ? '' : 's'}. Renovar agora é essencial para manter sua publicação visível.`
+      : `Sua publicação "${item.title || 'sem título'}" expira em ${renewalInfo.daysRemaining} dia${renewalInfo.daysRemaining === 1 ? '' : 's'}. Renove para mantê-la no topo.`;
 
   const { data, error } = await supabase
     .from('notifications')
@@ -194,14 +227,14 @@ export function buildRenewalAlerts(items = []) {
       const title = renewalInfo.willBePermanentlyDeletedSoon
         ? 'Atenção: remoção permanente'
         : renewalInfo.expired
-          ? 'Anúncio vencido'
-          : 'Renove seu anúncio';
+          ? 'Publicação vencida'
+          : 'Renove sua publicação';
 
       const message = renewalInfo.willBePermanentlyDeletedSoon
-        ? `Seu anúncio "${item.title || 'sem título'}" será excluído permanentemente em ${renewalInfo.deleteDaysRemaining} dia${renewalInfo.deleteDaysRemaining === 1 ? '' : 's'}. Renove agora para evitar perda definitiva.`
+        ? `Sua publicação "${item.title || 'sem título'}" será excluída permanentemente em ${renewalInfo.deleteDaysRemaining} dia${renewalInfo.deleteDaysRemaining === 1 ? '' : 's'}. Renove agora para evitar perda definitiva.`
         : renewalInfo.expired
-          ? `Seu anúncio "${item.title || 'sem título'}" já venceu. Renove para mantê-lo visível novamente.`
-          : `Seu anúncio "${item.title || 'sem título'}" está próximo do vencimento. Renove para mantê-lo visível.`;
+          ? `Sua publicação "${item.title || 'sem título'}" já venceu. Renove para mantê-la visível novamente.`
+          : `Sua publicação "${item.title || 'sem título'}" está próxima do vencimento. Renove para mantê-la visível.`;
 
       return {
         id: `renewal_${item.id}`,

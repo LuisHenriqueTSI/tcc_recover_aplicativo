@@ -95,7 +95,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
       .map(alert => ({
         id: `system_${alert.id}`,
         type: alert.type,
-        title: alert.type === 'item_removed' ? 'Sua publicação foi removida' : 'Renove seu anúncio',
+        title: alert.type === 'item_removed' ? 'Sua publicação foi removida' : 'Renove sua publicação',
         message: alert.message,
         time: getRelativeTime(alert.created_at),
         read: Boolean(alert.read),
@@ -133,8 +133,8 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
         Alert.alert('Sucesso', 'Sua publicação foi renovada com sucesso.');
         await fetchNotifications();
       } catch (err) {
-        console.error('Erro ao renovar anúncio pelo alerta:', err);
-        Alert.alert('Erro', 'Não foi possível renovar o anúncio neste momento.');
+        console.error('Erro ao renovar publicação pelo alerta:', err);
+        Alert.alert('Erro', 'Não foi possível renovar a publicação neste momento.');
       } finally {
         setRenewingItemId(null);
       }
