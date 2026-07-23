@@ -44,7 +44,7 @@ const getPrompt = (itemType = 'object', status = 'lost') => {
               ? 'outro item'
               : 'objeto';
 
-  return `Analise a imagem e devolva APENAS um JSON válido, sem markdown. O item é um ${categoryLabel} e a situação é ${status === 'found' ? 'encontrado' : 'perdido'}. Responda com os campos mais úteis do formulário. Para animal: animal_name, species, breed, color, size, age, collar, microchip, description. Para outros: title, description, brand, color, serial_number. Se não tiver certeza, use respostas curtas e realistas. Formato exato: {"title":"...","description":"...","brand":"...","color":"...","serial_number":"...","animal_name":"...","species":"...","breed":"...","size":"...","age":"...","collar":"...","microchip":"..."}`;
+  return `Analise a imagem e devolva APENAS um JSON válido, sem markdown. O item é um ${categoryLabel} e a situação é ${status === 'found' ? 'encontrado' : 'perdido'}. Responda com os campos mais úteis do formulário. Para animal: animal_name, species, breed, color, size, age, collar, description. Para outros: title, description, brand, color, serial_number. Se não tiver certeza, use respostas curtas e realistas. Formato exato: {"title":"...","description":"...","brand":"...","color":"...","serial_number":"...","animal_name":"...","species":"...","breed":"...","size":"...","age":"...","collar":"..."}`;
 };
 
 const guessMimeType = (uri = '') => {
@@ -108,7 +108,6 @@ const getFallbackSuggestions = ({ itemType = 'object', status = 'lost' }) => {
       size: 'Não informado',
       age: 'Não informado',
       collar: 'Não informado',
-      microchip: 'Não informado',
       source: 'fallback',
     };
   }
@@ -125,7 +124,6 @@ const getFallbackSuggestions = ({ itemType = 'object', status = 'lost' }) => {
     size: '',
     age: '',
     collar: '',
-    microchip: '',
     source: 'fallback',
   };
 };
@@ -259,7 +257,6 @@ export const analyzeItemWithVision = async ({ imageUri, itemType = 'object', sta
       size: parsed.size || '',
       age: parsed.age || '',
       collar: parsed.collar || '',
-      microchip: parsed.microchip || '',
       source: aiProvider === 'openrouter' ? 'openrouter' : 'gemini',
     };
   } catch (error) {

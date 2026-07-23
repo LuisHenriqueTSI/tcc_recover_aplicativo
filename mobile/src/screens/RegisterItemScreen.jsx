@@ -33,8 +33,7 @@ const ITEM_TYPES = {
         'breed',
         'color',
         'size',
-        'age',
-        'microchip'
+        'age'
       ],
       optional: [
         'collar',
@@ -51,7 +50,6 @@ const ITEM_TYPES = {
       size: 'Porte',
       age: 'Idade',
       collar: 'Coleira (descrição)',
-      microchip: 'Microchipado?',
       serial_number: 'Características especiais',
       brand: 'Raça/Tipo',
       description: 'Descrição',
@@ -64,7 +62,6 @@ const ITEM_TYPES = {
       size: 'Ex: Grande, Médio, Pequeno',
       age: 'Ex: Filhote, Adulto, Idoso',
       collar: 'Ex: Coleira azul com medalha',
-      microchip: 'Selecione',
       serial_number: 'Ex: Coleira azul, cicatriz na orelha',
       brand: 'Ex: Vira-lata, Poodle, Persa',
       description: 'Descreva detalhes importantes...',
@@ -224,7 +221,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [animalSize, setAnimalSize] = useState(editItem?.extra_fields?.size || '');
   const [animalAge, setAnimalAge] = useState(editItem?.extra_fields?.age || '');
   const [animalCollar, setAnimalCollar] = useState(editItem?.extra_fields?.collar || '');
-  const [animalMicrochip, setAnimalMicrochip] = useState(editItem?.extra_fields?.microchip || 'Não');
   const [animalName, setAnimalName] = useState(editItem?.extra_fields?.animal_name || '');
   
   const [photos, setPhotos] = useState([]);
@@ -279,7 +275,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
         if (typeof editItem.extra_fields.size !== 'undefined') setAnimalSize(editItem.extra_fields.size);
         if (typeof editItem.extra_fields.age !== 'undefined') setAnimalAge(editItem.extra_fields.age);
         if (typeof editItem.extra_fields.collar !== 'undefined') setAnimalCollar(editItem.extra_fields.collar);
-        if (typeof editItem.extra_fields.microchip !== 'undefined') setAnimalMicrochip(editItem.extra_fields.microchip);
         if (typeof editItem.extra_fields.animal_name !== 'undefined') setAnimalName(editItem.extra_fields.animal_name);
       }
     } else {
@@ -386,7 +381,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
         if (suggestions.size) setAnimalSize(suggestions.size);
         if (suggestions.age) setAnimalAge(suggestions.age);
         if (suggestions.collar) setAnimalCollar(suggestions.collar);
-        if (suggestions.microchip) setAnimalMicrochip(suggestions.microchip);
       }
 
       if (suggestions.title) setTitle(suggestions.title);
@@ -491,7 +485,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
         size: toNull(animalSize),
         age: toNull(animalAge),
         collar: toNull(animalCollar),
-        microchip: toNull(animalMicrochip),
         animal_name: toNull(animalName),
         // Também salva em extra_fields para compatibilidade
         extra_fields: {
@@ -503,7 +496,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
           size: toNull(animalSize),
           age: toNull(animalAge),
           collar: toNull(animalCollar),
-          microchip: toNull(animalMicrochip),
           animal_name: toNull(animalName),
           reward_amount: toNull(rewardAmount) || null,
           reward_description: toNull(rewardDescription) || null,
@@ -980,7 +972,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               <Text style={styles.title}>Fotos do Animal</Text>
               <View style={styles.aiHintCard}>
                 <Text style={styles.aiHintTitle}>Gerar com IA</Text>
-                <Text style={styles.aiHintText}>Se você quiser colocar uma foto aqui para gerar rapidamente as informações, basta enviar a foto e clicar em gerar com a IA.</Text>
+                <Text style={styles.aiHintText}>Envie uma foto e a IA pode preencher os dados visíveis do animal, como espécie, raça, porte e cor.</Text>
               </View>
               <TouchableOpacity
                 style={styles.uploadButton}
@@ -1077,39 +1069,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 onChangeText={setAnimalCollar}
                 style={styles.input}
               />
-              <View style={styles.input}>
-                <Text style={styles.label}>Microchipado? *</Text>
-                <View style={{ flexDirection: 'row', gap: 8 }}>
-                  <TouchableOpacity
-                    style={[
-                      styles.statusButton,
-                      animalMicrochip === 'Sim' && styles.statusButtonActive,
-                    ]}
-                    onPress={() => setAnimalMicrochip('Sim')}
-                  >
-                    <Text style={[
-                      styles.statusText,
-                      animalMicrochip === 'Sim' && styles.statusTextActive,
-                    ]}>
-                      Sim
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.statusButton,
-                      animalMicrochip === 'Não' && styles.statusButtonActive,
-                    ]}
-                    onPress={() => setAnimalMicrochip('Não')}
-                  >
-                    <Text style={[
-                      styles.statusText,
-                      animalMicrochip === 'Não' && styles.statusTextActive,
-                    ]}>
-                      Não
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+
               <Input
                 label="Características especiais"
                 placeholder="Ex: Coleira azul, cicatriz na orelha"
