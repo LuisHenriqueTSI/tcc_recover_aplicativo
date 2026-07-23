@@ -27,43 +27,23 @@ const ITEM_TYPES = {
   animal: {
     label: 'Animal',
     fields: {
-      required: [
-        'animal_name',
-        'species',
-        'breed',
-        'color',
-        'size',
-        'age'
-      ],
-      optional: [
-        'collar',
-        'serial_number',
-        'brand',
-        'description'
-      ],
+      required: ['species', 'color'],
+      optional: ['breed', 'size', 'age', 'description'],
     },
     fieldLabels: {
-      animal_name: 'Nome do animal',
       species: 'Espécie',
       breed: 'Raça',
       color: 'Cor',
       size: 'Porte',
       age: 'Idade',
-      collar: 'Coleira (descrição)',
-      serial_number: 'Características especiais',
-      brand: 'Raça/Tipo',
       description: 'Descrição',
     },
     placeholders: {
-      animal_name: 'Ex: Thor',
       species: 'Ex: Cachorro, Gato',
       breed: 'Ex: Golden Retriever',
       color: 'Ex: Dourado',
       size: 'Ex: Grande, Médio, Pequeno',
       age: 'Ex: Filhote, Adulto, Idoso',
-      collar: 'Ex: Coleira azul com medalha',
-      serial_number: 'Ex: Coleira azul, cicatriz na orelha',
-      brand: 'Ex: Vira-lata, Poodle, Persa',
       description: 'Descreva detalhes importantes...',
     },
   },
@@ -71,108 +51,94 @@ const ITEM_TYPES = {
     label: 'Outro',
     fields: {
       required: ['title'],
-      optional: ['brand', 'color', 'serial_number'],
+      optional: ['color', 'description'],
     },
     fieldLabels: {
-      brand: 'Marca/Tipo',
       color: 'Cor',
-      serial_number: 'Características/Detalhes',
+      description: 'Descrição',
     },
     placeholders: {
       title: 'Ex: Chave, Guarda-chuva, Outro item',
-      brand: 'Ex: Tipo ou marca do item',
       color: 'Ex: Cor predominante',
-      serial_number: 'Ex: Detalhes, características únicas',
+      description: 'Descreva detalhes que ajudem a identificar o item...',
     },
   },
   document: {
     label: 'Documento',
     fields: {
-      required: ['title', 'brand'],
-      optional: ['serial_number', 'color'],
+      required: ['title'],
+      optional: ['description'],
     },
     fieldLabels: {
-      brand: 'Tipo de documento',
-      color: 'Cor',
-      serial_number: 'Número/Detalhes',
+      description: 'Detalhes',
     },
     placeholders: {
       title: 'Ex: RG, CNH, Passaporte',
-      brand: 'Ex: RG, CNH, Passaporte',
-      color: 'Ex: Azul, Verde',
-      serial_number: 'Ex: 12345678-9',
+      description: 'Ex: 12345678-9, nome do titular ou observação',
     },
   },
   object: {
     label: 'Objeto',
     fields: {
-      required: ['title', 'color'],
-      optional: ['brand', 'serial_number'],
+      required: ['title'],
+      optional: ['color', 'description'],
     },
     fieldLabels: {
-      brand: 'Marca',
       color: 'Cor',
-      serial_number: 'Características especiais',
+      description: 'Descrição',
     },
     placeholders: {
       title: 'Ex: Mochila preta, Livro de ficção científica',
-      brand: 'Ex: Mochila Adidas, Livro "Game of Thrones"',
       color: 'Ex: Preto com detalhes vermelhos',
-      serial_number: 'Ex: Com zíper quebrado, adesivo na lateral',
+      description: 'Ex: Com zíper quebrado, adesivo na lateral',
     },
   },
   electronics: {
     label: 'Eletrônico',
     fields: {
-      required: ['title', 'brand', 'color'],
-      optional: ['serial_number'],
+      required: ['title'],
+      optional: ['color', 'description'],
     },
     fieldLabels: {
-      brand: 'Marca/Modelo',
       color: 'Cor',
-      serial_number: 'Número de série/IMEI',
+      description: 'Detalhes',
     },
     placeholders: {
       title: 'Ex: iPhone 13, Fone AirPods',
-      brand: 'Ex: iPhone 13 Pro, Samsung Galaxy S21',
       color: 'Ex: Preto, Prata',
-      serial_number: 'Ex: A2846B1C9D7E5F3G',
+      description: 'Ex: Número de série, IMEI ou observação',
     },
   },
   jewelry: {
     label: 'Joia/Acessório',
     fields: {
-      required: ['title', 'color'],
-      optional: ['brand', 'serial_number'],
+      required: ['title'],
+      optional: ['color', 'description'],
     },
     fieldLabels: {
-      brand: 'Material',
       color: 'Cor',
-      serial_number: 'Marcas distintivas',
+      description: 'Detalhes',
     },
     placeholders: {
       title: 'Ex: Anel de ouro, Colar com pedra azul',
-      brand: 'Ex: Ouro 18k, Prata 925',
       color: 'Ex: Dourado, Prateado',
-      serial_number: 'Ex: Gravado "Para Maria", com pedra azul',
+      description: 'Ex: Gravado "Para Maria", com pedra azul',
     },
   },
   clothing: {
     label: 'Roupa',
     fields: {
-      required: ['title', 'color'],
-      optional: ['brand', 'serialNumber'],
+      required: ['title'],
+      optional: ['color', 'description'],
     },
     fieldLabels: {
-      brand: 'Tamanho/Marca',
       color: 'Cor',
-      serialNumber: 'Detalhes/padrão',
+      description: 'Detalhes',
     },
     placeholders: {
       title: 'Ex: Jaqueta de couro, Calça jeans',
-      brand: 'Ex: P, M, G, GG / Nike, Adidas',
       color: 'Ex: Azul marinho com listras brancas',
-      serialNumber: 'Ex: Bolsos laterais, etiqueta vermelha',
+      description: 'Ex: Bolsos laterais, etiqueta vermelha',
     },
   },
 };
@@ -1021,24 +987,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
               {/* Campos detalhados do animal */}
               <Input
-                label="Nome do animal *"
-                placeholder="Ex: Thor"
-                value={animalName}
-                onChangeText={setAnimalName}
-                style={styles.input}
-              />
-              <Input
                 label="Espécie *"
                 placeholder="Ex: Cachorro, Gato"
                 value={animalSpecies}
                 onChangeText={setAnimalSpecies}
-                style={styles.input}
-              />
-              <Input
-                label="Raça *"
-                placeholder="Ex: Golden Retriever"
-                value={animalBreed}
-                onChangeText={setAnimalBreed}
                 style={styles.input}
               />
               <Input
@@ -1049,43 +1001,28 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 style={styles.input}
               />
               <Input
-                label="Porte *"
+                label="Raça"
+                placeholder="Ex: Golden Retriever"
+                value={animalBreed}
+                onChangeText={setAnimalBreed}
+                style={styles.input}
+              />
+              <Input
+                label="Porte"
                 placeholder="Ex: Grande, Médio, Pequeno"
                 value={animalSize}
                 onChangeText={setAnimalSize}
                 style={styles.input}
               />
               <Input
-                label="Idade *"
+                label="Idade"
                 placeholder="Ex: Filhote, Adulto, Idoso"
                 value={animalAge}
                 onChangeText={setAnimalAge}
                 style={styles.input}
               />
               <Input
-                label="Coleira (descrição)"
-                placeholder="Ex: Coleira azul com medalha"
-                value={animalCollar}
-                onChangeText={setAnimalCollar}
-                style={styles.input}
-              />
-
-              <Input
-                label="Características especiais"
-                placeholder="Ex: Coleira azul, cicatriz na orelha"
-                value={serialNumber}
-                onChangeText={setSerialNumber}
-                style={styles.input}
-              />
-              <Input
-                label="Raça/Tipo"
-                placeholder="Ex: Vira-lata, Poodle, Persa"
-                value={brand}
-                onChangeText={setBrand}
-                style={styles.input}
-              />
-              <Input
-                label="Descrição (opcional)"
+                label="Descrição"
                 placeholder="Descreva detalhes importantes..."
                 value={description}
                 onChangeText={setDescription}
@@ -1226,7 +1163,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
             )}
 
             {/* Campos dinâmicos após fotos */}
-            {/* Campo de título sempre presente */}
             <Input
               key="title"
               label={config.fieldLabels.title ? config.fieldLabels.title + (config.fields.required.includes('title') ? ' *' : '') : 'Título'}
@@ -1235,16 +1171,26 @@ const RegisterItemScreen = ({ navigation, route }) => {
               onChangeText={setTitle}
               style={styles.input}
             />
-            {/* Campos dinâmicos após fotos, exceto title */}
             {config.fields.required.concat(config.fields.optional)
               .filter(field => field !== 'title' && config.fieldLabels[field] && config.placeholders[field])
               .map((field) => {
                 let value = '';
                 let onChangeText = () => {};
-                if (field === 'brand') { value = brand; onChangeText = setBrand; }
-                else if (field === 'color') { value = color; onChangeText = setColor; }
-                else if (field === 'serial_number' || field === 'serialNumber') { value = serialNumber; onChangeText = setSerialNumber; }
-                else { return null; }
+                if (field === 'color') { value = color; onChangeText = setColor; }
+                else if (field === 'description') {
+                  return (
+                    <Input
+                      key={field}
+                      label={config.fieldLabels[field] + (config.fields.required.includes(field) ? ' *' : '')}
+                      placeholder={config.placeholders[field]}
+                      value={description}
+                      onChangeText={setDescription}
+                      multiline={true}
+                      numberOfLines={4}
+                      style={styles.input}
+                    />
+                  );
+                }
                 return (
                   <Input
                     key={field}
@@ -1256,15 +1202,17 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   />
                 );
               })}
-            <Input
-              label="Descrição (opcional)"
-              placeholder="Descreva detalhes importantes..."
-              value={description}
-              onChangeText={setDescription}
-              multiline={true}
-              numberOfLines={4}
-              style={styles.input}
-            />
+            {!config.fields.required.concat(config.fields.optional).includes('description') && (
+              <Input
+                label="Descrição (opcional)"
+                placeholder="Descreva detalhes importantes..."
+                value={description}
+                onChangeText={setDescription}
+                multiline={true}
+                numberOfLines={4}
+                style={styles.input}
+              />
+            )}
             {error ? (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>{error}</Text>
