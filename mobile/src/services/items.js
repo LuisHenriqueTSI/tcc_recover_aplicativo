@@ -270,7 +270,6 @@ export const registerItem = async (itemData, photos = []) => {
         size: itemData.size,
         age: itemData.age,
         collar: itemData.collar,
-        microchip: itemData.microchip,
         animal_name: itemData.animal_name,
         // Campos genéricos
         brand: itemData.brand,
@@ -331,7 +330,6 @@ export const updateItem = async (itemId, itemData) => {
         size: itemData.size,
         age: itemData.age,
         collar: itemData.collar,
-        microchip: itemData.microchip,
         animal_name: itemData.animal_name,
         // Campos genéricos
         brand: itemData.brand,

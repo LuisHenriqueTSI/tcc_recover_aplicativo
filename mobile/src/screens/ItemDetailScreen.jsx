@@ -62,7 +62,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
         color: '#fff',
       },
       headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginLeft: 8 }}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginLeft: 12, marginRight: 8, padding: 4 }}>
           <MaterialIcons name="arrow-back" size={26} color="#fff" />
         </TouchableOpacity>
       ),
@@ -496,12 +496,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
               label="Coleira"
               value={item.collar}
             />
-            <Separator />
-            <AnimalInfoRow
-              icon={<MaterialIcons name="tag" size={18} color="#6B7280" />}
-              label="Microchipado"
-              value={item.microchip}
-            />
+
           </View>
         ) : item.category === 'document' ? (
           <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
