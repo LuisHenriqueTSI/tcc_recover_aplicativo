@@ -21,6 +21,7 @@ import Input from '../components/Input';
 import { states, citiesByState, neighborhoodsByCity } from '../lib/br-locations';
 import { Picker } from '@react-native-picker/picker';
 import Card from '../components/Card';
+import { analyzeItemWithVision } from '../services/aiItemSuggestions';
 
 const ITEM_TYPES = {
   animal: {
@@ -228,6 +229,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
   
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Reward
@@ -348,13 +350,62 @@ const RegisterItemScreen = ({ navigation, route }) => {
         Alert.alert('Sucesso', `${newPhotos.length} foto(s) adicionada(s)`);
       }
     } catch (error) {
-      console.error('[pickImage] Error:', error);
+      console.error('[RegisterItem] Falha ao selecionar fotos:', error);
       Alert.alert('Erro', 'Falha ao selecionar fotos: ' + error.message);
     }
   };
 
   const removePhoto = (index) => {
     setPhotos(photos.filter((_, i) => i !== index));
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!photos.length) {
+      console.warn('[RegisterItem] Tentativa de gerar com IA sem foto.');
+      Alert.alert('Foto necessária', 'Adicione uma foto antes de gerar as informações com IA.');
+      return;
+    }
+
+    try {
+      console.log('[RegisterItem] Iniciando geração com IA', { itemType, status, photoCount: photos.length });
+      setAiLoading(true);
+      setError('');
+      const primaryPhoto = photos[0];
+      const suggestions = await analyzeItemWithVision({
+        imageUri: primaryPhoto.uri,
+        itemType,
+        status,
+      });
+
+      console.log('[RegisterItem] Sugestões recebidas da IA:', suggestions);
+
+      if (itemType === 'animal') {
+        if (suggestions.animal_name) setAnimalName(suggestions.animal_name);
+        if (suggestions.species) setAnimalSpecies(suggestions.species);
+        if (suggestions.breed) setAnimalBreed(suggestions.breed);
+        if (suggestions.size) setAnimalSize(suggestions.size);
+        if (suggestions.age) setAnimalAge(suggestions.age);
+        if (suggestions.collar) setAnimalCollar(suggestions.collar);
+        if (suggestions.microchip) setAnimalMicrochip(suggestions.microchip);
+      }
+
+      if (suggestions.title) setTitle(suggestions.title);
+      if (suggestions.description) setDescription(suggestions.description);
+      if (suggestions.brand) setBrand(suggestions.brand);
+      if (suggestions.color) setColor(suggestions.color);
+      if (suggestions.serial_number) setSerialNumber(suggestions.serial_number);
+
+      const message = suggestions.source === 'gemini'
+        ? 'Informações sugeridas pela IA foram preenchidas. Revise antes de publicar.'
+        : 'O app preencheu um rascunho básico para você revisar, porque a IA não estava disponível no momento.';
+
+      Alert.alert('Sugestão pronta', message);
+    } catch (err) {
+      console.error('[RegisterItem] Falha ao gerar com IA:', err);
+      Alert.alert('Erro ao gerar com IA', err.message || 'Não foi possível gerar as informações.');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const validateFields = () => {
@@ -927,12 +978,29 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
               {/* Fotos do Animal - logo após status */}
               <Text style={styles.title}>Fotos do Animal</Text>
+              <View style={styles.aiHintCard}>
+                <Text style={styles.aiHintTitle}>Gerar com IA</Text>
+                <Text style={styles.aiHintText}>Se você quiser colocar uma foto aqui para gerar rapidamente as informações, basta enviar a foto e clicar em gerar com a IA.</Text>
+              </View>
               <TouchableOpacity
                 style={styles.uploadButton}
                 onPress={pickImage}
               >
                 <Text style={styles.uploadButtonText}>+ Adicionar Fotos</Text>
               </TouchableOpacity>
+              {photos.length > 0 && (
+                <TouchableOpacity
+                  style={styles.aiButton}
+                  onPress={handleGenerateWithAI}
+                  disabled={aiLoading}
+                >
+                  {aiLoading ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.aiButtonText}>Gerar com a IA</Text>
+                  )}
+                </TouchableOpacity>
+              )}
               {photos.length > 0 && (
                 <View style={styles.photosContainer}>
                   <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
@@ -1133,6 +1201,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
             </View>
             {/* Fotos do Item - logo após status */}
             <Text style={styles.title}>Fotos do Item</Text>
+            <View style={styles.aiHintCard}>
+              <Text style={styles.aiHintTitle}>Gerar com IA</Text>
+              <Text style={styles.aiHintText}>Se você quiser colocar uma foto aqui para gerar rapidamente as informações, basta enviar a foto e clicar em gerar com a IA.</Text>
+            </View>
 
             {itemType === 'document' && (
               <View style={styles.warningContainer}>
@@ -1150,6 +1222,20 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 >
                   <Text style={styles.uploadButtonText}>+ Adicionar Fotos</Text>
                 </TouchableOpacity>
+
+                {photos.length > 0 && (
+                  <TouchableOpacity
+                    style={styles.aiButton}
+                    onPress={handleGenerateWithAI}
+                    disabled={aiLoading}
+                  >
+                    {aiLoading ? (
+                      <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.aiButtonText}>Gerar com a IA</Text>
+                    )}
+                  </TouchableOpacity>
+                )}
 
                 {photos.length > 0 && (
                   <View style={styles.photosContainer}>
@@ -1528,6 +1614,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#4F46E5',
+  },
+  aiHintCard: {
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+    marginBottom: 12,
+  },
+  aiHintTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#4338CA',
+    marginBottom: 4,
+  },
+  aiHintText: {
+    fontSize: 13,
+    color: '#4338CA',
+    lineHeight: 18,
+  },
+  aiButton: {
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: '#4F46E5',
+    marginBottom: 16,
+  },
+  aiButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
   photosContainer: {
     marginBottom: 16,
