@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 
 function normalizeWhatsAppNumber(phone) {
   if (!phone) return null;
@@ -43,25 +43,40 @@ export async function dispatchSystemNotificationToWhatsApp({ userId, title, mess
 
     const phone = normalizeWhatsAppNumber(profile?.whatsapp || profile?.phone);
     if (!phone) {
+      console.warn('[whatsapp-notifications] Nenhum WhatsApp/telefone encontrado para o usuário:', userId);
       return { sent: false, reason: 'missing-whatsapp' };
     }
 
-    const { data, error } = await supabase.functions.invoke('notify-whatsapp', {
-      body: {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      console.warn('[whatsapp-notifications] Configuração do Supabase ausente para chamar a edge function.');
+      return { sent: false, reason: 'missing-supabase-config' };
+    }
+
+    console.log('[whatsapp-notifications] Enviando para WhatsApp:', { userId, phone, title, message, type });
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/notify-whatsapp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({
         userId,
         phone,
         title,
         message,
         type,
-      },
+      }),
     });
 
-    if (error) {
-      console.warn('[whatsapp-notifications] Falha ao chamar edge function:', error);
-      return { sent: false, reason: 'function-error', error };
+    const responseBody = await response.text();
+    console.log('[whatsapp-notifications] Resposta da edge function:', { status: response.status, body: responseBody });
+
+    if (!response.ok) {
+      return { sent: false, reason: 'function-error', status: response.status, body: responseBody };
     }
 
-    return { sent: true, data };
+    return { sent: true, data: responseBody };
   } catch (error) {
     console.warn('[whatsapp-notifications] Exceção ao encaminhar para WhatsApp:', error);
     return { sent: false, reason: 'exception', error };
