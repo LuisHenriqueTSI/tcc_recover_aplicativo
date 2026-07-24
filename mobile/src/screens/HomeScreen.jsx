@@ -23,6 +23,7 @@ import { supabase } from '../lib/supabase';
 import { getUser } from '../services/user';
 import { sendMessage } from '../services/messages';
 import * as notificationsService from '../services/notifications';
+import * as claimsService from '../services/itemClaims';
 import Card from '../components/Card';
 import ShareButton from '../components/ShareButton';
 // Get screen width for carousel
@@ -385,7 +386,7 @@ const HomeScreen = ({ navigation, route }) => {
 
   // Abre o chat com o dono do item
   // Preenche mensagem automática ao abrir o chat
-  const handleSendMessage = (ownerId, itemId, itemStatus) => {
+  const handleSendMessage = async (ownerId, itemId, itemStatus) => {
     if (!user) {
       alert('Faça login para enviar mensagens');
       navigation.navigate('Login', {
@@ -396,6 +397,13 @@ const HomeScreen = ({ navigation, route }) => {
     if (ownerId === user.id) {
       alert('Este é o seu próprio item.');
       return;
+    }
+    if (itemStatus === 'found') {
+      const claim = await claimsService.getClaimForItemByUser(itemId, user.id);
+      if (claim?.status !== 'approved') {
+        Alert.alert('Chat bloqueado', 'O chat só será liberado após o dono da publicação aprovar sua reivindicação.');
+        return;
+      }
     }
     // Define mensagem automática
     let autoMessage = '';
@@ -481,6 +489,25 @@ const HomeScreen = ({ navigation, route }) => {
     navigation.navigate('ItemDetail', { itemId });
   };
 
+  const handleSendTestNotification = async () => {
+    if (!user) {
+      Alert.alert('Login Necessário', 'Faça login para testar o envio de notificações.');
+      return;
+    }
+
+    try {
+      await notificationsService.createNotification({
+        user_id: user.id,
+        type: 'test',
+        title: 'Teste de WhatsApp',
+        message: 'Esta é uma notificação de teste do app Recover.',
+        item_id: null,
+      });
+      Alert.alert('Teste enviado', 'A notificação foi criada e o encaminhamento para WhatsApp foi acionado.');
+    } catch (error) {
+      Alert.alert('Erro', error?.message || 'Não foi possível enviar a notificação de teste.');
+    }
+  };
 
   // Atualiza os itens filtrados ao digitar na busca
   useEffect(() => {
@@ -580,6 +607,15 @@ const HomeScreen = ({ navigation, route }) => {
             />
           </View>
         </View>
+        {user && (
+          <TouchableOpacity
+            onPress={handleSendTestNotification}
+            style={{ marginTop: 12, backgroundColor: '#fff', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14, alignItems: 'center', borderWidth: 1, borderColor: '#C7D2FE' }}
+          >
+            <Text style={{ color: '#4F46E5', fontWeight: '700', fontSize: 14 }}>Testar WhatsApp</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Modal para atualizar localidade do perfil */}
         <Modal
           visible={!!showProfileLocationModal}
