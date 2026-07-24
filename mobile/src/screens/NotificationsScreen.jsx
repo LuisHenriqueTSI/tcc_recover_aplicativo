@@ -6,6 +6,7 @@ import { getUnreadCount, getConversations, markMessagesAsRead } from '../service
 import { listItems, markItemAsResolved, deleteItem, cleanupExpiredItems } from '../services/items';
 import { getUserNotifications, markAllNotificationsRead, markNotificationRead, buildRenewalAlerts } from '../services/notifications';
 import { renewItem } from '../services/items';
+import { getPendingClaimsForItem } from '../services/itemClaims';
 
 
 
@@ -91,19 +92,47 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
 
     setPendingItems(mappedPendingItems);
 
-    const mappedSystemAlerts = [...renewalAlerts, ...(systemAlertsData || [])]
-      .filter(alert => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed'))
+    const claimAlerts = [];
+    for (const item of items) {
+      try {
+        const pendingClaims = await getPendingClaimsForItem(item.id);
+        if (pendingClaims && pendingClaims.length > 0) {
+          pendingClaims.forEach(claim => {
+            claimAlerts.push({
+              id: `claim_${claim.id}`,
+              type: 'claim',
+              title: 'Reivindicação pendente',
+              message: `${claim.profiles?.name || 'Um usuário'} quer reivindicar seu item "${item.title || 'sem título'}".`,
+              created_at: claim.created_at,
+              read: false,
+              item_id: item.id,
+            });
+          });
+        }
+      } catch (err) {
+        console.warn('[Notifications] Erro ao buscar reivindicações pendentes:', err?.message || err);
+      }
+    }
+
+    const mappedSystemAlerts = [...renewalAlerts, ...(systemAlertsData || []), ...claimAlerts]
+      .filter(alert => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed' || alert.type === 'match' || alert.type === 'claim'))
       .map(alert => ({
         id: `system_${alert.id}`,
         type: alert.type,
-        title: alert.type === 'item_removed' ? 'Sua publicação foi removida' : 'Renove sua publicação',
+        title: alert.type === 'item_removed'
+          ? 'Sua publicação foi removida'
+          : alert.type === 'match'
+            ? 'Possível correspondência'
+            : alert.type === 'claim'
+              ? 'Alguém reivindicou seu item!'
+              : 'Renove sua publicação',
         message: alert.message,
         time: getRelativeTime(alert.created_at),
         read: Boolean(alert.read),
-        icon: alert.type === 'item_removed' ? 'trash-2' : 'alert-triangle',
-        iconColor: alert.type === 'item_removed' ? '#DC2626' : '#F59E42',
-        bgColor: alert.type === 'item_removed' ? '#FEF2F2' : '#FFF7ED',
-        critical: alert.type === 'renewal_reminder' || alert.type === 'item_removed',
+        icon: alert.type === 'item_removed' ? 'trash-2' : alert.type === 'match' ? 'search' : alert.type === 'claim' ? 'check-circle' : 'alert-triangle',
+        iconColor: alert.type === 'item_removed' ? '#DC2626' : alert.type === 'match' ? '#2563EB' : alert.type === 'claim' ? '#10B981' : '#F59E42',
+        bgColor: alert.type === 'item_removed' ? '#FEF2F2' : alert.type === 'match' ? '#EFF6FF' : alert.type === 'claim' ? '#F0FDF4' : '#FFF7ED',
+        critical: alert.type === 'renewal_reminder' || alert.type === 'item_removed' || alert.type === 'match' || alert.type === 'claim',
         itemId: alert.item_id,
       }));
 
@@ -177,6 +206,12 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
           },
         ]
       );
+      return;
+    }
+
+    if (notification.type === 'claim' && notification.itemId) {
+      await markNotificationRead(notification.id.replace('system_', ''));
+      navigation.navigate('ClaimsManagement');
       return;
     }
 

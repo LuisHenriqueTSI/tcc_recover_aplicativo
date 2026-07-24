@@ -20,9 +20,12 @@ import { formatarDataMembro } from './_dateUtils';
 
 import Card from '../components/Card';
 import Button from '../components/Button';
+import ItemClaimModal from './ItemClaimModal';
 
 import SightingModal from '../components/SightingModal';
 import * as sightingsService from '../services/sightings';
+import * as claimsService from '../services/itemClaims';
+import * as animalSharing from '../services/animalSharing';
 import { getRenewalInfo } from '../services/itemExpiration';
 import { createRenewalReminderNotification } from '../services/notifications';
 
@@ -49,6 +52,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [editCommentPhotoUrl, setEditCommentPhotoUrl] = useState('');
   const [editUploading, setEditUploading] = useState(false);
   const [renewing, setRenewing] = useState(false);
+  const [claimModalVisible, setClaimModalVisible] = useState(false);
+  const [claimAccessState, setClaimAccessState] = useState('blocked');
 
   useEffect(() => {
     navigation.setOptions({
@@ -86,12 +91,46 @@ const ItemDetailScreen = ({ route, navigation }) => {
     }
   };
 
+  const checkApprovedClaim = async (itemData = item) => {
+    if (!user?.id || !itemData?.id) {
+      setClaimAccessState('blocked');
+      return;
+    }
+
+    if (user.id === itemData.owner_id) {
+      setClaimAccessState('owner');
+      return;
+    }
+
+    if (itemData.status !== 'found') {
+      setClaimAccessState('available');
+      return;
+    }
+
+    try {
+      const claim = await claimsService.getClaimForItemByUser(itemData.id, user.id);
+      if (claim?.status === 'approved') {
+        setClaimAccessState('approved');
+      } else if (claim?.status === 'pending') {
+        setClaimAccessState('pending');
+      } else if (claim?.status === 'rejected') {
+        setClaimAccessState('rejected');
+      } else {
+        setClaimAccessState('blocked');
+      }
+    } catch (error) {
+      console.warn('[ItemDetailScreen] Erro ao verificar reivindicação:', error.message);
+      setClaimAccessState('blocked');
+    }
+  };
+
   const loadItemDetails = async () => {
     try {
       setLoading(true);
       const itemData = await itemsService.getItemDetails(itemId);
       if (itemData) {
         setItem(itemData);
+        await checkApprovedClaim(itemData);
         if (isOwner && itemData && itemData.owner_id === user?.id) {
           const renewalInfo = getRenewalInfo(itemData);
           if (renewalInfo.needsRenewal) {
@@ -298,6 +337,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
       return;
     }
     if (!item) return;
+
+    if (item.status === 'found' && user.id !== item.owner_id && claimAccessState !== 'approved') {
+      Alert.alert('Chat bloqueado', 'O chat só será liberado após o dono da publicação aprovar sua reivindicação.');
+      return;
+    }
+
     // Mensagem automática depende do papel do usuário
     let initialMessage = '';
     if (item.status === 'lost') {
@@ -379,6 +424,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const isOwner = user && item && item.owner_id === user.id;
   const canDelete = isOwner || isAdmin;
+  const shouldShowClaimButton = item?.status === 'found' && user?.id !== item?.owner_id && claimAccessState !== 'approved';
+  const isMessageBlocked = item?.status === 'found' && user?.id !== item?.owner_id && claimAccessState !== 'approved';
 
   if (loading) {
     return (
@@ -633,10 +680,76 @@ const ItemDetailScreen = ({ route, navigation }) => {
               </View>
             )}
             {!isOwner && !isAdmin && (
-              <TouchableOpacity style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingVertical: 10, alignItems: 'center', backgroundColor: '#fff', marginTop: 8 }} onPress={handleSendMessage}>
-                <Text style={{ color: '#374151', fontWeight: 'bold', fontSize: 15 }}>Enviar Mensagem</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                {shouldShowClaimButton && (
+                  <TouchableOpacity
+                    style={{ borderWidth: 2, borderColor: '#4F46E5', borderRadius: 8, paddingVertical: 12, alignItems: 'center', backgroundColor: '#EEF2FF' }}
+                    onPress={() => setClaimModalVisible(true)}
+                  >
+                    <Text style={{ color: '#4F46E5', fontWeight: 'bold', fontSize: 15 }}>Esse é meu!</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={{
+                    borderWidth: 1,
+                    borderColor: isMessageBlocked ? '#D1D5DB' : '#E5E7EB',
+                    borderRadius: 8,
+                    paddingVertical: 10,
+                    alignItems: 'center',
+                    backgroundColor: isMessageBlocked ? '#F3F4F6' : '#fff',
+                  }}
+                  onPress={handleSendMessage}
+                  disabled={isMessageBlocked}
+                >
+                  <Text style={{ color: isMessageBlocked ? '#6B7280' : '#374151', fontWeight: 'bold', fontSize: 15 }}>
+                    {isMessageBlocked ? 'Aguardando aprovação' : 'Enviar Mensagem'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             )}
+          </View>
+        )}
+
+
+        {/* Compartilhamento para animais encontrados */}
+        {item && item.category === 'animal' && item.status === 'found' && isOwner && (
+          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Compartilhar encontrado</Text>
+            <Text style={{ fontSize: 13, color: '#6B7280', marginBottom: 12, lineHeight: 18 }}>
+              Compartilhe este animal encontrado para ajudar a encontrar o dono! Recomendamos avisar clínicas veterinárias, ONGs e grupos locais.
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+              <TouchableOpacity
+                style={{ flex: 1, minWidth: 100, backgroundColor: '#25D366', borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
+                onPress={() => {
+                  animalSharing.shareToWhatsApp(item).catch(err => {
+                    Alert.alert('Erro', 'Falha ao abrir WhatsApp: ' + err.message);
+                  });
+                }}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>WhatsApp</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ flex: 1, minWidth: 100, backgroundColor: '#0088cc', borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
+                onPress={() => {
+                  animalSharing.shareToTelegram(item).catch(err => {
+                    Alert.alert('Erro', 'Falha ao abrir Telegram: ' + err.message);
+                  });
+                }}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Telegram</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ flex: 1, minWidth: 100, backgroundColor: '#4F46E5', borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
+                onPress={() => {
+                  animalSharing.shareViaSystem(item).catch(err => {
+                    Alert.alert('Erro', 'Falha ao compartilhar: ' + err.message);
+                  });
+                }}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Mais...</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -831,6 +944,17 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
         <View style={{ height: 40 }} />
       </View>
+
+      <ItemClaimModal
+        visible={claimModalVisible}
+        onClose={() => setClaimModalVisible(false)}
+        item={item}
+        userId={user?.id}
+        onSuccess={() => {
+          setClaimModalVisible(false);
+          checkApprovedClaim(item);
+        }}
+      />
     </ScrollView>
   );
 // Componente InfoRow para exibir label e valor alinhados (usado para outros tipos)
