@@ -1,5 +1,6 @@
 import { getRenewalInfo } from './itemExpiration.js';
 import { shouldIgnoreNotificationError } from './notificationErrors.js';
+import { dispatchSystemNotificationToWhatsApp } from './whatsappNotifications.js';
 
 let supabaseClient = null;
 
@@ -221,7 +222,123 @@ export async function createItemRemovedNotification(item, userId) {
     return null;
   }
 
+  try {
+    await dispatchSystemNotificationToWhatsApp({
+      userId,
+      title: 'Sua publicação foi removida',
+      message: `Sua publicação "${item.title || 'sem título'}" expirou e foi removida automaticamente do sistema para manter o feed organizado.`,
+      type: 'item_removed',
+    });
+  } catch (whatsappError) {
+    console.warn('[notifications] Falha ao enviar remoção para WhatsApp:', whatsappError);
+  }
+
   return data;
+}
+
+export async function createMatchNotification({ userId, itemId, matchedItemId, score, matchedItemTitle, message }) {
+  if (!userId || !itemId || !matchedItemId) return null;
+
+  const supabase = await getSupabaseClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from('notifications')
+    .insert(buildSystemNotificationPayload({
+      userId,
+      type: 'match',
+      title: 'Possível correspondência',
+      message: message || `Um item encontrado pode corresponder ao que você perdeu (${score || 0}% de similaridade).`,
+      itemId,
+    }))
+    .select()
+    .single();
+
+  if (error) {
+    if (!shouldIgnoreNotificationError(error)) {
+      console.error('[notifications] Erro ao criar notificação de match:', error);
+    }
+    return null;
+  }
+
+  try {
+    await dispatchSystemNotificationToWhatsApp({
+      userId,
+      title: 'Possível correspondência',
+      message: message || `Um item encontrado pode corresponder ao que você perdeu (${score || 0}% de similaridade).`,
+      type: 'match',
+    });
+  } catch (whatsappError) {
+    console.warn('[notifications] Falha ao enviar match para WhatsApp:', whatsappError);
+  }
+
+  return data;
+}
+
+export async function createNotification({ user_id, type, title, message, item_id = null }) {
+  console.log('[notifications.createNotification] Criando notificação genérica');
+  console.log('[notifications.createNotification] user_id:', user_id);
+  console.log('[notifications.createNotification] type:', type);
+  console.log('[notifications.createNotification] title:', title);
+  console.log('[notifications.createNotification] message:', message);
+  console.log('[notifications.createNotification] item_id:', item_id);
+
+  const supabase = await getSupabaseClient();
+  if (!supabase) {
+    console.error('[notifications.createNotification] Supabase não disponível');
+    return null;
+  }
+
+  const payload = buildSystemNotificationPayload({
+    userId: user_id,
+    type,
+    title,
+    message,
+    itemId: item_id,
+  });
+
+  // Claim notifications are optional for now. The claim workflow should not fail if
+  // the Supabase notifications table is still protected by RLS.
+  if (type === 'claim') {
+    console.log('[notifications.createNotification] Pulando criação de notificação de claim por enquanto');
+    return null;
+  }
+
+  console.log('[notifications.createNotification] Payload a inserir:', payload);
+
+  try {
+    const { data, error } = await supabase
+      .from('notifications')
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[notifications.createNotification] Erro ao inserir:', error);
+      if (!shouldIgnoreNotificationError(error)) {
+        throw error;
+      }
+      return null;
+    }
+
+    console.log('[notifications.createNotification] ✓ Notificação criada com sucesso:', data.id);
+
+    try {
+      await dispatchSystemNotificationToWhatsApp({
+        userId: user_id,
+        title,
+        message,
+        type,
+      });
+    } catch (whatsappError) {
+      console.warn('[notifications.createNotification] Falha ao enviar para WhatsApp:', whatsappError);
+    }
+
+    return data;
+  } catch (err) {
+    console.error('[notifications.createNotification] Exceção:', err);
+    throw err;
+  }
 }
 
 export function buildRenewalAlerts(items = []) {
