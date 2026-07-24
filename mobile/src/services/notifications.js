@@ -297,13 +297,6 @@ export async function createNotification({ user_id, type, title, message, item_i
     itemId: item_id,
   });
 
-  // Claim notifications are optional for now. The claim workflow should not fail if
-  // the Supabase notifications table is still protected by RLS.
-  if (type === 'claim') {
-    console.log('[notifications.createNotification] Pulando criação de notificação de claim por enquanto');
-    return null;
-  }
-
   console.log('[notifications.createNotification] Payload a inserir:', payload);
 
   try {
