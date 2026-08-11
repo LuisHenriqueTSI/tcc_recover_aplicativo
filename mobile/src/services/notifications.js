@@ -116,7 +116,12 @@ export async function markAllNotificationsRead(userId) {
 
 // Marca uma notificação como lida
 export async function markNotificationRead(notificationId) {
-  if (!notificationId) return false;
+  const rawId = String(notificationId ?? '').trim();
+  if (!rawId || !/^\d+$/.test(rawId)) {
+    console.warn('[notifications] Ignorando ID de notificação inválido para marcação como lida:', notificationId);
+    return false;
+  }
+
   const supabase = await getSupabaseClient();
   if (!supabase) return false;
 
@@ -124,7 +129,7 @@ export async function markNotificationRead(notificationId) {
     const { error } = await supabase
       .from('notifications')
       .update({ read: true })
-      .eq('id', notificationId);
+      .eq('id', Number(rawId));
 
     if (error) {
       if (shouldIgnoreNotificationError(error)) {

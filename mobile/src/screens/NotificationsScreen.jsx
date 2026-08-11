@@ -210,7 +210,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
     }
 
     if (notification.type === 'claim' && notification.itemId) {
-      await markNotificationRead(notification.id.replace('system_', ''));
+      setSystemAlerts(prev => prev.map(alert => alert.id === notification.id ? { ...alert, read: true } : alert));
       navigation.navigate('ClaimsManagement');
       return;
     }
@@ -228,7 +228,16 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
 
     // Marca notificações persistentes como lidas quando tocadas, se houver id válido
     if (notification.id?.startsWith('system_')) {
-      await markNotificationRead(notification.id.replace('system_', ''));
+      const normalizedId = notification.id.replace('system_', '');
+      if (!/^\d+$/.test(normalizedId)) {
+        await fetchNotifications();
+        if (typeof onNotificationsUpdated === 'function') {
+          onNotificationsUpdated();
+        }
+        return;
+      }
+
+      await markNotificationRead(normalizedId);
       await fetchNotifications();
       if (typeof onNotificationsUpdated === 'function') {
         onNotificationsUpdated();
