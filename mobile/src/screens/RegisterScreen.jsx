@@ -15,20 +15,22 @@ import { getStates, getCitiesByState } from '../services/location';
 import { Picker } from '@react-native-picker/picker';
 
 const RegisterScreen = ({ navigation }) => {
-  const { signUp, loading } = useAuth();
+  const { signUp, confirmSignUp, loading } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cooldownUntil, setCooldownUntil] = useState(0);
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [pendingSignupData, setPendingSignupData] = useState(null);
   const isBusy = loading || isSubmitting;
-  const cooldownActive = Date.now() < cooldownUntil;
 
   // Validação simples: ambos selecionados
   const isValidLocation = () => selectedState && selectedCity;
@@ -59,6 +61,11 @@ const RegisterScreen = ({ navigation }) => {
     } else if (password.length < 6) {
       newErrors.password = 'Senha deve ter no mínimo 6 caracteres';
     }
+    if (!whatsapp.trim()) {
+      newErrors.whatsapp = 'WhatsApp é obrigatório';
+    } else if (!/^\d{10,15}$/.test(whatsapp.replace(/\D/g, ''))) {
+      newErrors.whatsapp = 'WhatsApp inválido';
+    }
     if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Senhas não conferem';
     }
@@ -73,30 +80,57 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   const handleRegister = async () => {
+    if (pendingVerification) {
+      if (!verificationCode.trim()) {
+        Alert.alert('Código necessário', 'Informe o código enviado para o WhatsApp.');
+        return;
+      }
+
+      if (isSubmitting) return;
+      setIsSubmitting(true);
+
+      try {
+        await confirmSignUp({
+          email,
+          password,
+          name,
+          city: selectedCity,
+          state: selectedState,
+          whatsapp,
+          verificationCode,
+        });
+        Alert.alert('Conta criada', 'Sua conta foi criada com sucesso. Faça login para continuar.');
+        setPendingVerification(false);
+        setVerificationCode('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setWhatsapp('');
+        setName('');
+        setSelectedState('');
+        setSelectedCity('');
+      } catch (error) {
+        Alert.alert('Erro de Cadastro', error?.message || 'Falha ao confirmar o código.');
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     if (!validateForm()) return;
-    if (isSubmitting || cooldownActive) return;
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
 
     try {
-      await signUp(email, password, name, selectedCity, selectedState);
-      Alert.alert(
-        'Confirmação necessária',
-        'Conta criada! Verifique seu e-mail para confirmar antes de fazer login.'
-      );
-    } catch (error) {
-      const msg = error?.message || 'Falha ao criar conta';
-      const isDuplicateEmailError = /already registered|already exists|already in use|duplicate|taken|já está em uso|já está registrado/i.test(msg);
-      const isRateLimitError = /rate limit|too many requests|temporarily blocked|spam|excesso de tentativas|aguarde alguns minutos/i.test(msg);
-
-      if (isDuplicateEmailError) {
-        Alert.alert('Erro de Cadastro', 'Este e-mail já está em uso. Tente outro.');
-      } else if (isRateLimitError) {
-        setCooldownUntil(Date.now() + 60000);
-        Alert.alert('Erro de Cadastro', 'O cadastro foi bloqueado temporariamente por excesso de tentativas. Aguarde cerca de 1 minuto e tente novamente.');
-      } else {
-        Alert.alert('Erro de Cadastro', msg);
+      const result = await signUp(email, password, name, selectedCity, selectedState, whatsapp);
+      if (result?.pendingVerification) {
+        setPendingVerification(true);
+        setPendingSignupData(result);
+        Alert.alert('Código enviado', `Enviamos um código para o WhatsApp ${whatsapp}. Informe-o abaixo para concluir o cadastro.`);
       }
+    } catch (error) {
+      Alert.alert('Erro de Cadastro', error?.message || 'Falha ao criar conta');
     } finally {
       setIsSubmitting(false);
     }
@@ -117,16 +151,6 @@ const RegisterScreen = ({ navigation }) => {
             value={name}
             onChangeText={setName}
             error={errors.name}
-            style={styles.input}
-            inputStyle={styles.inputField}
-          />
-          <Input
-            label="E-mail"
-            placeholder="seu@email.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            error={errors.email}
             style={styles.input}
             inputStyle={styles.inputField}
           />
@@ -166,6 +190,26 @@ const RegisterScreen = ({ navigation }) => {
             </View>
           </View>
           <Input
+            label="E-mail"
+            placeholder="seu@email.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            error={errors.email}
+            style={styles.input}
+            inputStyle={styles.inputField}
+          />
+          <Input
+            label="WhatsApp"
+            placeholder="(11) 99999-9999"
+            value={whatsapp}
+            onChangeText={text => setWhatsapp(text.replace(/\D/g, ''))}
+            keyboardType="phone-pad"
+            error={errors.whatsapp}
+            style={styles.input}
+            inputStyle={styles.inputField}
+          />
+          <Input
             label="Senha"
             placeholder="••••••••"
             value={password}
@@ -185,10 +229,21 @@ const RegisterScreen = ({ navigation }) => {
             style={styles.input}
             inputStyle={styles.inputField}
           />
+          {pendingVerification ? (
+            <Input
+              label="Código de verificação"
+              placeholder="123456"
+              value={verificationCode}
+              onChangeText={text => setVerificationCode(text.replace(/\D/g, '').slice(0, 6))}
+              keyboardType="number-pad"
+              style={styles.input}
+              inputStyle={styles.inputField}
+            />
+          ) : null}
           <Button
-            title={isBusy ? 'Criando conta...' : cooldownActive ? 'Aguarde...' : 'Cadastrar-se'}
+            title={isBusy ? 'Processando...' : pendingVerification ? 'Confirmar código' : 'Cadastrar-se'}
             onPress={handleRegister}
-            disabled={isBusy || cooldownActive}
+            disabled={isBusy}
             loading={isBusy}
             style={styles.loginButton}
             textStyle={styles.loginButtonText}

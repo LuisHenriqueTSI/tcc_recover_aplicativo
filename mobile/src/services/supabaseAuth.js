@@ -9,6 +9,23 @@ const supabaseAnonKey =
   expoExtra.SUPABASE_KEY ||
   '';
 
+const normalizeWhatsapp = (whatsapp = '') => String(whatsapp || '').replace(/\D/g, '');
+
+const getSupabaseUrl = () =>
+  process.env.EXPO_PUBLIC_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
+  expoExtra.EXPO_PUBLIC_SUPABASE_URL ||
+  expoExtra.SUPABASE_URL ||
+  '';
+
+const getCreateUserFunctionUrl = () => {
+  const supabaseUrl = getSupabaseUrl();
+  if (!supabaseUrl) {
+    throw new Error('Supabase URL não encontrada. Verifique EXPO_PUBLIC_SUPABASE_URL.');
+  }
+  return `${supabaseUrl.replace(/\/$/, '')}/functions/v1/create-user`;
+};
+
 // Atualiza o email do usuário autenticado
 export const updateEmail = async (newEmail) => {
   try {
@@ -88,7 +105,6 @@ export const signIn = async (email, password) => {
       throw error;
     }
 
-    // Bloqueia login se email não estiver confirmado
     if (!data.user.confirmed_at) {
       console.log('[signIn] Email não confirmado. Bloqueando acesso.');
       throw new Error('Por favor, confirme seu email antes de fazer login.');
@@ -102,78 +118,101 @@ export const signIn = async (email, password) => {
   }
 };
 
-export const signUp = async (email, password, name, city, state) => {
+export const signUp = async (email, password, name, city, state, whatsapp = '') => {
   try {
-    console.log('[signUp] Iniciando registro...');
+    console.log('[signUp] Enviando código de verificação por WhatsApp...');
 
-    const supabaseUrl =
-      process.env.EXPO_PUBLIC_SUPABASE_URL ||
-      process.env.SUPABASE_URL ||
-      expoExtra.EXPO_PUBLIC_SUPABASE_URL ||
-      expoExtra.SUPABASE_URL ||
-      '';
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      const missingKey = !supabaseAnonKey ? 'EXPO_PUBLIC_SUPABASE_ANON_KEY' : 'EXPO_PUBLIC_SUPABASE_URL';
-      throw new Error(`Supabase config não encontrada. Verifique ${missingKey} e tente novamente.`);
-    }
-
-    const functionUrl = `${supabaseUrl.replace(/\/$/, '')}/functions/v1/create-user`;
+    const payloadWhatsapp = normalizeWhatsapp(whatsapp);
+    const functionUrl = getCreateUserFunctionUrl();
+    const response = await fetch(functionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseAnonKey,
+      },
+      body: JSON.stringify({
+        action: 'send-verification',
+        email,
+        password,
+        name,
+        city,
+        state,
+        whatsapp: payloadWhatsapp,
+      }),
+    });
 
     let payload = null;
-    let response;
-
     try {
-      response = await fetch(functionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: supabaseAnonKey,
-        },
-        body: JSON.stringify({ email, password, name, city, state }),
-      });
-
-      try {
-        payload = await response.json();
-      } catch (parseError) {
-        const text = await response.text();
-        payload = { error: text || parseError.message };
-      }
-
-      console.log('[signUp] Função URL:', functionUrl, 'status:', response.status, 'payload:', payload);
-    } catch (networkError) {
-      console.log('[signUp] Erro de rede:', networkError.message);
-      throw new Error('Não foi possível conectar à função de cadastro do Supabase. Verifique se a Edge Function foi implantada.');
+      payload = await response.json();
+    } catch (parseError) {
+      const text = await response.text();
+      payload = { error: text || parseError.message };
     }
+
+    console.log('[signUp] Função URL:', functionUrl, 'status:', response.status, 'payload:', payload);
 
     if (!response.ok) {
-      const message = payload?.error || `Falha ao criar conta. Status ${response.status}`;
-      console.log('[signUp] Erro auth:', message);
-      if (response.status === 404 || message.toLowerCase().includes('requested function was not found')) {
-        console.log('[signUp] Função não encontrada, tentando cadastro direto pelo Supabase Auth');
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { name, city, state },
-          },
-        });
-
-        if (error) {
-          console.log('[signUp] Erro ao cadastrar diretamente:', error.message);
-          throw error;
-        }
-
-        return { user: data.user, session: data.session };
-      }
-
-      throw new Error(message);
+      throw new Error(payload?.error || 'Falha ao enviar código de verificação.');
     }
 
-    console.log('[signUp] Usuário criado pela função:', payload?.user?.id);
-    return { user: payload.user, session: null };
+    return {
+      pendingVerification: true,
+      phone: payload?.phone || payloadWhatsapp,
+      whatsappSent: payload?.whatsappSent,
+      email,
+      password,
+      name,
+      city,
+      state,
+      whatsapp: payloadWhatsapp,
+    };
   } catch (error) {
     console.log('[signUp] Exceção:', error.message);
+    throw error;
+  }
+};
+
+export const confirmSignUp = async ({ email, password, name, city, state, whatsapp, verificationCode }) => {
+  try {
+    console.log('[confirmSignUp] Confirmando cadastro com código...');
+
+    const payloadWhatsapp = normalizeWhatsapp(whatsapp);
+    const functionUrl = getCreateUserFunctionUrl();
+    const response = await fetch(functionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseAnonKey,
+      },
+      body: JSON.stringify({
+        action: 'create-user',
+        email,
+        password,
+        name,
+        city,
+        state,
+        whatsapp: payloadWhatsapp,
+        verificationCode,
+      }),
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch (parseError) {
+      const text = await response.text();
+      payload = { error: text || parseError.message };
+    }
+
+    console.log('[confirmSignUp] Função URL:', functionUrl, 'status:', response.status, 'payload:', payload);
+
+    if (!response.ok) {
+      throw new Error(payload?.error || 'Falha ao confirmar o código de verificação.');
+    }
+
+    return { user: payload?.user, ok: true };
+  } catch (error) {
+    console.log('[confirmSignUp] Exceção:', error.message);
     throw error;
   }
 };
