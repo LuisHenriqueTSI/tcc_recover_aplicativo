@@ -81,16 +81,24 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const signUp = useCallback(async (email, password, name, city, state) => {
+  const signUp = useCallback(async (email, password, name, city, state, whatsapp) => {
     try {
       console.log('[signUp] Registrando novo usuário...');
-      const result = await supabaseAuth.signUp(email, password, name, city, state);
-      // NÃO atualize o estado do usuário após registro
-      // Removido setUser(result.user);
-      // Não busca perfil nem define isAdmin
+      const result = await supabaseAuth.signUp(email, password, name, city, state, whatsapp);
       return result;
     } catch (error) {
       console.log('[signUp] Erro:', error.message);
+      throw error;
+    }
+  }, []);
+
+  const confirmSignUp = useCallback(async (payload) => {
+    try {
+      console.log('[confirmSignUp] Confirmando cadastro...');
+      const result = await supabaseAuth.confirmSignUp(payload);
+      return result;
+    } catch (error) {
+      console.log('[confirmSignUp] Erro:', error.message);
       throw error;
     }
   }, []);
@@ -153,6 +161,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     isAdmin,
     signUp,
+    confirmSignUp,
     signIn,
     signOut,
     refreshProfile,

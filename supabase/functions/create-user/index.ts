@@ -8,14 +8,30 @@ function normalizeWhatsAppNumber(phone: string | undefined | null) {
   if (!digitsOnly) return null;
 
   if (cleaned.startsWith('+')) {
-    return cleaned;
+    const withoutPlus = digitsOnly;
+    if (withoutPlus.startsWith('55')) {
+      return `+${withoutPlus}`;
+    }
+    if (withoutPlus.length === 11) {
+      return `+55${withoutPlus}`;
+    }
+    return `+${withoutPlus}`;
   }
 
   if (digitsOnly.startsWith('00')) {
-    return `+${digitsOnly.slice(2)}`;
+    const withoutCountryCode = digitsOnly.slice(2);
+    return `+${withoutCountryCode}`;
   }
 
-  if (digitsOnly.length >= 10) {
+  if (digitsOnly.startsWith('55')) {
+    return `+${digitsOnly}`;
+  }
+
+  if (digitsOnly.length === 11) {
+    return `+55${digitsOnly}`;
+  }
+
+  if (digitsOnly.length === 10) {
     return `+55${digitsOnly}`;
   }
 

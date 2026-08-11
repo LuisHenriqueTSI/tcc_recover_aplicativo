@@ -25,7 +25,6 @@ import ItemClaimModal from './ItemClaimModal';
 import SightingModal from '../components/SightingModal';
 import * as sightingsService from '../services/sightings';
 import * as claimsService from '../services/itemClaims';
-import * as animalSharing from '../services/animalSharing';
 import { getRenewalInfo } from '../services/itemExpiration';
 import { createRenewalReminderNotification } from '../services/notifications';
 
@@ -718,38 +717,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
             <Text style={{ fontSize: 13, color: '#6B7280', marginBottom: 12, lineHeight: 18 }}>
               Compartilhe este animal encontrado para ajudar a encontrar o dono! Recomendamos avisar clínicas veterinárias, ONGs e grupos locais.
             </Text>
-            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-              <TouchableOpacity
-                style={{ flex: 1, minWidth: 100, backgroundColor: '#25D366', borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
-                onPress={() => {
-                  animalSharing.shareToWhatsApp(item).catch(err => {
-                    Alert.alert('Erro', 'Falha ao abrir WhatsApp: ' + err.message);
-                  });
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>WhatsApp</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{ flex: 1, minWidth: 100, backgroundColor: '#0088cc', borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
-                onPress={() => {
-                  animalSharing.shareToTelegram(item).catch(err => {
-                    Alert.alert('Erro', 'Falha ao abrir Telegram: ' + err.message);
-                  });
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Telegram</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{ flex: 1, minWidth: 100, backgroundColor: '#4F46E5', borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
-                onPress={() => {
-                  animalSharing.shareViaSystem(item).catch(err => {
-                    Alert.alert('Erro', 'Falha ao compartilhar: ' + err.message);
-                  });
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Mais...</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={{ backgroundColor: '#4F46E5', borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
+              onPress={() => Alert.alert('Compartilhar', 'A função de compartilhamento foi desativada neste ponto do app.')}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Compartilhar</Text>
+            </TouchableOpacity>
           </View>
         )}
 
