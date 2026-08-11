@@ -44,7 +44,7 @@ const getPrompt = (itemType = 'object', status = 'lost') => {
               ? 'outro item'
               : 'objeto';
 
-  return `Analise a imagem e devolva APENAS um JSON válido, sem markdown. O item é um ${categoryLabel} e a situação é ${status === 'found' ? 'encontrado' : 'perdido'}. Responda com os campos mais úteis do formulário. Para animal: animal_name, species, breed, color, size, age, collar, description. Para outros: title, description, brand, color, serial_number. Se não tiver certeza, use respostas curtas e realistas. Formato exato: {"title":"...","description":"...","brand":"...","color":"...","serial_number":"...","animal_name":"...","species":"...","breed":"...","size":"...","age":"...","collar":"..."}`;
+  return `Analise a imagem e devolva APENAS um JSON válido, sem markdown. O item é um ${categoryLabel} e a situação é ${status === 'found' ? 'encontrado' : 'perdido'}. Responda com os campos mais úteis do formulário. IMPORTANTE: toda a resposta deve estar em português do Brasil. Nunca use termos em inglês em nenhum valor de texto. Não use palavras como "black", "white", "brown", "dog", "cat", "red" etc.; converta tudo para português. Para animal: animal_name, species, breed, color, size, age, collar, description. Para outros: title, description, brand, color, serial_number. Se não tiver certeza, use respostas curtas e realistas, sempre em português do Brasil. Formato exato: {"title":"...","description":"...","brand":"...","color":"...","serial_number":"...","animal_name":"...","species":"...","breed":"...","size":"...","age":"...","collar":"..."}`;
 };
 
 const guessMimeType = (uri = '') => {
