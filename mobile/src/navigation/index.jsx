@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { TouchableOpacity, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -193,7 +194,6 @@ const MainAppTabs = ({ navigation }) => {
   const { isAdmin, user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
   const [systemAlertCount, setSystemAlertCount] = useState(0);
-  const [pendingItemCount, setPendingItemCount] = useState(0);
   const [renewalAlertCount, setRenewalAlertCount] = useState(0);
   const notificationChannelRef = useRef(null);
   const messageChannelRef = useRef(null);
@@ -206,22 +206,23 @@ const MainAppTabs = ({ navigation }) => {
       listItems({ owner_id: user.id, resolved: false }),
     ]);
 
-    const unreadSystemAlerts = (notifications || []).filter(alert => alert?.read !== true && alert?.read !== 'true').length;
-    const pendingCount = Array.isArray(items) ? items.length : 0;
+    const unreadSystemAlerts = (notifications || []).filter(alert =>
+      alert?.read !== true &&
+      alert?.read !== 'true' &&
+      (alert?.type === 'renewal_reminder' || alert?.type === 'item_removed')
+    ).length;
     const renewalAlerts = buildRenewalAlerts(items || []);
     const renewalCount = renewalAlerts.length;
 
     console.log('[MainAppTabs] fetchUnread', {
       messageCount,
       unreadSystemAlerts,
-      pendingCount,
       renewalCount,
       notificationsCount: notifications?.length,
     });
 
     setUnreadCount(messageCount);
     setSystemAlertCount(unreadSystemAlerts);
-    setPendingItemCount(pendingCount);
     setRenewalAlertCount(renewalCount);
   };
 
@@ -405,7 +406,7 @@ const MainAppTabs = ({ navigation }) => {
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
           tabBarIcon: ({ color, size }) => {
-            const notificationCount = systemAlertCount + pendingItemCount + renewalAlertCount;
+            const notificationCount = unreadCount + systemAlertCount + renewalAlertCount;
             return (
               <View style={{ width: size + 24, height: size + 24, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 <MaterialIcons name="notifications" size={size} color={color} />
@@ -520,17 +521,65 @@ const MainStack = () => {
       <Stack.Screen
         name="MeusAnuncios"
         component={MeusAnunciosScreen}
-        options={{ title: 'Minhas Publicações' }}
+        options={{
+          title: 'Minhas Publicações',
+          header: ({ navigation: stackNavigation }) => (
+            <SafeAreaView edges={['top']} style={{ backgroundColor: '#4F46E5' }}>
+              <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
+                <TouchableOpacity
+                  onPress={() => stackNavigation.goBack()}
+                  style={{ padding: 8, marginRight: 8 }}
+                  accessibilityLabel="Voltar"
+                >
+                  <MaterialIcons name="arrow-back" size={24} color="#fff" />
+                </TouchableOpacity>
+                <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Minhas Publicações</Text>
+              </View>
+            </SafeAreaView>
+          ),
+        }}
       />
       <Stack.Screen
         name="Config"
         component={ConfigScreen}
-        options={{ title: 'Configurações' }}
+        options={{
+          title: 'Configurações',
+          header: ({ navigation: stackNavigation }) => (
+            <SafeAreaView edges={['top']} style={{ backgroundColor: '#4F46E5' }}>
+              <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
+                <TouchableOpacity
+                  onPress={() => stackNavigation.goBack()}
+                  style={{ padding: 8, marginRight: 8 }}
+                  accessibilityLabel="Voltar"
+                >
+                  <MaterialIcons name="arrow-back" size={24} color="#fff" />
+                </TouchableOpacity>
+                <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Configurações</Text>
+              </View>
+            </SafeAreaView>
+          ),
+        }}
       />
       <Stack.Screen
         name="AjudaSuporte"
         component={AjudaSuporteScreen}
-        options={{ title: 'Ajuda e Suporte' }}
+        options={{
+          title: 'Ajuda e Suporte',
+          header: ({ navigation: stackNavigation }) => (
+            <SafeAreaView edges={['top']} style={{ backgroundColor: '#4F46E5' }}>
+              <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
+                <TouchableOpacity
+                  onPress={() => stackNavigation.goBack()}
+                  style={{ padding: 8, marginRight: 8 }}
+                  accessibilityLabel="Voltar"
+                >
+                  <MaterialIcons name="arrow-back" size={24} color="#fff" />
+                </TouchableOpacity>
+                <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Ajuda e Suporte</Text>
+              </View>
+            </SafeAreaView>
+          ),
+        }}
       />
       <Stack.Screen
         name="EditProfile"

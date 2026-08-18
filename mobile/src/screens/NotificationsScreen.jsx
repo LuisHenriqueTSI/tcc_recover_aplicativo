@@ -3,10 +3,9 @@ import { View, Text, ActivityIndicator, FlatList, TouchableOpacity, StyleSheet, 
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { getUnreadCount, getConversations, markMessagesAsRead } from '../services/messages';
-import { listItems, markItemAsResolved, deleteItem, cleanupExpiredItems } from '../services/items';
+import { listItems, cleanupExpiredItems } from '../services/items';
 import { getUserNotifications, markAllNotificationsRead, markNotificationRead, buildRenewalAlerts } from '../services/notifications';
 import { renewItem } from '../services/items';
-import { getPendingClaimsForItem } from '../services/itemClaims';
 
 
 
@@ -30,14 +29,35 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [messageNotifications, setMessageNotifications] = useState([]);
-  const [pendingItems, setPendingItems] = useState([]);
   const [systemAlerts, setSystemAlerts] = useState([]);
   const [renewingItemId, setRenewingItemId] = useState(null);
 
-  const allNotifications = [...systemAlerts, ...messageNotifications];
   const systemUnreadCount = systemAlerts.filter(notification => !notification.read).length;
   const unreadCount = systemUnreadCount;
-  const notificationList = [...systemAlerts, ...messageNotifications, ...pendingItems];
+  const notificationSections = [
+    {
+      key: 'system',
+      title: 'Alertas e atualizações',
+      subtitle: 'Você pode marcar estes alertas como lidos.',
+      data: systemAlerts,
+      markable: true,
+    },
+    {
+      key: 'messages',
+      title: 'Mensagens novas',
+      subtitle: 'Toque para abrir a conversa e marcar como lida.',
+      data: messageNotifications,
+      markable: true,
+    },
+  ].filter(section => section.data.length > 0);
+  const notificationRows = notificationSections.flatMap(section => [
+    { id: `section_${section.key}`, isSection: true, ...section },
+    ...section.data.map(notification => ({
+      ...notification,
+      sectionKey: section.key,
+      markable: section.markable,
+    })),
+  ]);
 
   useEffect(() => {
     if (!user) return;
@@ -76,63 +96,21 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
     let items = await listItems({ owner_id: user.id, resolved: false });
     items = (items || []).filter(item => item && item.id);
     const renewalAlerts = buildRenewalAlerts(items);
-
-    const mappedPendingItems = items.map(item => ({
-      id: item.id,
-      type: 'match',
-      title: 'Possível correspondência!',
-      message: `Seu pet "${item.title}" ainda não foi marcado como devolvido.`,
-      time: getRelativeTime(item.created_at),
-      read: false,
-      icon: 'alert-circle',
-      iconColor: '#F59E42',
-      bgColor: '#FFF7ED',
-      item,
-    }));
-
-    setPendingItems(mappedPendingItems);
-
-    const claimAlerts = [];
-    for (const item of items) {
-      try {
-        const pendingClaims = await getPendingClaimsForItem(item.id);
-        if (pendingClaims && pendingClaims.length > 0) {
-          pendingClaims.forEach(claim => {
-            claimAlerts.push({
-              id: `claim_${claim.id}`,
-              type: 'claim',
-              title: 'Reivindicação pendente',
-              message: `${claim.profiles?.name || 'Um usuário'} quer reivindicar seu pet "${item.title || 'sem nome'}".`,
-              created_at: claim.created_at,
-              read: false,
-              item_id: item.id,
-            });
-          });
-        }
-      } catch (err) {
-        console.warn('[Notifications] Erro ao buscar reivindicações pendentes:', err?.message || err);
-      }
-    }
-
-    const mappedSystemAlerts = [...renewalAlerts, ...(systemAlertsData || []), ...claimAlerts]
-      .filter(alert => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed' || alert.type === 'match' || alert.type === 'claim'))
+    const mappedSystemAlerts = [...renewalAlerts, ...(systemAlertsData || [])]
+      .filter(alert => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed'))
       .map(alert => ({
         id: `system_${alert.id}`,
         type: alert.type,
         title: alert.type === 'item_removed'
           ? 'Sua publicação foi removida'
-          : alert.type === 'match'
-            ? 'Possível correspondência'
-            : alert.type === 'claim'
-              ? 'Alguém reivindicou seu pet!'
-              : 'Renove sua publicação',
+          : 'Renove sua publicação',
         message: alert.message,
         time: getRelativeTime(alert.created_at),
         read: Boolean(alert.read),
-        icon: alert.type === 'item_removed' ? 'trash-2' : alert.type === 'match' ? 'search' : alert.type === 'claim' ? 'check-circle' : 'alert-triangle',
-        iconColor: alert.type === 'item_removed' ? '#DC2626' : alert.type === 'match' ? '#2563EB' : alert.type === 'claim' ? '#10B981' : '#F59E42',
-        bgColor: alert.type === 'item_removed' ? '#FEF2F2' : alert.type === 'match' ? '#EFF6FF' : alert.type === 'claim' ? '#F0FDF4' : '#FFF7ED',
-        critical: alert.type === 'renewal_reminder' || alert.type === 'item_removed' || alert.type === 'match' || alert.type === 'claim',
+        icon: alert.type === 'item_removed' ? 'trash-2' : 'alert-triangle',
+        iconColor: alert.type === 'item_removed' ? '#DC2626' : '#F59E42',
+        bgColor: alert.type === 'item_removed' ? '#FEF2F2' : '#FFF7ED',
+        critical: alert.type === 'renewal_reminder' || alert.type === 'item_removed',
         itemId: alert.item_id,
       }));
 
@@ -172,46 +150,6 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
     if (notification.type === 'item_removed' && notification.itemId) {
       await markNotificationRead(notification.id.replace('system_', ''));
       navigation.navigate('ItemDetail', { itemId: notification.itemId });
-      return;
-    }
-
-    if (notification.type === 'match' && notification.item) {
-      Alert.alert(
-        'Seu pet foi encontrado?',
-        'Se você recuperou seu pet, podemos excluir sua publicação para evitar novas notificações. Deseja realmente excluir?',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Sim, pode excluir',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                const itemId = notification.item?.id;
-                console.log('[Notifications] Marcando item como resolvido:', itemId);
-                await markItemAsResolved(itemId, user.id);
-                console.log('[Notifications] Chamando deleteItem para:', itemId);
-                const result = await deleteItem(itemId);
-                console.log('[Notifications] Resultado deleteItem:', result);
-                setPendingItems(prev => prev.filter(item => item.id !== itemId));
-                await fetchNotifications();
-                if (typeof onNotificationsUpdated === 'function') {
-                  onNotificationsUpdated();
-                }
-              } catch (err) {
-                console.error('[Notifications] Falha ao excluir item após marcar como encontrado:', err);
-                const message = err?.message || String(err || 'Erro desconhecido');
-                Alert.alert('Erro ao excluir publicação', message);
-              }
-            },
-          },
-        ]
-      );
-      return;
-    }
-
-    if (notification.type === 'claim' && notification.itemId) {
-      setSystemAlerts(prev => prev.map(alert => alert.id === notification.id ? { ...alert, read: true } : alert));
-      navigation.navigate('ClaimsManagement');
       return;
     }
 
@@ -261,18 +199,23 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
       {/* Notifications List */}
       {loading ? (
         <ActivityIndicator size="large" color="#F59E42" style={{ marginVertical: 24 }} />
-      ) : notificationList.length > 0 ? (
+      ) : notificationRows.length > 0 ? (
         <FlatList
-          data={notificationList}
+          data={notificationRows}
+          contentContainerStyle={styles.notificationList}
           keyExtractor={item => item.id.toString()}
-          renderItem={({ item, index }) => (
+          renderItem={({ item }) => item.isSection ? (
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{item.title}</Text>
+              <Text style={styles.sectionSubtitle}>{item.subtitle}</Text>
+            </View>
+          ) : (
             <TouchableOpacity
               key={item.id}
               style={[
                 styles.notificationCard,
                 { backgroundColor: item.bgColor },
                 item.critical ? styles.criticalCard : {},
-                index === 0 ? { borderTopWidth: 0 } : {},
               ]}
               activeOpacity={0.85}
               onPress={() => handleNotificationPress(item)}
@@ -297,7 +240,8 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
               {renewingItemId === item.itemId && (
                 <ActivityIndicator size="small" color="#F59E42" style={{ marginLeft: 8 }} />
               )}
-              <View style={styles.unreadDot} />
+              {item.markable && !item.read && <View style={styles.unreadDot} />}
+              <Feather name="chevron-right" size={18} color="#A3A3A3" style={styles.chevron} />
             </TouchableOpacity>
           )}
         />
@@ -317,7 +261,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F3F4F4',
     paddingTop: 0,
   },
   header: {
@@ -341,6 +285,26 @@ const styles = StyleSheet.create({
     color: '#A3A3A3',
     marginTop: 2,
   },
+  notificationList: {
+    paddingTop: 10,
+    paddingBottom: 24,
+  },
+  sectionHeader: {
+    paddingHorizontal: 14,
+    marginHorizontal: 12,
+    marginTop: 10,
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    color: '#27272A',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  sectionSubtitle: {
+    color: '#71717A',
+    fontSize: 12,
+    marginTop: 3,
+  },
   markAllBtn: {
     paddingVertical: 4,
     paddingHorizontal: 10,
@@ -350,31 +314,32 @@ const styles = StyleSheet.create({
   notificationCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    borderRadius: 0,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderRadius: 10,
+    paddingVertical: 13,
+    paddingHorizontal: 12,
+    marginHorizontal: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E1E4E6',
     backgroundColor: '#fff',
     position: 'relative',
   },
   criticalCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#DC2626',
-    backgroundColor: '#FFF7ED',
+    borderLeftWidth: 3,
+    borderLeftColor: '#F59E42',
   },
   iconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
-    backgroundColor: '#F3F4F6',
+    marginRight: 10,
+    backgroundColor: '#EEF2FF',
   },
   notifTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '700',
     flex: 1,
     marginBottom: 2,
   },
@@ -386,31 +351,36 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   notifMsg: {
-    color: '#444',
+    color: '#5F6368',
     fontSize: 13,
-    marginTop: 0,
+    lineHeight: 18,
+    marginTop: 3,
   },
   criticalBadge: {
     alignSelf: 'flex-start',
     marginTop: 4,
-    backgroundColor: '#DC2626',
-    borderRadius: 999,
-    paddingHorizontal: 8,
+    backgroundColor: '#FFF3E0',
+    borderRadius: 4,
+    paddingHorizontal: 6,
     paddingVertical: 2,
   },
   criticalBadgeText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: 'bold',
+    color: '#B45309',
+    fontSize: 10,
+    fontWeight: '700',
   },
   unreadDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#F59E42',
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#2E7D32',
     position: 'absolute',
-    top: 24,
-    right: 18,
+    top: 14,
+    right: 34,
+  },
+  chevron: {
+    alignSelf: 'center',
+    marginLeft: 8,
   },
   actionRow: {
     flexDirection: 'row',
@@ -445,7 +415,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#EEF2FF',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -466,12 +436,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#EEF2FF',
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginHorizontal: 16,
-    marginTop: 16,
+    backgroundColor: '#EAF7EE',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginHorizontal: 12,
+    marginTop: 12,
     marginBottom: 8,
   },
   unreadBannerTextContainer: {
@@ -481,16 +451,16 @@ const styles = StyleSheet.create({
   unreadBannerTitle: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#1D4ED8',
+    color: '#256B35',
     marginBottom: 2,
   },
   unreadBannerSubtitle: {
     fontSize: 13,
-    color: '#1E40AF',
+    color: '#3F6F49',
   },
   unreadBannerButton: {
-    backgroundColor: '#1D4ED8',
-    borderRadius: 999,
+    backgroundColor: '#2E7D32',
+    borderRadius: 6,
     paddingVertical: 8,
     paddingHorizontal: 12,
   },

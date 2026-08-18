@@ -15,12 +15,6 @@ const AjudaSuporteScreen = () => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.hero}>
-        <View style={styles.heroIcon}><Feather name="life-buoy" size={27} color="#fff" /></View>
-        <Text style={styles.title}>Como podemos ajudar?</Text>
-        <Text style={styles.subtitle}>Respostas rápidas para você continuar ajudando a encontrar pets.</Text>
-      </View>
-
       <Text style={styles.sectionTitle}>Perguntas frequentes</Text>
       <View style={styles.faqPanel}>
         {faqs.map((faq, index) => {
@@ -59,10 +53,6 @@ const AjudaSuporteScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F7F7FB' },
   content: { padding: 20, paddingBottom: 40 },
-  hero: { backgroundColor: '#312E81', borderRadius: 22, padding: 22, marginBottom: 26 },
-  heroIcon: { width: 52, height: 52, borderRadius: 17, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center', marginBottom: 18 },
-  title: { color: '#fff', fontSize: 25, fontWeight: '800' },
-  subtitle: { color: '#DDD6FE', fontSize: 14, lineHeight: 20, marginTop: 8, maxWidth: 290 },
   sectionTitle: { color: '#27272A', fontSize: 17, fontWeight: '800', marginBottom: 10 },
   faqPanel: { backgroundColor: '#fff', borderRadius: 16, paddingHorizontal: 16, borderWidth: 1, borderColor: '#E4E4E7', marginBottom: 25 },
   faqRow: { minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },

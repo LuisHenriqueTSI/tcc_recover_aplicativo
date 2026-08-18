@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import Card from '../components/Card';
 import Button from '../components/Button';
+import { Feather } from '@expo/vector-icons';
 
 import { useRoute } from '@react-navigation/native';
 
@@ -198,6 +199,19 @@ const ChatScreen = (props) => {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
     >
       <View style={styles.container}>
+        <View style={styles.chatHeader}>
+          <View style={styles.chatAvatar}>
+            <Image
+              source={conversation?.avatarUrl ? { uri: conversation.avatarUrl } : require('../assets/logo_recover.png')}
+              style={styles.chatAvatarImage}
+            />
+          </View>
+          <View style={styles.chatHeaderContent}>
+            <Text style={styles.chatHeaderName} numberOfLines={1}>{conversation?.otherName || 'Usuário'}</Text>
+            {conversation?.itemTitle ? <Text style={styles.chatHeaderPet} numberOfLines={1}>{conversation.itemTitle}</Text> : null}
+          </View>
+          <Feather name="message-circle" size={20} color="#C7D2FE" />
+        </View>
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -243,10 +257,16 @@ const ChatScreen = (props) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
-  messageRow: { flexDirection: 'row', marginVertical: 2 },
+  chatHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#312E81', borderBottomWidth: 1, borderBottomColor: '#4338CA' },
+  chatAvatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#EEF2FF', overflow: 'hidden', marginRight: 10 },
+  chatAvatarImage: { width: 42, height: 42, borderRadius: 21, resizeMode: 'cover' },
+  chatHeaderContent: { flex: 1, minWidth: 0 },
+  chatHeaderName: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  chatHeaderPet: { color: '#DDD6FE', fontSize: 12, marginTop: 3 },
+  messageRow: { flexDirection: 'row', marginVertical: 4, paddingHorizontal: 4 },
   myMessage: { justifyContent: 'flex-end' },
   otherMessage: { justifyContent: 'flex-start' },
-  messageCard: { maxWidth: '80%', padding: 10 },
+  messageCard: { maxWidth: '80%', padding: 12, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0' },
   messageText: { fontSize: 15, color: '#1F2937', marginBottom: 2 },
   messageImage: { width: 180, height: 180, borderRadius: 8, marginBottom: 6, backgroundColor: '#E5E7EB' },
     photoButton: { marginRight: 6, paddingVertical: 8, paddingHorizontal: 10, backgroundColor: '#E5E7EB', borderRadius: 8 },

@@ -93,8 +93,7 @@ const InboxScreen = () => {
     return () => { cancelled = true; };
   }, [search, conversations, user.id]);
 
-  const renderItem = ({ item, index }) => {
-    const avatar = (item.otherName || 'U').charAt(0).toUpperCase();
+  const renderItem = ({ item }) => {
     // Horário formatado
     let time = '';
     if (item.lastMessageAt) {
@@ -115,18 +114,12 @@ const InboxScreen = () => {
         style={styles.convBtn}
         activeOpacity={0.85}
       >
-        {item.avatarUrl ? (
-          <View style={styles.avatarCircle}>
-            <Image
-              source={{ uri: item.avatarUrl }}
-              style={{ width: 48, height: 48, borderRadius: 24, resizeMode: 'cover' }}
-            />
-          </View>
-        ) : (
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>{avatar}</Text>
-          </View>
-        )}
+        <View style={styles.avatarCircle}>
+          <Image
+            source={item.avatarUrl ? { uri: item.avatarUrl } : require('../assets/logo_recover.png')}
+            style={styles.avatarImage}
+          />
+        </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={styles.name} numberOfLines={1}>{item.otherName || 'Usuário'}</Text>
@@ -154,7 +147,6 @@ const InboxScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Barra de busca */}
       <View style={styles.searchWrapper}>
         <Feather name="search" size={18} color="#9CA3AF" style={styles.searchIcon} />
         <TextInput
@@ -244,7 +236,9 @@ const styles = StyleSheet.create({
   },
   searchWrapper: {
     position: 'relative',
-    marginBottom: 0,
+    marginHorizontal: 16,
+    marginTop: 14,
+    marginBottom: 12,
   },
   searchIcon: {
     position: 'absolute',
@@ -253,33 +247,43 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   searchInput: {
-    height: 44,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 10,
+    height: 48,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     paddingLeft: 40,
     paddingRight: 12,
     fontSize: 16,
-    color: '#1F2937',
-    borderWidth: 0,
+    color: '#111827',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
   },
   convBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-    backgroundColor: '#fff',
-    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    gap: 10,
   },
   avatarCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#fff',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#EEF2FF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    resizeMode: 'cover',
   },
   avatarText: {
     color: '#fff',

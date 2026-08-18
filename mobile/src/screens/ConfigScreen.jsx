@@ -66,15 +66,6 @@ const ConfigScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.eyebrow}>SUA CONTA</Text>
-          <Text style={styles.title}>Configurações</Text>
-          <Text style={styles.subtitle}>{userProfile?.email || user?.email || 'Preferências do Recover'}</Text>
-        </View>
-        <View style={styles.headerIcon}><Feather name="sliders" size={24} color="#fff" /></View>
-      </View>
-
       <Text style={styles.sectionLabel}>Preferências</Text>
       <View style={styles.panel}>
         <SettingRow icon="bell" title="Notificações" description="Receber novidades e mensagens do app" right={<Switch value={preferences.notifications} onValueChange={() => togglePreference('notifications')} trackColor={{ false: '#D4D4D8', true: '#A5B4FC' }} thumbColor={preferences.notifications ? '#4F46E5' : '#F4F4F5'} />} />
@@ -126,11 +117,6 @@ const ConfigScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F7F7FB' },
   content: { padding: 20, paddingBottom: 42 },
-  header: { backgroundColor: '#312E81', borderRadius: 22, padding: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 26 },
-  eyebrow: { color: '#C7D2FE', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 7 },
-  title: { color: '#fff', fontSize: 28, fontWeight: '800' },
-  subtitle: { color: '#DDD6FE', fontSize: 13, marginTop: 7, maxWidth: 235 },
-  headerIcon: { width: 52, height: 52, borderRadius: 17, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center' },
   sectionLabel: { color: '#71717A', fontSize: 12, fontWeight: '800', letterSpacing: 1, marginBottom: 9, marginLeft: 3, textTransform: 'uppercase' },
   panel: { backgroundColor: '#fff', borderRadius: 16, paddingHorizontal: 15, marginBottom: 22, borderWidth: 1, borderColor: '#E4E4E7' },
   row: { minHeight: 68, flexDirection: 'row', alignItems: 'center' },

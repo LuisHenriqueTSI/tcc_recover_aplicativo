@@ -101,19 +101,12 @@ const MeusAnunciosScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadItems(true)} tintColor="#4F46E5" colors={['#4F46E5']} />}>
-      <View style={styles.hero}>
-        <View style={styles.heroTop}>
-          <View><Text style={styles.eyebrow}>SEU ESPAÇO</Text><Text style={styles.title}>Minhas publicações</Text></View>
-          <View style={styles.heroIcon}><Feather name="bookmark" size={23} color="#fff" /></View>
-        </View>
-        <Text style={styles.description}>Acompanhe tudo o que você publicou e mantenha seus anúncios visíveis.</Text>
-        <View style={styles.summaryRow}>
-          <View style={styles.summary}><Text style={styles.summaryValue}>{items.length}</Text><Text style={styles.summaryLabel}>pets</Text></View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summary}><Text style={[styles.summaryValue, { color: '#86EFAC' }]}>{activeCount}</Text><Text style={styles.summaryLabel}>ativas</Text></View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summary}><Text style={[styles.summaryValue, { color: '#FCD34D' }]}>{attentionCount}</Text><Text style={styles.summaryLabel}>atenção</Text></View>
-        </View>
+      <View style={styles.summaryBar}>
+        <View style={styles.summaryItem}><Text style={styles.summaryValue}>{items.length}</Text><Text style={styles.summaryLabel}>pets</Text></View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryItem}><Text style={[styles.summaryValue, { color: '#15803D' }]}>{activeCount}</Text><Text style={styles.summaryLabel}>ativas</Text></View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryItem}><Text style={[styles.summaryValue, { color: '#B45309' }]}>{attentionCount}</Text><Text style={styles.summaryLabel}>atenção</Text></View>
       </View>
 
       {loading ? <ActivityIndicator size="large" color="#4F46E5" style={styles.loader} /> : null}
@@ -133,41 +126,35 @@ const MeusAnunciosScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F7F7FB' },
-  content: { padding: 20, paddingBottom: 44 },
-  hero: { backgroundColor: '#312E81', borderRadius: 22, padding: 21, marginBottom: 25 },
-  heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  eyebrow: { color: '#C7D2FE', fontSize: 11, fontWeight: '800', letterSpacing: 1.4, marginBottom: 7 },
-  title: { color: '#fff', fontSize: 25, fontWeight: '800' },
-  heroIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center' },
-  description: { color: '#DDD6FE', fontSize: 13, lineHeight: 19, marginTop: 14, maxWidth: 285 },
-  summaryRow: { flexDirection: 'row', alignItems: 'center', marginTop: 21 },
-  summary: { flex: 1 },
-  summaryValue: { color: '#fff', fontSize: 24, fontWeight: '800' },
-  summaryLabel: { color: '#C7D2FE', fontSize: 12, marginTop: 1 },
-  summaryDivider: { height: 32, width: 1, backgroundColor: '#6366F1', marginHorizontal: 12 },
+  container: { flex: 1, backgroundColor: '#F4F5F5' },
+  content: { padding: 16, paddingBottom: 44 },
+  summaryBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1, borderColor: '#E1E4E6', borderRadius: 10, paddingVertical: 13, paddingHorizontal: 14, marginBottom: 22 },
+  summaryItem: { flex: 1 },
+  summaryValue: { color: '#27272A', fontSize: 21, fontWeight: '800' },
+  summaryLabel: { color: '#71717A', fontSize: 11, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
+  summaryDivider: { height: 30, width: 1, backgroundColor: '#E4E4E7', marginHorizontal: 10 },
   loader: { marginTop: 32 },
-  section: { marginBottom: 21 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 9 },
+  section: { marginBottom: 20 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingHorizontal: 2 },
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  sectionTitle: { color: '#27272A', fontSize: 16, fontWeight: '800' },
-  count: { color: '#71717A', backgroundColor: '#E4E4E7', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2, fontSize: 12, fontWeight: '800' },
-  itemCard: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E4E4E7', borderRadius: 16, padding: 13, marginBottom: 9, flexDirection: 'row', alignItems: 'center', minHeight: 91 },
-  itemIcon: { width: 48, height: 48, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  sectionTitle: { color: '#27272A', fontSize: 15, fontWeight: '800' },
+  count: { color: '#52525B', backgroundColor: '#E4E4E7', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, fontSize: 11, fontWeight: '800' },
+  itemCard: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E1E4E6', borderRadius: 10, padding: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center', minHeight: 84 },
+  itemIcon: { width: 44, height: 44, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 11 },
   itemContent: { flex: 1, minWidth: 0 },
-  itemTitle: { color: '#18181B', fontSize: 15, fontWeight: '800', marginBottom: 5 },
+  itemTitle: { color: '#18181B', fontSize: 14, fontWeight: '800', marginBottom: 5 },
   metaLine: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   itemMeta: { color: '#A1A1AA', fontSize: 12, flex: 1 },
-  statusPill: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingHorizontal: 7, paddingVertical: 4, marginTop: 7 },
+  statusPill: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 4, marginTop: 7 },
   statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 5 },
   statusText: { fontSize: 11, fontWeight: '800' },
-  renewButton: { backgroundColor: '#4F46E5', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 9, flexDirection: 'row', alignItems: 'center', gap: 5, marginLeft: 7 },
+  renewButton: { backgroundColor: '#4F46E5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 5, marginLeft: 7 },
   renewText: { color: '#fff', fontSize: 12, fontWeight: '800' },
-  empty: { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#E4E4E7', padding: 28, alignItems: 'center', marginTop: 4 },
-  emptyIcon: { width: 60, height: 60, borderRadius: 20, backgroundColor: '#EEF2FF', justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
+  empty: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E1E4E6', padding: 26, alignItems: 'center', marginTop: 4 },
+  emptyIcon: { width: 56, height: 56, borderRadius: 14, backgroundColor: '#EEF2FF', justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
   emptyTitle: { color: '#27272A', fontSize: 17, fontWeight: '800' },
   emptyText: { color: '#71717A', textAlign: 'center', fontSize: 13, lineHeight: 19, marginTop: 7, marginBottom: 18 },
-  publishButton: { backgroundColor: '#4F46E5', borderRadius: 11, paddingVertical: 11, paddingHorizontal: 17, flexDirection: 'row', alignItems: 'center', gap: 7 },
+  publishButton: { backgroundColor: '#4F46E5', borderRadius: 8, paddingVertical: 11, paddingHorizontal: 17, flexDirection: 'row', alignItems: 'center', gap: 7 },
   publishText: { color: '#fff', fontSize: 13, fontWeight: '800' },
 });
 
