@@ -62,7 +62,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
       id: msg.itemId + '_' + msg.otherId,
       type: 'message',
       title: 'Nova mensagem',
-      message: `Nova mensagem sobre "${msg.itemTitle || 'item'}" de ${msg.otherName}`,
+      message: `Nova mensagem sobre o pet "${msg.itemTitle || 'sem nome'}" de ${msg.otherName}`,
       time: getRelativeTime(msg.lastMessageAt),
       read: false,
       otherId: msg.otherId,
@@ -81,7 +81,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
       id: item.id,
       type: 'match',
       title: 'Possível correspondência!',
-      message: `Seu item "${item.title}" ainda não foi marcado como devolvido.`,
+      message: `Seu pet "${item.title}" ainda não foi marcado como devolvido.`,
       time: getRelativeTime(item.created_at),
       read: false,
       icon: 'alert-circle',
@@ -102,7 +102,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
               id: `claim_${claim.id}`,
               type: 'claim',
               title: 'Reivindicação pendente',
-              message: `${claim.profiles?.name || 'Um usuário'} quer reivindicar seu item "${item.title || 'sem título'}".`,
+              message: `${claim.profiles?.name || 'Um usuário'} quer reivindicar seu pet "${item.title || 'sem nome'}".`,
               created_at: claim.created_at,
               read: false,
               item_id: item.id,
@@ -124,7 +124,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
           : alert.type === 'match'
             ? 'Possível correspondência'
             : alert.type === 'claim'
-              ? 'Alguém reivindicou seu item!'
+              ? 'Alguém reivindicou seu pet!'
               : 'Renove sua publicação',
         message: alert.message,
         time: getRelativeTime(alert.created_at),
@@ -177,8 +177,8 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
 
     if (notification.type === 'match' && notification.item) {
       Alert.alert(
-        'Seu item foi encontrado?',
-        'Se você recuperou seu item, podemos excluir sua publicação para evitar novas notificações. Deseja realmente excluir?',
+        'Seu pet foi encontrado?',
+        'Se você recuperou seu pet, podemos excluir sua publicação para evitar novas notificações. Deseja realmente excluir?',
         [
           { text: 'Cancelar', style: 'cancel' },
           {
@@ -307,7 +307,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
             <Feather name="bell" size={40} color="#9CA3AF" />
           </View>
           <Text style={styles.emptyTitle}>Nenhuma notificação</Text>
-          <Text style={styles.emptyMsg}>Você receberá alertas quando houver novidades sobre seus itens.</Text>
+          <Text style={styles.emptyMsg}>Você receberá alertas quando houver novidades sobre seus pets.</Text>
         </View>
       )}
     </View>

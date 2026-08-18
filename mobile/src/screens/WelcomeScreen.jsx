@@ -71,7 +71,7 @@ const WelcomeScreen = ({ navigation }) => {
               <Text style={styles.statNumber}>
                 {statistics.itemsResolved > 0 ? `${statistics.itemsResolved.toLocaleString('pt-BR')}+` : '0'}
               </Text>
-              <Text style={styles.statLabel}>Itens Resolvidos</Text>
+              <Text style={styles.statLabel}>Pets Reunidos</Text>
             </Card>
             <Card style={styles.statCard}>
               <Text style={styles.statNumber}>
@@ -98,9 +98,9 @@ const WelcomeScreen = ({ navigation }) => {
             <Text style={styles.stepNumberText}>1</Text>
           </View>
           <View style={styles.stepContent}>
-            <Text style={styles.stepTitle}>Registre o Item</Text>
+            <Text style={styles.stepTitle}>Registre um Pet</Text>
             <Text style={styles.stepDescription}>
-              Descreva o item perdido ou encontrado com detalhes
+              Descreva o pet perdido ou encontrado com detalhes
             </Text>
           </View>
         </View>
@@ -136,14 +136,14 @@ const WelcomeScreen = ({ navigation }) => {
         
         <Card>
           <Text style={styles.testimonialText}>
-            "Perdi minha carteira e consegui recuperar em 2 dias!"
+            "Perdi meu cachorro e consegui reencontrá-lo em 2 dias!"
           </Text>
           <Text style={styles.testimonialAuthor}>- João Silva</Text>
         </Card>
 
         <Card>
           <Text style={styles.testimonialText}>
-            "Achei um celular na rua e consegui devolver para o dono"
+            "Encontrei um gato e consegui devolvê-lo para a família"
           </Text>
           <Text style={styles.testimonialAuthor}>- Maria Santos</Text>
         </Card>
@@ -152,7 +152,7 @@ const WelcomeScreen = ({ navigation }) => {
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
         <Button
-          title="Ver Itens"
+          title="Ver Pets"
           variant="secondary"
           onPress={() => navigation.navigate('PublicApp')}
           style={styles.button}

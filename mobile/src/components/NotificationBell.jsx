@@ -44,7 +44,7 @@ export default function NotificationBell({ style }) {
     try {
       await markItemAsResolved(item.id, user.id);
       setPendingItems(prev => prev.filter(i => i.id !== item.id));
-      alert('🎉 Parabéns! Ótimo saber que encontrou seu item!');
+      alert('🎉 Parabéns! Ótimo saber que encontrou seu pet!');
     } catch (e) {
       alert('Erro ao marcar como resolvido: ' + (e.message || e));
     }
@@ -102,7 +102,7 @@ export default function NotificationBell({ style }) {
                     <View style={styles.notificationRow}>
                       <MaterialIcons name="search" size={22} color="#4F46E5" style={{ marginRight: 8 }} />
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.notificationTitle}>Você encontrou seu item?</Text>
+                        <Text style={styles.notificationTitle}>Você encontrou seu pet?</Text>
                         <Text style={styles.notificationDesc}>{item.title}{item.location ? ` - 📍 ${item.location}` : ''}</Text>
                       </View>
                     </View>

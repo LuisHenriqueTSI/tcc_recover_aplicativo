@@ -45,22 +45,22 @@ const DashboardScreen = ({ navigation }) => {
 
       <View style={styles.statsGrid}>
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Total de Itens</Text>
+          <Text style={styles.statLabel}>Total de Pets</Text>
           <Text style={styles.statValue}>{statistics.total_items}</Text>
         </Card>
 
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Itens Resolvidos</Text>
+          <Text style={styles.statLabel}>Pets Reunidos</Text>
           <Text style={styles.statValue}>{statistics.items_resolved}</Text>
         </Card>
 
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Itens Perdidos</Text>
+          <Text style={styles.statLabel}>Pets Perdidos</Text>
           <Text style={styles.statValue}>{statistics.items_lost}</Text>
         </Card>
 
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Itens Encontrados</Text>
+          <Text style={styles.statLabel}>Pets Encontrados</Text>
           <Text style={styles.statValue}>{statistics.items_found}</Text>
         </Card>
 

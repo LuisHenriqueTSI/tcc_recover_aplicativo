@@ -12,7 +12,7 @@ const MapScreen = ({ navigation }) => {
       <Card style={styles.placeholderCard}>
         <Text style={styles.title}>Mapa</Text>
         <Text style={styles.description}>
-          Funcionalidade de mapa será implementada em breve. Você poderá visualizar a localização dos itens perdidos/encontrados no mapa.
+          Funcionalidade de mapa será implementada em breve. Você poderá visualizar a localização dos pets perdidos/encontrados no mapa.
         </Text>
       </Card>
     </View>

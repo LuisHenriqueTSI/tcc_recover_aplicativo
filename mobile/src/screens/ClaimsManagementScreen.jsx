@@ -58,8 +58,8 @@ export default function ClaimsManagementScreen({ navigation }) {
         setSelectedItem(null);
       }
     } catch (err) {
-      console.error('[ClaimsManagement] Erro ao carregar itens encontrados:', err);
-      Alert.alert('Erro', 'Falha ao carregar seus itens encontrados');
+      console.error('[ClaimsManagement] Erro ao carregar pets encontrados:', err);
+      Alert.alert('Erro', 'Falha ao carregar seus pets encontrados');
     } finally {
       setLoading(false);
     }
@@ -71,7 +71,7 @@ export default function ClaimsManagementScreen({ navigation }) {
       setClaims((pendingClaims || []).map(claim => ({
         ...claim,
         itemId,
-        itemTitle: myFoundItems.find(item => item.id === itemId)?.title || 'Item',
+        itemTitle: myFoundItems.find(item => item.id === itemId)?.title || 'Pet',
       })));
     } catch (err) {
       console.error('[ClaimsManagement] Erro ao carregar reivindicações:', err);
@@ -90,7 +90,7 @@ export default function ClaimsManagementScreen({ navigation }) {
       await approveClaim(claimId);
       Alert.alert(
         'Reivindicação aprovada!',
-        'O usuário pode agora entrar em contato com você. Vocês podem combinar a devolução do item.',
+        'O usuário pode agora entrar em contato com você. Vocês podem combinar a devolução do pet.',
         [{ text: 'OK', onPress: () => {
           setClaims(claims.filter(c => c.id !== claimId));
           setExpandedClaimId(null);
@@ -152,9 +152,9 @@ export default function ClaimsManagementScreen({ navigation }) {
     return (
       <View style={styles.container}>
         <Card style={styles.messageCard}>
-          <Text style={styles.messageText}>Você não cadastrou itens encontrados</Text>
+          <Text style={styles.messageText}>Você não cadastrou pets encontrados</Text>
           <Text style={styles.messageSubtext}>
-            Quando você registrar um item como "achei", as pessoas que o perderam poderão reivindicá-lo aqui.
+            Quando você registrar um pet como "achei", a pessoa que o perdeu poderá reivindicá-lo aqui.
           </Text>
         </Card>
       </View>
@@ -163,7 +163,7 @@ export default function ClaimsManagementScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Abas com itens encontrados */}
+      {/* Abas com pets encontrados */}
       <View style={styles.itemTabs}>
         <FlatList
           data={myFoundItems}
@@ -203,7 +203,7 @@ export default function ClaimsManagementScreen({ navigation }) {
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>Nenhuma reivindicação pendente</Text>
           <Text style={styles.emptySubtext}>
-            Quando alguém reivindicar este item, aparecerá aqui.
+            Quando alguém reivindicar este pet, aparecerá aqui.
           </Text>
         </View>
       ) : (
@@ -236,7 +236,7 @@ export default function ClaimsManagementScreen({ navigation }) {
                     <Text style={styles.sectionTitle}>Mensagem:</Text>
                     <Text style={styles.claimMessage}>{claim.message}</Text>
                     {claim.itemTitle && (
-                      <Text style={styles.itemLabel}>Item: {claim.itemTitle}</Text>
+                      <Text style={styles.itemLabel}>Pet: {claim.itemTitle}</Text>
                     )}
                   </View>
 

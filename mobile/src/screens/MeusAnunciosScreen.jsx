@@ -108,7 +108,7 @@ const MeusAnunciosScreen = ({ navigation }) => {
         </View>
         <Text style={styles.description}>Acompanhe tudo o que você publicou e mantenha seus anúncios visíveis.</Text>
         <View style={styles.summaryRow}>
-          <View style={styles.summary}><Text style={styles.summaryValue}>{items.length}</Text><Text style={styles.summaryLabel}>total</Text></View>
+          <View style={styles.summary}><Text style={styles.summaryValue}>{items.length}</Text><Text style={styles.summaryLabel}>pets</Text></View>
           <View style={styles.summaryDivider} />
           <View style={styles.summary}><Text style={[styles.summaryValue, { color: '#86EFAC' }]}>{activeCount}</Text><Text style={styles.summaryLabel}>ativas</Text></View>
           <View style={styles.summaryDivider} />

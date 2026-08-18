@@ -12,7 +12,7 @@ const AdminScreen = ({ navigation }) => {
       <Card style={styles.placeholderCard}>
         <Text style={styles.title}>Painel Admin</Text>
         <Text style={styles.description}>
-          Painel de administração para gerenciar usuários, itens e denúncias do sistema.
+          Painel de administração para gerenciar usuários, pets e denúncias do sistema.
         </Text>
       </Card>
     </View>

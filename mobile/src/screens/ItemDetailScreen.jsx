@@ -56,7 +56,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     navigation.setOptions({
-      title: 'Detalhes do Item',
+      title: 'Detalhes do Pet',
       headerStyle: {
         backgroundColor: '#4F46E5',
       },
@@ -157,12 +157,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
         setOwner(itemData.profiles);
         setRewards(itemData.rewards || []);
       } else {
-        Alert.alert('Erro', 'Item não encontrado');
+        Alert.alert('Erro', 'Pet não encontrado');
         navigation.goBack();
       }
     } catch (error) {
       console.error('[ItemDetailScreen] Erro ao carregar:', error);
-      Alert.alert('Erro', 'Falha ao carregar detalhes do item');
+      Alert.alert('Erro', 'Falha ao carregar detalhes do pet');
       navigation.goBack();
     } finally {
       setLoading(false);
@@ -182,8 +182,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleDeleteItem = () => {
     Alert.alert(
-      'Excluir Item',
-      'Tem certeza que deseja excluir este item?',
+      'Excluir Pet',
+      'Tem certeza que deseja excluir este pet?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -191,10 +191,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
             setDeleting(true);
             try {
               await itemsService.deleteItem(itemId);
-              Alert.alert('Sucesso', 'Item excluído com sucesso!');
+              Alert.alert('Sucesso', 'Pet excluído com sucesso!');
               navigation.goBack();
             } catch (error) {
-              Alert.alert('Erro', 'Falha ao excluir item: ' + error.message);
+              Alert.alert('Erro', 'Falha ao excluir pet: ' + error.message);
             } finally {
               setDeleting(false);
             }
@@ -310,7 +310,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const handleMarkAsResolved = () => {
     Alert.alert(
       'Marcar como Resolvido',
-      'Confirma que este item foi encontrado/devolvido?',
+      'Confirma que este pet foi encontrado/devolvido?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -318,7 +318,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
           onPress: async () => {
             try {
               await itemsService.markItemAsResolved(itemId);
-              Alert.alert('Sucesso', 'Item marcado como resolvido!');
+              Alert.alert('Sucesso', 'Pet marcado como resolvido!');
               loadItemDetails();
             } catch (error) {
               Alert.alert('Erro', 'Falha ao marcar como resolvido: ' + error.message);
@@ -346,15 +346,15 @@ const ItemDetailScreen = ({ route, navigation }) => {
     let initialMessage = '';
     if (item.status === 'lost') {
       if (user.id === item.owner_id) {
-        initialMessage = 'Oi, você achou meu item?';
+        initialMessage = 'Oi, você achou meu pet?';
       } else {
-        initialMessage = 'Oi, eu encontrei seu item!';
+        initialMessage = 'Oi, eu encontrei seu pet!';
       }
     } else if (item.status === 'found') {
       if (user.id === item.owner_id) {
-        initialMessage = 'Oi, você encontrou meu item?';
+        initialMessage = 'Oi, você encontrou meu pet?';
       } else {
-        initialMessage = 'Oi, você achou meu item?';
+        initialMessage = 'Oi, você achou meu pet?';
       }
     }
     navigation.navigate('ChatScreen', {
@@ -437,7 +437,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
   if (!item) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>Item não encontrado</Text>
+        <Text style={styles.errorText}>Pet não encontrado</Text>
       </View>
     );
   }

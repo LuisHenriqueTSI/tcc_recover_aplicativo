@@ -280,7 +280,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     return (
       <View style={styles.container}>
         <Card style={styles.messageCard}>
-          <Text style={styles.messageText}>Faça login para registrar itens</Text>
+          <Text style={styles.messageText}>Faça login para registrar um pet</Text>
           <Button
             title="Ir para Login"
             onPress={() => navigation.navigate('Login')}
@@ -442,7 +442,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     setError('');
 
     if (!itemType) {
-      setError('Selecione um tipo de item');
+      setError('Selecione o tipo do pet');
       return false;
     }
 
@@ -631,7 +631,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           }
         }
 
-        Alert.alert('Sucesso', 'Item atualizado com sucesso!', [
+        Alert.alert('Sucesso', 'Pet atualizado com sucesso!', [
           {
             text: 'OK',
             onPress: () => {
@@ -658,7 +658,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         }
 
         // Sempre mostrar mensagem de sucesso e redirecionar
-        Alert.alert('Sucesso', 'Item registrado com sucesso!', [
+        Alert.alert('Sucesso', 'Pet registrado com sucesso!', [
           {
             text: 'Ir para Home',
             onPress: () => {
@@ -683,8 +683,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
               // Se for item perdido, mostrar modal após redirecionar
               if (status === 'lost') {
                 setTimeout(() => {
-                  setFoundModalTitle('Você encontrou seu item?');
-                  setFoundModalMessage('Você acabou de registrar que perdeu um item. Caso você encontre, pode excluir a publicação. Você já encontrou seu item?');
+                  setFoundModalTitle('Você encontrou seu pet?');
+                  setFoundModalMessage('Você acabou de registrar que perdeu um pet. Caso encontre, pode excluir a publicação. Você já encontrou seu pet?');
                   setFoundModalItemId(resultItem.id);
                   setFoundModalVisible(true);
                 }, 1000);
@@ -774,7 +774,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </Modal>
       }
     } catch (err) {
-      const errorMsg = err.message || 'Erro ao registrar item';
+      const errorMsg = err.message || 'Erro ao registrar pet';
       console.error('Erro ao registrar:', err);
       setError(errorMsg);
       
@@ -824,7 +824,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     });
                   }
                   
-                  Alert.alert('Sucesso', 'Item registrado sem fotos!', [
+                  Alert.alert('Sucesso', 'Pet registrado sem fotos!', [
                     {
                       text: 'Ir para Home',
                       onPress: () => {
@@ -849,7 +849,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     },
                   ]);
                 } catch (retryErr) {
-                  setError(retryErr.message || 'Erro ao registrar item');
+                  setError(retryErr.message || 'Erro ao registrar pet');
                   setLoading(false);
                 }
               },
@@ -871,10 +871,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
       return (
         <ScrollView style={styles.container}>
           <View style={styles.header}>
-            <Text style={styles.title}>Editar Item</Text>
+            <Text style={styles.title}>Editar Pet</Text>
             <Text style={styles.subtitle}>Tipo: {ITEM_TYPES[normalized]?.label || normalized || editItem.category}</Text>
             <Text style={{ color: '#DC2626', marginTop: 16, fontWeight: 'bold' }}>
-              Não é possível alterar o tipo do item após a publicação. Para mudar o tipo, exclua e crie um novo item.
+              Não é possível alterar os dados principais do pet após a publicação. Para corrigir tudo, exclua e crie uma nova publicação.
             </Text>
           </View>
           <Button title="Avançar" onPress={() => {
@@ -925,7 +925,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     );
   }
 
-  // Step 2: Detalhes do Item
+  // Step 2: Detalhes do pet
   if (step === 2) {
     const config = ITEM_TYPES[itemType];
     if (!config) {
@@ -937,8 +937,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
       return (
         <ScrollView style={styles.container}>
           <Card style={styles.card}>
-            <Text style={styles.title}>Erro ao carregar tipo de item</Text>
-            <Text>Por favor, selecione o tipo de item novamente.</Text>
+            <Text style={styles.title}>Erro ao carregar o pet</Text>
+            <Text>Por favor, tente iniciar o cadastro do pet novamente.</Text>
             <Button title="Voltar" onPress={() => {
               setItemType(null);
               setStep(1);

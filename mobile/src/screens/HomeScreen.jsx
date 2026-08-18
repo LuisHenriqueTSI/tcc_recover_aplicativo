@@ -417,7 +417,7 @@ const HomeScreen = ({ navigation, route }) => {
     // Define mensagem automática
     let autoMessage = '';
     if (itemStatus === 'lost') {
-      autoMessage = 'Oi, eu achei seu item';
+      autoMessage = 'Oi, eu achei seu pet';
     } else {
       autoMessage = 'Oi, você encontrou meu item?';
     }
@@ -525,10 +525,21 @@ const HomeScreen = ({ navigation, route }) => {
       setFilteredItems(items);
       return;
     }
-    const filtered = items.filter(item =>
-      (item.title && item.title.toLowerCase().includes(search)) ||
-      (item.description && item.description.toLowerCase().includes(search))
-    );
+    const filtered = items.filter(item => {
+      const extraFields = item.extra_fields || {};
+      const searchableFields = [
+        item.title,
+        item.description,
+        item.species,
+        extraFields.species,
+        extraFields.breed,
+        extraFields.animal_name,
+        item.city,
+        item.state,
+        item.neighborhood,
+      ];
+      return searchableFields.some(value => String(value || '').toLowerCase().includes(search));
+    });
     setFilteredItems(filtered);
   }, [searchTerm, items]);
 
@@ -546,7 +557,7 @@ const HomeScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       )}
       {/* App Bar ajustada: filtro de localidade ao lado da busca */}
-      <View style={{ backgroundColor: '#4F46E5', paddingTop: 56, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#4F46E5' }}>
+      <View style={{ backgroundColor: '#4F46E5', paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#4F46E5' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
             <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22, marginBottom: 2 }}>Recover</Text>
@@ -661,17 +672,20 @@ const HomeScreen = ({ navigation, route }) => {
         </Modal>
       </View>
 
-      {/* Barra de pesquisa acima dos filtros */}
+      {/* Busca de pets acima dos filtros */}
       <View style={{ marginTop: 12, marginHorizontal: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 16, height: 44 }}>
-          <MaterialIcons name="search" size={22} color="#4F46E5" style={{ marginRight: 8 }} />
+        <Text style={{ color: '#1E1B4B', fontSize: 14, fontWeight: '800', marginBottom: 7 }}>
+          Encontre um pet perdido ou encontrado
+        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 2, borderColor: '#312E81', paddingHorizontal: 14, height: 48, shadowColor: '#312E81', shadowOpacity: 0.12, shadowRadius: 6, elevation: 2 }}>
+          <MaterialIcons name="search" size={23} color="#312E81" style={{ marginRight: 8 }} />
           <Input
-            placeholder="Buscar itens perdidos ou encontrados."
+            placeholder="Nome, raça, espécie ou cidade..."
             value={searchTerm}
             onChangeText={setSearchTerm}
-            style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, fontSize: 16, color: '#222', paddingVertical: 0, paddingHorizontal: 0 }}
-            textStyle={{ fontSize: 16, color: '#222' }}
-            placeholderTextColor="#6B7280"
+            style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, fontSize: 16, color: '#111827', paddingVertical: 0, paddingHorizontal: 0 }}
+            textStyle={{ fontSize: 16, color: '#111827' }}
+            placeholderTextColor="#475569"
           />
         </View>
       </View>
@@ -851,12 +865,12 @@ const HomeScreen = ({ navigation, route }) => {
             activeOpacity={0.85}
           >
             <MaterialIcons name="person" size={14} color={filters.showMyItems ? '#fff' : '#1F2937'} style={{ marginRight: 4 }} />
-            <Text style={[styles.filterChipText, filters.showMyItems && styles.filterChipTextActive]}>Meus Itens</Text>
+            <Text style={[styles.filterChipText, filters.showMyItems && styles.filterChipTextActive]}>Meus Pets</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {/* Items List */}
+      {/* Lista de pets */}
       {showAdvancedFilters && (
         <View style={{ flexDirection: 'column', paddingHorizontal: 16, marginBottom: 8 }}>
           <Text style={{ fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 }}>Tipo de animal</Text>
@@ -899,7 +913,7 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
         </View>
       )}
-      {/* Quantidade de itens encontrados */}
+      {/* Quantidade de pets encontrados */}
       <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
         <Text style={{ color: '#6B7280', fontSize: 15 }}>
           {String(filteredItems.filter(item => {
@@ -907,7 +921,7 @@ const HomeScreen = ({ navigation, route }) => {
               ? true
               : String(item.species || '').toLowerCase().includes(String(advancedFilters.animalType).toLowerCase());
             return (advancedFilters.category === 'all' || item.category === advancedFilters.category) && matchesAnimalType;
-          }).length) + ' itens encontrados'}
+          }).length) + ' pets encontrados'}
         </Text>
       </View>
       <FlatList
@@ -928,7 +942,7 @@ const HomeScreen = ({ navigation, route }) => {
             onPress={() => {
               if (!user) {
                 // Corrigido: nunca retorna alert() no JSX, apenas executa efeito colateral
-                Alert.alert('Atenção', 'Faça login para ver detalhes do item');
+                Alert.alert('Atenção', 'Faça login para ver os detalhes do pet');
                 navigation.navigate('Login', {
                   redirectAfterLogin: null,
                 });
@@ -951,7 +965,7 @@ const HomeScreen = ({ navigation, route }) => {
         }
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Nenhum item encontrado</Text>
+            <Text style={styles.emptyText}>Nenhum pet encontrado</Text>
           </View>
         )}
       />
