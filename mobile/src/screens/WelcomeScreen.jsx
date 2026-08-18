@@ -54,7 +54,7 @@ const WelcomeScreen = ({ navigation }) => {
       <View style={styles.heroSection}>
         {/* <Text style={styles.heroTitle}>Bem-vindo ao RECOVER</Text> */}
         <Text style={styles.heroDescription}>
-          Ajudamos pessoas a encontrar itens perdidos e conectar quem achou com quem procura
+          Ajudamos pessoas a encontrar pets perdidos e conectar quem achou com quem procura
         </Text>
       </View>
 

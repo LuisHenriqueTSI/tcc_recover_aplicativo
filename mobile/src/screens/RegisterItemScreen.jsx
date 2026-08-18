@@ -21,7 +21,33 @@ import Input from '../components/Input';
 import { states, citiesByState, neighborhoodsByCity } from '../lib/br-locations';
 import { Picker } from '@react-native-picker/picker';
 import Card from '../components/Card';
-import { analyzeItemWithVision } from '../services/aiItemSuggestions';
+import { analyzeItemWithVision, validatePetPhoto } from '../services/aiItemSuggestions';
+
+const PET_SPECIES_OPTIONS = [
+  { label: 'Selecione a espécie', value: '' },
+  { label: 'Cachorro', value: 'Cachorro' },
+  { label: 'Gato', value: 'Gato' },
+  { label: 'Bovino', value: 'Bovino' },
+  { label: 'Ave', value: 'Ave' },
+  { label: 'Cavalo', value: 'Cavalo' },
+  { label: 'Outro', value: 'Outro' },
+];
+
+const normalizeSpeciesValue = (value) => {
+  if (value === null || value === undefined) return '';
+  const raw = String(value).trim();
+  if (!raw) return '';
+
+  const lower = raw.toLowerCase();
+  if (lower.includes('cachor')) return 'Cachorro';
+  if (lower.includes('gato') || lower.includes('cat')) return 'Gato';
+  if (lower.includes('bovin') || lower.includes('vaca') || lower.includes('boi')) return 'Bovino';
+  if (lower.includes('ave') || lower.includes('pássaro') || lower.includes('bird')) return 'Ave';
+  if (lower.includes('cavalo') || lower.includes('horse')) return 'Cavalo';
+  if (lower.includes('outro') || lower.includes('other')) return 'Outro';
+
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+};
 
 const ITEM_TYPES = {
   animal: {
@@ -162,8 +188,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
     if (ITEM_TYPES['outro']) return 'outro';
     return null;
   }
-  const initialType = normalizeCategory(route?.params?.itemType || route?.params?.category || editItem?.category);
-  const [step, setStep] = useState(editItem || initialType ? 2 : 1);
+  const initialType = normalizeCategory(route?.params?.itemType || route?.params?.category || editItem?.category) || 'animal';
+  const [step, setStep] = useState(2);
   const [itemType, setItemType] = useState(initialType);
   const [status, setStatus] = useState(editItem?.status || 'lost');
   const [title, setTitle] = useState(editItem?.title || '');
@@ -275,6 +301,26 @@ const RegisterItemScreen = ({ navigation, route }) => {
     setShowDatePicker(false);
   };
 
+  const buildAutoTitle = () => {
+    if (itemType !== 'animal') {
+      return 'Animal';
+    }
+
+    const species = normalizeSpeciesValue(animalSpecies) || 'Animal';
+    const verb = status === 'lost' ? 'perdido' : 'encontrado';
+
+    const parts = [species, verb];
+
+    if (color && color.trim()) {
+      parts.push(color.trim());
+    }
+
+    const location = neighborhood || city || 'na região';
+    parts.push(`em ${location.trim()}`);
+
+    return parts.join(' ');
+  };
+
   const formatDateDisplay = (dateString) => {
     const date = new Date(dateString + 'T00:00:00');
     return date.toLocaleDateString('pt-BR');
@@ -302,11 +348,27 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
       if (!result.canceled && result.assets) {
         console.log('[pickImage] Selected photos:', result.assets.length);
-        const newPhotos = result.assets.map(asset => ({
-          uri: asset.uri,
-          type: asset.type || 'image/jpeg',
-          name: asset.fileName || asset.uri.split('/').pop(),
-        }));
+        const newPhotos = [];
+
+        for (const asset of result.assets) {
+          const photo = {
+            uri: asset.uri,
+            type: asset.type || 'image/jpeg',
+            name: asset.fileName || asset.uri.split('/').pop(),
+          };
+
+          const validation = await validatePetPhoto({ imageUri: photo.uri });
+          if (!validation.isPet) {
+            Alert.alert(
+              'Foto não permitida',
+              'Não foi possível validar essa imagem. Tente enviar uma foto mais nítida, bem iluminada e com o animal visível, como um cão, gato, bovino ou outro animal.'
+            );
+            return;
+          }
+
+          newPhotos.push(photo);
+        }
+
         setPhotos([...photos, ...newPhotos]);
         Alert.alert('Sucesso', `${newPhotos.length} foto(s) adicionada(s)`);
       }
@@ -332,6 +394,14 @@ const RegisterItemScreen = ({ navigation, route }) => {
       setAiLoading(true);
       setError('');
       const primaryPhoto = photos[0];
+      const petValidation = await validatePetPhoto({ imageUri: primaryPhoto.uri });
+      if (!petValidation.isPet) {
+        Alert.alert(
+          'Foto não permitida',
+          'Não foi possível validar essa imagem. Envie uma foto mais nítida e com o animal bem visível, em boa iluminação, para continuar.'
+        );
+        return;
+      }
       const suggestions = await analyzeItemWithVision({
         imageUri: primaryPhoto.uri,
         itemType,
@@ -342,7 +412,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
       if (itemType === 'animal') {
         if (suggestions.animal_name) setAnimalName(suggestions.animal_name);
-        if (suggestions.species) setAnimalSpecies(suggestions.species);
+        if (suggestions.species) setAnimalSpecies(normalizeSpeciesValue(suggestions.species));
         if (suggestions.breed) setAnimalBreed(suggestions.breed);
         if (suggestions.size) setAnimalSize(suggestions.size);
         if (suggestions.age) setAnimalAge(suggestions.age);
@@ -373,6 +443,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
     if (!itemType) {
       setError('Selecione um tipo de item');
+      return false;
+    }
+
+    if (itemType === 'animal' && (!animalSpecies || !animalSpecies.trim())) {
+      setError('Selecione a espécie do animal');
       return false;
     }
 
@@ -418,22 +493,45 @@ const RegisterItemScreen = ({ navigation, route }) => {
     return true;
   };
 
+  const goToHomeAfterPublish = () => {
+    try {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainApp', params: { screen: 'HomeTab' } }],
+      });
+    } catch (error) {
+      console.warn('[RegisterItem] Falha ao resetar rota após publicar:', error.message);
+      navigation.goBack();
+    }
+  };
+
   const handlePublish = async () => {
     if (!validateFields()) return;
+
+    if (photos.length > 0) {
+      const validation = await validatePetPhoto({ imageUri: photos[0].uri });
+      if (!validation.isPet) {
+        setError('A imagem precisa ser de um animal visível.');
+        Alert.alert(
+          'Foto não permitida',
+          'Não foi possível validar essa imagem. Tente enviar uma foto mais nítida, com o animal bem visível e em boa iluminação.'
+        );
+        return;
+      }
+    }
 
     setLoading(true);
 
     try {
-      // Definir corretamente o título para animal
-      let currentTitle = itemType === 'animal' ? animalName : title;
-      // Se title estiver vazio, garantir valor padrão para evitar erro no banco
+      // Título automático local, sem IA e sem consumo de crédito.
+      let currentTitle = itemType === 'animal' ? (animalName || buildAutoTitle()) : (title || buildAutoTitle());
       if (!currentTitle || currentTitle.trim() === '') {
-        currentTitle = 'Sem título';
+        currentTitle = buildAutoTitle() || 'Animal';
       }
       // Em modo edição, usar dados antigos se não foram modificados
       const toNull = v => (typeof v === 'string' && v.trim() === '' ? null : v);
       const itemData = {
-        title: toNull(currentTitle) || editItem?.title || 'Sem título',
+        title: toNull(currentTitle) || editItem?.title || 'Animal',
         description: toNull(description) || editItem?.description,
         state: toNull(state) || editItem?.state,
         city: toNull(city) || editItem?.city,
@@ -581,7 +679,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               setRewardDescription('');
               setOfferReward(false);
               setError('');
-              navigation.navigate('MainApp', { screen: 'HomeTab', params: { refresh: true } });
+              goToHomeAfterPublish();
               // Se for item perdido, mostrar modal após redirecionar
               if (status === 'lost') {
                 setTimeout(() => {
@@ -619,7 +717,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
             setRewardDescription('');
             setOfferReward(false);
             setError('');
-            navigation.navigate('MainApp', { screen: 'HomeTab', params: { refresh: true } });
+            goToHomeAfterPublish();
           } catch (err) {
             Alert.alert('Erro', 'Não foi possível excluir a publicação. Tente novamente.');
           } finally {
@@ -660,7 +758,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     setRewardDescription('');
                     setOfferReward(false);
                     setError('');
-                    navigation.navigate('MainApp', { screen: 'HomeTab', params: { refresh: true } });
+                    goToHomeAfterPublish();
                   }}
                   style={{ flex: 1, marginRight: 8 }}
                 />
@@ -746,7 +844,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                         setRewardDescription('');
                         setOfferReward(false);
                         setError('');
-                        navigation.navigate('HomeTab', { refresh: true });
+                        goToHomeAfterPublish();
                       },
                     },
                   ]);
@@ -790,59 +888,17 @@ const RegisterItemScreen = ({ navigation, route }) => {
     const typeOptions = [
       {
         key: 'animal',
-        label: 'Animal',
+        label: 'Pet',
         desc: 'Cães, gatos, aves e outros animais',
         color: '#F3E8FF',
         icon: '🐾'
-      },
-      {
-        key: 'object',
-        label: 'Objeto',
-        desc: 'Celulares, carteiras, chaves, etc.',
-        color: '#E0E7FF',
-        icon: '📦'
-      },
-      {
-        key: 'document',
-        label: 'Documento',
-        desc: 'RG, CPF, CNH, cartões, etc.',
-        color: '#FEF3C7',
-        icon: '📄'
-      },
-      {
-        key: 'electronics',
-        label: 'Eletrônico',
-        desc: 'Celulares, notebooks, fones, etc.',
-        color: '#DBF4FF',
-        icon: '💻'
-      },
-      {
-        key: 'jewelry',
-        label: 'Joia/Acessório',
-        desc: 'Anéis, colares, relógios, etc.',
-        color: '#FFF1F2',
-        icon: '💍'
-      },
-      {
-        key: 'clothing',
-        label: 'Roupa',
-        desc: 'Jaquetas, calças, bonés, etc.',
-        color: '#ECFDF5',
-        icon: '👕'
-      },
-      {
-        key: 'outro',
-        label: 'Outro',
-        desc: 'Outros itens não listados',
-        color: '#FEE2E2',
-        icon: '🧩'
       }
     ];
     return (
       <ScrollView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
         <View style={{ alignItems: 'center', marginTop: 32, marginBottom: 12 }}>
-          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>Registrar Item</Text>
-          <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 16 }}>Primeiro, selecione a categoria do item</Text>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>Registrar Pet</Text>
+          <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 16 }}>Seu pet perdido ou encontrado</Text>
         </View>
         <View style={{ gap: 18, marginHorizontal: 12, marginBottom: 32 }}>
           {typeOptions.map((opt) => (
@@ -986,13 +1042,25 @@ const RegisterItemScreen = ({ navigation, route }) => {
               )}
 
               {/* Campos detalhados do animal */}
-              <Input
-                label="Espécie *"
-                placeholder="Ex: Cachorro, Gato"
-                value={animalSpecies}
-                onChangeText={setAnimalSpecies}
-                style={styles.input}
-              />
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Espécie *</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={animalSpecies}
+                    onValueChange={(value) => setAnimalSpecies(value)}
+                    style={styles.picker}
+                    dropdownIconColor="#4B5563"
+                  >
+                    {PET_SPECIES_OPTIONS.map((option) => (
+                      <Picker.Item
+                        key={option.value || 'empty'}
+                        label={option.label}
+                        value={option.value}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
               <Input
                 label="Cor *"
                 placeholder="Ex: Dourado"
@@ -1163,14 +1231,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
             )}
 
             {/* Campos dinâmicos após fotos */}
-            <Input
-              key="title"
-              label={config.fieldLabels.title ? config.fieldLabels.title + (config.fields.required.includes('title') ? ' *' : '') : 'Título'}
-              placeholder={config.placeholders.title || 'Digite o título do item'}
-              value={title}
-              onChangeText={setTitle}
-              style={styles.input}
-            />
             {config.fields.required.concat(config.fields.optional)
               .filter(field => field !== 'title' && config.fieldLabels[field] && config.placeholders[field])
               .map((field) => {

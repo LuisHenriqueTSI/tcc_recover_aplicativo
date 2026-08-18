@@ -44,7 +44,9 @@ const getPrompt = (itemType = 'object', status = 'lost') => {
               ? 'outro item'
               : 'objeto';
 
-  return `Analise a imagem e devolva APENAS um JSON válido, sem markdown. O item é um ${categoryLabel} e a situação é ${status === 'found' ? 'encontrado' : 'perdido'}. Responda com os campos mais úteis do formulário. IMPORTANTE: toda a resposta deve estar em português do Brasil. Nunca use termos em inglês em nenhum valor de texto. Não use palavras como "black", "white", "brown", "dog", "cat", "red" etc.; converta tudo para português. Para animal: animal_name, species, breed, color, size, age, collar, description. Para outros: title, description, brand, color, serial_number. Se não tiver certeza, use respostas curtas e realistas, sempre em português do Brasil. Formato exato: {"title":"...","description":"...","brand":"...","color":"...","serial_number":"...","animal_name":"...","species":"...","breed":"...","size":"...","age":"...","collar":"..."}`;
+  const statusLabel = status === 'found' ? 'encontrado' : 'perdido';
+
+  return `Analise a imagem e devolva APENAS um JSON válido, sem markdown. O item é um ${categoryLabel} e a situação é ${statusLabel}. Responda com os campos mais úteis do formulário. Regras estritas: 1) Responda somente em português do Brasil. 2) Não use termos em inglês. 3) Para animal, preencha os campos com maior atenção: species, breed, size, age, color e description. 4) Se a raça for claramente visível, chame de breed com o nome correto. Se não for possível identificar, coloque "Não identificada" no breed. 5) Para size, escolha apenas: pequeno, médio, grande ou gigante. 6) Para age, escolha apenas: filhote, adulto, idoso ou não informado. 7) Para color, use a cor principal do animal; se for multicolorido, descreva a mistura mais visível. 8) A description deve ser uma frase natural, mas curta, unindo as informações principais em uma linha. Exemplos: "Cachorro de porte médio, adulto, raça não identificada, pelagem marrom, ${statusLabel}."; "Gato de porte pequeno, filhote, raça não identificada, pelagem preta e branca, ${statusLabel}."; "Animal de porte grande, adulto, pelagem bege, ${statusLabel}." 9) A descrição deve soar natural, como uma observação curta do animal, e não como lista técnica. 10) Não descreva fundo, rua, terreno, objetos, pessoas ou cenário. 11) Para outros itens, siga o padrão normal. Formato exato: {"title":"...","description":"...","brand":"...","color":"","serial_number":"...","animal_name":"...","species":"...","breed":"...","size":"...","age":"...","collar":"..."}`;
 };
 
 const guessMimeType = (uri = '') => {
@@ -126,6 +128,132 @@ const getFallbackSuggestions = ({ itemType = 'object', status = 'lost' }) => {
     collar: '',
     source: 'fallback',
   };
+};
+
+const getPetValidationPrompt = () => `Analise a imagem e devolva APENAS um JSON válido, sem markdown. Verifique se a imagem mostra um ANIMAL visível, incluindo cachorros, gatos, bovinos, cavalos, aves e outros animais. Responda em português do Brasil. Regras: 1) Só responda is_pet false quando a imagem estiver claramente mostrando algo que não é animal, como pessoa, objeto, documento, cenário, prédio, comida, rua vazia, ou outra coisa sem animal visível. 2) Se houver qualquer chance real de ser um animal, mesmo distante, parcial ou em baixa qualidade, responda is_pet true. 3) Não rejeite por dúvida. 4) Responda somente neste formato exato: {"is_pet": true, "pet_type": "bovino", "confidence": 75}`;
+
+export const validatePetPhoto = async ({ imageUri }) => {
+  if (!imageUri) {
+    throw new Error('Selecione uma foto para validar antes de publicar.');
+  }
+
+  const canUseOpenRouter = aiProvider === 'openrouter' && openRouterApiKey;
+  const canUseGemini = aiProvider === 'gemini' && apiKey;
+
+  if (!canUseOpenRouter && !canUseGemini) {
+    console.warn('[validatePetPhoto] IA indisponível; aceitando imagem para não bloquear envio válido.');
+    return { isPet: true, petType: 'animal', confidence: 0, source: 'manual-fallback' };
+  }
+
+  let base64Image = '';
+  try {
+    const manipulated = await ImageManipulator.manipulateAsync(
+      imageUri,
+      [{ resize: { width: 1200 } }],
+      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+    );
+
+    base64Image = await FileSystem.readAsStringAsync(manipulated.uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+  } catch (error) {
+    console.error('[validatePetPhoto] Falha ao preparar imagem:', error);
+    return { isPet: true, petType: 'animal', confidence: 0, source: 'manual-fallback' };
+  }
+
+  try {
+    const requestBody = aiProvider === 'openrouter'
+      ? {
+          model: openRouterModel,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: getPetValidationPrompt() },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:${guessMimeType(imageUri)};base64,${base64Image}`,
+                  },
+                },
+              ],
+            },
+          ],
+          response_format: { type: 'json_object' },
+        }
+      : {
+          contents: [
+            {
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: guessMimeType(imageUri),
+                    data: base64Image,
+                  },
+                },
+                {
+                  text: getPetValidationPrompt(),
+                },
+              ],
+            },
+          ],
+        };
+
+    const response = await fetch(
+      aiProvider === 'openrouter'
+        ? 'https://openrouter.ai/api/v1/chat/completions'
+        : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: aiProvider === 'openrouter'
+          ? {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${openRouterApiKey}`,
+              'HTTP-Referer': 'https://recover-app.local',
+              'X-Title': 'RECOVER App',
+            }
+          : {
+              'Content-Type': 'application/json',
+            },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.warn('[validatePetPhoto] Falha ao validar pet com IA:', errorText);
+      return { isPet: true, petType: 'animal', confidence: 0, source: 'manual-fallback' };
+    }
+
+    const payload = await response.json();
+    const text = aiProvider === 'openrouter'
+      ? payload?.choices?.[0]?.message?.content || ''
+      : payload?.candidates?.[0]?.content?.parts?.map((part) => part.text).join('') || '';
+
+    const parsed = extractJson(text) || {};
+    const hasExplicitNegative = parsed.is_pet === false || parsed.is_animal === false;
+    const hasExplicitPositive = parsed.is_pet === true || parsed.is_animal === true;
+    const confidence = Number(parsed.confidence) || 0;
+    const responseText = String(text || '').toLowerCase();
+    const hasAnimalSignal = /(cachorro|gato|bovino|cavalo|ave|animal|pet|dog|cat|cow|horse|bird|mammal)/i.test(responseText);
+    const hasClearNonAnimalSignal = /(pessoa|humano|objeto|documento|prédio|predio|comida|rua|vazia|sem animal|nenhum animal)/i.test(responseText);
+
+    const isPet = hasExplicitNegative
+      ? false
+      : hasExplicitPositive
+        ? true
+        : (confidence >= 60 && hasAnimalSignal && !hasClearNonAnimalSignal) || (hasAnimalSignal && !hasClearNonAnimalSignal);
+
+    return {
+      isPet,
+      petType: typeof parsed.pet_type === 'string' ? parsed.pet_type : (typeof parsed.animal_type === 'string' ? parsed.animal_type : 'animal'),
+      confidence,
+      source: aiProvider === 'openrouter' ? 'openrouter' : 'gemini',
+    };
+  } catch (error) {
+    console.error('[validatePetPhoto] Erro na validação de foto:', error);
+    return { isPet: false, petType: 'unknown', confidence: 0, source: 'manual-fallback' };
+  }
 };
 
 export const analyzeItemWithVision = async ({ imageUri, itemType = 'object', status = 'lost' }) => {

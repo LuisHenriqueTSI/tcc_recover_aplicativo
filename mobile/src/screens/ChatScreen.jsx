@@ -63,36 +63,49 @@ const ChatScreen = (props) => {
 
 
   // Real-time subscription: nunca ativa loading
+  const chatChannelRef = useRef(null);
   useEffect(() => {
-    let channel;
-    if (user?.id && otherId && !channel) {
-      channel = supabase.channel('chat-messages-' + user.id + '-' + otherId)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'messages',
-            filter: `item_id=eq.${itemId}`,
-          },
-          (payload) => {
-            const msg = payload.new;
-            if (
-              (msg.sender_id === user.id && msg.receiver_id === otherId) ||
-              (msg.sender_id === otherId && msg.receiver_id === user.id)
-            ) {
-              setMessages((prev) => {
-                if (prev.some(m => m.id === msg.id)) return prev;
-                return [...prev, msg].sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at));
-              });
-              if (msg.receiver_id === user.id) markMessagesAsRead(user.id, otherId);
-            }
+    if (!user?.id || !otherId || !itemId) return;
+
+    const cleanupChannel = () => {
+      if (chatChannelRef.current) {
+        supabase.removeChannel(chatChannelRef.current);
+        chatChannelRef.current = null;
+      }
+    };
+
+    cleanupChannel();
+
+    const channel = supabase.channel(`chat-messages-${user.id}-${otherId}-${itemId}`);
+    chatChannelRef.current = channel;
+
+    channel
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `item_id=eq.${itemId}`,
+        },
+        (payload) => {
+          const msg = payload.new;
+          if (
+            (msg.sender_id === user.id && msg.receiver_id === otherId) ||
+            (msg.sender_id === otherId && msg.receiver_id === user.id)
+          ) {
+            setMessages((prev) => {
+              if (prev.some(m => m.id === msg.id)) return prev;
+              return [...prev, msg].sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at));
+            });
+            if (msg.receiver_id === user.id) markMessagesAsRead(user.id, otherId);
           }
-        )
-        .subscribe();
-    }
+        }
+      )
+      .subscribe();
+
     return () => {
-      if (channel) supabase.removeChannel(channel);
+      cleanupChannel();
     };
     // eslint-disable-next-line
   }, [user?.id, otherId, itemId]);

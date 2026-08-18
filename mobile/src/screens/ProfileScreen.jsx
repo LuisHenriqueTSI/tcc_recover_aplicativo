@@ -1,51 +1,43 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Image, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
-// import { useNavigation } from '@react-navigation/native';
 
-const statIcons = {
-  Publicados: 'package',
-  Devolvidos: 'check-circle',
-  Ativos: 'clock',
-};
-
-const menuItems = [
-  { label: 'Minhas Publicações', icon: 'package', route: 'MeusAnuncios' },
-  { label: 'Configurações', icon: 'settings', route: 'Config' },
-  { label: 'Ajuda e Suporte', icon: 'help-circle', route: 'AjudaSuporte' },
+const secondaryLinks = [
+  { label: 'Configurações', description: 'Preferências e segurança', icon: 'settings', route: 'Config' },
+  { label: 'Ajuda e suporte', description: 'Perguntas e contato', icon: 'help-circle', route: 'AjudaSuporte' },
 ];
-
 
 const ProfileScreen = ({ navigation }) => {
   const { userProfile, user, signOut, refreshProfile } = useAuth();
-  const [userItems, setUserItems] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
+  const [userItems, setUserItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(userProfile?.avatar_url || userProfile?.avatarUrl || null);
 
-  React.useEffect(() => {
-    (async () => {
+  useEffect(() => {
+    const loadProfileData = async () => {
       setLoading(true);
       if (user) {
         await refreshProfile();
         const items = await itemsService.getUserItems(user.id);
-        setUserItems(items);
+        setUserItems(items || []);
       }
       setLoading(false);
-    })();
-  }, []);
+    };
+    loadProfileData();
+  }, [user, refreshProfile]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setAvatarUrl(userProfile?.avatar_url || userProfile?.avatarUrl || null);
   }, [userProfile]);
 
   const handlePickAvatar = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      alert('Permissão para acessar a galeria é necessária!');
+      Alert.alert('Permissão necessária', 'Permita o acesso à galeria para escolher uma foto de perfil.');
       return;
     }
     const pickerResult = await ImagePicker.launchImageLibraryAsync({
@@ -54,287 +46,129 @@ const ProfileScreen = ({ navigation }) => {
       aspect: [1, 1],
       quality: 0.7,
     });
-    if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets[0]?.uri) {
+    if (!pickerResult.canceled && pickerResult.assets?.[0]?.uri) {
       setUploading(true);
       try {
         const { uploadAvatar, updateProfile } = await import('../services/user');
         const url = await uploadAvatar(user.id, pickerResult.assets[0].uri);
-        // Atualiza o campo avatar_path no perfil para garantir consistência com getUserById
         const ext = url.split('.').pop().split('?')[0];
-        const avatarPath = `${user.id}/avatar.${ext}`;
-        await updateProfile(user.id, { avatar_path: avatarPath });
+        await updateProfile(user.id, { avatar_path: `${user.id}/avatar.${ext}` });
         setAvatarUrl(url);
         await refreshProfile();
-      } catch (e) {
-        alert('Erro ao atualizar foto de perfil.');
+      } catch (error) {
+        Alert.alert('Não foi possível atualizar', 'Tente escolher outra foto.');
       } finally {
         setUploading(false);
       }
     }
   };
 
-  const stats = [
-    { label: 'Publicados', value: userItems.length, icon: 'package' },
-    { label: 'Devolvidos', value: userItems.filter(i => i.resolved).length, icon: 'check-circle' },
-    { label: 'Ativos', value: userItems.filter(i => !i.resolved).length, icon: 'clock' },
-  ];
-
   if (loading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#4F46E5" />
-      </View>
-    );
+    return <View style={styles.loading}><ActivityIndicator size="large" color="#4F46E5" /><Text style={styles.loadingText}>Abrindo seu perfil...</Text></View>;
   }
 
+  const initial = userProfile?.name?.[0]?.toUpperCase() || 'U';
+  const firstName = userProfile?.name?.split(' ')[0] || 'Tutor';
+  const location = [userProfile?.city, userProfile?.state].filter(Boolean).join(', ');
+  const publishedCount = userItems.length;
+  const returnedCount = userItems.filter(item => item.resolved).length;
+  const activeCount = userItems.filter(item => !item.resolved).length;
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
-      {/* Botão editar no topo direito */}
-      <View style={{ position: 'relative' }}>
-        {/* Avatar centralizado e email */}
-        <View style={styles.profileTopContainer}>
-          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-            <View style={styles.avatarTouchable}>
-              {avatarUrl ? (
-                <Image source={{ uri: avatarUrl }} style={styles.avatarImg} />
-              ) : (
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>{userProfile?.name?.[0]?.toUpperCase() || 'U'}</Text>
-                </View>
-              )}
-              {uploading && <ActivityIndicator style={{ position: 'absolute', alignSelf: 'center', top: '40%' }} size="small" color="#6366F1" />}
-            </View>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
-            <TouchableOpacity
-              style={{ marginLeft: 8, backgroundColor: '#EEF2FF', borderRadius: 16, padding: 6 }}
-              onPress={() => navigation.navigate('EditProfile')}
-              activeOpacity={0.7}
-            >
-              <Feather name="edit-2" size={16} color="#4F46E5" />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.email}>{userProfile?.email}</Text>
-        </View>
-      </View>
-
-      {/* Stats Cards */}
-      <View style={styles.statsCard}>
-        <View style={styles.statsRow}>
-          {stats.map((stat, idx) => (
-            <View key={stat.label} style={[styles.statCol, idx !== 0 && styles.statColDivider]}> 
-              <View style={styles.statIconCircle}>
-                <Feather name={stat.icon} size={20} color="#4F46E5" />
-              </View>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* Menu Items */}
-      <View style={styles.menuSection}>
-        {menuItems.map((item, idx) => (
-          <TouchableOpacity
-            key={item.label}
-            style={styles.menuItem}
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate(item.route)}
-          >
-            <View style={styles.menuIconCircle}>
-              <Feather name={item.icon} size={20} color="#1F2937" />
-            </View>
-            <Text style={styles.menuLabel}>{item.label}</Text>
-            <Feather name="chevron-right" size={20} color="#9CA3AF" style={{ marginLeft: 'auto' }} />
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <View style={styles.cover}>
+        <View style={styles.coverPattern}><View style={styles.patternCircleOne} /><View style={styles.patternCircleTwo} /></View>
+        <View style={styles.coverTop}><View /><TouchableOpacity onPress={() => navigation.navigate('EditProfile')} style={styles.coverEdit} accessibilityLabel="Editar perfil"><Feather name="edit-2" size={16} color="#4F46E5" /><Text style={styles.coverEditText}>Editar</Text></TouchableOpacity></View>
+        <View style={styles.profileRow}>
+          <TouchableOpacity onPress={handlePickAvatar} disabled={uploading} activeOpacity={0.85} style={styles.avatarButton}>
+            {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatarImage} /> : <View style={styles.avatarFallback}><Text style={styles.avatarInitial}>{initial}</Text></View>}
+            <View style={styles.camera}><Feather name={uploading ? 'loader' : 'camera'} size={13} color="#fff" /></View>
           </TouchableOpacity>
-        ))}
+          <View style={styles.profileCopy}>
+            <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
+            <Text style={styles.email}>{userProfile?.email || user?.email}</Text>
+            {location ? <View style={styles.location}><Feather name="map-pin" size={13} color="#4F46E5" /><Text style={styles.locationText}>{location}</Text></View> : <Text style={styles.locationMissing}>Adicione sua localização</Text>}
+          </View>
+        </View>
       </View>
 
-      {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutBtn} onPress={signOut} activeOpacity={0.8}>
-        <Feather name="log-out" size={20} color="#EF4444" style={{ marginRight: 8 }} />
-        <Text style={styles.logoutText}>Sair da Conta</Text>
+      <View style={styles.welcomeLine}><View><Text style={styles.welcomeTitle}>Olá, {firstName}</Text><Text style={styles.welcomeText}>Aqui você acompanha pets perdidos e encontrados.</Text></View></View>
+
+      <View style={styles.stats}>
+        <View style={styles.stat}><Text style={styles.statValue}>{publishedCount}</Text><Text style={styles.statLabel}>publicações</Text></View>
+        <View style={styles.statDivider} />
+        <View style={styles.stat}><Text style={[styles.statValue, styles.indigoValue]}>{activeCount}</Text><Text style={styles.statLabel}>ativas</Text></View>
+        <View style={styles.statDivider} />
+        <View style={styles.stat}><Text style={[styles.statValue, styles.indigoValue]}>{returnedCount}</Text><Text style={styles.statLabel}>devolvidos</Text></View>
+      </View>
+
+      <TouchableOpacity style={styles.publicationsButton} onPress={() => navigation.navigate('MeusAnuncios')} activeOpacity={0.82}>
+        <View style={styles.publicationsIcon}><Feather name="bookmark" size={20} color="#fff" /></View>
+        <View style={styles.publicationsCopy}><Text style={styles.publicationsTitle}>Minhas publicações</Text><Text style={styles.publicationsText}>Veja seus pets e acompanhe os anúncios</Text></View>
+        <Feather name="arrow-up-right" size={21} color="#fff" />
       </TouchableOpacity>
 
-      {/* App Version removido */}
+      <Text style={styles.sectionTitle}>Mais opções</Text>
+      <View style={styles.links}>
+        {secondaryLinks.map((item, index) => <React.Fragment key={item.route}><TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate(item.route)} activeOpacity={0.75}><View style={styles.linkIcon}><Feather name={item.icon} size={19} color="#4F46E5" /></View><View style={styles.linkCopy}><Text style={styles.linkTitle}>{item.label}</Text><Text style={styles.linkDescription}>{item.description}</Text></View><Feather name="chevron-right" size={19} color="#9CA3AF" /></TouchableOpacity>{index === 0 ? <View style={styles.linkDivider} /> : null}</React.Fragment>)}
+      </View>
+
+      <TouchableOpacity style={styles.logout} onPress={signOut} activeOpacity={0.8}><Feather name="log-out" size={17} color="#B91C1C" /><Text style={styles.logoutText}>Sair da conta</Text></TouchableOpacity>
+      <Text style={styles.footer}>Recover · cuidado que aproxima</Text>
     </ScrollView>
   );
 };
 
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-  },
-  profileTopContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 32,
-    paddingBottom: 24,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    marginBottom: 8,
-  },
-  avatarTouchable: {
-    marginBottom: 12,
-  },
-  avatarImg: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: '#E5E7EB',
-    borderWidth: 2,
-    borderColor: '#E0E7FF',
-  },
-  editBtn: {
-    marginLeft: 12,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: '#E5E7EB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#E0E7FF',
-  },
-  avatarText: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#6366F1',
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 2,
-  },
-  email: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 8,
-  },
-  statsCard: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    marginHorizontal: 20,
-    marginTop: -32,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-    padding: 16,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  statCol: {
-    flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  statColDivider: {
-    borderLeftWidth: 1,
-    borderLeftColor: '#E5E7EB',
-  },
-  statIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#EEF2FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  statValue: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  menuSection: {
-    marginTop: 12,
-    marginHorizontal: 10,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    marginBottom: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  menuIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  menuLabel: {
-    fontSize: 16,
-    color: '#1F2937',
-    fontWeight: '500',
-  },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 10,
-    marginHorizontal: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#FCA5A5',
-    paddingVertical: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  logoutText: {
-    color: '#EF4444',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  version: {
-    textAlign: 'center',
-    color: '#9CA3AF',
-    fontSize: 12,
-    marginTop: 32,
-  },
+  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  content: { paddingBottom: 42 },
+  loading: { flex: 1, backgroundColor: '#F9FAFB', alignItems: 'center', justifyContent: 'center' },
+  loadingText: { color: '#6B7280', fontSize: 13, marginTop: 10 },
+  cover: { backgroundColor: '#EEF2FF', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 22, borderBottomWidth: 1, borderBottomColor: '#C7D2FE', overflow: 'hidden' },
+  coverPattern: { position: 'absolute', right: 22, top: 34, flexDirection: 'row', alignItems: 'center', gap: 9, opacity: 0.8 },
+  patternCircleOne: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#C7D2FE' },
+  patternCircleTwo: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#E0E7FF' },
+  coverTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  coverLabel: { color: '#4F46E5', fontSize: 11, letterSpacing: 1.4, fontWeight: '800' },
+  coverEdit: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 },
+  coverEditText: { color: '#4F46E5', fontSize: 12, fontWeight: '800' },
+  profileRow: { flexDirection: 'row', alignItems: 'center', marginTop: 24 },
+  avatarButton: { position: 'relative', marginRight: 15 },
+  avatarImage: { width: 82, height: 82, borderRadius: 28, borderWidth: 3, borderColor: '#fff' },
+  avatarFallback: { width: 82, height: 82, borderRadius: 28, backgroundColor: '#4F46E5', borderWidth: 3, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  avatarInitial: { color: '#fff', fontSize: 32, fontWeight: '800' },
+  camera: { position: 'absolute', bottom: -3, right: -4, width: 27, height: 27, borderRadius: 10, backgroundColor: '#4F46E5', borderWidth: 2, borderColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
+  profileCopy: { flex: 1, minWidth: 0 },
+  name: { color: '#1F2937', fontSize: 21, fontWeight: '800' },
+  email: { color: '#6B7280', fontSize: 12, marginTop: 4 },
+  location: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
+  locationText: { color: '#4F46E5', fontSize: 12, fontWeight: '700' },
+  locationMissing: { color: '#6B7280', fontSize: 12, marginTop: 8 },
+  welcomeLine: { marginHorizontal: 20, marginTop: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  welcomeTitle: { color: '#1F2937', fontSize: 17, fontWeight: '800' },
+  welcomeText: { color: '#6B7280', fontSize: 12, marginTop: 4 },
+  stats: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 16, marginHorizontal: 20, marginTop: 17, paddingVertical: 14, flexDirection: 'row' },
+  stat: { flex: 1, alignItems: 'center' },
+  statDivider: { width: 1, backgroundColor: '#E5E7EB' },
+  statValue: { color: '#1F2937', fontSize: 23, fontWeight: '800' },
+  indigoValue: { color: '#4F46E5' },
+  statLabel: { color: '#6B7280', fontSize: 11, marginTop: 3 },
+  publicationsButton: { backgroundColor: '#4F46E5', borderRadius: 17, marginHorizontal: 20, marginTop: 17, padding: 14, flexDirection: 'row', alignItems: 'center' },
+  publicationsIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: '#4338CA', alignItems: 'center', justifyContent: 'center', marginRight: 11 },
+  publicationsCopy: { flex: 1 },
+  publicationsTitle: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  publicationsText: { color: '#E0E7FF', fontSize: 11, marginTop: 4 },
+  sectionTitle: { color: '#374151', fontSize: 16, fontWeight: '800', marginHorizontal: 20, marginTop: 27, marginBottom: 10 },
+  links: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 16, marginHorizontal: 20, paddingHorizontal: 14 },
+  linkRow: { minHeight: 68, flexDirection: 'row', alignItems: 'center' },
+  linkIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  linkCopy: { flex: 1 },
+  linkTitle: { color: '#1F2937', fontSize: 14, fontWeight: '800' },
+  linkDescription: { color: '#6B7280', fontSize: 11, marginTop: 3 },
+  linkDivider: { height: 1, backgroundColor: '#F3F4F6', marginLeft: 50 },
+  logout: { height: 48, borderWidth: 1, borderColor: '#FECACA', backgroundColor: '#FEF2F2', borderRadius: 13, marginHorizontal: 20, marginTop: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  logoutText: { color: '#B91C1C', fontSize: 13, fontWeight: '800' },
+  footer: { color: '#9CA3AF', textAlign: 'center', fontSize: 11, marginTop: 15 },
 });
 
 export default ProfileScreen;

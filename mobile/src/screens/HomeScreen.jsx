@@ -40,11 +40,10 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
   // Cores para status e categoria
   const statusColor = item.status === 'lost' ? '#F87171' : '#34D399';
   const statusLabel = item.status === 'lost' ? 'Perdido' : 'Encontrado';
+  const animalLabel = String(item.species || 'Animal').trim() || 'Animal';
   const categoryColors = {
-    animal: { bg: '#E0E7FF', text: '#6366F1', label: 'Animal' },
-    object: { bg: '#FEF3C7', text: '#F59E42', label: 'Objeto' },
-    document: { bg: '#FDE68A', text: '#B45309', label: 'Documento' },
-    other: { bg: '#F3F4F6', text: '#6B7280', label: 'Outro' },
+    animal: { bg: '#E0E7FF', text: '#6366F1', label: animalLabel },
+    other: { bg: '#F3F4F6', text: '#6B7280', label: animalLabel },
   };
   const cat = categoryColors[item.category] || categoryColors.other;
   const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
@@ -144,7 +143,7 @@ const HomeScreen = ({ navigation, route }) => {
       });
       return unsubscribe;
     }, [navigation, userProfile]);
-  const { user, userProfile, refreshProfile, setUserProfile, signOut } = useAuth();
+  const { user, userProfile, isAdmin, refreshProfile, setUserProfile, signOut } = useAuth();
   // Corrige erro: garantir estado do modal de perfil
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   // Localidade do perfil (fixa)
@@ -177,7 +176,8 @@ const HomeScreen = ({ navigation, route }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({
     status: 'all',
-    category: 'all',
+    category: 'animal',
+    animalType: 'all',
     showMyItems: false,
   });
   const [searchTerm, setSearchTerm] = useState('');
@@ -216,7 +216,8 @@ const HomeScreen = ({ navigation, route }) => {
   const [thumbnails, setThumbnails] = useState({});
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState({
-    category: 'all',
+    category: 'animal',
+    animalType: 'all',
   });
 
   const loadItems = async () => {
@@ -249,6 +250,7 @@ const HomeScreen = ({ navigation, route }) => {
         const baseFilters = {};
         if (filters.status !== 'all') baseFilters.status = filters.status;
         if (filters.category !== 'all') baseFilters.category = filters.category;
+        if (filters.animalType && filters.animalType !== 'all') baseFilters.species = filters.animalType;
         if (filters.showMyItems && user) baseFilters.owner_id = user.id;
         // Filtro por estado, cidade e bairro
         if (editState) baseFilters.state = editState;
@@ -323,6 +325,13 @@ const HomeScreen = ({ navigation, route }) => {
 
     if (filters.category !== 'all') {
       filtered = filtered.filter(item => item.category === filters.category);
+    }
+    if (filters.animalType && filters.animalType !== 'all') {
+      filtered = filtered.filter(item => {
+        const species = String(item.species || '').trim().toLowerCase();
+        const selected = String(filters.animalType).trim().toLowerCase();
+        return species === selected || (selected === 'cachorro' && species.includes('cachorro')) || (selected === 'gato' && species.includes('gato')) || (selected === 'bovino' && species.includes('bovino')) || (selected === 'ave' && species.includes('ave')) || (selected === 'cavalo' && species.includes('cavalo')) || (selected === 'outro' && species && !['cachorro', 'gato', 'bovino', 'ave', 'cavalo'].some(type => species.includes(type)));
+      });
     }
 
     if (filters.showMyItems && user) {
@@ -490,8 +499,8 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   const handleSendTestNotification = async () => {
-    if (!user) {
-      Alert.alert('Login Necessário', 'Faça login para testar o envio de notificações.');
+    if (!user || !isAdmin) {
+      Alert.alert('Acesso restrito', 'Apenas administradores podem testar o envio de notificações.');
       return;
     }
 
@@ -567,8 +576,6 @@ const HomeScreen = ({ navigation, route }) => {
               )}
             </TouchableOpacity>
           )}
-          {/* Modal de menu de perfil minimalista */}
-          {/* Perfil/Sair menu inline below profile photo */}
           {user && showProfileMenu && (
             <View style={{ position: 'absolute', top: 48, right: 18, backgroundColor: 'white', borderRadius: 10, elevation: 4, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8, paddingVertical: 8, paddingHorizontal: 16, zIndex: 100 }}>
               <TouchableOpacity
@@ -593,21 +600,7 @@ const HomeScreen = ({ navigation, route }) => {
             </View>
           )}
         </View>
-        {/* Barra de pesquisa única, fundo branco */}
-        <View style={{ marginTop: 16 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 16, height: 44 }}>
-            <MaterialIcons name="search" size={22} color="#4F46E5" style={{ marginRight: 8 }} />
-            <Input
-              placeholder="Buscar itens perdidos ou encontrados."
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-              style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, fontSize: 16, color: '#222', paddingVertical: 0, paddingHorizontal: 0 }}
-              textStyle={{ fontSize: 16, color: '#222' }}
-              placeholderTextColor="#6B7280"
-            />
-          </View>
-        </View>
-        {user && (
+        {isAdmin && (
           <TouchableOpacity
             onPress={handleSendTestNotification}
             style={{ marginTop: 12, backgroundColor: '#fff', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14, alignItems: 'center', borderWidth: 1, borderColor: '#C7D2FE' }}
@@ -666,6 +659,21 @@ const HomeScreen = ({ navigation, route }) => {
             </View>
           </View>
         </Modal>
+      </View>
+
+      {/* Barra de pesquisa acima dos filtros */}
+      <View style={{ marginTop: 12, marginHorizontal: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 16, height: 44 }}>
+          <MaterialIcons name="search" size={22} color="#4F46E5" style={{ marginRight: 8 }} />
+          <Input
+            placeholder="Buscar itens perdidos ou encontrados."
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+            style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, fontSize: 16, color: '#222', paddingVertical: 0, paddingHorizontal: 0 }}
+            textStyle={{ fontSize: 16, color: '#222' }}
+            placeholderTextColor="#6B7280"
+          />
+        </View>
       </View>
 
       {/* Modal de edição de localidade */}
@@ -789,18 +797,14 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
         </View>
       </Modal>
-      {/* Filtro avançado removido conforme solicitado */}
-      {/* Campos duplicados de buscar/local removidos */}
-
       {/* Quick Filters Row */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 8, marginBottom: 16 }}>
-                {/* Filtro avançado: tipo de item */}
-                <TouchableOpacity
-                  style={{ marginRight: 8, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8, backgroundColor: showAdvancedFilters ? '#E5E7EB' : '#fff', borderWidth: 1, borderColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center' }}
-                  onPress={() => setShowAdvancedFilters(v => !v)}
-                >
-                  <MaterialIcons name="tune" size={22} color="#4F46E5" />
-                </TouchableOpacity>
+      <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 8, marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+        <TouchableOpacity
+          style={{ paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8, backgroundColor: showAdvancedFilters ? '#E5E7EB' : '#fff', borderWidth: 1, borderColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center' }}
+          onPress={() => setShowAdvancedFilters(v => !v)}
+        >
+          <MaterialIcons name="tune" size={22} color="#4F46E5" />
+        </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.filterChip,
@@ -853,56 +857,66 @@ const HomeScreen = ({ navigation, route }) => {
       </View>
 
       {/* Items List */}
-            {/* Filtros avançados: tipo de item */}
-            {showAdvancedFilters && (
-              <View style={{ flexDirection: 'column', paddingHorizontal: 16, marginBottom: 8 }}>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8 }}>
-                  {[
-                    { key: 'all', label: 'Todos' },
-                    { key: 'animal', label: 'Animal' },
-                    { key: 'object', label: 'Objeto' },
-                    { key: 'clothing', label: 'Roupa' },
-                    { key: 'document', label: 'Documento' },
-                    { key: 'other', label: 'Outro' },
-                  ].map(opt => (
-                    <TouchableOpacity
-                      key={opt.key}
-                      style={{
-                        paddingVertical: 6,
-                        paddingHorizontal: 14,
-                        borderRadius: 8,
-                        backgroundColor: advancedFilters.category === opt.key ? '#4F46E5' : '#F3F4F6',
-                        marginRight: 8,
-                        marginBottom: 8,
-                      }}
-                      onPress={() => setAdvancedFilters(f => ({ ...f, category: opt.key }))}
-                    >
-                      <Text style={{ color: advancedFilters.category === opt.key ? '#fff' : '#4F46E5', fontWeight: 'bold', fontSize: 13 }}>{opt.label}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-                {/* Filtro de bairro dentro do filtro avançado */}
-                <View style={{ marginTop: 8 }}>
-                  <TouchableOpacity onPress={() => setEditLocationModal(true)} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 12, height: 44 }}>
-                    <MaterialIcons name="place" size={22} color="#F59E42" style={{ marginRight: 8 }} />
-                    <Text style={{ color: '#222', fontSize: 15 }}>
-                      Filtrar por bairro
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
+      {showAdvancedFilters && (
+        <View style={{ flexDirection: 'column', paddingHorizontal: 16, marginBottom: 8 }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 }}>Tipo de animal</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8 }}>
+            {[
+              { key: 'all', label: 'Todos' },
+              { key: 'cachorro', label: 'Cachorro' },
+              { key: 'gato', label: 'Gato' },
+              { key: 'bovino', label: 'Bovino' },
+              { key: 'ave', label: 'Ave' },
+              { key: 'cavalo', label: 'Cavalo' },
+              { key: 'outro', label: 'Outro' },
+            ].map(opt => (
+              <TouchableOpacity
+                key={opt.key}
+                style={{
+                  paddingVertical: 6,
+                  paddingHorizontal: 14,
+                  borderRadius: 8,
+                  backgroundColor: (advancedFilters.animalType || 'all') === opt.key ? '#4F46E5' : '#F3F4F6',
+                  marginRight: 8,
+                  marginBottom: 8,
+                }}
+                onPress={() => {
+                  setAdvancedFilters(f => ({ ...f, animalType: opt.key }));
+                  setFilters(f => ({ ...f, animalType: opt.key }));
+                }}
+              >
+                <Text style={{ color: (advancedFilters.animalType || 'all') === opt.key ? '#fff' : '#4F46E5', fontWeight: 'bold', fontSize: 13 }}>{opt.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <View style={{ marginTop: 8 }}>
+            <TouchableOpacity onPress={() => setEditLocationModal(true)} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 12, height: 44 }}>
+              <MaterialIcons name="place" size={22} color="#F59E42" style={{ marginRight: 8 }} />
+              <Text style={{ color: '#222', fontSize: 15 }}>
+                Filtrar por bairro
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
       {/* Quantidade de itens encontrados */}
       <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
         <Text style={{ color: '#6B7280', fontSize: 15 }}>
-          {/* Corrigido: tudo dentro de <Text> */}
-          {String(filteredItems.filter(item => advancedFilters.category === 'all' ? true : item.category === advancedFilters.category).length) + ' itens encontrados'}
+          {String(filteredItems.filter(item => {
+            const matchesAnimalType = advancedFilters.animalType === 'all' || advancedFilters.animalType === undefined || !item.species
+              ? true
+              : String(item.species || '').toLowerCase().includes(String(advancedFilters.animalType).toLowerCase());
+            return (advancedFilters.category === 'all' || item.category === advancedFilters.category) && matchesAnimalType;
+          }).length) + ' itens encontrados'}
         </Text>
       </View>
       <FlatList
-        data={filteredItems.filter(item =>
-          advancedFilters.category === 'all' ? true : item.category === advancedFilters.category
-        )}
+        data={filteredItems.filter(item => {
+          const matchesAnimalType = advancedFilters.animalType === 'all' || advancedFilters.animalType === undefined || !item.species
+            ? true
+            : String(item.species || '').toLowerCase().includes(String(advancedFilters.animalType).toLowerCase());
+          return (advancedFilters.category === 'all' || item.category === advancedFilters.category) && matchesAnimalType;
+        })}
         renderItem={({ item }) => (
           <ItemCard
             item={item}

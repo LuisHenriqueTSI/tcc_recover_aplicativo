@@ -42,12 +42,12 @@ const SearchScreen = ({ navigation }) => {
         />
 
         <View style={styles.categoryContainer}>
-          <Text style={styles.label}>Categoria</Text>
+          <Text style={styles.label}>Tipo</Text>
           <View style={styles.categoryOptions}>
-            {['animal', 'documento', 'objeto', 'eletrônico', 'joia', 'roupa'].map(cat => (
+            {['animal'].map(cat => (
               <Button
                 key={cat}
-                title={cat.charAt(0).toUpperCase() + cat.slice(1)}
+                title={cat === 'animal' ? 'Pet' : cat}
                 variant={category === cat ? 'primary' : 'secondary'}
                 onPress={() => setCategory(cat)}
                 style={styles.categoryButton}

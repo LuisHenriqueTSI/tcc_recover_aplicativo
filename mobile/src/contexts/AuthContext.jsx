@@ -5,6 +5,12 @@ import { supabase } from '../lib/supabase';
 
 export const AuthContext = createContext();
 
+const profileIsAdmin = (profile) => (
+  profile?.adm === true ||
+  profile?.adm === 'true' ||
+  profile?.role === 'admin'
+);
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
@@ -31,8 +37,8 @@ export const AuthProvider = ({ children }) => {
           });
           if (profile) {
             setUserProfile(profile);
-            setIsAdmin(profile.role === 'admin');
-            console.log('[Auth] Perfil carregado, isAdmin:', profile.role === 'admin');
+            setIsAdmin(profileIsAdmin(profile));
+            console.log('[Auth] Perfil carregado, isAdmin:', profileIsAdmin(profile));
           }
         } else {
           console.log('[Auth] Nenhum usuário autenticado');
@@ -65,7 +71,7 @@ export const AuthProvider = ({ children }) => {
             });
             if (profile) {
               setUserProfile(profile);
-              setIsAdmin(profile.role === 'admin');
+              setIsAdmin(profileIsAdmin(profile));
             }
           }
         } else if (event === 'SIGNED_OUT') {
@@ -118,7 +124,7 @@ export const AuthProvider = ({ children }) => {
       });
       if (profile) {
         setUserProfile(profile);
-        setIsAdmin(profile.role === 'admin');
+        setIsAdmin(profileIsAdmin(profile));
       }
       
       return result;
@@ -147,7 +153,7 @@ export const AuthProvider = ({ children }) => {
         const profile = await userService.getUser(user.id);
         if (profile) {
           setUserProfile(profile);
-          setIsAdmin(profile.role === 'admin');
+          setIsAdmin(profileIsAdmin(profile));
         }
       } catch (error) {
         console.log('[refreshProfile] Erro:', error.message);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { TouchableOpacity, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -195,6 +195,8 @@ const MainAppTabs = ({ navigation }) => {
   const [systemAlertCount, setSystemAlertCount] = useState(0);
   const [pendingItemCount, setPendingItemCount] = useState(0);
   const [renewalAlertCount, setRenewalAlertCount] = useState(0);
+  const notificationChannelRef = useRef(null);
+  const messageChannelRef = useRef(null);
 
   const fetchUnread = async () => {
     if (!user?.id) return;
@@ -226,6 +228,17 @@ const MainAppTabs = ({ navigation }) => {
   useEffect(() => {
     if (!user?.id) return;
 
+    const cleanupRealtimeChannels = () => {
+      if (notificationChannelRef.current) {
+        supabase.removeChannel(notificationChannelRef.current);
+        notificationChannelRef.current = null;
+      }
+      if (messageChannelRef.current) {
+        supabase.removeChannel(messageChannelRef.current);
+        messageChannelRef.current = null;
+      }
+    };
+
     fetchUnread();
 
     const handleNotificationEvent = (payload) => {
@@ -238,9 +251,14 @@ const MainAppTabs = ({ navigation }) => {
       fetchUnread();
     };
 
+    cleanupRealtimeChannels();
+
     console.log('[MainAppTabs] subscribing realtime for user', user.id);
 
-    const notificationChannel = supabase.channel(`notifications-${user.id}`)
+    const notificationChannel = supabase.channel(`notifications-${user.id}`);
+    notificationChannelRef.current = notificationChannel;
+
+    notificationChannel
       .on(
         'postgres_changes',
         {
@@ -263,7 +281,10 @@ const MainAppTabs = ({ navigation }) => {
       )
       .subscribe();
 
-    const messageChannel = supabase.channel(`messages-${user.id}`)
+    const messageChannel = supabase.channel(`messages-${user.id}`);
+    messageChannelRef.current = messageChannel;
+
+    messageChannel
       .on(
         'postgres_changes',
         {
@@ -290,10 +311,9 @@ const MainAppTabs = ({ navigation }) => {
 
     return () => {
       clearInterval(interval);
-      if (notificationChannel) supabase.removeChannel(notificationChannel);
-      if (messageChannel) supabase.removeChannel(messageChannel);
+      cleanupRealtimeChannels();
     };
-  }, [user]);
+  }, [user?.id]);
 
   return (
     <Tab.Navigator
