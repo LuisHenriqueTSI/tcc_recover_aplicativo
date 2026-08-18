@@ -469,18 +469,37 @@ const MainAppTabs = ({ navigation }) => {
   );
 };
 
+const MainStackHeader = ({ navigation, route, options, back }) => {
+  const title = route.name === 'RegisterItem'
+    ? (route.params?.editItem ? 'Editar Pet' : 'Registrar Pet')
+    : options.headerTitle || options.title || '';
+
+  return (
+    <SafeAreaView edges={['top']} style={{ backgroundColor: '#4F46E5' }}>
+      <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
+        {back && (
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={{ width: 38, height: 38, alignItems: 'center', justifyContent: 'center', marginRight: 10, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)' }}
+            accessibilityLabel="Voltar"
+          >
+            <MaterialIcons name="chevron-left" size={28} color="#fff" />
+          </TouchableOpacity>
+        )}
+        <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }} numberOfLines={1}>
+          {title}
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
+};
+
 // Main Stack for additional screens not in tabs
 const MainStack = () => {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: '#fff',
-        },
-        headerTintColor: '#1F2937',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
+        header: MainStackHeader,
       }}
     >
       <Stack.Screen
@@ -501,12 +520,7 @@ const MainStack = () => {
       <Stack.Screen
         name="RegisterItem"
         component={RegisterItemScreen}
-        options={{
-          title: '',
-          headerStyle: { backgroundColor: '#4F46E5' },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: 'bold' },
-        }}
+        options={{ title: 'Registrar Pet' }}
       />
       <Stack.Screen
         name="ClaimsManagement"
@@ -521,65 +535,17 @@ const MainStack = () => {
       <Stack.Screen
         name="MeusAnuncios"
         component={MeusAnunciosScreen}
-        options={{
-          title: 'Minhas Publicações',
-          header: ({ navigation: stackNavigation }) => (
-            <SafeAreaView edges={['top']} style={{ backgroundColor: '#4F46E5' }}>
-              <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
-                <TouchableOpacity
-                  onPress={() => stackNavigation.goBack()}
-                  style={{ padding: 8, marginRight: 8 }}
-                  accessibilityLabel="Voltar"
-                >
-                  <MaterialIcons name="arrow-back" size={24} color="#fff" />
-                </TouchableOpacity>
-                <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Minhas Publicações</Text>
-              </View>
-            </SafeAreaView>
-          ),
-        }}
+        options={{ title: 'Minhas Publicações' }}
       />
       <Stack.Screen
         name="Config"
         component={ConfigScreen}
-        options={{
-          title: 'Configurações',
-          header: ({ navigation: stackNavigation }) => (
-            <SafeAreaView edges={['top']} style={{ backgroundColor: '#4F46E5' }}>
-              <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
-                <TouchableOpacity
-                  onPress={() => stackNavigation.goBack()}
-                  style={{ padding: 8, marginRight: 8 }}
-                  accessibilityLabel="Voltar"
-                >
-                  <MaterialIcons name="arrow-back" size={24} color="#fff" />
-                </TouchableOpacity>
-                <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Configurações</Text>
-              </View>
-            </SafeAreaView>
-          ),
-        }}
+        options={{ title: 'Configurações' }}
       />
       <Stack.Screen
         name="AjudaSuporte"
         component={AjudaSuporteScreen}
-        options={{
-          title: 'Ajuda e Suporte',
-          header: ({ navigation: stackNavigation }) => (
-            <SafeAreaView edges={['top']} style={{ backgroundColor: '#4F46E5' }}>
-              <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
-                <TouchableOpacity
-                  onPress={() => stackNavigation.goBack()}
-                  style={{ padding: 8, marginRight: 8 }}
-                  accessibilityLabel="Voltar"
-                >
-                  <MaterialIcons name="arrow-back" size={24} color="#fff" />
-                </TouchableOpacity>
-                <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Ajuda e Suporte</Text>
-              </View>
-            </SafeAreaView>
-          ),
-        }}
+        options={{ title: 'Ajuda e Suporte' }}
       />
       <Stack.Screen
         name="EditProfile"
