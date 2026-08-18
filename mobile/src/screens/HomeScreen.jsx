@@ -811,15 +811,17 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
         </View>
       </Modal>
-      {/* Quick Filters Row */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 8, marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-        <TouchableOpacity
-          style={{ paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8, backgroundColor: showAdvancedFilters ? '#E5E7EB' : '#fff', borderWidth: 1, borderColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center' }}
-          onPress={() => setShowAdvancedFilters(v => !v)}
-        >
-          <MaterialIcons name="tune" size={22} color="#4F46E5" />
-        </TouchableOpacity>
-        <TouchableOpacity
+      {/* Filtros rápidos */}
+      <View style={styles.filterToolbar}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterToolbarContent}>
+          <TouchableOpacity
+            style={[styles.filterToggle, showAdvancedFilters && styles.filterToggleActive]}
+            onPress={() => setShowAdvancedFilters(v => !v)}
+            accessibilityLabel="Abrir filtros avançados"
+          >
+            <MaterialIcons name="tune" size={21} color={showAdvancedFilters ? '#fff' : '#312E81'} />
+          </TouchableOpacity>
+          <TouchableOpacity
           style={[
             styles.filterChip,
             filters.status === 'all' && styles.filterChipActive,
@@ -831,7 +833,7 @@ const HomeScreen = ({ navigation, route }) => {
           <Text style={[styles.filterChipText, filters.status === 'all' && styles.filterChipTextActive]}>Todos</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+          <TouchableOpacity
           style={[
             styles.filterChip,
             filters.status === 'lost' && styles.filterChipActive,
@@ -843,7 +845,7 @@ const HomeScreen = ({ navigation, route }) => {
           <Text style={[styles.filterChipText, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+          <TouchableOpacity
           style={[
             styles.filterChip,
             filters.status === 'found' && styles.filterChipActive,
@@ -855,60 +857,49 @@ const HomeScreen = ({ navigation, route }) => {
           <Text style={[styles.filterChipText, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
         </TouchableOpacity>
 
-        {user && (
-          <TouchableOpacity
+          {user && (
+            <TouchableOpacity
             style={[
               styles.filterChip,
               filters.showMyItems && styles.filterChipActive,
             ]}
             onPress={handleMyItemsToggle}
             activeOpacity={0.85}
+            accessibilityLabel="Minhas publicações"
           >
-            <MaterialIcons name="person" size={14} color={filters.showMyItems ? '#fff' : '#1F2937'} style={{ marginRight: 4 }} />
-            <Text style={[styles.filterChipText, filters.showMyItems && styles.filterChipTextActive]}>Meus Pets</Text>
-          </TouchableOpacity>
-        )}
+              <MaterialIcons name="person" size={16} color={filters.showMyItems ? '#fff' : '#1F2937'} />
+            </TouchableOpacity>
+          )}
+        </ScrollView>
       </View>
 
       {/* Lista de pets */}
       {showAdvancedFilters && (
-        <View style={{ flexDirection: 'column', paddingHorizontal: 16, marginBottom: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 }}>Tipo de animal</Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8 }}>
-            {[
-              { key: 'all', label: 'Todos' },
-              { key: 'cachorro', label: 'Cachorro' },
-              { key: 'gato', label: 'Gato' },
-              { key: 'bovino', label: 'Bovino' },
-              { key: 'ave', label: 'Ave' },
-              { key: 'cavalo', label: 'Cavalo' },
-              { key: 'outro', label: 'Outro' },
-            ].map(opt => (
-              <TouchableOpacity
-                key={opt.key}
-                style={{
-                  paddingVertical: 6,
-                  paddingHorizontal: 14,
-                  borderRadius: 8,
-                  backgroundColor: (advancedFilters.animalType || 'all') === opt.key ? '#4F46E5' : '#F3F4F6',
-                  marginRight: 8,
-                  marginBottom: 8,
-                }}
-                onPress={() => {
-                  setAdvancedFilters(f => ({ ...f, animalType: opt.key }));
-                  setFilters(f => ({ ...f, animalType: opt.key }));
-                }}
-              >
-                <Text style={{ color: (advancedFilters.animalType || 'all') === opt.key ? '#fff' : '#4F46E5', fontWeight: 'bold', fontSize: 13 }}>{opt.label}</Text>
-              </TouchableOpacity>
-            ))}
+        <View style={styles.advancedFiltersPanel}>
+          <Text style={styles.advancedFiltersTitle}>Mais filtros</Text>
+          <View style={styles.speciesPickerWrapper}>
+            <MaterialIcons name="pets" size={19} color="#312E81" style={{ marginLeft: 12 }} />
+            <Picker
+              selectedValue={advancedFilters.animalType || 'all'}
+              onValueChange={value => {
+                setAdvancedFilters(f => ({ ...f, animalType: value }));
+                setFilters(f => ({ ...f, animalType: value }));
+              }}
+              style={styles.speciesPicker}
+            >
+              <Picker.Item label="Todas" value="all" />
+              <Picker.Item label="Cachorro" value="cachorro" />
+              <Picker.Item label="Gato" value="gato" />
+              <Picker.Item label="Bovino" value="bovino" />
+              <Picker.Item label="Ave" value="ave" />
+              <Picker.Item label="Cavalo" value="cavalo" />
+              <Picker.Item label="Outro" value="outro" />
+            </Picker>
           </View>
-          <View style={{ marginTop: 8 }}>
-            <TouchableOpacity onPress={() => setEditLocationModal(true)} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 12, height: 44 }}>
-              <MaterialIcons name="place" size={22} color="#F59E42" style={{ marginRight: 8 }} />
-              <Text style={{ color: '#222', fontSize: 15 }}>
-                Filtrar por bairro
-              </Text>
+          <View style={styles.locationFilterRow}>
+            <TouchableOpacity onPress={() => setEditLocationModal(true)} style={styles.locationFilterButton}>
+              <MaterialIcons name="place" size={20} color="#312E81" style={{ marginRight: 8 }} />
+              <Text style={styles.locationFilterText}>Filtrar por bairro</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -984,7 +975,85 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
   },
-  // filtersContainer removido
+  filterToolbar: {
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    marginTop: 8,
+    marginHorizontal: 16,
+    marginBottom: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+  },
+  filterToolbarContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 2,
+  },
+  filterToggle: {
+    width: 38,
+    height: 34,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+  },
+  filterToggleActive: {
+    backgroundColor: '#312E81',
+    borderColor: '#312E81',
+  },
+  advancedFiltersPanel: {
+    padding: 14,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+  },
+  advancedFiltersTitle: {
+    color: '#1E1B4B',
+    fontSize: 13,
+    fontWeight: '800',
+    marginBottom: 10,
+  },
+  speciesPickerWrapper: {
+    height: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 10,
+  },
+  speciesPicker: {
+    flex: 1,
+    height: 52,
+    minWidth: 0,
+    color: '#1E1B4B',
+  },
+  locationFilterRow: {
+    marginTop: 14,
+  },
+  locationFilterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 52,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 10,
+  },
+  locationFilterText: {
+    color: '#1E1B4B',
+    fontSize: 16,
+    fontWeight: '700',
+  },
   searchContainer: {
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -1016,7 +1085,7 @@ const styles = StyleSheet.create({
     height: 32,
     paddingVertical: 6,
     paddingHorizontal: 10,
-    marginRight: 8,
+    marginRight: 0,
     borderRadius: 12,
     backgroundColor: '#E5E7EB',
     borderWidth: 1,
