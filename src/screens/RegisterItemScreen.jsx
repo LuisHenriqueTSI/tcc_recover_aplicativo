@@ -275,6 +275,43 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
 
+      <Modal
+        visible={showDatePicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowDatePicker(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.calendarWrapper}>
+            <View style={styles.calendarHeader}>
+              <Text style={styles.calendarTitle}>Selecione a Data</Text>
+              <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                <Text style={styles.closeButton}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <Calendar
+              current={date}
+              minDate="2020-01-01"
+              maxDate={new Date().toISOString().split('T')[0]}
+              onDayPress={handleDateSelect}
+              markedDates={{ [date]: { selected: true, selectedColor: '#2563EB', selectedTextColor: '#FFFFFF' } }}
+              theme={{
+                backgroundColor: '#FFFFFF',
+                calendarBackground: '#FFFFFF',
+                textSectionTitleColor: '#374151',
+                selectedDayBackgroundColor: '#2563EB',
+                selectedDayTextColor: '#FFFFFF',
+                todayTextColor: '#2563EB',
+                dayTextColor: '#374151',
+                arrowColor: '#2563EB',
+                monthTextColor: '#1F2937',
+              }}
+            />
+            <Button title="Confirmar data" onPress={() => setShowDatePicker(false)} style={styles.modalButton} />
+          </View>
+        </View>
+      </Modal>
+
       {(itemType !== 'animal' || status !== 'found') && (
       <View style={styles.rewardSection}>
         <TouchableOpacity
@@ -470,8 +507,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
   };
 
   const handleDateSelect = (day) => {
-    setDate(day.dateString);
-    setShowDatePicker(false);
+    if (day?.dateString) setDate(day.dateString);
   };
 
   const buildAutoTitle = () => {
@@ -1235,15 +1271,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   setColor(nextColors.join(' com '));
                 }}
               />
-              {getSelectedColorOptions(color).length === 0 && (
-                <Input
-                  label="Outra cor"
-                  placeholder="Ex: Laranja e branco"
-                  value={color}
-                  onChangeText={setColor}
-                  style={styles.input}
-                />
-              )}
               <Input
                 label="Raça"
                 placeholder="Ex: Golden Retriever"
@@ -1514,7 +1541,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   }}
                 />
                 <Button
-                  title="Fechar"
+                  title="Confirmar data"
                   onPress={() => setShowDatePicker(false)}
                   style={styles.modalButton}
                 />
