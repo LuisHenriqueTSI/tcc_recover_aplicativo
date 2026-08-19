@@ -9,17 +9,17 @@ import {
   TouchableOpacity,
   Modal,
   Image,
-  FlatList,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { Calendar } from 'react-native-calendars';
 import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
 import * as rewardsService from '../services/rewards';
 import Button from '../components/Button';
 import Input from '../components/Input';
-import { states, citiesByState, neighborhoodsByCity } from '../lib/br-locations';
-import { Picker } from '@react-native-picker/picker';
+import MapLocationPicker from '../components/MapLocationPicker';
+import { states } from '../lib/br-locations';
 import Card from '../components/Card';
 import { analyzeItemWithVision, validatePetPhoto } from '../services/aiItemSuggestions';
 
@@ -32,6 +32,53 @@ const PET_SPECIES_OPTIONS = [
   { label: 'Cavalo', value: 'Cavalo' },
   { label: 'Outro', value: 'Outro' },
 ];
+
+const PET_SPECIES_CHIPS = PET_SPECIES_OPTIONS.filter((option) => option.value);
+const PET_COLOR_OPTIONS = ['Preto', 'Branco', 'Marrom', 'Laranja', 'Cinza', 'Amarelo', 'Dourado', 'Caramelo', 'Multicolorido'];
+const PET_SIZE_OPTIONS = ['Pequeno', 'Médio', 'Grande', 'Gigante'];
+const PET_AGE_OPTIONS = ['Filhote', 'Adulto', 'Idoso', 'Não informado'];
+
+const normalizeOptionValue = (value, options) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const normalized = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return options.find((option) => {
+    const optionNormalized = option.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return normalized === optionNormalized || normalized.includes(optionNormalized);
+  }) || raw;
+};
+
+const normalizeColorValue = (value) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const normalized = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return PET_COLOR_OPTIONS.find((option) => {
+    const optionNormalized = option.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return normalized === optionNormalized;
+  }) || raw;
+};
+
+const SelectionChips = ({ label, options, value, onChange }) => (
+  <View style={styles.selectionGroup}>
+    <Text style={styles.label}>{label}</Text>
+    <View style={styles.selectionChips}>
+      {options.map((option) => {
+        const selected = String(value || '').toLowerCase() === option.toLowerCase();
+        return (
+          <TouchableOpacity
+            key={option}
+            style={[styles.selectionChip, selected && styles.selectionChipSelected]}
+            onPress={() => onChange(option)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected }}
+          >
+            <Text style={[styles.selectionChipText, selected && styles.selectionChipTextSelected]}>{option}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  </View>
+);
 
 const normalizeSpeciesValue = (value) => {
   if (value === null || value === undefined) return '';
@@ -169,6 +216,17 @@ const ITEM_TYPES = {
   },
 };
 
+const BRAZIL_REGION_TO_UF = {
+  acre: 'AC', alagoas: 'AL', amapa: 'AP', amapá: 'AP', amazonas: 'AM', bahia: 'BA',
+  ceara: 'CE', ceará: 'CE', 'distrito federal': 'DF', 'espirito santo': 'ES', 'espírito santo': 'ES',
+  goias: 'GO', goiás: 'GO', maranhao: 'MA', maranhão: 'MA', 'mato grosso': 'MT',
+  'mato grosso do sul': 'MS', 'minas gerais': 'MG', para: 'PA', pará: 'PA', paraiba: 'PB',
+  paraíba: 'PB', parana: 'PR', paraná: 'PR', pernambuco: 'PE', piaui: 'PI', piauí: 'PI',
+  'rio de janeiro': 'RJ', 'rio grande do norte': 'RN', 'rio grande do sul': 'RS',
+  rondonia: 'RO', rondônia: 'RO', roraima: 'RR', 'santa catarina': 'SC', 'sao paulo': 'SP',
+  'são paulo': 'SP', sergipe: 'SE', tocantins: 'TO',
+};
+
 const RegisterItemScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
   const editItem = route?.params?.editItem || null;
@@ -176,62 +234,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const renderLocationAndRewardSection = () => (
     <View>
       <Text style={styles.label}>Localização</Text>
-      <View style={styles.input}>
-        <Text style={styles.label}>Estado</Text>
-        <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
-          <Picker
-            selectedValue={state}
-            onValueChange={(value) => {
-              setState(value);
-              setCity('');
-              setNeighborhood('');
-            }}
-            style={{ height: 48, color: '#1F2937' }}
-          >
-            <Picker.Item label="Selecione o estado" value="" />
-            {states.map((uf) => (
-              <Picker.Item key={uf} label={uf} value={uf} />
-            ))}
-          </Picker>
-        </View>
-      </View>
-
-      <View style={styles.input}>
-        <Text style={styles.label}>Cidade</Text>
-        <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
-          <Picker
-            selectedValue={city}
-            onValueChange={(value) => {
-              setCity(value);
-              setNeighborhood('');
-            }}
-            enabled={!!state}
-            style={{ height: 48, color: '#1F2937' }}
-          >
-            <Picker.Item label="Selecione a cidade" value="" />
-            {(citiesByState[state] || []).map((c) => (
-              <Picker.Item key={c} label={c} value={c} />
-            ))}
-          </Picker>
-        </View>
-      </View>
-
-      <View style={styles.input}>
-        <Text style={styles.label}>Bairro</Text>
-        <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
-          <Picker
-            selectedValue={neighborhood}
-            onValueChange={setNeighborhood}
-            enabled={!!city}
-            style={{ height: 48 }}
-          >
-            <Picker.Item label="Selecione o bairro" value="" />
-            {(neighborhoodsByCity[city] || []).map((b) => (
-              <Picker.Item key={b} label={b} value={b} />
-            ))}
-          </Picker>
-        </View>
-      </View>
+      <Text style={styles.locationHint}>Escolha no mapa onde o pet foi perdido ou encontrado.</Text>
+      {renderMapLocationButton()}
 
       <View style={styles.datePickerContainer}>
         <Text style={styles.label}>Data do Evento *</Text>
@@ -245,6 +249,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
 
+      {(itemType !== 'animal' || status !== 'found') && (
       <View style={styles.rewardSection}>
         <TouchableOpacity
           style={styles.checkboxContainer}
@@ -266,16 +271,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
               keyboardType="decimal-pad"
               style={styles.input}
             />
-            <Input
-              label="Descrição da Recompensa"
-              placeholder="Ex: Dinheiro ou cartão presente"
-              value={rewardDescription}
-              onChangeText={setRewardDescription}
-              style={styles.input}
-            />
           </>
         )}
       </View>
+      )}
     </View>
   );
   // Debug: verifique se editItem está chegando corretamente
@@ -330,6 +329,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [offerReward, setOfferReward] = useState(false);
   const [rewardAmount, setRewardAmount] = useState('');
   const [rewardDescription, setRewardDescription] = useState('');
+  const [mapModalVisible, setMapModalVisible] = useState(false);
+  const [mapLocation, setMapLocation] = useState(null);
 
   // Modal para perguntar se encontrou o item
   const [showFoundModal, setShowFoundModal] = useState(false);
@@ -339,6 +340,43 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [foundModalTitle, setFoundModalTitle] = useState('');
   const [foundModalVisible, setFoundModalVisible] = useState(false);
   const [foundModalItemId, setFoundModalItemId] = useState(null);
+
+  const renderMapLocationButton = () => (
+    <>
+      <TouchableOpacity
+        style={styles.mapButton}
+        onPress={() => setMapModalVisible(true)}
+      >
+        <Text style={styles.mapButtonText}>
+          {mapLocation ? 'Alterar localização no mapa' : 'Escolher localização no mapa'}
+        </Text>
+      </TouchableOpacity>
+      {mapLocation && (
+        <Text style={styles.mapSelectedText}>
+          Ponto selecionado: {mapLocation.latitude.toFixed(5)}, {mapLocation.longitude.toFixed(5)}
+        </Text>
+      )}
+    </>
+  );
+
+  const renderMapLocationPicker = () => (
+    <MapLocationPicker
+      visible={mapModalVisible}
+      initialLocation={mapLocation}
+      onClose={() => setMapModalVisible(false)}
+      onConfirm={({ coordinate, address }) => {
+        setMapLocation(coordinate);
+        // O ponto escolhido no mapa é a fonte principal; não manter valores antigos
+        // dos seletores quando a geocodificação não retornar algum campo.
+        setCity(address?.city || '');
+        const region = String(address?.region || '').trim();
+        const normalizedRegion = region.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        setState(states.includes(region) ? region : (BRAZIL_REGION_TO_UF[normalizedRegion] || ''));
+        setNeighborhood(address?.district || address?.subregion || '');
+        setMapModalVisible(false);
+      }}
+    />
+  );
 
   // Carregar fotos e todos os dados antigos quando editar item
   useEffect(() => {
@@ -359,6 +397,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
       if (editItem.state) setState(editItem.state);
       if (editItem.city) setCity(editItem.city);
       if (editItem.neighborhood) setNeighborhood(editItem.neighborhood);
+      if (editItem.latitude && editItem.longitude) {
+        setMapLocation({ latitude: editItem.latitude, longitude: editItem.longitude });
+      }
       // Preencher campos genéricos a partir das colunas principais OU extra_fields
       if (typeof editItem.brand !== 'undefined') setBrand(editItem.brand);
       else if (editItem.extra_fields && typeof editItem.extra_fields.brand !== 'undefined') setBrand(editItem.extra_fields.brand);
@@ -413,18 +454,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
     }
 
     const species = normalizeSpeciesValue(animalSpecies) || 'Animal';
-    const verb = status === 'lost' ? 'perdido' : 'encontrado';
+    const statusLabel = status === 'lost' ? 'perdido' : 'encontrado';
+    const colorLabel = color?.trim() || 'cor não informada';
+    const location = neighborhood || city || 'localização selecionada no mapa';
 
-    const parts = [species, verb];
-
-    if (color && color.trim()) {
-      parts.push(color.trim());
-    }
-
-    const location = neighborhood || city || 'na região';
-    parts.push(`em ${location.trim()}`);
-
-    return parts.join(' ');
+    return `${species}, ${colorLabel}, ${statusLabel}, em ${location.trim()}`;
   };
 
   const formatDateDisplay = (dateString) => {
@@ -444,7 +478,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
       console.log('[pickImage] Launching image picker...');
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'Images',
+        mediaTypes: ['images'],
         allowsMultipleSelection: true,
         selectionLimit: 10,
         quality: 0.7,
@@ -457,10 +491,15 @@ const RegisterItemScreen = ({ navigation, route }) => {
         const newPhotos = [];
 
         for (const asset of result.assets) {
+          const optimizedPhoto = await ImageManipulator.manipulateAsync(
+            asset.uri,
+            [{ resize: { width: 600 } }],
+            { compress: 0.55, format: ImageManipulator.SaveFormat.JPEG }
+          );
           const photo = {
-            uri: asset.uri,
-            type: asset.type || 'image/jpeg',
-            name: asset.fileName || asset.uri.split('/').pop(),
+            uri: optimizedPhoto.uri,
+            type: 'image/jpeg',
+            name: `${Date.now()}_${asset.fileName || 'pet.jpg'}`,
           };
 
           const validation = await validatePetPhoto({ imageUri: photo.uri });
@@ -475,7 +514,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           newPhotos.push(photo);
         }
 
-        setPhotos([...photos, ...newPhotos]);
+        setPhotos((previousPhotos) => [...previousPhotos, ...newPhotos]);
         Alert.alert('Sucesso', `${newPhotos.length} foto(s) adicionada(s)`);
       }
     } catch (error) {
@@ -520,15 +559,15 @@ const RegisterItemScreen = ({ navigation, route }) => {
         if (suggestions.animal_name) setAnimalName(suggestions.animal_name);
         if (suggestions.species) setAnimalSpecies(normalizeSpeciesValue(suggestions.species));
         if (suggestions.breed) setAnimalBreed(suggestions.breed);
-        if (suggestions.size) setAnimalSize(suggestions.size);
-        if (suggestions.age) setAnimalAge(suggestions.age);
+        if (suggestions.size) setAnimalSize(normalizeOptionValue(suggestions.size, PET_SIZE_OPTIONS));
+        if (suggestions.age) setAnimalAge(normalizeOptionValue(suggestions.age, PET_AGE_OPTIONS));
         if (suggestions.collar) setAnimalCollar(suggestions.collar);
       }
 
       if (suggestions.title) setTitle(suggestions.title);
       if (suggestions.description) setDescription(suggestions.description);
       if (suggestions.brand) setBrand(suggestions.brand);
-      if (suggestions.color) setColor(suggestions.color);
+      if (suggestions.color) setColor(normalizeColorValue(suggestions.color));
       if (suggestions.serial_number) setSerialNumber(suggestions.serial_number);
 
       const message = suggestions.source === 'gemini'
@@ -590,7 +629,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
       setError('Selecione a data');
       return false;
     }
-    // Localização agora opcional
+    if (!mapLocation?.latitude || !mapLocation?.longitude) {
+      setError('Escolha a localização do pet no mapa');
+      return false;
+    }
     if (!status) {
       setError('Selecione se perdeu ou encontrou');
       return false;
@@ -630,7 +672,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
     try {
       // Título automático local, sem IA e sem consumo de crédito.
-      let currentTitle = itemType === 'animal' ? (animalName || buildAutoTitle()) : (title || buildAutoTitle());
+      let currentTitle = itemType === 'animal' ? buildAutoTitle() : (title || buildAutoTitle());
       if (!currentTitle || currentTitle.trim() === '') {
         currentTitle = buildAutoTitle() || 'Animal';
       }
@@ -642,10 +684,12 @@ const RegisterItemScreen = ({ navigation, route }) => {
         state: toNull(state) || editItem?.state,
         city: toNull(city) || editItem?.city,
         neighborhood: toNull(neighborhood) || editItem?.neighborhood,
+        latitude: mapLocation?.latitude || editItem?.latitude || null,
+        longitude: mapLocation?.longitude || editItem?.longitude || null,
         status: toNull(status) || editItem?.status,
         category: toNull(itemType) || editItem?.category,
         item_type: toNull(itemType) || editItem?.item_type,
-        date: date ? `${date}T00:00:00-03:00` : editItem?.date,
+        date: date || editItem?.date || new Date().toISOString().split('T')[0],
         // Características em colunas específicas
         brand: toNull(brand),
         color: toNull(color),
@@ -905,10 +949,12 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     state,
                     city,
                     neighborhood,
+                    latitude: mapLocation?.latitude || null,
+                    longitude: mapLocation?.longitude || null,
                     status,
                     category: itemType,
                     item_type: itemType,
-                    date: `${date}T00:00:00Z`,
+                    date: date || new Date().toISOString().split('T')[0],
                     extra_fields: {
                       brand,
                       color,
@@ -1084,7 +1130,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       styles.statusButton,
                       status === 'found' && styles.statusButtonActive,
                     ]}
-                    onPress={() => setStatus('found')}
+                    onPress={() => {
+                      setStatus('found');
+                      setOfferReward(false);
+                      setRewardAmount('');
+                    }}
                   >
                     <Text style={[
                       styles.statusText,
@@ -1124,16 +1174,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
               {photos.length > 0 && (
                 <View style={styles.photosContainer}>
                   <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
-                  <FlatList
-                    data={photos}
-                    keyExtractor={(_, i) => i.toString()}
-                    numColumns={3}
-                    scrollEnabled={false}
-                    renderItem={({ item, index }) => (
-                      <View style={styles.photoItem}>
+                  <View style={styles.photoGrid}>
+                    {photos.map((photo, index) => (
+                      <View key={`${photo.uri}-${index}`} style={styles.photoItem}>
                         <Image
-                          source={{ uri: item.uri }}
+                          source={{ uri: photo.uri }}
                           style={styles.photo}
+                          onError={(error) => console.warn('[RegisterItem] Falha ao exibir prévia:', error.nativeEvent.error)}
                         />
                         <TouchableOpacity
                           style={styles.removePhotoButton}
@@ -1142,38 +1189,23 @@ const RegisterItemScreen = ({ navigation, route }) => {
                           <Text style={styles.removePhotoText}>✕</Text>
                         </TouchableOpacity>
                       </View>
-                    )}
-                  />
+                    ))}
+                  </View>
                 </View>
               )}
 
               {/* Campos detalhados do animal */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Espécie *</Text>
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={animalSpecies}
-                    onValueChange={(value) => setAnimalSpecies(value)}
-                    style={styles.picker}
-                    dropdownIconColor="#4B5563"
-                  >
-                    {PET_SPECIES_OPTIONS.map((option) => (
-                      <Picker.Item
-                        key={option.value || 'empty'}
-                        label={option.label}
-                        value={option.value}
-                      />
-                    ))}
-                  </Picker>
-                </View>
-              </View>
-              <Input
-                label="Cor *"
-                placeholder="Ex: Dourado"
-                value={color}
-                onChangeText={setColor}
-                style={styles.input}
-              />
+              <SelectionChips label="Espécie *" options={PET_SPECIES_CHIPS.map((option) => option.value)} value={animalSpecies} onChange={setAnimalSpecies} />
+              <SelectionChips label="Cor *" options={PET_COLOR_OPTIONS} value={color} onChange={setColor} />
+              {!PET_COLOR_OPTIONS.some((option) => option.toLowerCase() === String(color || '').toLowerCase()) && (
+                <Input
+                  label="Outra cor"
+                  placeholder="Ex: Laranja e branco"
+                  value={color}
+                  onChangeText={setColor}
+                  style={styles.input}
+                />
+              )}
               <Input
                 label="Raça"
                 placeholder="Ex: Golden Retriever"
@@ -1181,20 +1213,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 onChangeText={setAnimalBreed}
                 style={styles.input}
               />
-              <Input
-                label="Porte"
-                placeholder="Ex: Grande, Médio, Pequeno"
-                value={animalSize}
-                onChangeText={setAnimalSize}
-                style={styles.input}
-              />
-              <Input
-                label="Idade"
-                placeholder="Ex: Filhote, Adulto, Idoso"
-                value={animalAge}
-                onChangeText={setAnimalAge}
-                style={styles.input}
-              />
+              <SelectionChips label="Porte" options={PET_SIZE_OPTIONS} value={animalSize} onChange={setAnimalSize} />
+              <SelectionChips label="Idade" options={PET_AGE_OPTIONS} value={animalAge} onChange={setAnimalAge} />
               <Input
                 label="Descrição"
                 placeholder="Descreva detalhes importantes..."
@@ -1213,6 +1233,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               ) : null}
             </View>
           </ScrollView>
+          {renderMapLocationPicker()}
           <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
             <Button
               title={loading ? 'Publicando...' : 'Publicar'}
@@ -1253,7 +1274,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     styles.statusButton,
                     status === 'found' && styles.statusButtonActive,
                   ]}
-                  onPress={() => setStatus('found')}
+                    onPress={() => {
+                      setStatus('found');
+                      setOfferReward(false);
+                      setRewardAmount('');
+                    }}
                 >
                   <Text style={[
                     styles.statusText,
@@ -1305,16 +1330,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 {photos.length > 0 && (
                   <View style={styles.photosContainer}>
                     <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
-                    <FlatList
-                      data={photos}
-                      keyExtractor={(_, i) => i.toString()}
-                      numColumns={3}
-                      scrollEnabled={false}
-                      renderItem={({ item, index }) => (
-                        <View style={styles.photoItem}>
+                    <View style={styles.photoGrid}>
+                      {photos.map((photo, index) => (
+                        <View key={`${photo.uri}-${index}`} style={styles.photoItem}>
                           <Image
-                            source={{ uri: item.uri }}
+                            source={{ uri: photo.uri }}
                             style={styles.photo}
+                            onError={(error) => console.warn('[RegisterItem] Falha ao exibir prévia:', error.nativeEvent.error)}
                           />
                           <TouchableOpacity
                             style={styles.removePhotoButton}
@@ -1323,8 +1345,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
                             <Text style={styles.removePhotoText}>✕</Text>
                           </TouchableOpacity>
                         </View>
-                      )}
-                    />
+                      ))}
+                    </View>
                   </View>
                 )}
               </>
@@ -1382,6 +1404,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
             ) : null}
           </View>
         </ScrollView>
+        {renderMapLocationPicker()}
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
           <Button
             title={loading ? 'Publicando...' : 'Publicar'}
@@ -1399,66 +1422,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
       <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 0 }} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Localização e Recompensa</Text>
-
-          {/* Estado (opcional) */}
-          <View style={styles.input}>
-            <Text style={styles.label}>Estado</Text>
-            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
-              <Picker
-                selectedValue={state}
-                onValueChange={(value) => {
-                  setState(value);
-                  setCity('');
-                  setNeighborhood('');
-                }}
-                style={{ height: 48, color: '#1F2937' }}
-              >
-                <Picker.Item label="Selecione o estado" value="" />
-                {states.map((uf) => (
-                  <Picker.Item key={uf} label={uf} value={uf} />
-                ))}
-              </Picker>
-            </View>
-          </View>
-
-          {/* Cidade (opcional) */}
-          <View style={styles.input}>
-            <Text style={styles.label}>Cidade</Text>
-            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
-              <Picker
-                selectedValue={city}
-                onValueChange={(value) => {
-                  setCity(value);
-                  setNeighborhood('');
-                }}
-                enabled={!!state}
-                style={{ height: 48, color: '#1F2937' }}
-              >
-                <Picker.Item label="Selecione a cidade" value="" />
-                {(citiesByState[state] || []).map((c) => (
-                  <Picker.Item key={c} label={c} value={c} />
-                ))}
-              </Picker>
-            </View>
-          </View>
-
-          {/* Bairro (opcional) */}
-          <View style={styles.input}>
-            <Text style={styles.label}>Bairro</Text>
-            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
-              <Picker
-                selectedValue={neighborhood}
-                onValueChange={setNeighborhood}
-                enabled={!!city}
-                style={{ height: 48 }}
-              >
-                <Picker.Item label="Selecione o bairro" value="" />
-                {(neighborhoodsByCity[city] || []).map((b) => (
-                  <Picker.Item key={b} label={b} value={b} />
-                ))}
-              </Picker>
-            </View>
-          </View>
+          <Text style={styles.locationHint}>Escolha no mapa onde o pet foi perdido ou encontrado.</Text>
+          {renderMapLocationButton()}
 
           <View style={styles.datePickerContainer}>
             <Text style={styles.label}>Data do Evento *</Text>
@@ -1520,6 +1485,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           </Modal>
 
           {/* Reward Section */}
+          {(itemType !== 'animal' || status !== 'found') && (
           <View style={styles.rewardSection}>
             <TouchableOpacity
               style={styles.checkboxContainer}
@@ -1541,16 +1507,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   keyboardType="decimal-pad"
                   style={styles.input}
                 />
-                <Input
-                  label="Descrição da Recompensa"
-                  placeholder="Ex: Dinheiro ou cartão presente"
-                  value={rewardDescription}
-                  onChangeText={setRewardDescription}
-                  style={styles.input}
-                />
               </>
             )}
           </View>
+          )}
 
           {error ? (
             <View style={styles.errorContainer}>
@@ -1558,6 +1518,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
             </View>
           ) : null}
         </ScrollView>
+        {renderMapLocationPicker()}
         {/* Botões fixos na base, igual aos outros passos */}
         <View style={[styles.navigation, { position: 'absolute', left: 0, right: 0, bottom: 44, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E5E7EB', padding: 16, zIndex: 10 }]}> 
           <Button
@@ -1717,8 +1678,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: '#1F2937',
   },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -4,
+  },
   photoItem: {
-    flex: 1,
+    width: '31%',
     margin: 4,
     position: 'relative',
   },
@@ -1805,6 +1771,60 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 20,
+  },
+  selectionGroup: {
+    marginBottom: 14,
+  },
+  selectionChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  selectionChip: {
+    minHeight: 40,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+  },
+  selectionChipSelected: {
+    borderColor: '#4F46E5',
+    backgroundColor: '#EEF2FF',
+  },
+  selectionChipText: {
+    color: '#4B5563',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  selectionChipTextSelected: {
+    color: '#4338CA',
+  },
+  mapButton: {
+    borderWidth: 1,
+    borderColor: '#4F46E5',
+    borderRadius: 8,
+    paddingVertical: 11,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  mapButtonText: {
+    color: '#4F46E5',
+    fontWeight: '700',
+  },
+  mapSelectedText: {
+    color: '#6B7280',
+    fontSize: 12,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  locationHint: {
+    color: '#6B7280',
+    fontSize: 13,
+    marginBottom: 12,
   },
   checkboxContainer: {
     flexDirection: 'row',

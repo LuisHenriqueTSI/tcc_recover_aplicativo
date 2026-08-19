@@ -29,6 +29,12 @@ import { getRenewalInfo } from '../services/itemExpiration';
 import { createRenewalReminderNotification } from '../services/notifications';
 import * as reportsService from '../services/reports';
 
+const formatItemDate = (value) => {
+  if (!value) return '';
+  const raw = String(value);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(`${raw}T12:00:00`) : new Date(raw);
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+};
 
 const ItemDetailScreen = ({ route, navigation }) => {
   const { itemId } = route.params;
@@ -535,7 +541,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
           </View>
           <View style={{ flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'flex-start', justifyContent: 'center', borderWidth: 1, borderColor: '#F3F4F6' }}>
             <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Data</Text>
-            <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold' }}>{new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</Text>
+            <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold' }}>{formatItemDate(item.date)}</Text>
           </View>
         </View>
 

@@ -1,20 +1,13 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
-import Card from '../components/Card';
+import { View, Text, StyleSheet } from 'react-native';
 
-const MapScreen = ({ navigation }) => {
+const MapScreen = () => {
   return (
     <View style={styles.container}>
-      <Card style={styles.placeholderCard}>
-        <Text style={styles.title}>Mapa</Text>
-        <Text style={styles.description}>
-          Funcionalidade de mapa será implementada em breve. Você poderá visualizar a localização dos pets perdidos/encontrados no mapa.
-        </Text>
-      </Card>
+      <Text style={styles.title}>Mapa disponível no aplicativo mobile</Text>
+      <Text style={styles.description}>
+        Abra o aplicativo no Android ou iPhone para visualizar as regiões e as fotos dos pets marcados no mapa.
+      </Text>
     </View>
   );
 };
@@ -25,9 +18,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
-  },
-  placeholderCard: {
-    margin: 20,
   },
   title: {
     fontSize: 20,

@@ -28,6 +28,7 @@ export const removeAllItemPhotos = async (itemId) => {
 const CLEANUP_THROTTLE_MS = 60 * 60 * 1000; // 1 hora
 let lastCleanupTimestamp = 0;
 
+
 const ensureCleanupExpiredItems = async () => {
   try {
     const now = Date.now();
@@ -50,7 +51,7 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
     console.log('[listItemsWithPhotosAndOwner] Carregando itens otimizados:', filters);
     let query = supabase
       .from('items')
-      .select(`*, item_photos(id, url), profiles!owner_id(name, email)`) // join correto com fotos e perfil
+      .select('*, profiles!owner_id(name, email)')
       .order('created_at', { ascending: false });
 
     if (filters.status) query = query.eq('status', filters.status);
@@ -65,6 +66,36 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
     if (error) {
       console.log('[listItemsWithPhotosAndOwner] Erro:', error.message);
       return [];
+    }
+
+    // Alguns ambientes podem retornar o relacionamento vazio mesmo com a foto salva.
+    // Busca as referências separadamente para não deixar o anúncio sem imagem na Home.
+    const itemIdsForPhotos = (data || []).map((item) => item.id).filter(Boolean);
+    if (itemIdsForPhotos.length > 0) {
+      const { data: photoRows, error: photoRowsError } = await supabase
+        .from('item_photos')
+        .select('id, item_id, url')
+        .in('item_id', itemIdsForPhotos);
+
+      if (!photoRowsError) {
+        const photosByItemId = photoRows.reduce((groups, photo) => {
+          if (!groups[photo.item_id]) groups[photo.item_id] = [];
+          groups[photo.item_id].push({ id: photo.id, url: photo.url });
+          return groups;
+        }, {});
+
+        data.forEach((item) => {
+          const nestedPhotos = Array.isArray(item.item_photos)
+            ? item.item_photos
+            : item.item_photos ? [item.item_photos] : [];
+          item.item_photos = (nestedPhotos.length > 0
+            ? nestedPhotos
+            : photosByItemId[item.id] || [])
+            .filter((photo) => photo?.url);
+        });
+      } else {
+        console.log('[listItemsWithPhotosAndOwner] Erro no fallback de fotos:', photoRowsError.message);
+      }
     }
 
     const itemIds = (data || []).map(item => item.id).filter(Boolean);
@@ -102,13 +133,8 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
         renewalInfo: getRenewalInfo(item),
       }))
       .sort((a, b) => {
-        const aNeedsAttention = a.renewalInfo?.needsRenewal ? 1 : 0;
-        const bNeedsAttention = b.renewalInfo?.needsRenewal ? 1 : 0;
-
-        if (aNeedsAttention !== bNeedsAttention) {
-          return bNeedsAttention - aNeedsAttention;
-        }
-
+        // A ordem da Home deve refletir a publicação, não a expiração.
+        // Avisos de renovação ficam no próprio anúncio sem mover itens antigos para o topo.
         const aDate = new Date(a.created_at || 0).getTime();
         const bDate = new Date(b.created_at || 0).getTime();
         return bDate - aDate;

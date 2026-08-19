@@ -26,7 +26,6 @@ import DashboardScreen from '../screens/DashboardScreen';
 import MapScreen from '../screens/MapScreen';
 import AdminScreen from '../screens/AdminScreen';
 import NotificationBell from '../components/NotificationBell';
-import NotificationsScreen from '../screens/NotificationsScreen';
 import TabBarButton from '../components/TabBarButton';
 import MeusAnunciosScreen from '../screens/MeusAnunciosScreen';
 import ConfigScreen from '../screens/ConfigScreen';
@@ -342,40 +341,14 @@ const MainAppTabs = ({ navigation }) => {
         }}
       />
       <Tab.Screen
-        name="ChatTab"
-        component={InboxScreen}
+        name="MapTab"
+        component={MapScreen}
         options={{
-          title: 'Mensagens',
-          tabBarLabel: 'Mensagens',
-          headerTitle: 'Mensagens',
-          headerStyle: { backgroundColor: '#4F46E5' },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: 'bold' },
+          title: 'Mapa',
+          tabBarLabel: 'Mapa',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <View style={{ width: size + 10, height: size + 10, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-              <MaterialIcons name="chat" size={size} color={color} />
-              {unreadCount > 0 && (
-                <View style={{
-                  position: 'absolute',
-                  top: -4,
-                  right: -4,
-                  backgroundColor: '#EF4444',
-                  borderRadius: 10,
-                  minWidth: 18,
-                  height: 18,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingHorizontal: 4,
-                  zIndex: 99,
-                  borderWidth: 2,
-                  borderColor: '#fff',
-                }}>
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 11 }}>
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </Text>
-                </View>
-              )}
-            </View>
+            <MaterialIcons name="map" size={size} color={color} />
           ),
         }}
       />
@@ -397,46 +370,27 @@ const MainAppTabs = ({ navigation }) => {
         }}
       />
       <Tab.Screen
-        name="NotificationsTab"
+        name="ChatTab"
+        component={InboxScreen}
         options={{
-          title: 'Alertas',
-          tabBarLabel: 'Alertas',
-          headerTitle: 'Alertas',
+          title: 'Mensagens',
+          tabBarLabel: 'Mensagens',
+          headerTitle: 'Mensagens',
           headerStyle: { backgroundColor: '#4F46E5' },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
-          tabBarIcon: ({ color, size }) => {
-            const notificationCount = unreadCount + systemAlertCount + renewalAlertCount;
-            return (
-              <View style={{ width: size + 24, height: size + 24, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                <MaterialIcons name="notifications" size={size} color={color} />
-                {notificationCount > 0 && (
-                  <View style={{
-                    position: 'absolute',
-                    top: -3,
-                    right: -3,
-                    backgroundColor: '#EF4444',
-                    borderRadius: 8,
-                    minWidth: 16,
-                    height: 16,
-                    paddingHorizontal: 4,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    borderWidth: 1,
-                    borderColor: '#fff',
-                  }}>
-                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 10 }}>
-                      {notificationCount > 9 ? '9+' : notificationCount}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            );
-          },
+          tabBarIcon: ({ color, size }) => (
+            <View style={{ width: size + 10, height: size + 10, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+              <MaterialIcons name="chat" size={size} color={color} />
+              {unreadCount > 0 && (
+                <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#EF4444', borderRadius: 10, minWidth: 18, height: 18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4, zIndex: 99, borderWidth: 2, borderColor: '#fff' }}>
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 11 }}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                </View>
+              )}
+            </View>
+          ),
         }}
-      >
-        {(props) => <NotificationsScreen {...props} onNotificationsUpdated={fetchUnread} />}
-      </Tab.Screen>
+      />
       <Tab.Screen
         name="ProfileTab"
         component={ProfileScreen}
@@ -452,19 +406,6 @@ const MainAppTabs = ({ navigation }) => {
           ),
         }}
       />
-      {isAdmin && (
-        <Tab.Screen
-          name="AdminTab"
-          component={AdminScreen}
-          options={{
-            title: 'Admin',
-            tabBarLabel: 'Admin',
-            tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="admin-panel-settings" size={size} color={color} />
-            ),
-          }}
-        />
-      )}
     </Tab.Navigator>
   );
 };
@@ -531,6 +472,11 @@ const MainStack = () => {
         name="Dashboard"
         component={DashboardScreen}
         options={{ title: 'Dashboard' }}
+      />
+      <Stack.Screen
+        name="Admin"
+        component={AdminScreen}
+        options={{ title: 'Administração' }}
       />
       <Stack.Screen
         name="MeusAnuncios"
