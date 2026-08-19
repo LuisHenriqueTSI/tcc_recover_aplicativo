@@ -20,6 +20,7 @@ import { formatarDataMembro } from './_dateUtils';
 
 import Card from '../components/Card';
 import Button from '../components/Button';
+import ShareButton from '../components/ShareButton';
 import ItemClaimModal from './ItemClaimModal';
 
 import SightingModal from '../components/SightingModal';
@@ -35,6 +36,11 @@ const formatItemDate = (value) => {
   const date = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(`${raw}T12:00:00`) : new Date(raw);
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 };
+
+const formatItemLocation = (item) => [item?.city, item?.state]
+  .map((value) => String(value || '').trim())
+  .filter(Boolean)
+  .join(', ');
 
 const ItemDetailScreen = ({ route, navigation }) => {
   const { itemId } = route.params;
@@ -486,17 +492,18 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   // NOVO DESIGN INSPIRADO NO ANEXO
   return (
-    <ScrollView style={{ backgroundColor: '#F9FAFB' }} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.detailPage} showsVerticalScrollIndicator={false}>
       <View style={{ padding: 0, margin: 0 }}>
         {/* Fotos do animal no topo */}
-        <View style={{ width: '100%', height: 240, backgroundColor: '#E5E7EB', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, overflow: 'hidden', marginBottom: 0 }}>
+        <View style={styles.heroImage}>
           {photos && photos.length > 0 ? (
             <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={{ width: '100%', height: 240 }} contentContainerStyle={{ flexGrow: 1 }}>
               {photos.map((photo, idx) => (
                 <View key={photo.id || idx} style={{ width: '100%', height: 240 }}>
                   <Image
                     source={{ uri: photo.url }}
-                    style={{ width: '100%', height: 240, resizeMode: 'cover' }}
+                    style={styles.heroImageItem}
+                    resizeMode="cover"
                   />
                 </View>
               ))}
@@ -507,13 +514,22 @@ const ItemDetailScreen = ({ route, navigation }) => {
               <Text style={{ marginTop: 8, color: '#9CA3AF', fontSize: 14 }}>Sem foto</Text>
             </View>
           )}
+          <View style={styles.detailShareButton}>
+            <ShareButton item={item} imageUrl={photos?.[0]?.url} />
+          </View>
         </View>
 
 
         {/* Título, descrição e recompensa */}
-        <View style={{ padding: 24, paddingBottom: 0 }}>
-          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>{item.title}</Text>
-          <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 12 }}>{item.description}</Text>
+        <View style={styles.introSection}>
+          <View style={[styles.statusPill, item.status === 'found' ? styles.foundPill : styles.lostPill]}>
+            <MaterialIcons name={item.status === 'found' ? 'check-circle' : 'search'} size={15} color={item.status === 'found' ? '#047857' : '#C2410C'} />
+            <Text style={[styles.statusPillText, { color: item.status === 'found' ? '#047857' : '#C2410C' }]}>
+              {item.status === 'found' ? 'Encontrado' : 'Perdido'}
+            </Text>
+          </View>
+          <Text style={styles.detailTitle}>{item.title}</Text>
+          {item.description ? <Text style={styles.detailDescription}>{item.description}</Text> : null}
           {/* Bloco de recompensa */}
           {Array.isArray(rewards) && rewards.some(reward => reward?.status === 'active') && (
             <View style={{ backgroundColor: '#FEF3C7', borderRadius: 10, padding: 16, marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -533,13 +549,15 @@ const ItemDetailScreen = ({ route, navigation }) => {
         </View>
 
         {/* Bairro e Data */}
-        <View style={{ flexDirection: 'row', gap: 16, paddingHorizontal: 24, marginTop: 8, marginBottom: 8 }}>
-          <View style={{ flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'flex-start', justifyContent: 'center', marginRight: 8, borderWidth: 1, borderColor: '#F3F4F6' }}>
+        <View style={styles.locationGrid}>
+          <View style={styles.locationCard}>
             <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Bairro</Text>
-            <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold' }}>{item.neighborhood || '-'}</Text>
-            <Text style={{ fontSize: 13, color: '#6B7280' }}>{item.city}, {item.state}</Text>
+            <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold' }}>{item.neighborhood || item.city || item.state || 'Localização não informada'}</Text>
+            {formatItemLocation(item) ? (
+              <Text style={{ fontSize: 13, color: '#6B7280' }}>{formatItemLocation(item)}</Text>
+            ) : null}
           </View>
-          <View style={{ flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'flex-start', justifyContent: 'center', borderWidth: 1, borderColor: '#F3F4F6' }}>
+          <View style={styles.locationCard}>
             <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Data</Text>
             <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold' }}>{formatItemDate(item.date)}</Text>
           </View>
@@ -547,8 +565,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
         {/* Informações detalhadas do item, baseadas no tipo */}
         {item.category === 'animal' ? (
-          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
-            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Animal</Text>
+          <View style={styles.infoSection}>
+            <Text style={styles.sectionTitle}>Informações do Animal</Text>
             <AnimalInfoRow
               icon={<MaterialIcons name="pets" size={18} color="#6B7280" />}
               label="Espécie"
@@ -578,13 +596,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
               label="Idade"
               value={item.age}
             />
-            <Separator />
-            <AnimalInfoRow
-              icon={<MaterialIcons name="style" size={18} color="#6B7280" />}
-              label="Coleira"
-              value={item.collar}
-            />
-
           </View>
         ) : item.category === 'document' ? (
           <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
@@ -757,23 +768,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 <Text style={{ color: '#B91C1C', fontWeight: '700', fontSize: 13, marginLeft: 6 }}>Denunciar publicação</Text>
               </TouchableOpacity>
             )}
-          </View>
-        )}
-
-
-        {/* Compartilhamento para animais encontrados */}
-        {item && item.category === 'animal' && item.status === 'found' && isOwner && (
-          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
-            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Compartilhar encontrado</Text>
-            <Text style={{ fontSize: 13, color: '#6B7280', marginBottom: 12, lineHeight: 18 }}>
-              Compartilhe este animal encontrado para ajudar a encontrar o dono! Recomendamos avisar clínicas veterinárias, ONGs e grupos locais.
-            </Text>
-            <TouchableOpacity
-              style={{ backgroundColor: '#4F46E5', borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
-              onPress={() => Alert.alert('Compartilhar', 'A função de compartilhamento foi desativada neste ponto do app.')}
-            >
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Compartilhar</Text>
-            </TouchableOpacity>
           </View>
         )}
 
@@ -1050,6 +1044,89 @@ function Separator() {
 };
 
 const styles = StyleSheet.create({
+  detailPage: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  heroImage: {
+    width: '100%',
+    height: 280,
+    backgroundColor: '#E2E8F0',
+    overflow: 'hidden',
+  },
+  heroImageItem: {
+    width: '100%',
+    height: 280,
+  },
+  detailShareButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 2,
+  },
+  introSection: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 8,
+  },
+  statusPill: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 10,
+  },
+  foundPill: { backgroundColor: '#DCFCE7' },
+  lostPill: { backgroundColor: '#FFEDD5' },
+  statusPillText: { fontSize: 12, fontWeight: '800' },
+  detailTitle: {
+    color: '#0F172A',
+    fontSize: 25,
+    lineHeight: 31,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  detailDescription: {
+    color: '#64748B',
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  locationGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 10,
+  },
+  locationCard: {
+    flex: 1,
+    minHeight: 82,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 14,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  infoSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    marginHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 0,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  sectionTitle: {
+    color: '#0F172A',
+    fontSize: 17,
+    fontWeight: '800',
+    marginBottom: 12,
+  },
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',

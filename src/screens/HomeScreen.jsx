@@ -33,7 +33,21 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import NotificationBell from '../components/NotificationBell';
 import OptimizedImage from '../components/OptimizedImage';
+import MapLocationPicker from '../components/MapLocationPicker';
 import { MaterialIcons } from '@expo/vector-icons';
+
+const regionToUf = {
+  Acre: 'AC', Alagoas: 'AL', Amapá: 'AP', Amazonas: 'AM', Bahia: 'BA', Ceará: 'CE',
+  'Distrito Federal': 'DF', 'Espírito Santo': 'ES', Goiás: 'GO', Maranhão: 'MA',
+  'Mato Grosso': 'MT', 'Mato Grosso do Sul': 'MS', 'Minas Gerais': 'MG', Pará: 'PA',
+  Paraíba: 'PB', Paraná: 'PR', Pernambuco: 'PE', Piauí: 'PI',
+  'Rio de Janeiro': 'RJ', 'Rio Grande do Norte': 'RN', 'Rio Grande do Sul': 'RS',
+  Rondônia: 'RO', Roraima: 'RR', 'Santa Catarina': 'SC', 'São Paulo': 'SP',
+  Sergipe: 'SE', Tocantins: 'TO',
+};
+
+const normalizeRegionName = (value) => String(value || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const normalizedRegionToUf = Object.fromEntries(Object.entries(regionToUf).map(([name, uf]) => [normalizeRegionName(name), uf]));
 
 const formatItemDate = (value) => {
   if (!value) return '';
@@ -162,6 +176,7 @@ const HomeScreen = ({ navigation, route }) => {
   const [showProfileLocationModal, setShowProfileLocationModal] = useState(false);
   const [profileEditState, setProfileEditState] = useState('');
   const [profileEditCity, setProfileEditCity] = useState('');
+  const [profileMapVisible, setProfileMapVisible] = useState(false);
 
   useEffect(() => {
     setProfileEditState(userProfile?.state || '');
@@ -433,7 +448,7 @@ const HomeScreen = ({ navigation, route }) => {
     // Define mensagem automática
     let autoMessage = '';
     if (itemStatus === 'lost') {
-      autoMessage = 'Oi, eu achei seu pet';
+      autoMessage = 'Oi, eu encontrei seu pet';
     } else {
       autoMessage = 'Oi, você encontrou meu item?';
     }
@@ -685,39 +700,22 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
             <View style={{ backgroundColor:'#fff', borderRadius:12, paddingVertical:24, paddingHorizontal:16, minWidth:360, maxWidth: '95%' }}>
               <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Atualizar Localidade do Perfil</Text>
-              <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione estado e cidade:</Text>
-              {/* Estado */}
-              <Text style={{ marginBottom: 6 }}>Estado</Text>
-              <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
-                <Picker
-                  selectedValue={profileEditState}
-                  onValueChange={uf => {
-                    setProfileEditState(uf);
-                    setProfileEditCity('');
-                  }}
-                  style={{ height: 56, minWidth: 320 }}
-                >
-                  <Picker.Item label="Selecione o estado" value="" />
-                  {states.map(uf => (
-                    <Picker.Item key={uf} label={uf} value={uf} />
-                  ))}
-                </Picker>
-              </View>
-              {/* Cidade */}
-              <Text style={{ marginBottom: 6 }}>Cidade</Text>
-              <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
-                <Picker
-                  selectedValue={profileEditCity}
-                  onValueChange={setProfileEditCity}
-                  enabled={!!profileEditState}
-                  style={{ height: 56, minWidth: 320 }}
-                >
-                  <Picker.Item label="Selecione a cidade" value="" />
-                  {(citiesByState[profileEditState] || []).map(city => (
-                    <Picker.Item key={city} label={city} value={city} />
-                  ))}
-                </Picker>
-              </View>
+              <Text style={{ color:'#6B7280', marginBottom:8 }}>Escolha sua localização no mapa:</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowProfileLocationModal(false);
+                  setProfileMapVisible(true);
+                }}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#4F46E5', borderRadius: 8, paddingVertical: 11, marginBottom: 16 }}
+              >
+                <MaterialIcons name="map" size={18} color="#4F46E5" />
+                <Text style={{ color: '#4F46E5', fontWeight: '700', marginLeft: 8 }}>Escolher no mapa</Text>
+              </TouchableOpacity>
+              {(profileEditCity || profileEditState) && (
+                <Text style={{ color: '#374151', textAlign: 'center', marginBottom: 16 }}>
+                  Localização selecionada: {[profileEditCity, profileEditState].filter(Boolean).join(', ')}
+                </Text>
+              )}
               <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 }}>
                 <Button title="Cancelar" onPress={() => setShowProfileLocationModal(false)} style={{ marginRight: 8, backgroundColor: '#E5E7EB', color: '#222' }} />
                 <Button title="Salvar" onPress={handleSaveProfileLocation} disabled={!profileEditState || !profileEditCity} />
@@ -725,6 +723,20 @@ const HomeScreen = ({ navigation, route }) => {
             </View>
           </View>
         </Modal>
+        <MapLocationPicker
+          visible={profileMapVisible}
+          mode="profile"
+          onClose={() => setProfileMapVisible(false)}
+          onConfirm={({ address }) => {
+            const region = String(address?.region || '').trim();
+            const stateValue = states.includes(region) ? region : normalizedRegionToUf[normalizeRegionName(region)] || '';
+            const cityValue = address?.city || address?.subregion || address?.district || '';
+            setProfileEditState(stateValue);
+            setProfileEditCity(cityValue);
+            setProfileMapVisible(false);
+            setShowProfileLocationModal(true);
+          }}
+        />
       </View>
 
       {/* Busca de pets acima dos filtros */}

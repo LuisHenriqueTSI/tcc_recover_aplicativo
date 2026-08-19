@@ -7,7 +7,11 @@ const ShareButton = ({ item, imageUrl }) => {
 
   const getShareMessage = () => {
     const status = item.status === 'found' ? '✅ ENCONTRADO' : '🔍 PERDIDO';
-    return `${status}: ${item.title}\n\n${item.description || 'Sem descrição'}\n\n📍 Local: ${item.location || 'Não especificado'}\n📅 Data: ${item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'Não informada'}`;
+    const location = [item.neighborhood, item.city, item.state].filter(Boolean).join(', ') || 'Não especificado';
+    const rawDate = String(item.date || '');
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? new Date(`${rawDate}T12:00:00`) : new Date(rawDate);
+    const formattedDate = item.date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString('pt-BR') : 'Não informada';
+    return `${status}: ${item.title || 'Pet'}\n\n${item.description || 'Sem descrição'}\n\n📍 Local: ${location}\n📅 Data: ${formattedDate}`;
   };
 
   const handleShare = async () => {

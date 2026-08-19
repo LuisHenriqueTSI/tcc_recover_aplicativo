@@ -3,8 +3,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { getMessages } from '../services/messages';
 import { Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, TextInput } from 'react-native';
-import { getConversations } from '../services/messages';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, TextInput, Alert } from 'react-native';
+import { getConversations, hideConversation } from '../services/messages';
 import { getItemById } from '../services/items';
 import { useAuth } from '../contexts/AuthContext';
 import Card from '../components/Card';
@@ -22,6 +22,7 @@ const InboxScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [selectedConversationKey, setSelectedConversationKey] = useState(null);
   // const [selectedConversation, setSelectedConversation] = useState(null);
 
   const loadConversations = useCallback(async () => {
@@ -93,6 +94,30 @@ const InboxScreen = () => {
     return () => { cancelled = true; };
   }, [search, conversations, user.id]);
 
+  const handleDeleteConversation = (conversation) => {
+    Alert.alert(
+      'Apagar conversa',
+      `A conversa com ${conversation.otherName || 'este usuário'} será removida da sua caixa de mensagens.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Apagar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await hideConversation(user.id, conversation.otherId);
+              setConversations((current) => current.filter((item) => item.otherId !== conversation.otherId));
+              setFiltered((current) => current.filter((item) => item.otherId !== conversation.otherId));
+              setSelectedConversationKey(null);
+            } catch (error) {
+              Alert.alert('Erro', error.message || 'Não foi possível apagar a conversa.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderItem = ({ item }) => {
     // Horário formatado
     let time = '';
@@ -108,12 +133,13 @@ const InboxScreen = () => {
       }
     }
     return (
-      <TouchableOpacity
-        key={item.otherId + '_' + (item.itemId || '')}
-        onPress={() => navigation.navigate('ChatScreen', { conversation: item })}
-        style={styles.convBtn}
-        activeOpacity={0.85}
-      >
+      <View style={[styles.convBtn, selectedConversationKey === `${item.otherId}_${item.itemId || ''}` && styles.convBtnSelected]}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('ChatScreen', { conversation: item })}
+          onLongPress={() => setSelectedConversationKey(`${item.otherId}_${item.itemId || ''}`)}
+          style={styles.convMainButton}
+          activeOpacity={0.85}
+        >
         <View style={styles.avatarCircle}>
           <Image
             source={item.avatarUrl ? { uri: item.avatarUrl } : require('../assets/logo_recover.png')}
@@ -138,7 +164,18 @@ const InboxScreen = () => {
         {item.unread ? (
           <View style={styles.unreadBadge}><Text style={styles.unreadBadgeText}>{item.unread}</Text></View>
         ) : null}
-      </TouchableOpacity>
+        </TouchableOpacity>
+        {selectedConversationKey === `${item.otherId}_${item.itemId || ''}` && (
+          <TouchableOpacity
+            onPress={() => handleDeleteConversation(item)}
+            style={styles.deleteConversationButton}
+            accessibilityLabel={`Apagar conversa com ${item.otherName || 'usuário'}`}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Feather name="trash-2" size={16} color="#DC2626" />
+          </TouchableOpacity>
+        )}
+      </View>
     );
   };
 
@@ -269,6 +306,25 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
     gap: 10,
+  },
+  convBtnSelected: {
+    borderColor: '#C7D2FE',
+    backgroundColor: '#EEF2FF',
+  },
+  convMainButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: 0,
+    gap: 10,
+  },
+  deleteConversationButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F9FAFB',
   },
   avatarCircle: {
     width: 52,

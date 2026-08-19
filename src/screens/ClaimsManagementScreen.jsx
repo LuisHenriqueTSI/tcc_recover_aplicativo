@@ -154,7 +154,7 @@ export default function ClaimsManagementScreen({ navigation }) {
         <Card style={styles.messageCard}>
           <Text style={styles.messageText}>Você não cadastrou pets encontrados</Text>
           <Text style={styles.messageSubtext}>
-            Quando você registrar um pet como "achei", a pessoa que o perdeu poderá reivindicá-lo aqui.
+            Quando você registrar um pet como "encontrei", a pessoa que o perdeu poderá reivindicá-lo aqui.
           </Text>
         </Card>
       </View>

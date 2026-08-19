@@ -1,6 +1,40 @@
 import { supabase } from '../lib/supabase';
 import { uploadMessagePhoto as uploadMessagePhotoFS } from './uploadMessagePhoto';
 import { getUserById } from './user';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const hiddenConversationsKey = (userId) => `hidden_conversations_${userId}`;
+
+const conversationKey = (userId, otherUserId) => [userId, otherUserId].sort().join('_');
+
+const getHiddenConversationKeys = async (userId) => {
+  try {
+    const raw = await AsyncStorage.getItem(hiddenConversationsKey(userId));
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.log('[messages] Erro ao carregar conversas ocultas:', error.message);
+    return [];
+  }
+};
+
+const saveHiddenConversationKeys = async (userId, keys) => {
+  await AsyncStorage.setItem(hiddenConversationsKey(userId), JSON.stringify(keys));
+};
+
+export const hideConversation = async (userId, otherUserId) => {
+  if (!userId || !otherUserId) throw new Error('Conversa inválida.');
+  const keys = await getHiddenConversationKeys(userId);
+  const key = conversationKey(userId, otherUserId);
+  if (!keys.includes(key)) await saveHiddenConversationKeys(userId, [...keys, key]);
+};
+
+const showConversationAgain = async (userId, otherUserId) => {
+  const key = conversationKey(userId, otherUserId);
+  const keys = await getHiddenConversationKeys(userId);
+  const nextKeys = keys.filter((hiddenKey) => hiddenKey !== key);
+  if (nextKeys.length !== keys.length) await saveHiddenConversationKeys(userId, nextKeys);
+};
 
 const getNextMessageId = async () => {
   try {
@@ -25,6 +59,7 @@ const getNextMessageId = async () => {
 export const sendMessage = async (messageData) => {
   try {
     console.log('[sendMessage] Enviando mensagem...');
+    await showConversationAgain(messageData.sender_id, messageData.receiver_id);
 
     const nextMessageId = await getNextMessageId();
     const sentAt = new Date().toISOString();
@@ -72,6 +107,8 @@ export const getConversations = async (userId) => {
       return [];
     }
 
+    const hiddenKeys = await getHiddenConversationKeys(userId);
+
     // Agrupa por conversa (par sender/receiver)
     const conversations = new Map();
     const userCache = {};
@@ -79,6 +116,7 @@ export const getConversations = async (userId) => {
       for (const msg of data) {
         const otherId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
         const key = [userId, otherId].sort().join('_');
+        if (hiddenKeys.includes(key)) continue;
         if (!conversations.has(key)) {
           // Busca dados do outro usuário (cache para evitar múltiplas queries)
           let otherUser = userCache[otherId];

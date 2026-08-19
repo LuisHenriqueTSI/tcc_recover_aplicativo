@@ -37,6 +37,7 @@ const PET_SPECIES_CHIPS = PET_SPECIES_OPTIONS.filter((option) => option.value);
 const PET_COLOR_OPTIONS = ['Preto', 'Branco', 'Marrom', 'Laranja', 'Cinza', 'Amarelo', 'Dourado', 'Caramelo'];
 const PET_SIZE_OPTIONS = ['Pequeno', 'Médio', 'Grande', 'Gigante'];
 const PET_AGE_OPTIONS = ['Filhote', 'Adulto', 'Idoso', 'Não informado'];
+const PET_BREED_OPTIONS = ['Sem raça definida'];
 const PET_COLOR_ALIASES = {
   Preto: ['preto', 'preta', 'pretos', 'pretas'],
   Branco: ['branco', 'branca', 'brancos', 'brancas'],
@@ -260,7 +261,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const renderLocationAndRewardSection = () => (
     <View>
       <Text style={styles.label}>Localização</Text>
-      <Text style={styles.locationHint}>Escolha no mapa onde o pet foi perdido ou encontrado.</Text>
+      <Text style={styles.locationHint}>
+        Escolha no mapa onde o pet foi {status === 'lost' ? 'perdido' : 'encontrado'}.
+      </Text>
       {renderMapLocationButton()}
 
       <View style={styles.datePickerContainer}>
@@ -1202,7 +1205,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       styles.statusText,
                       status === 'found' && styles.statusTextActive,
                     ]}>
-                      Achei
+                      Encontrei
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -1210,10 +1213,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
               {/* Fotos do Animal - logo após status */}
               <Text style={styles.title}>Fotos do Animal</Text>
-              <View style={styles.aiHintCard}>
-                <Text style={styles.aiHintTitle}>Gerar com IA</Text>
-                <Text style={styles.aiHintText}>Envie uma foto e a IA pode preencher os dados visíveis do animal, como espécie, raça, porte e cor.</Text>
-              </View>
               <TouchableOpacity
                 style={styles.uploadButton}
                 onPress={pickImage}
@@ -1271,15 +1270,16 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   setColor(nextColors.join(' com '));
                 }}
               />
+              <SelectionChips label="Porte" options={PET_SIZE_OPTIONS} value={animalSize} onChange={setAnimalSize} />
+              <SelectionChips label="Idade" options={PET_AGE_OPTIONS} value={animalAge} onChange={setAnimalAge} />
+              <SelectionChips label="Raça" options={PET_BREED_OPTIONS} value={animalBreed} onChange={setAnimalBreed} />
               <Input
-                label="Raça"
-                placeholder="Ex: Golden Retriever"
+                label="Raça (opcional)"
+                placeholder="Digite a raça do pet"
                 value={animalBreed}
                 onChangeText={setAnimalBreed}
                 style={styles.input}
               />
-              <SelectionChips label="Porte" options={PET_SIZE_OPTIONS} value={animalSize} onChange={setAnimalSize} />
-              <SelectionChips label="Idade" options={PET_AGE_OPTIONS} value={animalAge} onChange={setAnimalAge} />
               <Input
                 label="Descrição"
                 placeholder="Descreva detalhes importantes..."
@@ -1349,17 +1349,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     styles.statusText,
                     status === 'found' && styles.statusTextActive,
                   ]}>
-                    Achei
+                    Encontrei
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
             {/* Fotos do Item - logo após status */}
             <Text style={styles.title}>Fotos do Item</Text>
-            <View style={styles.aiHintCard}>
-              <Text style={styles.aiHintTitle}>Gerar com IA</Text>
-              <Text style={styles.aiHintText}>Se você quiser colocar uma foto aqui para gerar rapidamente as informações, basta enviar a foto e clicar em gerar com a IA.</Text>
-            </View>
 
             {itemType === 'document' && (
               <View style={styles.warningContainer}>
@@ -1487,7 +1483,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
       <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 0 }} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Localização e Recompensa</Text>
-          <Text style={styles.locationHint}>Escolha no mapa onde o pet foi perdido ou encontrado.</Text>
+          <Text style={styles.locationHint}>
+            Escolha no mapa onde o pet foi {status === 'lost' ? 'perdido' : 'encontrado'}.
+          </Text>
           {renderMapLocationButton()}
 
           <View style={styles.datePickerContainer}>
@@ -1702,25 +1700,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#4F46E5',
-  },
-  aiHintCard: {
-    borderRadius: 12,
-    padding: 12,
-    backgroundColor: '#EEF2FF',
-    borderWidth: 1,
-    borderColor: '#C7D2FE',
-    marginBottom: 12,
-  },
-  aiHintTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#4338CA',
-    marginBottom: 4,
-  },
-  aiHintText: {
-    fontSize: 13,
-    color: '#4338CA',
-    lineHeight: 18,
   },
   aiButton: {
     borderRadius: 8,

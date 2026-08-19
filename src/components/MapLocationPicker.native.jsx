@@ -10,7 +10,7 @@ const BRAZIL_REGION = {
   longitudeDelta: 35,
 };
 
-const MapLocationPicker = ({ visible, initialLocation, onClose, onConfirm }) => {
+const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm }) => {
   const [coordinate, setCoordinate] = useState(initialLocation || null);
   const [loadingLocation, setLoadingLocation] = useState(false);
 
@@ -54,8 +54,8 @@ const MapLocationPicker = ({ visible, initialLocation, onClose, onConfirm }) => 
       <View style={styles.container}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>Escolha no mapa</Text>
-            <Text style={styles.subtitle}>Toque no ponto onde o animal foi perdido ou encontrado.</Text>
+            <Text style={styles.title}>{mode === 'profile' ? 'Atualize sua localização' : 'Escolha no mapa'}</Text>
+            <Text style={styles.subtitle}>{mode === 'profile' ? 'Toque no mapa onde você está.' : 'Toque no ponto onde o animal foi perdido ou encontrado.'}</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeText}>Fechar</Text>

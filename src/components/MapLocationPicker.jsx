@@ -1,11 +1,11 @@
 import React from 'react';
 import { Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const MapLocationPicker = ({ visible, onClose }) => (
+const MapLocationPicker = ({ visible, mode, onClose }) => (
   <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
     <View style={styles.overlay}>
       <View style={styles.container}>
-        <Text style={styles.title}>Mapa disponível no aplicativo mobile</Text>
+        <Text style={styles.title}>{mode === 'profile' ? 'Localização do perfil disponível no aplicativo mobile' : 'Mapa disponível no aplicativo mobile'}</Text>
         <Text style={styles.description}>
           A seleção pelo mapa funciona no Android e no iPhone. No navegador, use os seletores de estado, cidade e bairro.
         </Text>
