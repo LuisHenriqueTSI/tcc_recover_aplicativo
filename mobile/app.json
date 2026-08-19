@@ -20,6 +20,12 @@
           "photosPermission": "Permitir acesso às suas fotos para registrar itens",
           "cameraPermission": "Permitir acesso à câmera para tirar fotos"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permitir acesso à localização para escolher o ponto no mapa"
+        }
       ]
     ],
     "ios": {

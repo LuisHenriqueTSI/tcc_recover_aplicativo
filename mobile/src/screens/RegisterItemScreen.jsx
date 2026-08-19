@@ -18,6 +18,7 @@ import * as itemsService from '../services/items';
 import * as rewardsService from '../services/rewards';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import MapLocationPicker from '../components/MapLocationPicker';
 import { states, citiesByState, neighborhoodsByCity } from '../lib/br-locations';
 import { Picker } from '@react-native-picker/picker';
 import Card from '../components/Card';
@@ -176,6 +177,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const renderLocationAndRewardSection = () => (
     <View>
       <Text style={styles.label}>Localização</Text>
+      {renderMapLocationButton()}
       <View style={styles.input}>
         <Text style={styles.label}>Estado</Text>
         <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
@@ -245,6 +247,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
 
+      {(itemType !== 'animal' || status !== 'found') && (
       <View style={styles.rewardSection}>
         <TouchableOpacity
           style={styles.checkboxContainer}
@@ -266,16 +269,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
               keyboardType="decimal-pad"
               style={styles.input}
             />
-            <Input
-              label="Descrição da Recompensa"
-              placeholder="Ex: Dinheiro ou cartão presente"
-              value={rewardDescription}
-              onChangeText={setRewardDescription}
-              style={styles.input}
-            />
           </>
         )}
       </View>
+      )}
     </View>
   );
   // Debug: verifique se editItem está chegando corretamente
@@ -330,6 +327,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [offerReward, setOfferReward] = useState(false);
   const [rewardAmount, setRewardAmount] = useState('');
   const [rewardDescription, setRewardDescription] = useState('');
+  const [mapModalVisible, setMapModalVisible] = useState(false);
+  const [mapLocation, setMapLocation] = useState(null);
 
   // Modal para perguntar se encontrou o item
   const [showFoundModal, setShowFoundModal] = useState(false);
@@ -339,6 +338,39 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [foundModalTitle, setFoundModalTitle] = useState('');
   const [foundModalVisible, setFoundModalVisible] = useState(false);
   const [foundModalItemId, setFoundModalItemId] = useState(null);
+
+  const renderMapLocationButton = () => (
+    <>
+      <TouchableOpacity
+        style={styles.mapButton}
+        onPress={() => setMapModalVisible(true)}
+      >
+        <Text style={styles.mapButtonText}>
+          {mapLocation ? 'Alterar localização no mapa' : 'Escolher localização no mapa'}
+        </Text>
+      </TouchableOpacity>
+      {mapLocation && (
+        <Text style={styles.mapSelectedText}>
+          Ponto selecionado: {mapLocation.latitude.toFixed(5)}, {mapLocation.longitude.toFixed(5)}
+        </Text>
+      )}
+    </>
+  );
+
+  const renderMapLocationPicker = () => (
+    <MapLocationPicker
+      visible={mapModalVisible}
+      initialLocation={mapLocation}
+      onClose={() => setMapModalVisible(false)}
+      onConfirm={({ coordinate, address }) => {
+        setMapLocation(coordinate);
+        if (address?.city) setCity(address.city);
+        if (address?.region && states.includes(address.region)) setState(address.region);
+        setNeighborhood(address?.district || address?.subregion || '');
+        setMapModalVisible(false);
+      }}
+    />
+  );
 
   // Carregar fotos e todos os dados antigos quando editar item
   useEffect(() => {
@@ -359,6 +391,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
       if (editItem.state) setState(editItem.state);
       if (editItem.city) setCity(editItem.city);
       if (editItem.neighborhood) setNeighborhood(editItem.neighborhood);
+      if (editItem.latitude && editItem.longitude) {
+        setMapLocation({ latitude: editItem.latitude, longitude: editItem.longitude });
+      }
       // Preencher campos genéricos a partir das colunas principais OU extra_fields
       if (typeof editItem.brand !== 'undefined') setBrand(editItem.brand);
       else if (editItem.extra_fields && typeof editItem.extra_fields.brand !== 'undefined') setBrand(editItem.extra_fields.brand);
@@ -642,6 +677,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
         state: toNull(state) || editItem?.state,
         city: toNull(city) || editItem?.city,
         neighborhood: toNull(neighborhood) || editItem?.neighborhood,
+        latitude: mapLocation?.latitude || editItem?.latitude || null,
+        longitude: mapLocation?.longitude || editItem?.longitude || null,
         status: toNull(status) || editItem?.status,
         category: toNull(itemType) || editItem?.category,
         item_type: toNull(itemType) || editItem?.item_type,
@@ -905,6 +942,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     state,
                     city,
                     neighborhood,
+                    latitude: mapLocation?.latitude || null,
+                    longitude: mapLocation?.longitude || null,
                     status,
                     category: itemType,
                     item_type: itemType,
@@ -1084,7 +1123,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       styles.statusButton,
                       status === 'found' && styles.statusButtonActive,
                     ]}
-                    onPress={() => setStatus('found')}
+                    onPress={() => {
+                      setStatus('found');
+                      setOfferReward(false);
+                      setRewardAmount('');
+                    }}
                   >
                     <Text style={[
                       styles.statusText,
@@ -1213,6 +1256,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               ) : null}
             </View>
           </ScrollView>
+          {renderMapLocationPicker()}
           <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
             <Button
               title={loading ? 'Publicando...' : 'Publicar'}
@@ -1253,7 +1297,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     styles.statusButton,
                     status === 'found' && styles.statusButtonActive,
                   ]}
-                  onPress={() => setStatus('found')}
+                    onPress={() => {
+                      setStatus('found');
+                      setOfferReward(false);
+                      setRewardAmount('');
+                    }}
                 >
                   <Text style={[
                     styles.statusText,
@@ -1382,6 +1430,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
             ) : null}
           </View>
         </ScrollView>
+        {renderMapLocationPicker()}
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
           <Button
             title={loading ? 'Publicando...' : 'Publicar'}
@@ -1399,6 +1448,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
       <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 0 }} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Localização e Recompensa</Text>
+          {renderMapLocationButton()}
 
           {/* Estado (opcional) */}
           <View style={styles.input}>
@@ -1520,6 +1570,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           </Modal>
 
           {/* Reward Section */}
+          {(itemType !== 'animal' || status !== 'found') && (
           <View style={styles.rewardSection}>
             <TouchableOpacity
               style={styles.checkboxContainer}
@@ -1541,16 +1592,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   keyboardType="decimal-pad"
                   style={styles.input}
                 />
-                <Input
-                  label="Descrição da Recompensa"
-                  placeholder="Ex: Dinheiro ou cartão presente"
-                  value={rewardDescription}
-                  onChangeText={setRewardDescription}
-                  style={styles.input}
-                />
               </>
             )}
           </View>
+          )}
 
           {error ? (
             <View style={styles.errorContainer}>
@@ -1558,6 +1603,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
             </View>
           ) : null}
         </ScrollView>
+        {renderMapLocationPicker()}
         {/* Botões fixos na base, igual aos outros passos */}
         <View style={[styles.navigation, { position: 'absolute', left: 0, right: 0, bottom: 44, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E5E7EB', padding: 16, zIndex: 10 }]}> 
           <Button
@@ -1805,6 +1851,24 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 20,
+  },
+  mapButton: {
+    borderWidth: 1,
+    borderColor: '#4F46E5',
+    borderRadius: 8,
+    paddingVertical: 11,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  mapButtonText: {
+    color: '#4F46E5',
+    fontWeight: '700',
+  },
+  mapSelectedText: {
+    color: '#6B7280',
+    fontSize: 12,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   checkboxContainer: {
     flexDirection: 'row',
