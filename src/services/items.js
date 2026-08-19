@@ -301,6 +301,7 @@ export const registerItem = async (itemData, photos = []) => {
         brand: itemData.brand,
         color: itemData.color,
         serial_number: itemData.serial_number,
+        extra_fields: itemData.extra_fields || null,
         resolved: false,
       })
       .select();
@@ -361,6 +362,7 @@ export const updateItem = async (itemId, itemData) => {
         brand: itemData.brand,
         color: itemData.color,
         serial_number: itemData.serial_number,
+        extra_fields: itemData.extra_fields || null,
       })
       .eq('id', itemId)
       .select()

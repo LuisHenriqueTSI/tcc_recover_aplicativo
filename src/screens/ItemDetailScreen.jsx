@@ -42,6 +42,19 @@ const formatItemLocation = (item) => [item?.city, item?.state]
   .filter(Boolean)
   .join(', ');
 
+const formatMapLocationDetails = (item) => {
+  const details = item?.extra_fields?.location_details;
+  if (!details) return '';
+
+  const textValue = typeof details.text === 'string' && details.text.trim() ? details.text.trim() : '';
+  if (textValue) return textValue;
+
+  return [details.street, details.number, details.district, details.city, details.state, details.postalCode]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .join(', ');
+};
+
 const ItemDetailScreen = ({ route, navigation }) => {
   const { itemId } = route.params;
   const { user, isAdmin } = useAuth();
@@ -551,11 +564,25 @@ const ItemDetailScreen = ({ route, navigation }) => {
         {/* Bairro e Data */}
         <View style={styles.locationGrid}>
           <View style={styles.locationCard}>
-            <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Bairro</Text>
-            <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold' }}>{item.neighborhood || item.city || item.state || 'Localização não informada'}</Text>
+            <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Localização</Text>
+            {formatMapLocationDetails(item) ? (
+              <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold', lineHeight: 22 }}>{formatMapLocationDetails(item)}</Text>
+            ) : (
+              <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold' }}>{item.neighborhood || item.city || item.state || 'Localização não informada'}</Text>
+            )}
             {formatItemLocation(item) ? (
-              <Text style={{ fontSize: 13, color: '#6B7280' }}>{formatItemLocation(item)}</Text>
+              <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>{formatItemLocation(item)}</Text>
             ) : null}
+            {formatMapLocationDetails(item) && formatItemLocation(item) ? (
+              <Text style={{ fontSize: 12, color: '#64748B', marginTop: 6, lineHeight: 18 }}>
+                {formatMapLocationDetails(item)}
+              </Text>
+            ) : null}
+            {item.extra_fields?.location_details?.text && (
+              <Text style={{ fontSize: 11, color: '#9CA3AF', marginTop: 6 }}>
+                Endereço detalhado
+              </Text>
+            )}
           </View>
           <View style={styles.locationCard}>
             <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Data</Text>

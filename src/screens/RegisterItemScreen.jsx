@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Modal,
   Image,
+  TextInput,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -258,6 +259,79 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
   const editItem = route?.params?.editItem || null;
 
+  // Debug: verifique se editItem está chegando corretamente
+  useEffect(() => {
+    if (editItem) {
+      console.log('Editando item:', editItem);
+    }
+  }, [editItem]);
+
+  function normalizeCategory(cat) {
+    if (!cat) return null;
+    const key = String(cat).toLowerCase();
+    if (ITEM_TYPES[key]) return key;
+    if (ITEM_TYPES['outro']) return 'outro';
+    return null;
+  }
+
+  const initialType = normalizeCategory(route?.params?.itemType || route?.params?.category || editItem?.category) || 'animal';
+  const [step, setStep] = useState(2);
+  const [itemType, setItemType] = useState(initialType);
+  const [status, setStatus] = useState(editItem?.status || 'lost');
+  const [title, setTitle] = useState(editItem?.title || '');
+  const [description, setDescription] = useState(editItem?.description || '');
+  const [state, setState] = useState(editItem?.state || (userProfile?.state || ''));
+  const [city, setCity] = useState(editItem?.city || (userProfile?.city || ''));
+  const [neighborhood, setNeighborhood] = useState(editItem?.neighborhood || '');
+  const [date, setDate] = useState(
+    editItem?.date ? editItem.date.split('T')[0] : new Date().toISOString().split('T')[0]
+  );
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  
+  // Campos genéricos (colunas diretas da tabela + extra_fields)
+  const [brand, setBrand] = useState(editItem?.brand || editItem?.extra_fields?.brand || '');
+  const [color, setColor] = useState(editItem?.color || editItem?.extra_fields?.color || '');
+  const [serialNumber, setSerialNumber] = useState(editItem?.serial_number || editItem?.extra_fields?.serial_number || '');
+
+  // Campos detalhados para animal (colunas diretas da tabela + extra_fields)
+  const [animalSpecies, setAnimalSpecies] = useState(editItem?.species || editItem?.extra_fields?.species || '');
+  const [animalBreed, setAnimalBreed] = useState(editItem?.breed || editItem?.extra_fields?.breed || '');
+  const [animalSize, setAnimalSize] = useState(editItem?.size || editItem?.extra_fields?.size || '');
+  const [animalAge, setAnimalAge] = useState(editItem?.age || editItem?.extra_fields?.age || '');
+  const [animalCollar, setAnimalCollar] = useState(editItem?.collar || editItem?.extra_fields?.collar || '');
+  
+  const [photos, setPhotos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Reward
+  const [offerReward, setOfferReward] = useState(false);
+  const [rewardAmount, setRewardAmount] = useState('');
+  const [rewardDescription, setRewardDescription] = useState('');
+  const [mapModalVisible, setMapModalVisible] = useState(false);
+  const [mapLocation, setMapLocation] = useState(null);
+  const [mapLocationDetails, setMapLocationDetails] = useState(editItem?.extra_fields?.location_details || null);
+  const [mapAddressText, setMapAddressText] = useState(
+    editItem?.extra_fields?.location_details?.text
+      || (editItem?.extra_fields?.location_details
+        ? [
+            editItem.extra_fields.location_details.street,
+            editItem.extra_fields.location_details.number,
+            editItem.extra_fields.location_details.district,
+            editItem.extra_fields.location_details.city,
+            editItem.extra_fields.location_details.state,
+          ].filter(Boolean).join(', ')
+        : '')
+  );
+
+  // Modal para perguntar se encontrou o item
+  const [foundModalVisible, setFoundModalVisible] = useState(false);
+  const [foundModalTitle, setFoundModalTitle] = useState('');
+  const [foundModalMessage, setFoundModalMessage] = useState('');
+  const [foundModalItemId, setFoundModalItemId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   const renderLocationAndRewardSection = () => (
     <View>
       <Text style={styles.label}>Localização</Text>
@@ -316,96 +390,33 @@ const RegisterItemScreen = ({ navigation, route }) => {
       </Modal>
 
       {(itemType !== 'animal' || status !== 'found') && (
-      <View style={styles.rewardSection}>
-        <TouchableOpacity
-          style={styles.checkboxContainer}
-          onPress={() => setOfferReward(!offerReward)}
-        >
-          <View style={[styles.checkbox, offerReward && styles.checkboxChecked]}>
-            {offerReward && <Text style={styles.checkmark}>✓</Text>}
-          </View>
-          <Text style={styles.checkboxLabel}>Oferecer Recompensa</Text>
-        </TouchableOpacity>
+        <View style={styles.rewardSection}>
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setOfferReward(!offerReward)}
+          >
+            <View style={[styles.checkbox, offerReward && styles.checkboxChecked]}>
+              {offerReward && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <Text style={styles.checkboxLabel}>Oferecer Recompensa</Text>
+          </TouchableOpacity>
 
-        {offerReward && (
-          <>
-            <Input
-              label="Valor da Recompensa"
-              placeholder="Ex: 100"
-              value={rewardAmount}
-              onChangeText={setRewardAmount}
-              keyboardType="decimal-pad"
-              style={styles.input}
-            />
-          </>
-        )}
-      </View>
+          {offerReward && (
+            <>
+              <Input
+                label="Valor da Recompensa"
+                placeholder="Ex: 100"
+                value={rewardAmount}
+                onChangeText={setRewardAmount}
+                keyboardType="decimal-pad"
+                style={styles.input}
+              />
+            </>
+          )}
+        </View>
       )}
     </View>
   );
-  // Debug: verifique se editItem está chegando corretamente
-  useEffect(() => {
-    if (editItem) {
-      console.log('Editando item:', editItem);
-    }
-  }, [editItem]);
-  // Prioriza tipo vindo por parâmetro, depois do editItem, nunca deixa nulo se veio por navegação
-  // Normaliza categoria para minúsculo e garante fallback para 'outro'
-  function normalizeCategory(cat) {
-    if (!cat) return null;
-    const key = String(cat).toLowerCase();
-    if (ITEM_TYPES[key]) return key;
-    // fallback: se não existir, retorna 'outro' se existir
-    if (ITEM_TYPES['outro']) return 'outro';
-    return null;
-  }
-  const initialType = normalizeCategory(route?.params?.itemType || route?.params?.category || editItem?.category) || 'animal';
-  const [step, setStep] = useState(2);
-  const [itemType, setItemType] = useState(initialType);
-  const [status, setStatus] = useState(editItem?.status || 'lost');
-  const [title, setTitle] = useState(editItem?.title || '');
-  const [description, setDescription] = useState(editItem?.description || '');
-  const [state, setState] = useState(editItem?.state || (userProfile?.state || ''));
-  const [city, setCity] = useState(editItem?.city || (userProfile?.city || ''));
-  const [neighborhood, setNeighborhood] = useState(editItem?.neighborhood || '');
-  const [date, setDate] = useState(
-    editItem?.date ? editItem.date.split('T')[0] : new Date().toISOString().split('T')[0]
-  );
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  
-  // Campos genéricos
-  const [brand, setBrand] = useState(editItem?.brand || editItem?.extra_fields?.brand || '');
-  const [color, setColor] = useState(editItem?.color || editItem?.extra_fields?.color || '');
-  const [serialNumber, setSerialNumber] = useState(editItem?.serial_number || editItem?.extra_fields?.serial_number || '');
-
-  // Campos detalhados para animal
-  const [animalSpecies, setAnimalSpecies] = useState(editItem?.extra_fields?.species || '');
-  const [animalBreed, setAnimalBreed] = useState(editItem?.extra_fields?.breed || '');
-  const [animalSize, setAnimalSize] = useState(editItem?.extra_fields?.size || '');
-  const [animalAge, setAnimalAge] = useState(editItem?.extra_fields?.age || '');
-  const [animalCollar, setAnimalCollar] = useState(editItem?.extra_fields?.collar || '');
-  const [animalName, setAnimalName] = useState(editItem?.extra_fields?.animal_name || '');
-  
-  const [photos, setPhotos] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  // Reward
-  const [offerReward, setOfferReward] = useState(false);
-  const [rewardAmount, setRewardAmount] = useState('');
-  const [rewardDescription, setRewardDescription] = useState('');
-  const [mapModalVisible, setMapModalVisible] = useState(false);
-  const [mapLocation, setMapLocation] = useState(null);
-
-  // Modal para perguntar se encontrou o item
-  const [showFoundModal, setShowFoundModal] = useState(false);
-  const [lastCreatedItemId, setLastCreatedItemId] = useState(null);
-  const [deleting, setDeleting] = useState(false);
-  const [foundModalMessage, setFoundModalMessage] = useState('');
-  const [foundModalTitle, setFoundModalTitle] = useState('');
-  const [foundModalVisible, setFoundModalVisible] = useState(false);
-  const [foundModalItemId, setFoundModalItemId] = useState(null);
 
   const renderMapLocationButton = () => (
     <>
@@ -422,6 +433,19 @@ const RegisterItemScreen = ({ navigation, route }) => {
           Ponto selecionado: {mapLocation.latitude.toFixed(5)}, {mapLocation.longitude.toFixed(5)}
         </Text>
       )}
+      {mapAddressText && (
+        <View style={styles.addressEditorContainer}>
+          <Text style={styles.label}>Endereço informado</Text>
+          <TextInput
+            style={styles.addressInput}
+            value={mapAddressText}
+            onChangeText={setMapAddressText}
+            placeholder="Edite o endereço gerado pelo mapa"
+            multiline
+            textAlignVertical="top"
+          />
+        </View>
+      )}
     </>
   );
 
@@ -432,19 +456,34 @@ const RegisterItemScreen = ({ navigation, route }) => {
       onClose={() => setMapModalVisible(false)}
       onConfirm={({ coordinate, address }) => {
         setMapLocation(coordinate);
-        // O ponto escolhido no mapa é a fonte principal; não manter valores antigos
-        // dos seletores quando a geocodificação não retornar algum campo.
         setCity(address?.city || '');
         const region = String(address?.region || '').trim();
         const normalizedRegion = region.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         setState(states.includes(region) ? region : (BRAZIL_REGION_TO_UF[normalizedRegion] || ''));
         setNeighborhood(address?.district || address?.subregion || '');
+        const nextLocationDetails = address ? {
+          street: address.street || address.name || '',
+          number: address.name && /^\d+$/.test(String(address.name)) ? address.name : address.houseNumber || '',
+          district: address.district || address.subregion || '',
+          city: address.city || address.subregion || '',
+          state: region,
+          postalCode: address.postalCode || '',
+        } : null;
+        setMapLocationDetails(nextLocationDetails);
+        const nextAddressText = [
+          nextLocationDetails?.street,
+          nextLocationDetails?.number,
+          nextLocationDetails?.district,
+          nextLocationDetails?.city,
+          nextLocationDetails?.state,
+        ].filter(Boolean).join(', ');
+        setMapAddressText(nextAddressText);
         setMapModalVisible(false);
       }}
     />
   );
 
-  // Carregar fotos e todos os dados antigos quando editar item
+  // Carregar dados antigos quando editar item
   useEffect(() => {
     if (editItem) {
       // Carregar fotos antigas
@@ -453,11 +492,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
           uri: photo.url,
           type: 'image/jpeg',
           name: photo.url.split('/').pop(),
-          id: photo.id, // Marcar como foto antiga
+          id: photo.id,
         }));
         setPhotos(oldPhotos);
       }
-      // Garantir que todos os dados estão carregados
+      // Carregar todos os campos
       if (editItem.title) setTitle(editItem.title);
       if (editItem.description) setDescription(editItem.description);
       if (editItem.state) setState(editItem.state);
@@ -466,24 +505,33 @@ const RegisterItemScreen = ({ navigation, route }) => {
       if (editItem.latitude && editItem.longitude) {
         setMapLocation({ latitude: editItem.latitude, longitude: editItem.longitude });
       }
-      // Preencher campos genéricos a partir das colunas principais OU extra_fields
+      
+      // Carregar campos das colunas diretas OU extra_fields
       if (typeof editItem.brand !== 'undefined') setBrand(editItem.brand);
       else if (editItem.extra_fields && typeof editItem.extra_fields.brand !== 'undefined') setBrand(editItem.extra_fields.brand);
+      
       if (typeof editItem.color !== 'undefined') setColor(editItem.color);
       else if (editItem.extra_fields && typeof editItem.extra_fields.color !== 'undefined') setColor(editItem.extra_fields.color);
+      
       if (typeof editItem.serial_number !== 'undefined') setSerialNumber(editItem.serial_number);
       else if (editItem.extra_fields && typeof editItem.extra_fields.serial_number !== 'undefined') setSerialNumber(editItem.extra_fields.serial_number);
-      // Campos de animal
-      if (editItem.extra_fields) {
-        if (typeof editItem.extra_fields.species !== 'undefined') setAnimalSpecies(editItem.extra_fields.species);
-        if (typeof editItem.extra_fields.breed !== 'undefined') setAnimalBreed(editItem.extra_fields.breed);
-        if (typeof editItem.extra_fields.size !== 'undefined') setAnimalSize(editItem.extra_fields.size);
-        if (typeof editItem.extra_fields.age !== 'undefined') setAnimalAge(editItem.extra_fields.age);
-        if (typeof editItem.extra_fields.collar !== 'undefined') setAnimalCollar(editItem.extra_fields.collar);
-        if (typeof editItem.extra_fields.animal_name !== 'undefined') setAnimalName(editItem.extra_fields.animal_name);
-      }
+      
+      if (typeof editItem.species !== 'undefined') setAnimalSpecies(editItem.species);
+      else if (editItem.extra_fields && typeof editItem.extra_fields.species !== 'undefined') setAnimalSpecies(editItem.extra_fields.species);
+      
+      if (typeof editItem.breed !== 'undefined') setAnimalBreed(editItem.breed);
+      else if (editItem.extra_fields && typeof editItem.extra_fields.breed !== 'undefined') setAnimalBreed(editItem.extra_fields.breed);
+      
+      if (typeof editItem.size !== 'undefined') setAnimalSize(editItem.size);
+      else if (editItem.extra_fields && typeof editItem.extra_fields.size !== 'undefined') setAnimalSize(editItem.extra_fields.size);
+      
+      if (typeof editItem.age !== 'undefined') setAnimalAge(editItem.age);
+      else if (editItem.extra_fields && typeof editItem.extra_fields.age !== 'undefined') setAnimalAge(editItem.extra_fields.age);
+      
+      if (typeof editItem.collar !== 'undefined') setAnimalCollar(editItem.collar);
+      else if (editItem.extra_fields && typeof editItem.extra_fields.collar !== 'undefined') setAnimalCollar(editItem.extra_fields.collar);
+      
     } else {
-      // Se não estiver editando, preenche cidade/estado do perfil
       if (userProfile?.state) setState(userProfile.state);
       if (userProfile?.city) setCity(userProfile.city);
     }
@@ -621,7 +669,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
       console.log('[RegisterItem] Sugestões recebidas da IA:', suggestions);
 
       if (itemType === 'animal') {
-        if (suggestions.animal_name) setAnimalName(suggestions.animal_name);
         if (suggestions.species) setAnimalSpecies(normalizeSpeciesValue(suggestions.species));
         if (suggestions.breed) setAnimalBreed(suggestions.breed);
         if (suggestions.size) setAnimalSize(normalizeOptionValue(suggestions.size, PET_SIZE_OPTIONS));
@@ -661,33 +708,12 @@ const RegisterItemScreen = ({ navigation, route }) => {
       return false;
     }
 
-    // Em modo edição, aceitar valores antigos - não obrigar a preencher tudo novamente
     if (editItem) {
       if (!date.trim() && !editItem.date) {
         setError('Selecione a data');
         return false;
       }
-      // Localização e nome agora opcionais
       return true;
-    }
-
-    // Modo de CRIAÇÃO - validação rigorosa
-    // Nome do item/animal agora opcional
-
-    const config = ITEM_TYPES[itemType];
-
-    // Validar campos obrigatórios
-    if (config.fields.required.includes('brand') && !brand.trim()) {
-      setError(`${config.fieldLabels.brand} é obrigatório`);
-      return false;
-    }
-    if (config.fields.required.includes('color') && !color.trim()) {
-      setError(`${config.fieldLabels.color} é obrigatório`);
-      return false;
-    }
-    if (config.fields.required.includes('serialNumber') && !serialNumber.trim()) {
-      setError(`${config.fieldLabels.serialNumber} é obrigatório`);
-      return false;
     }
 
     if (!date.trim()) {
@@ -718,6 +744,21 @@ const RegisterItemScreen = ({ navigation, route }) => {
     }
   };
 
+  const handleFoundItemConfirm = async () => {
+    if (!foundModalItemId) return;
+    setDeleting(true);
+    try {
+      await itemsService.deleteItem(foundModalItemId);
+      setFoundModalVisible(false);
+      Alert.alert('Publicação excluída', 'Sua publicação foi removida com sucesso.');
+      goToHomeAfterPublish();
+    } catch (err) {
+      Alert.alert('Erro', 'Não foi possível excluir a publicação. Tente novamente.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handlePublish = async () => {
     if (!validateFields()) return;
 
@@ -736,26 +777,46 @@ const RegisterItemScreen = ({ navigation, route }) => {
     setLoading(true);
 
     try {
-      // Título automático local, sem IA e sem consumo de crédito.
       let currentTitle = itemType === 'animal' ? buildAutoTitle() : (title || buildAutoTitle());
       if (!currentTitle || currentTitle.trim() === '') {
         currentTitle = buildAutoTitle() || 'Animal';
       }
-      // Em modo edição, usar dados antigos se não foram modificados
+
       const toNull = v => (typeof v === 'string' && v.trim() === '' ? null : v);
+      const normalizedAddressText = (mapAddressText || [
+        mapLocationDetails?.street,
+        mapLocationDetails?.number,
+        mapLocationDetails?.district,
+        mapLocationDetails?.city,
+        mapLocationDetails?.state,
+      ].filter(Boolean).join(', ')).trim();
+
+      const exactLocationDetails = {
+        street: mapLocationDetails?.street || '',
+        number: mapLocationDetails?.number || '',
+        district: mapLocationDetails?.district || '',
+        city: mapLocationDetails?.city || city || '',
+        state: mapLocationDetails?.state || state || '',
+        postalCode: mapLocationDetails?.postalCode || '',
+        text: normalizedAddressText || null,
+      };
+
       const itemData = {
         title: toNull(currentTitle) || editItem?.title || 'Animal',
         description: toNull(description) || editItem?.description,
-        state: toNull(state) || editItem?.state,
-        city: toNull(city) || editItem?.city,
-        neighborhood: toNull(neighborhood) || editItem?.neighborhood,
-        latitude: mapLocation?.latitude || editItem?.latitude || null,
-        longitude: mapLocation?.longitude || editItem?.longitude || null,
-        status: toNull(status) || editItem?.status,
-        category: toNull(itemType) || editItem?.category,
-        item_type: toNull(itemType) || editItem?.item_type,
+        state: toNull(mapLocationDetails?.state) || toNull(state) || editItem?.state || null,
+        city: toNull(mapLocationDetails?.city) || toNull(city) || editItem?.city || null,
+        neighborhood: toNull(mapLocationDetails?.district) || toNull(neighborhood) || editItem?.neighborhood || null,
+        latitude: mapLocation?.latitude ?? editItem?.latitude ?? null,
+        longitude: mapLocation?.longitude ?? editItem?.longitude ?? null,
+        street: toNull(mapLocationDetails?.street) || editItem?.street || null,
+        house_number: toNull(mapLocationDetails?.number) || editItem?.house_number || null,
+        postal_code: toNull(mapLocationDetails?.postalCode) || editItem?.postal_code || null,
+        address: toNull(normalizedAddressText) || editItem?.address || null,
+        status: toNull(status) || editItem?.status || 'lost',
+        category: toNull(itemType) || editItem?.category || null,
+        item_type: toNull(itemType) || editItem?.item_type || null,
         date: date || editItem?.date || new Date().toISOString().split('T')[0],
-        // Características em colunas específicas
         brand: toNull(brand),
         color: toNull(color),
         serial_number: toNull(serialNumber),
@@ -764,8 +825,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         size: toNull(animalSize),
         age: toNull(animalAge),
         collar: toNull(animalCollar),
-        animal_name: toNull(animalName),
-        // Também salva em extra_fields para compatibilidade
+        // Adicionar extra_fields para dados flexíveis
         extra_fields: {
           brand: toNull(brand),
           color: toNull(color),
@@ -775,10 +835,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           size: toNull(animalSize),
           age: toNull(animalAge),
           collar: toNull(animalCollar),
-          animal_name: toNull(animalName),
-          reward_amount: toNull(rewardAmount) || null,
-          reward_description: toNull(rewardDescription) || null,
-          offer_reward: Boolean(offerReward && (rewardAmount || rewardDescription)),
+          location_details: exactLocationDetails,
         },
       };
 
@@ -788,12 +845,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
       let resultItem;
       if (editItem) {
-        // Modo de edição
         resultItem = await itemsService.updateItem(editItem.id, itemData);
 
-        // Atualizar ou criar recompensa se necessário
         if (offerReward && (rewardAmount || rewardDescription)) {
-          // Buscar recompensa existente
           const existingRewards = await rewardsService.getRewardByItemId(editItem.id);
           const existingReward = Array.isArray(existingRewards) ? existingRewards[0] : existingRewards;
           if (existingReward?.id) {
@@ -815,13 +869,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
           }
         }
 
-        // Remover apenas as fotos antigas que o usuário excluiu
         if (editItem.item_photos && editItem.item_photos.length > 0) {
-          // Fotos antigas que ainda estão no array photos
           const remainingOldPhotoIds = photos
-            .filter(photo => photo.id) // só fotos antigas
+            .filter(photo => photo.id)
             .map(photo => photo.id);
-          // Fotos antigas que foram removidas pelo usuário
           const removedOldPhotos = editItem.item_photos.filter(photo => !remainingOldPhotoIds.includes(photo.id));
           for (const removedPhoto of removedOldPhotos) {
             try {
@@ -832,10 +883,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
           }
         }
 
-        // Upload de todas as fotos locais (novas)
         if (photos && photos.length > 0) {
           for (const photo of photos) {
-            // Só faz upload se for arquivo local (não tem id)
             if (!photo.id && photo.uri && (photo.uri.startsWith('file://') || photo.uri.startsWith('content://'))) {
               try {
                 await itemsService.saveItemPhoto(editItem.id, photo);
@@ -850,16 +899,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
           {
             text: 'OK',
             onPress: () => {
-              // Voltar para o detalhe do item; ItemDetail recarrega on-focus
               navigation.goBack();
             },
           },
         ]);
       } else {
-        // Modo de criação
         resultItem = await itemsService.registerItem(itemData, photos);
 
-        // Criar recompensa se necessário
         if (offerReward && (rewardAmount || rewardDescription)) {
           console.log('[RegisterItem] Criando recompensa para item_id:', resultItem.id, 'valor:', rewardAmount, 'desc:', rewardDescription);
           await rewardsService.createReward({
@@ -872,30 +918,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
           });
         }
 
-        // Sempre mostrar mensagem de sucesso e redirecionar
         Alert.alert('Sucesso', 'Pet registrado com sucesso!', [
           {
             text: 'Ir para Home',
             onPress: () => {
-              // Resetar formulário
-              setItemType(null);
-              setStep(1);
-              setTitle('');
-              setDescription('');
-              setState('');
-              setCity('');
-              setNeighborhood('');
-              setDate(new Date().toISOString().split('T')[0]);
-              setBrand('');
-              setColor('');
-              setSerialNumber('');
-              setPhotos([]);
-              setRewardAmount('');
-              setRewardDescription('');
-              setOfferReward(false);
-              setError('');
               goToHomeAfterPublish();
-              // Se for item perdido, mostrar modal após redirecionar
               if (status === 'lost') {
                 setTimeout(() => {
                   setFoundModalTitle('Você encontrou seu pet?');
@@ -907,182 +934,53 @@ const RegisterItemScreen = ({ navigation, route }) => {
             },
           },
         ]);
-        // Função para excluir item se usuário confirmar que encontrou
-        const handleFoundItemConfirm = async () => {
-          if (!foundModalItemId) return;
-          setDeleting(true);
-          try {
-            await itemsService.deleteItem(foundModalItemId);
-            setFoundModalVisible(false);
-            Alert.alert('Publicação excluída', 'Sua publicação foi removida com sucesso.');
-            // Resetar formulário
-            setItemType(null);
-            setStep(1);
-            setTitle('');
-            setDescription('');
-            setState('');
-            setCity('');
-            setNeighborhood('');
-            setDate(new Date().toISOString().split('T')[0]);
-            setBrand('');
-            setColor('');
-            setSerialNumber('');
-            setPhotos([]);
-            setRewardAmount('');
-            setRewardDescription('');
-            setOfferReward(false);
-            setError('');
-            goToHomeAfterPublish();
-          } catch (err) {
-            Alert.alert('Erro', 'Não foi possível excluir a publicação. Tente novamente.');
-          } finally {
-            setDeleting(false);
-          }
-        };
-        {/* Modal de confirmação se encontrou o item */}
-        <Modal
-          visible={foundModalVisible}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setFoundModalVisible(false)}
-        >
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
-            <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 28, width: '85%', alignItems: 'center' }}>
-              <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>{foundModalTitle}</Text>
-              <Text style={{ fontSize: 16, color: '#374151', marginBottom: 24, textAlign: 'center' }}>{foundModalMessage}</Text>
-              <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between' }}>
-                <Button
-                  title="Ainda não"
-                  variant="secondary"
-                  onPress={() => {
-                    setFoundModalVisible(false);
-                    // Resetar formulário
-                    setItemType(null);
-                    setStep(1);
-                    setTitle('');
-                    setDescription('');
-                    setState('');
-                    setCity('');
-                    setNeighborhood('');
-                    setDate(new Date().toISOString().split('T')[0]);
-                    setBrand('');
-                    setColor('');
-                    setSerialNumber('');
-                    setPhotos([]);
-                    setRewardAmount('');
-                    setRewardDescription('');
-                    setOfferReward(false);
-                    setError('');
-                    goToHomeAfterPublish();
-                  }}
-                  style={{ flex: 1, marginRight: 8 }}
-                />
-                <Button
-                  title={deleting ? 'Excluindo...' : 'Sim, já encontrei'}
-                  onPress={handleFoundItemConfirm}
-                  disabled={deleting}
-                  style={{ flex: 1, marginLeft: 8 }}
-                />
-              </View>
-            </View>
-          </View>
-        </Modal>
       }
     } catch (err) {
       const errorMsg = err.message || 'Erro ao registrar pet';
       console.error('Erro ao registrar:', err);
       setError(errorMsg);
-      
-      // Mostrar alerta com opção de continuar sem fotos
-      if (errorMsg.includes('Network') || errorMsg.includes('upload') || errorMsg.includes('request failed')) {
-        Alert.alert(
-          'Aviso de Conexão',
-          'Não foi possível fazer upload das fotos. Deseja continuar e adicionar fotos depois?',
-          [
-            {
-              text: 'Tentar Novamente',
-              onPress: () => setLoading(false),
-            },
-            {
-              text: 'Prosseguir Sem Fotos',
-              onPress: async () => {
-                try {
-                  const itemData = {
-                    owner_id: user.id,
-                    title,
-                    description,
-                    state,
-                    city,
-                    neighborhood,
-                    latitude: mapLocation?.latitude || null,
-                    longitude: mapLocation?.longitude || null,
-                    status,
-                    category: itemType,
-                    item_type: itemType,
-                    date: date || new Date().toISOString().split('T')[0],
-                    extra_fields: {
-                      brand,
-                      color,
-                      serial_number: serialNumber,
-                    },
-                  };
-
-                  const createdItem = await itemsService.registerItem(itemData, []);
-
-                  // Criar recompensa se necessário
-                  if (offerReward && (rewardAmount || rewardDescription)) {
-                    await rewardsService.createReward({
-                      item_id: createdItem.id,
-                      owner_id: user.id,
-                      amount: rewardAmount || null,
-                      currency: 'BRL',
-                      description: rewardDescription || null,
-                      status: 'active',
-                    });
-                  }
-                  
-                  Alert.alert('Sucesso', 'Pet registrado sem fotos!', [
-                    {
-                      text: 'Ir para Home',
-                      onPress: () => {
-                        setItemType(null);
-                        setStep(1);
-                        setTitle('');
-                        setDescription('');
-                        setState('');
-                        setCity('');
-                        setNeighborhood('');
-                        setDate(new Date().toISOString().split('T')[0]);
-                        setBrand('');
-                        setColor('');
-                        setSerialNumber('');
-                        setPhotos([]);
-                        setRewardAmount('');
-                        setRewardDescription('');
-                        setOfferReward(false);
-                        setError('');
-                        goToHomeAfterPublish();
-                      },
-                    },
-                  ]);
-                } catch (retryErr) {
-                  setError(retryErr.message || 'Erro ao registrar pet');
-                  setLoading(false);
-                }
-              },
-            },
-          ]
-        );
-        return;
-      }
+      Alert.alert('Erro', errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
+  // Modal de confirmação se encontrou o item
+  const renderFoundModal = () => (
+    <Modal
+      visible={foundModalVisible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setFoundModalVisible(false)}
+    >
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 28, width: '85%', alignItems: 'center' }}>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>{foundModalTitle}</Text>
+          <Text style={{ fontSize: 16, color: '#374151', marginBottom: 24, textAlign: 'center' }}>{foundModalMessage}</Text>
+          <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between' }}>
+            <Button
+              title="Ainda não"
+              variant="secondary"
+              onPress={() => {
+                setFoundModalVisible(false);
+                goToHomeAfterPublish();
+              }}
+              style={{ flex: 1, marginRight: 8 }}
+            />
+            <Button
+              title={deleting ? 'Excluindo...' : 'Sim, já encontrei'}
+              onPress={handleFoundItemConfirm}
+              disabled={deleting}
+              style={{ flex: 1, marginLeft: 8 }}
+            />
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   // Step 1: Selecionar tipo
   if (step === 1 && !itemType) {
-    // Se estiver editando, mostrar apenas o tipo já selecionado, sem exigir nova escolha
     if (editItem && editItem.category) {
       const normalized = normalizeCategory(editItem.category);
       return (
@@ -1090,8 +988,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
           <View style={styles.header}>
             <Text style={styles.title}>Editar Pet</Text>
             <Text style={styles.subtitle}>Tipo: {ITEM_TYPES[normalized]?.label || normalized || editItem.category}</Text>
-            <Text style={{ color: '#DC2626', marginTop: 16, fontWeight: 'bold' }}>
-              Não é possível alterar os dados principais do pet após a publicação. Para corrigir tudo, exclua e crie uma nova publicação.
+            <Text style={{ color: '#4B5563', marginTop: 16, fontWeight: 'bold' }}>
+              Você pode ajustar detalhes do pet antes de salvar.
             </Text>
           </View>
           <Button title="Avançar" onPress={() => {
@@ -1101,7 +999,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </ScrollView>
       );
     }
-    // Criação normal - novo design
+    
     const typeOptions = [
       {
         key: 'animal',
@@ -1122,7 +1020,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
             <TouchableOpacity
               key={opt.key}
               onPress={() => handleSelectType(opt.key)}
-              style={{ borderRadius: 18, backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, marginBottom: 0 }}
+              style={{ borderRadius: 18, backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}
               activeOpacity={0.85}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', padding: 18 }}>
@@ -1146,7 +1044,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
   if (step === 2) {
     const config = ITEM_TYPES[itemType];
     if (!config) {
-      // Tenta fallback para 'outro' se não existir
       if (ITEM_TYPES['outro']) {
         setItemType('outro');
         return null;
@@ -1171,8 +1068,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
         <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
           <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ paddingBottom: 180 }}>
             <View>
-
-              {/* Status question at the top */}
               <View style={styles.statusContainer}>
                 <Text style={styles.label}>Você perdeu ou encontrou? *</Text>
                 <View style={styles.statusOptions}>
@@ -1211,7 +1106,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 </View>
               </View>
 
-              {/* Fotos do Animal - logo após status */}
               <Text style={styles.title}>Fotos do Animal</Text>
               <TouchableOpacity
                 style={styles.uploadButton}
@@ -1255,7 +1149,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 </View>
               )}
 
-              {/* Campos detalhados do animal */}
               <SelectionChips label="Espécie *" options={PET_SPECIES_CHIPS.map((option) => option.value)} value={animalSpecies} onChange={setAnimalSpecies} />
               <SelectionChips
                 label="Cor *"
@@ -1299,6 +1192,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
             </View>
           </ScrollView>
           {renderMapLocationPicker()}
+          {renderFoundModal()}
           <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
             <Button
               title={loading ? 'Publicando...' : 'Publicar'}
@@ -1315,8 +1209,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
       <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
         <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ paddingBottom: 180 }}>
           <View>
-
-            {/* Status question at the top */}
             <View style={styles.statusContainer}>
               <Text style={styles.label}>Você perdeu ou encontrou? *</Text>
               <View style={styles.statusOptions}>
@@ -1339,11 +1231,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     styles.statusButton,
                     status === 'found' && styles.statusButtonActive,
                   ]}
-                    onPress={() => {
-                      setStatus('found');
-                      setOfferReward(false);
-                      setRewardAmount('');
-                    }}
+                  onPress={() => {
+                    setStatus('found');
+                    setOfferReward(false);
+                    setRewardAmount('');
+                  }}
                 >
                   <Text style={[
                     styles.statusText,
@@ -1354,7 +1246,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 </TouchableOpacity>
               </View>
             </View>
-            {/* Fotos do Item - logo após status */}
+
             <Text style={styles.title}>Fotos do Item</Text>
 
             {itemType === 'document' && (
@@ -1413,7 +1305,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
               </>
             )}
 
-            {/* Campos dinâmicos após fotos */}
             {config.fields.required.concat(config.fields.optional)
               .filter(field => field !== 'title' && config.fieldLabels[field] && config.placeholders[field])
               .map((field) => {
@@ -1466,6 +1357,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           </View>
         </ScrollView>
         {renderMapLocationPicker()}
+        {renderFoundModal()}
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
           <Button
             title={loading ? 'Publicando...' : 'Publicar'}
@@ -1547,32 +1439,31 @@ const RegisterItemScreen = ({ navigation, route }) => {
             </View>
           </Modal>
 
-          {/* Reward Section */}
           {(itemType !== 'animal' || status !== 'found') && (
-          <View style={styles.rewardSection}>
-            <TouchableOpacity
-              style={styles.checkboxContainer}
-              onPress={() => setOfferReward(!offerReward)}
-            >
-              <View style={[styles.checkbox, offerReward && styles.checkboxChecked]}>
-                {offerReward && <Text style={styles.checkmark}>✓</Text>}
-              </View>
-              <Text style={styles.checkboxLabel}>Oferecer Recompensa</Text>
-            </TouchableOpacity>
+            <View style={styles.rewardSection}>
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => setOfferReward(!offerReward)}
+              >
+                <View style={[styles.checkbox, offerReward && styles.checkboxChecked]}>
+                  {offerReward && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.checkboxLabel}>Oferecer Recompensa</Text>
+              </TouchableOpacity>
 
-            {offerReward && (
-              <>
-                <Input
-                  label="Valor da Recompensa"
-                  placeholder="Ex: 100"
-                  value={rewardAmount}
-                  onChangeText={setRewardAmount}
-                  keyboardType="decimal-pad"
-                  style={styles.input}
-                />
-              </>
-            )}
-          </View>
+              {offerReward && (
+                <>
+                  <Input
+                    label="Valor da Recompensa"
+                    placeholder="Ex: 100"
+                    value={rewardAmount}
+                    onChangeText={setRewardAmount}
+                    keyboardType="decimal-pad"
+                    style={styles.input}
+                  />
+                </>
+              )}
+            </View>
           )}
 
           {error ? (
@@ -1582,7 +1473,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           ) : null}
         </ScrollView>
         {renderMapLocationPicker()}
-        {/* Botões fixos na base, igual aos outros passos */}
+        {renderFoundModal()}
         <View style={[styles.navigation, { position: 'absolute', left: 0, right: 0, bottom: 44, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E5E7EB', padding: 16, zIndex: 10 }]}> 
           <Button
             title="Voltar"
@@ -1939,6 +1830,17 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 12,
+  },
+  addressEditorContainer: {
+    marginBottom: 16,
+  },
+  addressInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    padding: 12,
+    minHeight: 60,
+    backgroundColor: '#FFFFFF',
   },
 });
 
