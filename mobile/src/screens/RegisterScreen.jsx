@@ -14,6 +14,26 @@ import Card from '../components/Card';
 import { getStates, getCitiesByState } from '../services/location';
 import { Picker } from '@react-native-picker/picker';
 
+const formatBrazilianPhone = (value = '') => {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+
+  if (!digits) return '';
+
+  if (digits.length <= 2) {
+    return digits;
+  }
+
+  if (digits.length <= 6) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  }
+
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
 const RegisterScreen = ({ navigation }) => {
   const { signUp, confirmSignUp, loading } = useAuth();
   const [name, setName] = useState('');
@@ -202,7 +222,7 @@ const RegisterScreen = ({ navigation }) => {
           <Input
             label="WhatsApp"
             placeholder="(11) 99999-9999"
-            value={whatsapp}
+            value={formatBrazilianPhone(whatsapp)}
             onChangeText={text => setWhatsapp(text.replace(/\D/g, ''))}
             keyboardType="phone-pad"
             error={errors.whatsapp}

@@ -9,7 +9,24 @@ const supabaseAnonKey =
   expoExtra.SUPABASE_KEY ||
   '';
 
-const normalizeWhatsapp = (whatsapp = '') => String(whatsapp || '').replace(/\D/g, '');
+const normalizeWhatsapp = (whatsapp = '') => {
+  const digits = String(whatsapp || '').replace(/\D/g, '');
+  if (!digits) return '';
+
+  let normalized = digits;
+
+  if (normalized.startsWith('55')) {
+    normalized = normalized.slice(2);
+  }
+
+  // No Brasil, muitas pessoas digitam o número com o 9 do celular.
+  // Para o sistema do app, o valor salvo deve ficar no formato DDD + número sem esse dígito extra.
+  if (normalized.length === 11 && normalized[2] === '9') {
+    normalized = `${normalized.slice(0, 2)}${normalized.slice(3)}`;
+  }
+
+  return normalized;
+};
 
 const getSupabaseUrl = () =>
   process.env.EXPO_PUBLIC_SUPABASE_URL ||

@@ -1,6 +1,23 @@
 import { supabase } from '../lib/supabase';
 import * as FileSystem from 'expo-file-system/legacy';
 
+const normalizeWhatsappForStorage = (whatsapp = '') => {
+  const digits = String(whatsapp || '').replace(/\D/g, '');
+  if (!digits) return '';
+
+  let normalized = digits;
+
+  if (normalized.startsWith('55')) {
+    normalized = normalized.slice(2);
+  }
+
+  if (normalized.length === 11 && normalized[2] === '9') {
+    normalized = `${normalized.slice(0, 2)}${normalized.slice(3)}`;
+  }
+
+  return normalized;
+};
+
 export const getUser = async (userId) => {
   try {
 
@@ -81,9 +98,19 @@ export const updateProfile = async (userId, updates) => {
   try {
     console.log('[updateProfile] Atualizando perfil do usuário:', userId);
 
+    const sanitizedUpdates = { ...updates };
+
+    if (Object.prototype.hasOwnProperty.call(sanitizedUpdates, 'whatsapp')) {
+      sanitizedUpdates.whatsapp = normalizeWhatsappForStorage(sanitizedUpdates.whatsapp);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(sanitizedUpdates, 'phone')) {
+      sanitizedUpdates.phone = normalizeWhatsappForStorage(sanitizedUpdates.phone);
+    }
+
     const { data, error } = await supabase
       .from('profiles')
-      .update(updates)
+      .update(sanitizedUpdates)
       .eq('id', userId)
       .select()
       .single();

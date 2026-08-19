@@ -472,6 +472,9 @@ export const deleteItem = async (itemId) => {
     // Delete rewards
     await supabase.from('rewards').delete().eq('item_id', itemId);
 
+    // Delete notifications that still reference the item
+    await supabase.from('notifications').delete().eq('item_id', itemId);
+
     // Finally delete the item
     const { error } = await supabase
       .from('items')

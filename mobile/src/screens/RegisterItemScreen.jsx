@@ -172,6 +172,112 @@ const ITEM_TYPES = {
 const RegisterItemScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
   const editItem = route?.params?.editItem || null;
+
+  const renderLocationAndRewardSection = () => (
+    <View>
+      <Text style={styles.label}>Localização</Text>
+      <View style={styles.input}>
+        <Text style={styles.label}>Estado</Text>
+        <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
+          <Picker
+            selectedValue={state}
+            onValueChange={(value) => {
+              setState(value);
+              setCity('');
+              setNeighborhood('');
+            }}
+            style={{ height: 48, color: '#1F2937' }}
+          >
+            <Picker.Item label="Selecione o estado" value="" />
+            {states.map((uf) => (
+              <Picker.Item key={uf} label={uf} value={uf} />
+            ))}
+          </Picker>
+        </View>
+      </View>
+
+      <View style={styles.input}>
+        <Text style={styles.label}>Cidade</Text>
+        <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
+          <Picker
+            selectedValue={city}
+            onValueChange={(value) => {
+              setCity(value);
+              setNeighborhood('');
+            }}
+            enabled={!!state}
+            style={{ height: 48, color: '#1F2937' }}
+          >
+            <Picker.Item label="Selecione a cidade" value="" />
+            {(citiesByState[state] || []).map((c) => (
+              <Picker.Item key={c} label={c} value={c} />
+            ))}
+          </Picker>
+        </View>
+      </View>
+
+      <View style={styles.input}>
+        <Text style={styles.label}>Bairro</Text>
+        <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
+          <Picker
+            selectedValue={neighborhood}
+            onValueChange={setNeighborhood}
+            enabled={!!city}
+            style={{ height: 48 }}
+          >
+            <Picker.Item label="Selecione o bairro" value="" />
+            {(neighborhoodsByCity[city] || []).map((b) => (
+              <Picker.Item key={b} label={b} value={b} />
+            ))}
+          </Picker>
+        </View>
+      </View>
+
+      <View style={styles.datePickerContainer}>
+        <Text style={styles.label}>Data do Evento *</Text>
+        <TouchableOpacity
+          style={styles.datePickerButton}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text style={styles.datePickerButtonText}>
+            {formatDateDisplay(date)}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.rewardSection}>
+        <TouchableOpacity
+          style={styles.checkboxContainer}
+          onPress={() => setOfferReward(!offerReward)}
+        >
+          <View style={[styles.checkbox, offerReward && styles.checkboxChecked]}>
+            {offerReward && <Text style={styles.checkmark}>✓</Text>}
+          </View>
+          <Text style={styles.checkboxLabel}>Oferecer Recompensa</Text>
+        </TouchableOpacity>
+
+        {offerReward && (
+          <>
+            <Input
+              label="Valor da Recompensa"
+              placeholder="Ex: 100"
+              value={rewardAmount}
+              onChangeText={setRewardAmount}
+              keyboardType="decimal-pad"
+              style={styles.input}
+            />
+            <Input
+              label="Descrição da Recompensa"
+              placeholder="Ex: Dinheiro ou cartão presente"
+              value={rewardDescription}
+              onChangeText={setRewardDescription}
+              style={styles.input}
+            />
+          </>
+        )}
+      </View>
+    </View>
+  );
   // Debug: verifique se editItem está chegando corretamente
   useEffect(() => {
     if (editItem) {
@@ -897,7 +1003,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     return (
       <ScrollView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
         <View style={{ alignItems: 'center', marginTop: 32, marginBottom: 12 }}>
-          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>Registrar Pet</Text>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>Registrar</Text>
           <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 16 }}>Seu pet perdido ou encontrado</Text>
         </View>
         <View style={{ gap: 18, marginHorizontal: 12, marginBottom: 32 }}>
@@ -1098,6 +1204,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 numberOfLines={4}
                 style={styles.input}
               />
+              {renderLocationAndRewardSection()}
+
               {error ? (
                 <View style={styles.errorContainer}>
                   <Text style={styles.errorText}>{error}</Text>
@@ -1106,19 +1214,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
             </View>
           </ScrollView>
           <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
-            <View style={{ flexDirection: 'row' }}>
-              <Button
-                title="Cancelar"
-                variant="secondary"
-                onPress={() => navigation.goBack()}
-                style={{ flex: 1 }}
-              />
-              <Button
-                title="Próximo"
-                onPress={() => setStep(4)}
-                style={{ flex: 1, marginLeft: 8 }}
-              />
-            </View>
+            <Button
+              title={loading ? 'Publicando...' : 'Publicar'}
+              onPress={handlePublish}
+              disabled={loading}
+            />
           </View>
         </View>
       );
@@ -1273,6 +1373,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 style={styles.input}
               />
             )}
+            {renderLocationAndRewardSection()}
+
             {error ? (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>{error}</Text>
@@ -1281,19 +1383,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
           </View>
         </ScrollView>
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
-          <View style={{ flexDirection: 'row' }}>
-            <Button
-              title="Cancelar"
-              variant="secondary"
-              onPress={() => navigation.goBack()}
-              style={{ flex: 1 }}
-            />
-            <Button
-              title="Próximo"
-              onPress={() => setStep(4)}
-              style={{ flex: 1, marginLeft: 8 }}
-            />
-          </View>
+          <Button
+            title={loading ? 'Publicando...' : 'Publicar'}
+            onPress={handlePublish}
+            disabled={loading}
+          />
         </View>
       </View>
     );

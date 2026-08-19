@@ -10,6 +10,26 @@ import { sendPasswordReset } from '../services/supabaseAuth';
 import { Picker } from '@react-native-picker/picker';
 import { states, citiesByState } from '../lib/br-locations';
 
+const formatBrazilianPhone = (value = '') => {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+
+  if (!digits) return '';
+
+  if (digits.length <= 2) {
+    return digits;
+  }
+
+  if (digits.length <= 6) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  }
+
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
 const EditProfileScreen = ({ navigation }) => {
   const { user, userProfile, refreshProfile } = useAuth();
   const [name, setName] = useState('');
@@ -170,142 +190,158 @@ const EditProfileScreen = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-
-      <Card style={{ paddingBottom: 32 }}>
-        {/* Avatar */}
-        <View style={{ alignItems: 'center', marginBottom: 20 }}>
-          <TouchableOpacity onPress={handlePickAvatar} disabled={saving}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <View style={styles.pageCard}>
+        <View style={styles.headerSection}>
+          <TouchableOpacity onPress={handlePickAvatar} disabled={saving} style={styles.avatarButton}>
             {avatar ? (
-              <Image source={{ uri: avatar }} style={{ width: 96, height: 96, borderRadius: 48, marginBottom: 8 }} />
+              <Image source={{ uri: avatar }} style={styles.avatarImage} />
             ) : avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={{ width: 96, height: 96, borderRadius: 48, marginBottom: 8 }} />
+              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
             ) : (
-              <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 32, color: '#6B7280' }}>{name?.charAt(0) || '?'}</Text>
+              <View style={styles.avatarFallback}>
+                <Text style={styles.avatarInitial}>{name?.charAt(0) || '?'}</Text>
               </View>
             )}
-            <Text style={{ color: '#6366F1', textAlign: 'center' }}>Alterar foto</Text>
+            <View style={styles.avatarBadge}>
+              <Text style={styles.avatarBadgeText}>✎</Text>
+            </View>
           </TouchableOpacity>
-          {avatar && (
-            <Button
-              title={saving ? 'Enviando...' : 'Salvar foto'}
-              onPress={handleUploadAvatar}
-              disabled={saving}
-              loading={saving}
-              style={{ marginTop: 8, minWidth: 120 }}
-            />
-          )}
-        </View>
-        <Text style={styles.sectionTitle}>Meus Dados</Text>
-        <Input
-          label="Nome"
-          placeholder="Seu nome completo"
-          value={name}
-          onChangeText={setName}
-          style={styles.input}
-        />
-        {errorMsg ? (
-          <Text style={{ color: '#EF4444', marginBottom: 8 }}>{errorMsg}</Text>
-        ) : null}
-        <Input
-          label="Email"
-          placeholder={userProfile?.email}
-          editable={false}
-          style={styles.input}
-        />
-        {/* Telefone removido */}
-        <Text style={{ fontWeight: 'bold', marginTop: 12, marginBottom: 4 }}>Localidade</Text>
-        <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 4 }}>Selecione o estado e a cidade do seu perfil:</Text>
-        <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 220, maxWidth: '100%', width: '100%', height: 48, justifyContent: 'center' }}>
-          <Picker
-            selectedValue={profileState}
-            onValueChange={uf => {
-              setProfileState(uf);
-              setProfileCity('');
-            }}
-            style={{ height: 48, minWidth: 220 }}
-          >
-            <Picker.Item label="Selecione o estado" value="" />
-            {states.map(uf => (
-              <Picker.Item key={uf} label={uf} value={uf} />
-            ))}
-          </Picker>
-        </View>
-        <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 220, maxWidth: '100%', width: '100%', height: 48, justifyContent: 'center' }}>
-          <Picker
-            selectedValue={profileCity}
-            onValueChange={setProfileCity}
-            enabled={!!profileState}
-            style={{ height: 48, minWidth: 220 }}
-          >
-            <Picker.Item label="Selecione a cidade" value="" />
-            {(citiesByState[profileState] || []).map(city => (
-              <Picker.Item key={city} label={city} value={city} />
-            ))}
-          </Picker>
-        </View>
-        <Button
-          title="Redefinir senha"
-          onPress={handleChangePassword}
-          style={[styles.input, { marginBottom: 12 }]}
-        />
 
-        <Text style={styles.sectionTitle}>Redes Sociais</Text>
-        <Input
-          label="Instagram"
-          placeholder="seu_usuario"
-          value={instagram}
-          onChangeText={setInstagram}
-          style={styles.input}
-        />
-        <Input
-          label="Facebook"
-          placeholder="seu_usuario"
-          value={facebook}
-          onChangeText={setFacebook}
-          style={styles.input}
-        />
-        {/* Twitter removido */}
-        <Input
-          label="WhatsApp"
-          placeholder="(XX) XXXXX-XXXX"
-          value={whatsapp}
-          onChangeText={setWhatsapp}
-          keyboardType="phone-pad"
-          style={styles.input}
-        />
-        {/* LinkedIn removido */}
-        <View style={[styles.actions, { marginBottom: 32 }]}> 
+          <Text style={styles.headerName}>{name || 'Seu nome'}</Text>
+          <Text style={styles.headerSubtitle}>Atualize suas informações pessoais</Text>
+        </View>
+
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Dados pessoais</Text>
+          <Input
+            label="Nome"
+            placeholder="Seu nome completo"
+            value={name}
+            onChangeText={setName}
+            style={styles.input}
+          />
+
+          <Input
+            label="Email"
+            placeholder={userProfile?.email}
+            editable={false}
+            style={styles.input}
+          />
+
+          {errorMsg ? (
+            <Text style={styles.errorText}>{errorMsg}</Text>
+          ) : null}
+        </View>
+
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Localização</Text>
+          <Text style={styles.helperText}>Selecione o estado e a cidade do seu perfil.</Text>
+
+          <View style={styles.pickerWrap}>
+            <Picker
+              selectedValue={profileState}
+              onValueChange={uf => {
+                setProfileState(uf);
+                setProfileCity('');
+              }}
+              style={styles.picker}
+            >
+              <Picker.Item label="Selecione o estado" value="" />
+              {states.map(uf => (
+                <Picker.Item key={uf} label={uf} value={uf} />
+              ))}
+            </Picker>
+          </View>
+
+          <View style={styles.pickerWrap}>
+            <Picker
+              selectedValue={profileCity}
+              onValueChange={setProfileCity}
+              enabled={!!profileState}
+              style={styles.picker}
+            >
+              <Picker.Item label="Selecione a cidade" value="" />
+              {(citiesByState[profileState] || []).map(city => (
+                <Picker.Item key={city} label={city} value={city} />
+              ))}
+            </Picker>
+          </View>
+        </View>
+
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Contato</Text>
+          <Input
+            label="WhatsApp"
+            placeholder="(11) 99999-9999"
+            value={formatBrazilianPhone(whatsapp)}
+            onChangeText={text => setWhatsapp(text.replace(/\D/g, ''))}
+            keyboardType="phone-pad"
+            style={styles.input}
+          />
+          <Input
+            label="Instagram"
+            placeholder="seu_usuario"
+            value={instagram}
+            onChangeText={setInstagram}
+            style={styles.input}
+          />
+          <Input
+            label="Facebook"
+            placeholder="seu_usuario"
+            value={facebook}
+            onChangeText={setFacebook}
+            style={styles.input}
+          />
+        </View>
+
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Segurança</Text>
+          <Button
+            title="Redefinir senha"
+            onPress={handleChangePassword}
+            variant="secondary"
+            style={styles.actionButton}
+          />
+        </View>
+
+        <View style={styles.footerActions}>
           <Button
             title="Cancelar"
             variant="secondary"
             onPress={() => navigation.goBack()}
-            style={{ flex: 1 }}
+            style={styles.footerButton}
           />
           <Button
             title={saving ? 'Salvando...' : 'Salvar'}
             onPress={handleSave}
             disabled={saving}
             loading={saving}
-            style={{ flex: 1, marginLeft: 8 }}
+            style={[styles.footerButton, styles.primaryFooterButton]}
           />
         </View>
 
-        {/* Seção de exclusão de conta */}
-        <View style={{ marginTop: 32, alignItems: 'center', marginBottom: 32 }}>
-          <Text style={{ color: '#EF4444', fontWeight: 'bold', marginBottom: 8, fontSize: 16 }}>Excluir Conta</Text>
-          <Text style={{ color: '#6B7280', fontSize: 13, marginBottom: 12, textAlign: 'center' }}>
-            Esta ação é irreversível. Todos os seus dados serão apagados.
-          </Text>
+        <View style={styles.deleteBlock}>
+          <Text style={styles.deleteTitle}>Excluir conta</Text>
+          <Text style={styles.deleteText}>Esta ação é irreversível. Todos os seus dados serão apagados.</Text>
           <Button
             title="Excluir minha conta"
             variant="danger"
             onPress={handleDeleteAccount}
-            style={{ minWidth: 180 }}
+            style={styles.deleteButton}
           />
         </View>
-      </Card>
+
+        {avatar && (
+          <Button
+            title={saving ? 'Enviando...' : 'Salvar foto'}
+            onPress={handleUploadAvatar}
+            disabled={saving}
+            loading={saving}
+            style={styles.saveAvatarButton}
+          />
+        )}
+      </View>
     </ScrollView>
   );
 };
@@ -315,25 +351,166 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#1F2937',
+  content: {
+    padding: 16,
+    paddingBottom: 80,
+  },
+  pageCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 18,
+    overflow: 'hidden',
+  },
+  headerSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  avatarButton: {
+    position: 'relative',
+    marginBottom: 14,
+  },
+  avatarImage: {
+    width: 98,
+    height: 98,
+    borderRadius: 49,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    backgroundColor: '#E5E7EB',
+  },
+  avatarFallback: {
+    width: 98,
+    height: 98,
+    borderRadius: 49,
+    backgroundColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
+  avatarInitial: {
+    fontSize: 34,
+    fontWeight: '800',
+    color: '#6B7280',
+  },
+  avatarBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarBadgeText: {
+    color: '#4B5563',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  headerName: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#111827',
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    marginTop: 4,
+    color: '#6B7280',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  sectionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 16,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginTop: 20,
+    fontSize: 15,
+    fontWeight: '800',
     marginBottom: 12,
     color: '#1F2937',
+  },
+  helperText: {
+    color: '#6B7280',
+    fontSize: 12,
+    marginBottom: 12,
   },
   input: {
     marginBottom: 12,
   },
-  actions: {
+  pickerWrap: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    backgroundColor: '#F9FAFB',
+    marginBottom: 12,
+    overflow: 'hidden',
+    minHeight: 52,
+  },
+  picker: {
+    height: 52,
+    color: '#1F2937',
+  },
+  actionButton: {
+    marginTop: 4,
+  },
+  errorText: {
+    color: '#EF4444',
+    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  footerActions: {
     flexDirection: 'row',
-    marginTop: 24,
+    marginTop: 12,
+    marginBottom: 20,
+    gap: 10,
+    paddingBottom: 8,
+  },
+  footerButton: {
+    flex: 1,
+    minHeight: 48,
+  },
+  primaryFooterButton: {
+    marginLeft: 0,
+  },
+  deleteBlock: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  deleteTitle: {
+    color: '#B91C1C',
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  deleteText: {
+    color: '#7F1D1D',
+    fontSize: 12,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  deleteButton: {
+    minWidth: 180,
+  },
+  saveAvatarButton: {
+    marginTop: 16,
   },
 });
 

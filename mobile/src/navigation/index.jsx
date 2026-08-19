@@ -471,7 +471,7 @@ const MainAppTabs = ({ navigation }) => {
 
 const MainStackHeader = ({ navigation, route, options, back }) => {
   const title = route.name === 'RegisterItem'
-    ? (route.params?.editItem ? 'Editar Pet' : 'Registrar Pet')
+    ? (route.params?.editItem ? 'Editar Pet' : 'Registrar')
     : options.headerTitle || options.title || '';
 
   return (
@@ -520,7 +520,7 @@ const MainStack = () => {
       <Stack.Screen
         name="RegisterItem"
         component={RegisterItemScreen}
-        options={{ title: 'Registrar Pet' }}
+        options={{ title: 'Registrar' }}
       />
       <Stack.Screen
         name="ClaimsManagement"

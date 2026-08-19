@@ -67,32 +67,51 @@ const ProfileScreen = ({ navigation }) => {
     return <View style={styles.loading}><ActivityIndicator size="large" color="#4F46E5" /><Text style={styles.loadingText}>Abrindo seu perfil...</Text></View>;
   }
 
+  const formatDisplayPhone = (value) => {
+    let digits = String(value || '').replace(/\D/g, '');
+
+    if (digits.startsWith('55')) {
+      digits = digits.slice(2);
+    }
+
+    if (!digits) return null;
+    if (digits.length === 10) {
+      return `+55 (${digits.slice(0, 2)}) 9${digits.slice(2, 6)}-${digits.slice(6)}`;
+    }
+    if (digits.length === 11) {
+      return `+55 (${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+    }
+    return `+55 ${digits}`;
+  };
+
   const initial = userProfile?.name?.[0]?.toUpperCase() || 'U';
-  const firstName = userProfile?.name?.split(' ')[0] || 'Tutor';
-  const location = [userProfile?.city, userProfile?.state].filter(Boolean).join(', ');
+  const phoneNumber = userProfile?.whatsapp || userProfile?.phone || user?.phone || userProfile?.whatsapp_number || null;
+  const formattedPhone = phoneNumber ? formatDisplayPhone(phoneNumber) : null;
   const publishedCount = userItems.length;
   const returnedCount = userItems.filter(item => item.resolved).length;
   const activeCount = userItems.filter(item => !item.resolved).length;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.cover}>
-        <View style={styles.coverPattern}><View style={styles.patternCircleOne} /><View style={styles.patternCircleTwo} /></View>
-        <View style={styles.coverTop}><View /><TouchableOpacity onPress={() => navigation.navigate('EditProfile')} style={styles.coverEdit} accessibilityLabel="Editar perfil"><Feather name="edit-2" size={16} color="#4F46E5" /><Text style={styles.coverEditText}>Editar</Text></TouchableOpacity></View>
-        <View style={styles.profileRow}>
-          <TouchableOpacity onPress={handlePickAvatar} disabled={uploading} activeOpacity={0.85} style={styles.avatarButton}>
-            {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatarImage} /> : <View style={styles.avatarFallback}><Text style={styles.avatarInitial}>{initial}</Text></View>}
-            <View style={styles.camera}><Feather name={uploading ? 'loader' : 'camera'} size={13} color="#fff" /></View>
-          </TouchableOpacity>
-          <View style={styles.profileCopy}>
-            <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
-            <Text style={styles.email}>{userProfile?.email || user?.email}</Text>
-            {location ? <View style={styles.location}><Feather name="map-pin" size={13} color="#4F46E5" /><Text style={styles.locationText}>{location}</Text></View> : <Text style={styles.locationMissing}>Adicione sua localização</Text>}
-          </View>
-        </View>
-      </View>
+      <View style={styles.profileHeader}>
+        <TouchableOpacity onPress={handlePickAvatar} disabled={uploading} activeOpacity={0.85} style={styles.avatarButton}>
+          {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatarImage} /> : <View style={styles.avatarFallback}><Text style={styles.avatarInitial}>{initial}</Text></View>}
+          <View style={styles.camera}><Feather name={uploading ? 'loader' : 'camera'} size={13} color="#fff" /></View>
+        </TouchableOpacity>
 
-      <View style={styles.welcomeLine}><View><Text style={styles.welcomeTitle}>Olá, {firstName}</Text><Text style={styles.welcomeText}>Aqui você acompanha pets perdidos e encontrados.</Text></View></View>
+        <View style={styles.nameRow}>
+          <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('EditProfile')} style={styles.avatarEditButton} accessibilityLabel="Editar perfil">
+            <Feather name="edit-2" size={14} color="#4B5563" />
+          </TouchableOpacity>
+        </View>
+
+        {formattedPhone ? (
+          <Text style={styles.phone}>{formattedPhone}</Text>
+        ) : (
+          <Text style={styles.phonePlaceholder}>Adicionar telefone</Text>
+        )}
+      </View>
 
       <View style={styles.stats}>
         <View style={styles.stat}><Text style={styles.statValue}>{publishedCount}</Text><Text style={styles.statLabel}>publicações</Text></View>
@@ -114,7 +133,6 @@ const ProfileScreen = ({ navigation }) => {
       </View>
 
       <TouchableOpacity style={styles.logout} onPress={signOut} activeOpacity={0.8}><Feather name="log-out" size={17} color="#B91C1C" /><Text style={styles.logoutText}>Sair da conta</Text></TouchableOpacity>
-      <Text style={styles.footer}>Recover · cuidado que aproxima</Text>
     </ScrollView>
   );
 };
@@ -124,29 +142,17 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 42 },
   loading: { flex: 1, backgroundColor: '#F9FAFB', alignItems: 'center', justifyContent: 'center' },
   loadingText: { color: '#6B7280', fontSize: 13, marginTop: 10 },
-  cover: { backgroundColor: '#EEF2FF', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 22, borderBottomWidth: 1, borderBottomColor: '#C7D2FE', overflow: 'hidden' },
-  coverPattern: { position: 'absolute', right: 22, top: 34, flexDirection: 'row', alignItems: 'center', gap: 9, opacity: 0.8 },
-  patternCircleOne: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#C7D2FE' },
-  patternCircleTwo: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#E0E7FF' },
-  coverTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  coverLabel: { color: '#4F46E5', fontSize: 11, letterSpacing: 1.4, fontWeight: '800' },
-  coverEdit: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 },
-  coverEditText: { color: '#4F46E5', fontSize: 12, fontWeight: '800' },
-  profileRow: { flexDirection: 'row', alignItems: 'center', marginTop: 24 },
-  avatarButton: { position: 'relative', marginRight: 15 },
-  avatarImage: { width: 82, height: 82, borderRadius: 28, borderWidth: 3, borderColor: '#fff' },
-  avatarFallback: { width: 82, height: 82, borderRadius: 28, backgroundColor: '#4F46E5', borderWidth: 3, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
-  avatarInitial: { color: '#fff', fontSize: 32, fontWeight: '800' },
-  camera: { position: 'absolute', bottom: -3, right: -4, width: 27, height: 27, borderRadius: 10, backgroundColor: '#4F46E5', borderWidth: 2, borderColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
-  profileCopy: { flex: 1, minWidth: 0 },
-  name: { color: '#1F2937', fontSize: 21, fontWeight: '800' },
-  email: { color: '#6B7280', fontSize: 12, marginTop: 4 },
-  location: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
-  locationText: { color: '#4F46E5', fontSize: 12, fontWeight: '700' },
-  locationMissing: { color: '#6B7280', fontSize: 12, marginTop: 8 },
-  welcomeLine: { marginHorizontal: 20, marginTop: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  welcomeTitle: { color: '#1F2937', fontSize: 17, fontWeight: '800' },
-  welcomeText: { color: '#6B7280', fontSize: 12, marginTop: 4 },
+  profileHeader: { backgroundColor: '#fff', paddingHorizontal: 20, paddingTop: 18, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6', alignItems: 'center' },
+  avatarButton: { position: 'relative', marginBottom: 12 },
+  avatarEditButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', marginLeft: 10, borderWidth: 1, borderColor: '#E5E7EB' },
+  avatarImage: { width: 104, height: 104, borderRadius: 52, borderWidth: 3, borderColor: '#fff' },
+  avatarFallback: { width: 104, height: 104, borderRadius: 52, backgroundColor: '#4F46E5', borderWidth: 3, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  avatarInitial: { color: '#fff', fontSize: 38, fontWeight: '800' },
+  camera: { position: 'absolute', bottom: 6, right: 6, width: 30, height: 30, borderRadius: 15, backgroundColor: '#4F46E5', borderWidth: 2, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  nameRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  name: { color: '#111827', fontSize: 22, fontWeight: '800' },
+  phone: { color: '#6B7280', fontSize: 14, fontWeight: '600', textAlign: 'center' },
+  phonePlaceholder: { color: '#9CA3AF', fontSize: 13, fontWeight: '500', textAlign: 'center' },
   stats: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 16, marginHorizontal: 20, marginTop: 17, paddingVertical: 14, flexDirection: 'row' },
   stat: { flex: 1, alignItems: 'center' },
   statDivider: { width: 1, backgroundColor: '#E5E7EB' },
@@ -168,7 +174,6 @@ const styles = StyleSheet.create({
   linkDivider: { height: 1, backgroundColor: '#F3F4F6', marginLeft: 50 },
   logout: { height: 48, borderWidth: 1, borderColor: '#FECACA', backgroundColor: '#FEF2F2', borderRadius: 13, marginHorizontal: 20, marginTop: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   logoutText: { color: '#B91C1C', fontSize: 13, fontWeight: '800' },
-  footer: { color: '#9CA3AF', textAlign: 'center', fontSize: 11, marginTop: 15 },
 });
 
 export default ProfileScreen;

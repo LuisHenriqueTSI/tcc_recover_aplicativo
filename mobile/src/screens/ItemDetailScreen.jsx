@@ -27,6 +27,7 @@ import * as sightingsService from '../services/sightings';
 import * as claimsService from '../services/itemClaims';
 import { getRenewalInfo } from '../services/itemExpiration';
 import { createRenewalReminderNotification } from '../services/notifications';
+import * as reportsService from '../services/reports';
 
 
 const ItemDetailScreen = ({ route, navigation }) => {
@@ -53,6 +54,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [renewing, setRenewing] = useState(false);
   const [claimModalVisible, setClaimModalVisible] = useState(false);
   const [claimAccessState, setClaimAccessState] = useState('blocked');
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDetails, setReportDetails] = useState('');
+  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
@@ -375,6 +380,37 @@ const ItemDetailScreen = ({ route, navigation }) => {
       return;
     }
     setSightingModalVisible(true);
+  };
+
+  const handleSubmitReport = async () => {
+    if (!user) {
+      Alert.alert('Login necessário', 'Entre na sua conta para denunciar uma publicação.');
+      setReportModalVisible(false);
+      navigation.navigate('Login');
+      return;
+    }
+    if (!reportReason) {
+      Alert.alert('Motivo necessário', 'Selecione o motivo da denúncia.');
+      return;
+    }
+
+    setReporting(true);
+    try {
+      await reportsService.createReport({
+        itemId: item.id,
+        reporterId: user.id,
+        reason: reportReason,
+        details: reportDetails,
+      });
+      setReportModalVisible(false);
+      setReportReason('');
+      setReportDetails('');
+      Alert.alert('Denúncia enviada', 'A equipe administrativa analisará esta publicação.');
+    } catch (error) {
+      Alert.alert('Não foi possível denunciar', error.message || 'Tente novamente.');
+    } finally {
+      setReporting(false);
+    }
   };
 
   const handleSubmitSighting = async (form) => {
@@ -706,6 +742,15 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 </TouchableOpacity>
               </View>
             )}
+            {!isOwner && !isAdmin && (
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 14, paddingVertical: 8 }}
+                onPress={() => setReportModalVisible(true)}
+              >
+                <MaterialIcons name="flag" size={17} color="#B91C1C" />
+                <Text style={{ color: '#B91C1C', fontWeight: '700', fontSize: 13, marginLeft: 6 }}>Denunciar publicação</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
 
@@ -830,6 +875,45 @@ const ItemDetailScreen = ({ route, navigation }) => {
           onSubmit={handleSubmitSighting}
           loading={sightingLoading}
         />
+
+        <Modal
+          visible={reportModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setReportModalVisible(false)}
+        >
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', padding: 20 }}>
+            <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20 }}>
+              <Text style={{ fontSize: 19, fontWeight: '800', color: '#1F2937', marginBottom: 6 }}>Denunciar publicação</Text>
+              <Text style={{ color: '#6B7280', fontSize: 13, marginBottom: 14 }}>Escolha o motivo para enviar à equipe administrativa.</Text>
+              {['Conteúdo falso ou enganoso', 'Conteúdo inadequado', 'Informações de contato suspeitas', 'Outro'].map(reason => (
+                <TouchableOpacity
+                  key={reason}
+                  onPress={() => setReportReason(reason)}
+                  style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10 }}
+                >
+                  <MaterialIcons name={reportReason === reason ? 'radio-button-checked' : 'radio-button-unchecked'} size={21} color={reportReason === reason ? '#4F46E5' : '#9CA3AF'} />
+                  <Text style={{ color: '#374151', fontSize: 14, marginLeft: 9 }}>{reason}</Text>
+                </TouchableOpacity>
+              ))}
+              <TextInput
+                value={reportDetails}
+                onChangeText={setReportDetails}
+                placeholder="Detalhes adicionais (opcional)"
+                multiline
+                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 9, padding: 10, minHeight: 70, marginTop: 8, textAlignVertical: 'top' }}
+              />
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 16, marginTop: 16 }}>
+                <TouchableOpacity onPress={() => setReportModalVisible(false)} style={{ paddingVertical: 9 }}>
+                  <Text style={{ color: '#6B7280', fontWeight: '700' }}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleSubmitReport} disabled={reporting} style={{ backgroundColor: '#B91C1C', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9 }}>
+                  <Text style={{ color: '#fff', fontWeight: '800' }}>{reporting ? 'Enviando...' : 'Enviar denúncia'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
 
         {/* Modal de edição de comentário */}
         <Modal
