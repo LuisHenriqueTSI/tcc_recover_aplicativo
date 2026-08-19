@@ -31,7 +31,16 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_IMAGE_HEIGHT = 340; // altura intermediária para a foto do card
 import Button from '../components/Button';
 import Input from '../components/Input';
+import NotificationBell from '../components/NotificationBell';
+import OptimizedImage from '../components/OptimizedImage';
 import { MaterialIcons } from '@expo/vector-icons';
+
+const formatItemDate = (value) => {
+  if (!value) return '';
+  const raw = String(value);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(`${raw}T12:00:00`) : new Date(raw);
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+};
 
 // ItemCard agora é um componente fora do HomeScreen
 const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress }) => {
@@ -64,10 +73,13 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
       {/* Imagem */}
       <View style={{ position: 'relative', width: '100%', height: IMAGE_HEIGHT }}>
         {photos.length > 0 ? (
-          <Image
-            source={{ uri: photos[0].url }}
+          <OptimizedImage
+            uri={photos[0].url}
             style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
             resizeMode="cover"
+            resizeMethod="resize"
+            onLoad={() => console.log('[HomeScreen] Foto carregada:', photos[0].url)}
+            onError={(error) => console.warn('[HomeScreen] Falha ao carregar foto:', photos[0].url, error.nativeEvent.error)}
           />
         ) : (
           <View style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }}>
@@ -113,7 +125,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             (safeCity && safeState ? `${safeCity}, ${safeState}` : (safeCity || safeState || '-')) + (safeNeighborhood ? ` - ${safeNeighborhood}` : '')
           }</Text>
           <MaterialIcons name="event" size={15} color="#9CA3AF" style={{ marginRight: 2 }} />
-          <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 500 }}>{item.date ? new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}</Text>
+          <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 500 }}>{formatItemDate(item.date)}</Text>
         </View>
         {/* Barra divisória fina */}
         <View style={{ height: 1, backgroundColor: '#E5E7EB', marginBottom: 10 }} />
@@ -577,22 +589,36 @@ const HomeScreen = ({ navigation, route }) => {
             )}
           </View>
           {user && (
-            <TouchableOpacity
-              onPress={() => setShowProfileMenu((prev) => !prev)}
-              style={{ marginLeft: 12, borderWidth: 2, borderColor: '#fff', borderRadius: 22, padding: 2 }}
-              accessibilityLabel="Abrir menu do perfil"
-            >
-              {userProfile?.avatar_url ? (
-                <Image source={{ uri: userProfile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E7EB' }} />
-              ) : (
-                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#60A5FA', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>{userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12 }}>
+              <NotificationBell />
+              <TouchableOpacity
+                onPress={() => setShowProfileMenu((prev) => !prev)}
+                style={{ borderWidth: 2, borderColor: '#fff', borderRadius: 22, padding: 2 }}
+                accessibilityLabel="Abrir menu do perfil"
+              >
+                {userProfile?.avatar_url ? (
+                  <Image source={{ uri: userProfile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E7EB' }} />
+                ) : (
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#60A5FA', alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>{userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
           )}
           {user && showProfileMenu && (
             <View style={{ position: 'absolute', top: 48, right: 18, backgroundColor: 'white', borderRadius: 10, elevation: 4, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8, paddingVertical: 8, paddingHorizontal: 16, zIndex: 100 }}>
+                {isAdmin && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowProfileMenu(false);
+                      navigation.navigate('Admin');
+                    }}
+                    style={{ paddingVertical: 8 }}
+                  >
+                    <Text style={{ color: '#4F46E5', fontWeight: 'bold', fontSize: 16 }}>Administração</Text>
+                  </TouchableOpacity>
+                )}
               <TouchableOpacity
                 onPress={() => {
                   setShowProfileMenu(false);

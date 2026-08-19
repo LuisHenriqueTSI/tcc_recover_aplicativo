@@ -1,9 +1,12 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import MapView, { Callout, Marker } from 'react-native-maps';
+import { MaterialIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import * as itemsService from '../services/items';
+import { citiesByState, neighborhoodsByCity, states } from '../lib/br-locations';
+import OptimizedImage from '../components/OptimizedImage';
 
 const BRAZIL_REGION = {
   latitude: -14.235,
@@ -13,6 +16,27 @@ const BRAZIL_REGION = {
 };
 
 const hasCoordinates = (item) => Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude));
+const normalizeSearchText = (value) => String(value || '')
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .trim();
+
+const catalogSuggestions = [
+  ...states.map((state) => ({ label: state, detail: 'Estado', search: normalizeSearchText(state), type: 'state' })),
+  ...Object.entries(citiesByState).flatMap(([state, cities]) => cities.map((city) => ({
+    label: `${city}, ${state}`,
+    search: normalizeSearchText(`${city}, ${state}`),
+    detail: 'Cidade',
+    type: 'city',
+  }))),
+  ...Object.entries(neighborhoodsByCity).flatMap(([city, neighborhoods]) => neighborhoods.map((neighborhood) => ({
+    label: `${neighborhood}, ${city}`,
+    search: normalizeSearchText(`${neighborhood}, ${city}`),
+    detail: 'Bairro',
+    type: 'neighborhood',
+  }))),
+];
 
 const MapScreen = ({ navigation }) => {
   const [items, setItems] = useState([]);
@@ -21,6 +45,91 @@ const MapScreen = ({ navigation }) => {
   const locationStatusRef = useRef('checking');
   const [region, setRegion] = useState(BRAZIL_REGION);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [searchText, setSearchText] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [searchMessage, setSearchMessage] = useState('');
+  const [remoteSuggestions, setRemoteSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+
+  useEffect(() => {
+    const query = searchText.trim();
+    if (query.length < 3) {
+      setRemoteSuggestions([]);
+      setLoadingSuggestions(false);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setLoadingSuggestions(true);
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=br&q=${encodeURIComponent(query)}`,
+          {
+            headers: {
+              Accept: 'application/json',
+              'Accept-Language': 'pt-BR',
+            },
+            signal: controller.signal,
+          }
+        );
+        if (!response.ok) throw new Error(`Busca remota retornou ${response.status}`);
+        const results = await response.json();
+        setRemoteSuggestions((results || []).map((result) => ({
+          label: result.display_name,
+          detail: 'OpenStreetMap',
+          search: normalizeSearchText(result.display_name),
+          latitude: Number(result.lat),
+          longitude: Number(result.lon),
+          type: 'remote',
+        })));
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.warn('[MapScreen] Falha nas sugestões remotas:', error.message);
+          setRemoteSuggestions([]);
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoadingSuggestions(false);
+      }
+    }, 400);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [searchText]);
+
+  const searchSuggestions = useMemo(() => {
+    const query = normalizeSearchText(searchText);
+    if (query.length < 2) return [];
+
+    const itemSuggestions = items.flatMap((item) => {
+      if (!hasCoordinates(item)) return [];
+      const location = item.neighborhood
+        ? `${item.neighborhood}, ${item.city || ''}, ${item.state || ''}`
+        : item.city && item.state ? `${item.city}, ${item.state}` : item.city || item.state || '';
+      return location ? [{
+        label: location,
+        detail: 'Localização de anúncio',
+        type: 'item',
+        search: normalizeSearchText(location),
+        latitude: Number(item.latitude),
+        longitude: Number(item.longitude),
+      }] : [];
+    });
+    const uniqueSuggestions = [...new Map(
+      [...catalogSuggestions, ...itemSuggestions].map((suggestion) => [suggestion.search, suggestion])
+    ).values()];
+
+    return [...remoteSuggestions, ...uniqueSuggestions]
+      .filter((suggestion) => suggestion.search.includes(query))
+      .sort((a, b) => {
+        const aStarts = a.search.startsWith(query) ? 0 : 1;
+        const bStarts = b.search.startsWith(query) ? 0 : 1;
+        return aStarts - bStarts || a.type.localeCompare(b.type) || a.label.localeCompare(b.label, 'pt-BR');
+      })
+      .slice(0, 6);
+  }, [items, remoteSuggestions, searchText]);
 
   const requestUserLocation = useCallback(async () => {
     locationStatusRef.current = 'checking';
@@ -72,6 +181,66 @@ const MapScreen = ({ navigation }) => {
     }
   }, []);
 
+  const handleSearchLocation = async (value = searchText, suggestion = null) => {
+    const query = value.trim();
+    if (!query) return;
+
+    setSearchText(query);
+    setSearchMessage('');
+    if (suggestion?.latitude && suggestion?.longitude) {
+      setRegion({
+        latitude: suggestion.latitude,
+        longitude: suggestion.longitude,
+        latitudeDelta: 0.08,
+        longitudeDelta: 0.08,
+      });
+      return;
+    }
+    setSearching(true);
+    try {
+      const results = await Location.geocodeAsync(query);
+      const firstResult = results[0];
+      if (!firstResult) {
+        setSearchMessage('Localização não encontrada. Tente informar cidade e estado.');
+        return;
+      }
+
+      setRegion({
+        latitude: firstResult.latitude,
+        longitude: firstResult.longitude,
+        latitudeDelta: 0.08,
+        longitudeDelta: 0.08,
+      });
+    } catch (error) {
+      console.warn('[MapScreen] Falha ao pesquisar localização:', error.message);
+      setSearchMessage('Não foi possível pesquisar agora. Tente novamente.');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleCenterOnUser = async () => {
+    try {
+      const permission = await Location.requestForegroundPermissionsAsync();
+      if (!permission.granted) {
+        setLocationStatus('denied');
+        return;
+      }
+
+      const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      setRegion({
+        latitude: current.coords.latitude,
+        longitude: current.coords.longitude,
+        latitudeDelta: 0.08,
+        longitudeDelta: 0.08,
+      });
+      locationStatusRef.current = 'granted';
+      setLocationStatus('granted');
+    } catch (error) {
+      console.warn('[MapScreen] Não foi possível recentralizar no usuário:', error.message);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       requestUserLocation();
@@ -97,7 +266,7 @@ const MapScreen = ({ navigation }) => {
         region={region}
         onRegionChangeComplete={setRegion}
         showsUserLocation={locationStatus === 'granted'}
-        showsMyLocationButton={locationStatus === 'granted'}
+        showsMyLocationButton={false}
       >
         {items.map((item) => {
           const photoUrl = item.item_photos?.[0]?.url;
@@ -114,7 +283,12 @@ const MapScreen = ({ navigation }) => {
               <View style={[styles.marker, { backgroundColor: statusColor }]} collapsable={false}>
                 <View style={styles.markerImageFrame}>
                   {photoUrl ? (
-                    <Image source={{ uri: photoUrl }} style={styles.markerImage} />
+                    <OptimizedImage
+                      uri={photoUrl}
+                      style={styles.markerImage}
+                      onLoad={() => console.log('[MapScreen] Foto carregada:', photoUrl)}
+                      onError={(error) => console.warn('[MapScreen] Falha ao carregar foto:', photoUrl, error.nativeEvent.error)}
+                    />
                   ) : (
                     <Text style={styles.markerFallback}>🐾</Text>
                   )}
@@ -132,10 +306,49 @@ const MapScreen = ({ navigation }) => {
         })}
       </MapView>
 
-      <View style={styles.header} pointerEvents="none">
-        <Text style={styles.title}>Pets no mapa</Text>
-        <Text style={styles.subtitle}>{items.length} {items.length === 1 ? 'localização marcada' : 'localizações marcadas'}</Text>
+      <View style={styles.searchBar}>
+        <TextInput
+          value={searchText}
+          onChangeText={(value) => {
+            setSearchText(value);
+            setSearchMessage('');
+          }}
+          placeholder="Pesquisar cidade ou endereço"
+          placeholderTextColor="#6B7280"
+          style={styles.searchInput}
+          returnKeyType="search"
+          onSubmitEditing={handleSearchLocation}
+          editable={!searching}
+        />
+        <TouchableOpacity
+          style={styles.searchButton}
+          onPress={handleSearchLocation}
+          disabled={searching || !searchText.trim()}
+        >
+          {searching ? <ActivityIndicator color="#FFFFFF" size="small" /> : <Text style={styles.searchButtonText}>Buscar</Text>}
+        </TouchableOpacity>
       </View>
+      {(searchSuggestions.length > 0 || loadingSuggestions) && !searching && (
+        <View style={styles.suggestionsList}>
+          {loadingSuggestions && <Text style={styles.loadingSuggestionsText}>Pesquisando localidades...</Text>}
+          {searchSuggestions.map((suggestion) => (
+            <TouchableOpacity
+              key={suggestion.label}
+              style={styles.suggestionItem}
+              onPress={() => handleSearchLocation(suggestion.label, suggestion)}
+            >
+              <View style={styles.suggestionContent}>
+                <Text style={styles.suggestionText}>{suggestion.label}</Text>
+                <Text style={styles.suggestionDetail}>{suggestion.detail}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+          {searchSuggestions.some((suggestion) => suggestion.type === 'remote') && (
+            <Text style={styles.attributionText}>Resultados de OpenStreetMap</Text>
+          )}
+        </View>
+      )}
+      {searchMessage ? <Text style={styles.searchMessage}>{searchMessage}</Text> : null}
 
       {selectedItem && (
         <View style={styles.infoCard}>
@@ -156,6 +369,16 @@ const MapScreen = ({ navigation }) => {
             <Text style={styles.detailsButtonText}>Ver informações completas</Text>
           </TouchableOpacity>
         </View>
+      )}
+
+      {locationStatus === 'granted' && (
+        <TouchableOpacity
+          style={[styles.centerLocationButton, selectedItem && styles.centerLocationButtonRaised]}
+          onPress={handleCenterOnUser}
+          accessibilityLabel="Voltar para minha localização"
+        >
+          <MaterialIcons name="my-location" size={24} color="#4F46E5" />
+        </TouchableOpacity>
       )}
 
       {locationStatus !== 'granted' && (
@@ -191,24 +414,38 @@ const MapScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#E5E7EB' },
   map: { flex: 1 },
+  searchBar: {
+    position: 'absolute',
+    top: 68,
+    left: 16,
+    right: 16,
+    zIndex: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 6,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  searchInput: { flex: 1, minHeight: 42, paddingHorizontal: 10, color: '#111827', fontSize: 14 },
+  searchButton: { minHeight: 42, paddingHorizontal: 14, borderRadius: 8, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center' },
+  searchButtonText: { color: '#FFFFFF', fontWeight: '700' },
+  suggestionsList: { position: 'absolute', top: 120, left: 22, right: 22, zIndex: 11, borderRadius: 10, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 8, elevation: 4, overflow: 'hidden' },
+  suggestionItem: { paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  suggestionContent: { gap: 2 },
+  suggestionText: { color: '#111827', fontSize: 14, fontWeight: '600' },
+  suggestionDetail: { color: '#6B7280', fontSize: 11 },
+  loadingSuggestionsText: { padding: 12, color: '#6B7280', fontSize: 13 },
+  attributionText: { paddingHorizontal: 14, paddingVertical: 8, color: '#9CA3AF', fontSize: 10 },
+  searchMessage: { position: 'absolute', top: 120, left: 22, right: 22, zIndex: 11, padding: 9, borderRadius: 8, backgroundColor: '#FFFFFF', color: '#B45309', fontSize: 12 },
+  centerLocationButton: { position: 'absolute', right: 16, bottom: 108, width: 50, height: 50, borderRadius: 25, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 5 },
+  centerLocationButtonRaised: { bottom: 190 },
   permissionState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28, backgroundColor: '#F9FAFB' },
   permissionTitle: { color: '#111827', fontSize: 18, fontWeight: '700', marginTop: 14 },
   permissionText: { color: '#6B7280', textAlign: 'center', marginTop: 6, lineHeight: 20 },
-  header: {
-    position: 'absolute',
-    top: 16,
-    left: 16,
-    right: 16,
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  title: { color: '#111827', fontSize: 18, fontWeight: '700' },
-  subtitle: { color: '#6B7280', marginTop: 3 },
   locationNotice: { position: 'absolute', left: 16, right: 16, bottom: 22, padding: 14, borderRadius: 12, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 8, elevation: 3 },
   locationNoticeText: { color: '#374151', lineHeight: 19 },
   retryButton: { alignSelf: 'flex-start', marginTop: 8 },

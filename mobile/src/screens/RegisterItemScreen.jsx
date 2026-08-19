@@ -9,9 +9,9 @@ import {
   TouchableOpacity,
   Modal,
   Image,
-  FlatList,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { Calendar } from 'react-native-calendars';
 import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
@@ -454,18 +454,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
     }
 
     const species = normalizeSpeciesValue(animalSpecies) || 'Animal';
-    const verb = status === 'lost' ? 'perdido' : 'encontrado';
+    const statusLabel = status === 'lost' ? 'perdido' : 'encontrado';
+    const colorLabel = color?.trim() || 'cor não informada';
+    const location = neighborhood || city || 'localização selecionada no mapa';
 
-    const parts = [species, verb];
-
-    if (color && color.trim()) {
-      parts.push(color.trim());
-    }
-
-    const location = neighborhood || city || 'na região';
-    parts.push(`em ${location.trim()}`);
-
-    return parts.join(' ');
+    return `${species}, ${colorLabel}, ${statusLabel}, em ${location.trim()}`;
   };
 
   const formatDateDisplay = (dateString) => {
@@ -485,7 +478,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
       console.log('[pickImage] Launching image picker...');
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'Images',
+        mediaTypes: ['images'],
         allowsMultipleSelection: true,
         selectionLimit: 10,
         quality: 0.7,
@@ -498,10 +491,15 @@ const RegisterItemScreen = ({ navigation, route }) => {
         const newPhotos = [];
 
         for (const asset of result.assets) {
+          const optimizedPhoto = await ImageManipulator.manipulateAsync(
+            asset.uri,
+            [{ resize: { width: 600 } }],
+            { compress: 0.55, format: ImageManipulator.SaveFormat.JPEG }
+          );
           const photo = {
-            uri: asset.uri,
-            type: asset.type || 'image/jpeg',
-            name: asset.fileName || asset.uri.split('/').pop(),
+            uri: optimizedPhoto.uri,
+            type: 'image/jpeg',
+            name: `${Date.now()}_${asset.fileName || 'pet.jpg'}`,
           };
 
           const validation = await validatePetPhoto({ imageUri: photo.uri });
@@ -516,7 +514,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           newPhotos.push(photo);
         }
 
-        setPhotos([...photos, ...newPhotos]);
+        setPhotos((previousPhotos) => [...previousPhotos, ...newPhotos]);
         Alert.alert('Sucesso', `${newPhotos.length} foto(s) adicionada(s)`);
       }
     } catch (error) {
@@ -674,7 +672,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
     try {
       // Título automático local, sem IA e sem consumo de crédito.
-      let currentTitle = itemType === 'animal' ? (animalName || buildAutoTitle()) : (title || buildAutoTitle());
+      let currentTitle = itemType === 'animal' ? buildAutoTitle() : (title || buildAutoTitle());
       if (!currentTitle || currentTitle.trim() === '') {
         currentTitle = buildAutoTitle() || 'Animal';
       }
@@ -691,7 +689,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         status: toNull(status) || editItem?.status,
         category: toNull(itemType) || editItem?.category,
         item_type: toNull(itemType) || editItem?.item_type,
-        date: date ? `${date}T00:00:00-03:00` : editItem?.date,
+        date: date || editItem?.date || new Date().toISOString().split('T')[0],
         // Características em colunas específicas
         brand: toNull(brand),
         color: toNull(color),
@@ -956,7 +954,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     status,
                     category: itemType,
                     item_type: itemType,
-                    date: `${date}T00:00:00Z`,
+                    date: date || new Date().toISOString().split('T')[0],
                     extra_fields: {
                       brand,
                       color,
@@ -1176,16 +1174,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
               {photos.length > 0 && (
                 <View style={styles.photosContainer}>
                   <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
-                  <FlatList
-                    data={photos}
-                    keyExtractor={(_, i) => i.toString()}
-                    numColumns={3}
-                    scrollEnabled={false}
-                    renderItem={({ item, index }) => (
-                      <View style={styles.photoItem}>
+                  <View style={styles.photoGrid}>
+                    {photos.map((photo, index) => (
+                      <View key={`${photo.uri}-${index}`} style={styles.photoItem}>
                         <Image
-                          source={{ uri: item.uri }}
+                          source={{ uri: photo.uri }}
                           style={styles.photo}
+                          onError={(error) => console.warn('[RegisterItem] Falha ao exibir prévia:', error.nativeEvent.error)}
                         />
                         <TouchableOpacity
                           style={styles.removePhotoButton}
@@ -1194,8 +1189,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
                           <Text style={styles.removePhotoText}>✕</Text>
                         </TouchableOpacity>
                       </View>
-                    )}
-                  />
+                    ))}
+                  </View>
                 </View>
               )}
 
@@ -1335,16 +1330,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 {photos.length > 0 && (
                   <View style={styles.photosContainer}>
                     <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
-                    <FlatList
-                      data={photos}
-                      keyExtractor={(_, i) => i.toString()}
-                      numColumns={3}
-                      scrollEnabled={false}
-                      renderItem={({ item, index }) => (
-                        <View style={styles.photoItem}>
+                    <View style={styles.photoGrid}>
+                      {photos.map((photo, index) => (
+                        <View key={`${photo.uri}-${index}`} style={styles.photoItem}>
                           <Image
-                            source={{ uri: item.uri }}
+                            source={{ uri: photo.uri }}
                             style={styles.photo}
+                            onError={(error) => console.warn('[RegisterItem] Falha ao exibir prévia:', error.nativeEvent.error)}
                           />
                           <TouchableOpacity
                             style={styles.removePhotoButton}
@@ -1353,8 +1345,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
                             <Text style={styles.removePhotoText}>✕</Text>
                           </TouchableOpacity>
                         </View>
-                      )}
-                    />
+                      ))}
+                    </View>
                   </View>
                 )}
               </>
@@ -1686,8 +1678,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: '#1F2937',
   },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -4,
+  },
   photoItem: {
-    flex: 1,
+    width: '31%',
     margin: 4,
     position: 'relative',
   },
