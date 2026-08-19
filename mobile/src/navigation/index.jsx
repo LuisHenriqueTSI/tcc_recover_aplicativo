@@ -342,6 +342,18 @@ const MainAppTabs = ({ navigation }) => {
         }}
       />
       <Tab.Screen
+        name="MapTab"
+        component={MapScreen}
+        options={{
+          title: 'Mapa',
+          tabBarLabel: 'Mapa',
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="map" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
         name="ChatTab"
         component={InboxScreen}
         options={{

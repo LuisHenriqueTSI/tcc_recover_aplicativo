@@ -19,8 +19,7 @@ import * as rewardsService from '../services/rewards';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import MapLocationPicker from '../components/MapLocationPicker';
-import { states, citiesByState, neighborhoodsByCity } from '../lib/br-locations';
-import { Picker } from '@react-native-picker/picker';
+import { states } from '../lib/br-locations';
 import Card from '../components/Card';
 import { analyzeItemWithVision, validatePetPhoto } from '../services/aiItemSuggestions';
 
@@ -33,6 +32,53 @@ const PET_SPECIES_OPTIONS = [
   { label: 'Cavalo', value: 'Cavalo' },
   { label: 'Outro', value: 'Outro' },
 ];
+
+const PET_SPECIES_CHIPS = PET_SPECIES_OPTIONS.filter((option) => option.value);
+const PET_COLOR_OPTIONS = ['Preto', 'Branco', 'Marrom', 'Laranja', 'Cinza', 'Amarelo', 'Dourado', 'Caramelo', 'Multicolorido'];
+const PET_SIZE_OPTIONS = ['Pequeno', 'Médio', 'Grande', 'Gigante'];
+const PET_AGE_OPTIONS = ['Filhote', 'Adulto', 'Idoso', 'Não informado'];
+
+const normalizeOptionValue = (value, options) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const normalized = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return options.find((option) => {
+    const optionNormalized = option.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return normalized === optionNormalized || normalized.includes(optionNormalized);
+  }) || raw;
+};
+
+const normalizeColorValue = (value) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const normalized = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return PET_COLOR_OPTIONS.find((option) => {
+    const optionNormalized = option.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return normalized === optionNormalized;
+  }) || raw;
+};
+
+const SelectionChips = ({ label, options, value, onChange }) => (
+  <View style={styles.selectionGroup}>
+    <Text style={styles.label}>{label}</Text>
+    <View style={styles.selectionChips}>
+      {options.map((option) => {
+        const selected = String(value || '').toLowerCase() === option.toLowerCase();
+        return (
+          <TouchableOpacity
+            key={option}
+            style={[styles.selectionChip, selected && styles.selectionChipSelected]}
+            onPress={() => onChange(option)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected }}
+          >
+            <Text style={[styles.selectionChipText, selected && styles.selectionChipTextSelected]}>{option}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  </View>
+);
 
 const normalizeSpeciesValue = (value) => {
   if (value === null || value === undefined) return '';
@@ -170,6 +216,17 @@ const ITEM_TYPES = {
   },
 };
 
+const BRAZIL_REGION_TO_UF = {
+  acre: 'AC', alagoas: 'AL', amapa: 'AP', amapá: 'AP', amazonas: 'AM', bahia: 'BA',
+  ceara: 'CE', ceará: 'CE', 'distrito federal': 'DF', 'espirito santo': 'ES', 'espírito santo': 'ES',
+  goias: 'GO', goiás: 'GO', maranhao: 'MA', maranhão: 'MA', 'mato grosso': 'MT',
+  'mato grosso do sul': 'MS', 'minas gerais': 'MG', para: 'PA', pará: 'PA', paraiba: 'PB',
+  paraíba: 'PB', parana: 'PR', paraná: 'PR', pernambuco: 'PE', piaui: 'PI', piauí: 'PI',
+  'rio de janeiro': 'RJ', 'rio grande do norte': 'RN', 'rio grande do sul': 'RS',
+  rondonia: 'RO', rondônia: 'RO', roraima: 'RR', 'santa catarina': 'SC', 'sao paulo': 'SP',
+  'são paulo': 'SP', sergipe: 'SE', tocantins: 'TO',
+};
+
 const RegisterItemScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
   const editItem = route?.params?.editItem || null;
@@ -177,63 +234,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const renderLocationAndRewardSection = () => (
     <View>
       <Text style={styles.label}>Localização</Text>
+      <Text style={styles.locationHint}>Escolha no mapa onde o pet foi perdido ou encontrado.</Text>
       {renderMapLocationButton()}
-      <View style={styles.input}>
-        <Text style={styles.label}>Estado</Text>
-        <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
-          <Picker
-            selectedValue={state}
-            onValueChange={(value) => {
-              setState(value);
-              setCity('');
-              setNeighborhood('');
-            }}
-            style={{ height: 48, color: '#1F2937' }}
-          >
-            <Picker.Item label="Selecione o estado" value="" />
-            {states.map((uf) => (
-              <Picker.Item key={uf} label={uf} value={uf} />
-            ))}
-          </Picker>
-        </View>
-      </View>
-
-      <View style={styles.input}>
-        <Text style={styles.label}>Cidade</Text>
-        <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
-          <Picker
-            selectedValue={city}
-            onValueChange={(value) => {
-              setCity(value);
-              setNeighborhood('');
-            }}
-            enabled={!!state}
-            style={{ height: 48, color: '#1F2937' }}
-          >
-            <Picker.Item label="Selecione a cidade" value="" />
-            {(citiesByState[state] || []).map((c) => (
-              <Picker.Item key={c} label={c} value={c} />
-            ))}
-          </Picker>
-        </View>
-      </View>
-
-      <View style={styles.input}>
-        <Text style={styles.label}>Bairro</Text>
-        <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
-          <Picker
-            selectedValue={neighborhood}
-            onValueChange={setNeighborhood}
-            enabled={!!city}
-            style={{ height: 48 }}
-          >
-            <Picker.Item label="Selecione o bairro" value="" />
-            {(neighborhoodsByCity[city] || []).map((b) => (
-              <Picker.Item key={b} label={b} value={b} />
-            ))}
-          </Picker>
-        </View>
-      </View>
 
       <View style={styles.datePickerContainer}>
         <Text style={styles.label}>Data do Evento *</Text>
@@ -364,8 +366,12 @@ const RegisterItemScreen = ({ navigation, route }) => {
       onClose={() => setMapModalVisible(false)}
       onConfirm={({ coordinate, address }) => {
         setMapLocation(coordinate);
-        if (address?.city) setCity(address.city);
-        if (address?.region && states.includes(address.region)) setState(address.region);
+        // O ponto escolhido no mapa é a fonte principal; não manter valores antigos
+        // dos seletores quando a geocodificação não retornar algum campo.
+        setCity(address?.city || '');
+        const region = String(address?.region || '').trim();
+        const normalizedRegion = region.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        setState(states.includes(region) ? region : (BRAZIL_REGION_TO_UF[normalizedRegion] || ''));
         setNeighborhood(address?.district || address?.subregion || '');
         setMapModalVisible(false);
       }}
@@ -555,15 +561,15 @@ const RegisterItemScreen = ({ navigation, route }) => {
         if (suggestions.animal_name) setAnimalName(suggestions.animal_name);
         if (suggestions.species) setAnimalSpecies(normalizeSpeciesValue(suggestions.species));
         if (suggestions.breed) setAnimalBreed(suggestions.breed);
-        if (suggestions.size) setAnimalSize(suggestions.size);
-        if (suggestions.age) setAnimalAge(suggestions.age);
+        if (suggestions.size) setAnimalSize(normalizeOptionValue(suggestions.size, PET_SIZE_OPTIONS));
+        if (suggestions.age) setAnimalAge(normalizeOptionValue(suggestions.age, PET_AGE_OPTIONS));
         if (suggestions.collar) setAnimalCollar(suggestions.collar);
       }
 
       if (suggestions.title) setTitle(suggestions.title);
       if (suggestions.description) setDescription(suggestions.description);
       if (suggestions.brand) setBrand(suggestions.brand);
-      if (suggestions.color) setColor(suggestions.color);
+      if (suggestions.color) setColor(normalizeColorValue(suggestions.color));
       if (suggestions.serial_number) setSerialNumber(suggestions.serial_number);
 
       const message = suggestions.source === 'gemini'
@@ -625,7 +631,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
       setError('Selecione a data');
       return false;
     }
-    // Localização agora opcional
+    if (!mapLocation?.latitude || !mapLocation?.longitude) {
+      setError('Escolha a localização do pet no mapa');
+      return false;
+    }
     if (!status) {
       setError('Selecione se perdeu ou encontrou');
       return false;
@@ -1191,32 +1200,17 @@ const RegisterItemScreen = ({ navigation, route }) => {
               )}
 
               {/* Campos detalhados do animal */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Espécie *</Text>
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={animalSpecies}
-                    onValueChange={(value) => setAnimalSpecies(value)}
-                    style={styles.picker}
-                    dropdownIconColor="#4B5563"
-                  >
-                    {PET_SPECIES_OPTIONS.map((option) => (
-                      <Picker.Item
-                        key={option.value || 'empty'}
-                        label={option.label}
-                        value={option.value}
-                      />
-                    ))}
-                  </Picker>
-                </View>
-              </View>
-              <Input
-                label="Cor *"
-                placeholder="Ex: Dourado"
-                value={color}
-                onChangeText={setColor}
-                style={styles.input}
-              />
+              <SelectionChips label="Espécie *" options={PET_SPECIES_CHIPS.map((option) => option.value)} value={animalSpecies} onChange={setAnimalSpecies} />
+              <SelectionChips label="Cor *" options={PET_COLOR_OPTIONS} value={color} onChange={setColor} />
+              {!PET_COLOR_OPTIONS.some((option) => option.toLowerCase() === String(color || '').toLowerCase()) && (
+                <Input
+                  label="Outra cor"
+                  placeholder="Ex: Laranja e branco"
+                  value={color}
+                  onChangeText={setColor}
+                  style={styles.input}
+                />
+              )}
               <Input
                 label="Raça"
                 placeholder="Ex: Golden Retriever"
@@ -1224,20 +1218,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 onChangeText={setAnimalBreed}
                 style={styles.input}
               />
-              <Input
-                label="Porte"
-                placeholder="Ex: Grande, Médio, Pequeno"
-                value={animalSize}
-                onChangeText={setAnimalSize}
-                style={styles.input}
-              />
-              <Input
-                label="Idade"
-                placeholder="Ex: Filhote, Adulto, Idoso"
-                value={animalAge}
-                onChangeText={setAnimalAge}
-                style={styles.input}
-              />
+              <SelectionChips label="Porte" options={PET_SIZE_OPTIONS} value={animalSize} onChange={setAnimalSize} />
+              <SelectionChips label="Idade" options={PET_AGE_OPTIONS} value={animalAge} onChange={setAnimalAge} />
               <Input
                 label="Descrição"
                 placeholder="Descreva detalhes importantes..."
@@ -1448,67 +1430,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
       <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 0 }} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Localização e Recompensa</Text>
+          <Text style={styles.locationHint}>Escolha no mapa onde o pet foi perdido ou encontrado.</Text>
           {renderMapLocationButton()}
-
-          {/* Estado (opcional) */}
-          <View style={styles.input}>
-            <Text style={styles.label}>Estado</Text>
-            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
-              <Picker
-                selectedValue={state}
-                onValueChange={(value) => {
-                  setState(value);
-                  setCity('');
-                  setNeighborhood('');
-                }}
-                style={{ height: 48, color: '#1F2937' }}
-              >
-                <Picker.Item label="Selecione o estado" value="" />
-                {states.map((uf) => (
-                  <Picker.Item key={uf} label={uf} value={uf} />
-                ))}
-              </Picker>
-            </View>
-          </View>
-
-          {/* Cidade (opcional) */}
-          <View style={styles.input}>
-            <Text style={styles.label}>Cidade</Text>
-            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#f3f4f6' }}>
-              <Picker
-                selectedValue={city}
-                onValueChange={(value) => {
-                  setCity(value);
-                  setNeighborhood('');
-                }}
-                enabled={!!state}
-                style={{ height: 48, color: '#1F2937' }}
-              >
-                <Picker.Item label="Selecione a cidade" value="" />
-                {(citiesByState[state] || []).map((c) => (
-                  <Picker.Item key={c} label={c} value={c} />
-                ))}
-              </Picker>
-            </View>
-          </View>
-
-          {/* Bairro (opcional) */}
-          <View style={styles.input}>
-            <Text style={styles.label}>Bairro</Text>
-            <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, backgroundColor: '#fff' }}>
-              <Picker
-                selectedValue={neighborhood}
-                onValueChange={setNeighborhood}
-                enabled={!!city}
-                style={{ height: 48 }}
-              >
-                <Picker.Item label="Selecione o bairro" value="" />
-                {(neighborhoodsByCity[city] || []).map((b) => (
-                  <Picker.Item key={b} label={b} value={b} />
-                ))}
-              </Picker>
-            </View>
-          </View>
 
           <View style={styles.datePickerContainer}>
             <Text style={styles.label}>Data do Evento *</Text>
@@ -1852,6 +1775,37 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 20,
   },
+  selectionGroup: {
+    marginBottom: 14,
+  },
+  selectionChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  selectionChip: {
+    minHeight: 40,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+  },
+  selectionChipSelected: {
+    borderColor: '#4F46E5',
+    backgroundColor: '#EEF2FF',
+  },
+  selectionChipText: {
+    color: '#4B5563',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  selectionChipTextSelected: {
+    color: '#4338CA',
+  },
   mapButton: {
     borderWidth: 1,
     borderColor: '#4F46E5',
@@ -1869,6 +1823,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 12,
     textAlign: 'center',
+  },
+  locationHint: {
+    color: '#6B7280',
+    fontSize: 13,
+    marginBottom: 12,
   },
   checkboxContainer: {
     flexDirection: 'row',

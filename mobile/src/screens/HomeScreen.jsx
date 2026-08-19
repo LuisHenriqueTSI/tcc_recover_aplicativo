@@ -252,10 +252,8 @@ const HomeScreen = ({ navigation, route }) => {
         if (filters.category !== 'all') baseFilters.category = filters.category;
         if (filters.animalType && filters.animalType !== 'all') baseFilters.species = filters.animalType;
         if (filters.showMyItems && user) baseFilters.owner_id = user.id;
-        // Filtro por estado, cidade e bairro
-        if (editState) baseFilters.state = editState;
-        if (editCity) baseFilters.city = editCity;
-        if (editNeighborhood) baseFilters.neighborhood = editNeighborhood;
+        // A localização pode existir apenas como coordenadas escolhidas no mapa.
+        // O filtro textual é aplicado abaixo, depois que todos os itens são carregados.
         allItems = await itemsService.listItemsWithPhotosAndOwner(baseFilters);
         // Ajustar owner_name para compatibilidade
         allItems = (allItems || []).map(item => ({
@@ -277,7 +275,8 @@ const HomeScreen = ({ navigation, route }) => {
         }
       });
       setThumbnails(thumbsMap);
-    } catch (error) {
+      } catch (error) {
+        console.error('[HomeScreen] Erro ao carregar itens:', error);
       setItems([]);
       setFilteredItems([]);
     } finally {
@@ -358,6 +357,11 @@ const HomeScreen = ({ navigation, route }) => {
         const matchesState = !stateToken || itemState === stateToken;
         const matchesNeighborhood = !neighborhoodToken || itemNeighborhood === neighborhoodToken;
 
+        const hasMapLocation = Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude));
+        const hasTextLocation = Boolean(itemCity || itemState || itemNeighborhood);
+
+        // Um item localizado pelo mapa continua visível mesmo sem cidade/estado preenchidos.
+        if (hasMapLocation && !hasTextLocation) return true;
         return matchesCity && matchesState && matchesNeighborhood;
       });
     }

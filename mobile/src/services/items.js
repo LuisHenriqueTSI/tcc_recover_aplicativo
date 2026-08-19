@@ -102,13 +102,8 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
         renewalInfo: getRenewalInfo(item),
       }))
       .sort((a, b) => {
-        const aNeedsAttention = a.renewalInfo?.needsRenewal ? 1 : 0;
-        const bNeedsAttention = b.renewalInfo?.needsRenewal ? 1 : 0;
-
-        if (aNeedsAttention !== bNeedsAttention) {
-          return bNeedsAttention - aNeedsAttention;
-        }
-
+        // A ordem da Home deve refletir a publicação, não a expiração.
+        // Avisos de renovação ficam no próprio anúncio sem mover itens antigos para o topo.
         const aDate = new Date(a.created_at || 0).getTime();
         const bDate = new Date(b.created_at || 0).getTime();
         return bDate - aDate;
