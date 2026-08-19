@@ -16,6 +16,7 @@ const Input = ({
   keyboardType = 'default',
   multiline = false,
   numberOfLines = 1,
+  editable = true,
   style,
   error,
 }) => {
@@ -39,6 +40,7 @@ const Input = ({
           placeholder={placeholder}
           placeholderTextColor="#9CA3AF"
           value={value}
+          editable={editable}
           onChangeText={text => {
             if (typeof text === 'string' && text.length > 0) {
               const capitalized = text.charAt(0).toUpperCase() + text.slice(1);

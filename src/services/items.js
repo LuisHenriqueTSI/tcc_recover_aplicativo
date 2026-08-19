@@ -461,9 +461,9 @@ export const saveItemPhoto = async (itemId, photo) => {
   }
 };
 
-export const deleteItem = async (itemId) => {
+export const deleteItem = async (itemId, options = {}) => {
   try {
-    console.log('[deleteItem] Deleting item:', itemId);
+    console.log('[deleteItem] Deleting item:', itemId, options.actorIsAdmin ? 'as admin' : 'as owner');
 
     // First delete photos from storage and database
     const { data: photos, error: photosError } = await supabase
@@ -502,14 +502,24 @@ export const deleteItem = async (itemId) => {
     await supabase.from('notifications').delete().eq('item_id', itemId);
 
     // Finally delete the item
-    const { error } = await supabase
+    const { data: deletedItem, error } = await supabase
       .from('items')
       .delete()
-      .eq('id', itemId);
+      .eq('id', itemId)
+      .select('id')
+      .maybeSingle();
 
     if (error) {
       console.error('[deleteItem] Error:', error);
       throw error;
+    }
+
+    if (!deletedItem?.id) {
+      throw new Error(
+        options.actorIsAdmin
+          ? 'O Supabase bloqueou a exclusão administrativa. Verifique a policy/RPC de admin para a tabela items.'
+          : 'A publicação não foi encontrada ou não pertence ao usuário atual.'
+      );
     }
 
     console.log('[deleteItem] Item deleted successfully');

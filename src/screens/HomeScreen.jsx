@@ -607,36 +607,61 @@ const HomeScreen = ({ navigation, route }) => {
             </View>
           )}
           {user && showProfileMenu && (
-            <View style={{ position: 'absolute', top: 48, right: 18, backgroundColor: 'white', borderRadius: 10, elevation: 4, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8, paddingVertical: 8, paddingHorizontal: 16, zIndex: 100 }}>
-                {isAdmin && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setShowProfileMenu(false);
-                      navigation.navigate('Admin');
-                    }}
-                    style={{ paddingVertical: 8 }}
-                  >
-                    <Text style={{ color: '#4F46E5', fontWeight: 'bold', fontSize: 16 }}>Administração</Text>
-                  </TouchableOpacity>
-                )}
+            <View style={styles.profileMenu}>
+              <View style={styles.profileMenuHeader}>
+                <View style={styles.profileMenuAvatar}>
+                  {userProfile?.avatar_url ? (
+                    <Image source={{ uri: userProfile.avatar_url }} style={styles.profileMenuAvatarImage} />
+                  ) : (
+                    <Text style={styles.profileMenuAvatarText}>{userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}</Text>
+                  )}
+                </View>
+                <View style={styles.profileMenuIdentity}>
+                  <Text style={styles.profileMenuName} numberOfLines={1}>{userProfile?.name || 'Usuário'}</Text>
+                  <Text style={styles.profileMenuEmail} numberOfLines={1}>{user?.email || 'Conta Recover'}</Text>
+                </View>
+              </View>
+              {isAdmin && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowProfileMenu(false);
+                    navigation.navigate('Admin');
+                  }}
+                  style={styles.profileMenuItem}
+                >
+                  <View style={[styles.profileMenuIcon, styles.profileMenuAdminIcon]}>
+                    <MaterialIcons name="admin-panel-settings" size={18} color="#4F46E5" />
+                  </View>
+                  <Text style={styles.profileMenuItemText}>Administração</Text>
+                  <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 onPress={() => {
                   setShowProfileMenu(false);
                   navigation.navigate('ProfileTab');
                 }}
-                style={{ paddingVertical: 8 }}
+                style={styles.profileMenuItem}
               >
-                <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 16 }}>Perfil</Text>
+                <View style={styles.profileMenuIcon}>
+                  <MaterialIcons name="person-outline" size={18} color="#4F46E5" />
+                </View>
+                <Text style={styles.profileMenuItemText}>Perfil</Text>
+                <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
               </TouchableOpacity>
+              <View style={styles.profileMenuDivider} />
               <TouchableOpacity
                 onPress={() => {
                   setShowProfileMenu(false);
                   if (typeof signOut === 'function') signOut();
                   else if (typeof navigation?.navigate === 'function') navigation.navigate('Login');
                 }}
-                style={{ paddingVertical: 8 }}
+                style={styles.profileMenuItem}
               >
-                <Text style={{ color: '#DC2626', fontWeight: 'bold', fontSize: 16 }}>Sair</Text>
+                <View style={[styles.profileMenuIcon, styles.profileMenuLogoutIcon]}>
+                  <MaterialIcons name="logout" size={18} color="#DC2626" />
+                </View>
+                <Text style={styles.profileMenuLogoutText}>Sair</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -999,6 +1024,65 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
+  profileMenu: {
+    position: 'absolute',
+    top: 56,
+    right: 18,
+    width: 236,
+    padding: 8,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E0E7FF',
+    shadowColor: '#111827',
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+    zIndex: 100,
+  },
+  profileMenuHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    marginBottom: 4,
+    borderRadius: 12,
+    backgroundColor: '#F5F3FF',
+  },
+  profileMenuAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#4F46E5',
+    overflow: 'hidden',
+  },
+  profileMenuAvatarImage: { width: 36, height: 36 },
+  profileMenuAvatarText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  profileMenuIdentity: { flex: 1, marginLeft: 10 },
+  profileMenuName: { color: '#111827', fontSize: 14, fontWeight: '800' },
+  profileMenuEmail: { color: '#6B7280', fontSize: 11, marginTop: 2 },
+  profileMenuItem: {
+    minHeight: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    borderRadius: 10,
+  },
+  profileMenuIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EEF2FF',
+  },
+  profileMenuAdminIcon: { backgroundColor: '#EDE9FE' },
+  profileMenuLogoutIcon: { backgroundColor: '#FEF2F2' },
+  profileMenuItemText: { flex: 1, marginLeft: 10, color: '#1F2937', fontSize: 14, fontWeight: '700' },
+  profileMenuLogoutText: { flex: 1, marginLeft: 10, color: '#DC2626', fontSize: 14, fontWeight: '700' },
+  profileMenuDivider: { height: 1, marginVertical: 4, backgroundColor: '#E5E7EB' },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',

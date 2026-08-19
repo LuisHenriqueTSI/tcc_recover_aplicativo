@@ -15,6 +15,13 @@ const BRAZIL_REGION = {
   longitudeDelta: 35,
 };
 
+const PETS_ONLY_MAP_STYLE = [
+  { featureType: 'poi', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'administrative', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+];
+
 const hasCoordinates = (item) => Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude));
 const normalizeSearchText = (value) => String(value || '')
   .toLowerCase()
@@ -267,6 +274,9 @@ const MapScreen = ({ navigation }) => {
         onRegionChangeComplete={setRegion}
         showsUserLocation={locationStatus === 'granted'}
         showsMyLocationButton={false}
+        showsPointsOfInterest={false}
+        showsBuildings={false}
+        customMapStyle={PETS_ONLY_MAP_STYLE}
       >
         {items.map((item) => {
           const photoUrl = item.item_photos?.[0]?.url;
@@ -442,7 +452,7 @@ const styles = StyleSheet.create({
   attributionText: { paddingHorizontal: 14, paddingVertical: 8, color: '#9CA3AF', fontSize: 10 },
   searchMessage: { position: 'absolute', top: 120, left: 22, right: 22, zIndex: 11, padding: 9, borderRadius: 8, backgroundColor: '#FFFFFF', color: '#B45309', fontSize: 12 },
   centerLocationButton: { position: 'absolute', right: 16, bottom: 108, width: 50, height: 50, borderRadius: 25, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 5 },
-  centerLocationButtonRaised: { bottom: 190 },
+  centerLocationButtonRaised: { bottom: 270 },
   permissionState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28, backgroundColor: '#F9FAFB' },
   permissionTitle: { color: '#111827', fontSize: 18, fontWeight: '700', marginTop: 14 },
   permissionText: { color: '#6B7280', textAlign: 'center', marginTop: 6, lineHeight: 20 },

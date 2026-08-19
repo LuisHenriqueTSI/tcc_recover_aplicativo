@@ -6,6 +6,7 @@ import * as userService from '../services/user';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import Card from '../components/Card';
+import * as supabaseAuth from '../services/supabaseAuth';
 import { sendPasswordReset } from '../services/supabaseAuth';
 import { Picker } from '@react-native-picker/picker';
 import { states, citiesByState } from '../lib/br-locations';
@@ -226,6 +227,7 @@ const EditProfileScreen = ({ navigation }) => {
             label="Email"
             placeholder={userProfile?.email}
             editable={false}
+            onChangeText={() => {}}
             style={styles.input}
           />
 

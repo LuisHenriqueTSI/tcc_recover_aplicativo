@@ -41,7 +41,7 @@ const AdminScreen = () => {
         try {
           await resolveReport(report.id, user.id, removePublication ? 'publication_removed' : 'publication_kept');
           if (removePublication) {
-            await deleteItem(report.item_id);
+            await deleteItem(report.item_id, { actorId: user.id, actorIsAdmin: true });
           }
           setReports(current => current.filter(item => item.id !== report.id));
         } catch (error) {

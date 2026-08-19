@@ -34,9 +34,19 @@ const PET_SPECIES_OPTIONS = [
 ];
 
 const PET_SPECIES_CHIPS = PET_SPECIES_OPTIONS.filter((option) => option.value);
-const PET_COLOR_OPTIONS = ['Preto', 'Branco', 'Marrom', 'Laranja', 'Cinza', 'Amarelo', 'Dourado', 'Caramelo', 'Multicolorido'];
+const PET_COLOR_OPTIONS = ['Preto', 'Branco', 'Marrom', 'Laranja', 'Cinza', 'Amarelo', 'Dourado', 'Caramelo'];
 const PET_SIZE_OPTIONS = ['Pequeno', 'Médio', 'Grande', 'Gigante'];
 const PET_AGE_OPTIONS = ['Filhote', 'Adulto', 'Idoso', 'Não informado'];
+const PET_COLOR_ALIASES = {
+  Preto: ['preto', 'preta', 'pretos', 'pretas'],
+  Branco: ['branco', 'branca', 'brancos', 'brancas'],
+  Marrom: ['marrom', 'marron'],
+  Laranja: ['laranja', 'alaranjado', 'alaranjada'],
+  Cinza: ['cinza', 'cinzento', 'cinzenta'],
+  Amarelo: ['amarelo', 'amarela'],
+  Dourado: ['dourado', 'dourada'],
+  Caramelo: ['caramelo'],
+};
 
 const normalizeOptionValue = (value, options) => {
   const raw = String(value || '').trim();
@@ -52,24 +62,40 @@ const normalizeColorValue = (value) => {
   const raw = String(value || '').trim();
   if (!raw) return '';
   const normalized = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  return PET_COLOR_OPTIONS.find((option) => {
-    const optionNormalized = option.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    return normalized === optionNormalized;
-  }) || raw;
+  const detected = PET_COLOR_OPTIONS
+    .map((option) => ({
+      option,
+      index: (PET_COLOR_ALIASES[option] || [option]).reduce((bestIndex, alias) => {
+        const aliasIndex = normalized.indexOf(alias);
+        return aliasIndex >= 0 && (bestIndex < 0 || aliasIndex < bestIndex) ? aliasIndex : bestIndex;
+      }, -1),
+    }))
+    .filter(({ index }) => index >= 0)
+    .sort((a, b) => a.index - b.index)
+    .map(({ option }) => option);
+
+  return detected.length > 0 ? detected.join(' com ') : raw;
 };
 
-const SelectionChips = ({ label, options, value, onChange }) => (
+const getSelectedColorOptions = (value) => {
+  const normalized = String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return PET_COLOR_OPTIONS.filter((option) => (PET_COLOR_ALIASES[option] || [option]).some((alias) => normalized.includes(alias)));
+};
+
+const SelectionChips = ({ label, options, value, onChange, multiSelect = false }) => (
   <View style={styles.selectionGroup}>
     <Text style={styles.label}>{label}</Text>
     <View style={styles.selectionChips}>
       {options.map((option) => {
-        const selected = String(value || '').toLowerCase() === option.toLowerCase();
+        const selected = multiSelect
+          ? getSelectedColorOptions(value).includes(option)
+          : String(value || '').toLowerCase() === option.toLowerCase();
         return (
           <TouchableOpacity
             key={option}
             style={[styles.selectionChip, selected && styles.selectionChipSelected]}
             onPress={() => onChange(option)}
-            accessibilityRole="radio"
+            accessibilityRole={multiSelect ? 'checkbox' : 'radio'}
             accessibilityState={{ selected }}
           >
             <Text style={[styles.selectionChipText, selected && styles.selectionChipTextSelected]}>{option}</Text>
@@ -455,7 +481,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
     const species = normalizeSpeciesValue(animalSpecies) || 'Animal';
     const statusLabel = status === 'lost' ? 'perdido' : 'encontrado';
-    const colorLabel = color?.trim() || 'cor não informada';
+    const colorLabel = color?.trim().toLowerCase() || 'cor não informada';
     const location = neighborhood || city || 'localização selecionada no mapa';
 
     return `${species}, ${colorLabel}, ${statusLabel}, em ${location.trim()}`;
@@ -1196,8 +1222,20 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
               {/* Campos detalhados do animal */}
               <SelectionChips label="Espécie *" options={PET_SPECIES_CHIPS.map((option) => option.value)} value={animalSpecies} onChange={setAnimalSpecies} />
-              <SelectionChips label="Cor *" options={PET_COLOR_OPTIONS} value={color} onChange={setColor} />
-              {!PET_COLOR_OPTIONS.some((option) => option.toLowerCase() === String(color || '').toLowerCase()) && (
+              <SelectionChips
+                label="Cor *"
+                options={PET_COLOR_OPTIONS}
+                value={color}
+                multiSelect
+                onChange={(option) => {
+                  const selectedColors = getSelectedColorOptions(color);
+                  const nextColors = selectedColors.includes(option)
+                    ? selectedColors.filter((selectedColor) => selectedColor !== option)
+                    : [...selectedColors, option];
+                  setColor(nextColors.join(' com '));
+                }}
+              />
+              {getSelectedColorOptions(color).length === 0 && (
                 <Input
                   label="Outra cor"
                   placeholder="Ex: Laranja e branco"

@@ -1,24 +1,53 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { sendPasswordReset } from '../services/supabaseAuth';
 
 export default function EsqueciSenhaScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+
+  useEffect(() => {
+    if (cooldownSeconds <= 0) return undefined;
+
+    const timer = setInterval(() => {
+      setCooldownSeconds(current => Math.max(current - 1, 0));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldownSeconds]);
 
   const handleReset = async () => {
-    if (!email) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
       Alert.alert('Erro', 'Por favor, informe seu e-mail.');
       return;
     }
+    if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+      Alert.alert('Erro', 'Informe um e-mail válido.');
+      return;
+    }
+    if (cooldownSeconds > 0) {
+      Alert.alert('Aguarde', `Tente novamente em ${cooldownSeconds} segundo${cooldownSeconds === 1 ? '' : 's'}.`);
+      return;
+    }
+
     setLoading(true);
-    const error = await sendPasswordReset(email);
+    const error = await sendPasswordReset(normalizedEmail);
     setLoading(false);
     if (!error) {
+      setCooldownSeconds(60);
       Alert.alert('Sucesso', 'Verifique seu e-mail para redefinir a senha.');
       navigation.goBack();
     } else {
-      Alert.alert('Erro', error.message || 'Não foi possível enviar o e-mail.');
+      const errorMessage = String(error.message || '').toLowerCase();
+      if (errorMessage.includes('rate limit')) {
+        setCooldownSeconds(60);
+        Alert.alert('Limite temporário', 'O serviço de e-mail recusou uma tentativa recente. Aguarde 1 minuto e tente novamente.');
+      } else {
+        Alert.alert('Erro', error.message || 'Não foi possível enviar o e-mail.');
+      }
     }
   };
 
@@ -34,8 +63,8 @@ export default function EsqueciSenhaScreen({ navigation }) {
         value={email}
         onChangeText={setEmail}
       />
-      <TouchableOpacity style={styles.button} onPress={handleReset} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Enviando...' : 'Enviar e-mail'}</Text>
+      <TouchableOpacity style={styles.button} onPress={handleReset} disabled={loading || cooldownSeconds > 0}>
+        <Text style={styles.buttonText}>{loading ? 'Enviando...' : cooldownSeconds > 0 ? `Aguarde ${cooldownSeconds}s` : 'Enviar e-mail'}</Text>
       </TouchableOpacity>
     </View>
   );
