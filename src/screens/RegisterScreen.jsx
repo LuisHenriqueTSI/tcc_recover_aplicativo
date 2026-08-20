@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,27 @@ import {
   StyleSheet,
   Alert,
   Image,
+  TouchableOpacity,
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
 import Input from '../components/Input';
-import Card from '../components/Card';
-import { getStates, getCitiesByState } from '../services/location';
-import { Picker } from '@react-native-picker/picker';
+import MapLocationPicker from '../components/MapLocationPicker';
+import { states } from '../lib/br-locations';
+
+const regionToUf = {
+  Acre: 'AC', Alagoas: 'AL', Amapá: 'AP', Amazonas: 'AM', Bahia: 'BA', Ceará: 'CE',
+  'Distrito Federal': 'DF', 'Espírito Santo': 'ES', Goiás: 'GO', Maranhão: 'MA',
+  'Mato Grosso': 'MT', 'Mato Grosso do Sul': 'MS', 'Minas Gerais': 'MG', Pará: 'PA',
+  Paraíba: 'PB', Paraná: 'PR', Pernambuco: 'PE', Piauí: 'PI',
+  'Rio de Janeiro': 'RJ', 'Rio Grande do Norte': 'RN', 'Rio Grande do Sul': 'RS',
+  Rondônia: 'RO', Roraima: 'RR', 'Santa Catarina': 'SC', 'São Paulo': 'SP',
+  Sergipe: 'SE', Tocantins: 'TO',
+};
+
+const normalizeRegionName = (value) => String(value || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const normalizedRegionToUf = Object.fromEntries(Object.entries(regionToUf).map(([name, uf]) => [normalizeRegionName(name), uf]));
 
 const formatBrazilianPhone = (value = '') => {
   const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
@@ -41,10 +55,14 @@ const RegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+  
+  // Localização via mapa
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
-  const [states, setStates] = useState([]);
-  const [cities, setCities] = useState([]);
+  const [selectedAddressText, setSelectedAddressText] = useState('');
+  const [selectedCoordinate, setSelectedCoordinate] = useState(null);
+  const [mapModalVisible, setMapModalVisible] = useState(false);
+
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
@@ -52,20 +70,6 @@ const RegisterScreen = ({ navigation }) => {
   const [pendingSignupData, setPendingSignupData] = useState(null);
   const isBusy = loading || isSubmitting;
 
-  // Validação simples: ambos selecionados
-  const isValidLocation = () => selectedState && selectedCity;
-    useEffect(() => {
-      getStates().then(setStates).catch(() => setStates([]));
-    }, []);
-
-    useEffect(() => {
-      if (selectedState) {
-        getCitiesByState(selectedState).then(setCities).catch(() => setCities([]));
-      } else {
-        setCities([]);
-        setSelectedCity('');
-      }
-    }, [selectedState]);
   const validateForm = () => {
     const newErrors = {};
     if (!name.trim()) {
@@ -89,11 +93,8 @@ const RegisterScreen = ({ navigation }) => {
     if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Senhas não conferem';
     }
-    if (!selectedState) {
-      newErrors.selectedState = 'Selecione o estado';
-    }
-    if (!selectedCity) {
-      newErrors.selectedCity = 'Selecione a cidade';
+    if (!selectedState || !selectedCity) {
+      newErrors.location = 'Escolha sua localização no mapa';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -129,6 +130,8 @@ const RegisterScreen = ({ navigation }) => {
         setName('');
         setSelectedState('');
         setSelectedCity('');
+        setSelectedAddressText('');
+        setSelectedCoordinate(null);
       } catch (error) {
         Alert.alert('Erro de Cadastro', error?.message || 'Falha ao confirmar o código.');
       } finally {
@@ -147,7 +150,14 @@ const RegisterScreen = ({ navigation }) => {
       if (result?.pendingVerification) {
         setPendingVerification(true);
         setPendingSignupData(result);
-        Alert.alert('Código enviado', `Enviamos um código para o WhatsApp ${whatsapp}. Informe-o abaixo para concluir o cadastro.`);
+        if (result?.devCode) {
+          Alert.alert(
+            'Código de Confirmação',
+            `Código de verificação para testes: ${result.devCode}\n\n(Aviso Twilio Sandbox: para o WhatsApp ser entregue em outros números, eles precisam entrar no sandbox da Twilio).`
+          );
+        } else {
+          Alert.alert('Código enviado', `Enviamos um código para o WhatsApp ${whatsapp}. Informe-o abaixo para concluir o cadastro.`);
+        }
       }
     } catch (error) {
       Alert.alert('Erro de Cadastro', error?.message || 'Falha ao criar conta');
@@ -174,41 +184,45 @@ const RegisterScreen = ({ navigation }) => {
             style={styles.input}
             inputStyle={styles.inputField}
           />
-          <View style={styles.inputRow}>
-            <View style={{ flex: 1, marginRight: 8 }}>
-              <Text style={styles.label}>Estado</Text>
-              <View style={styles.pickerBox}>
-                <Picker
-                  selectedValue={selectedState}
-                  onValueChange={value => setSelectedState(value)}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Selecione" value="" />
-                  {states.map(state => (
-                    <Picker.Item key={state.sigla} label={`${state.nome} (${state.sigla})`} value={state.sigla} />
-                  ))}
-                </Picker>
+
+          {/* Seção de Localização com Mapa */}
+          <View style={styles.locationSection}>
+            <Text style={styles.label}>Sua Localização *</Text>
+            
+            <TouchableOpacity
+              style={styles.mapPickerButton}
+              onPress={() => setMapModalVisible(true)}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="map" size={20} color="#4F46E5" />
+              <Text style={styles.mapPickerButtonText}>
+                {selectedCity && selectedState ? '📍 Alterar localização no mapa' : '🗺️ Escolher localização no mapa'}
+              </Text>
+            </TouchableOpacity>
+
+            {(selectedCity || selectedState) ? (
+              <View style={styles.selectedLocationCard}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <MaterialIcons name="place" size={18} color="#16A34A" />
+                  <Text style={styles.selectedLocationText}>
+                    {[selectedCity, selectedState].filter(Boolean).join(', ')}
+                  </Text>
+                </View>
+                {selectedAddressText ? (
+                  <Text style={styles.selectedAddressSubtext} numberOfLines={2}>
+                    {selectedAddressText}
+                  </Text>
+                ) : null}
               </View>
-              {errors.selectedState ? <Text style={styles.error}>{errors.selectedState}</Text> : null}
-            </View>
-            <View style={{ flex: 2 }}>
-              <Text style={styles.label}>Cidade</Text>
-              <View style={styles.pickerBox}>
-                <Picker
-                  selectedValue={selectedCity}
-                  onValueChange={value => setSelectedCity(value)}
-                  style={styles.picker}
-                  enabled={!!selectedState}
-                >
-                  <Picker.Item label="Selecione" value="" />
-                  {cities.map(city => (
-                    <Picker.Item key={city.id} label={city.nome} value={city.nome} />
-                  ))}
-                </Picker>
-              </View>
-              {errors.selectedCity ? <Text style={styles.error}>{errors.selectedCity}</Text> : null}
-            </View>
+            ) : (
+              <Text style={styles.locationHelpText}>
+                Toque no botão para definir seu ponto no mapa e preencher sua cidade e estado.
+              </Text>
+            )}
+
+            {errors.location ? <Text style={styles.error}>{errors.location}</Text> : null}
           </View>
+
           <Input
             label="E-mail"
             placeholder="seu@email.com"
@@ -274,34 +288,87 @@ const RegisterScreen = ({ navigation }) => {
           <Text style={styles.createAccountText} onPress={() => navigation.navigate('Login')}>Fazer Login</Text>
         </View>
       </ScrollView>
+
+      {/* Modal do Mapa para Selecionar Localização */}
+      <MapLocationPicker
+        visible={mapModalVisible}
+        initialLocation={selectedCoordinate}
+        mode="profile"
+        onClose={() => setMapModalVisible(false)}
+        onConfirm={({ coordinate, address, addressDetails, addressText }) => {
+          setSelectedCoordinate(coordinate);
+          const resolvedCity = addressDetails?.city || address?.city || address?.subregion || address?.district || '';
+          const rawRegion = String(addressDetails?.state || address?.region || '').trim();
+          const normRegion = normalizeRegionName(rawRegion);
+          const resolvedState = states.includes(rawRegion.toUpperCase())
+            ? rawRegion.toUpperCase()
+            : (normalizedRegionToUf[normRegion] || rawRegion);
+
+          setSelectedCity(resolvedCity);
+          setSelectedState(resolvedState);
+          setSelectedAddressText(addressText || addressDetails?.text || '');
+          setErrors(prev => ({ ...prev, location: undefined, selectedCity: undefined, selectedState: undefined }));
+          setMapModalVisible(false);
+        }}
+      />
     </View>
   );
 };
 
 
-// ...existing code...
-
 const styles = StyleSheet.create({
   label: {
-    fontSize: 17,
-    color: '#444',
+    fontSize: 15,
+    color: '#374151',
     marginBottom: 4,
     fontWeight: '600',
   },
-  pickerBox: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    marginBottom: 2,
+  locationSection: {
+    marginBottom: 10,
   },
-  picker: {
-    width: '100%',
-    height: 54,
-    color: '#222',
-    backgroundColor: 'transparent',
-    fontSize: 16,
-    paddingVertical: 8,
+  mapPickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1.5,
+    borderColor: '#6366F1',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    gap: 8,
+    marginBottom: 6,
+  },
+  mapPickerButtonText: {
+    color: '#4F46E5',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  selectedLocationCard: {
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    borderRadius: 8,
+    padding: 8,
+    marginTop: 2,
+    marginBottom: 4,
+  },
+  selectedLocationText: {
+    color: '#166534',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  selectedAddressSubtext: {
+    color: '#15803D',
+    fontSize: 12,
+    marginTop: 2,
+    opacity: 0.85,
+  },
+  locationHelpText: {
+    color: '#6B7280',
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 2,
   },
   error: {
     color: '#EF4444',

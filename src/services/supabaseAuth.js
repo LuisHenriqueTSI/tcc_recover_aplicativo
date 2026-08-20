@@ -176,6 +176,7 @@ export const signUp = async (email, password, name, city, state, whatsapp = '') 
       pendingVerification: true,
       phone: payload?.phone || payloadWhatsapp,
       whatsappSent: payload?.whatsappSent,
+      devCode: payload?.devCode,
       email,
       password,
       name,

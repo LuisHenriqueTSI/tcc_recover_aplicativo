@@ -6,6 +6,8 @@ Aplicativo mobile React Native/Expo do sistema RECOVER - Plataforma de Achados e
 
 ✅ **Autenticação**
 - Registro e login com email/senha via Supabase
+- Cadastro de novo usuário com mapa interativo para escolha e preenchimento automático de cidade/estado
+- Verificação de cadastro em 2 etapas com código via WhatsApp (Twilio)
 - Perfis de usuário
 - Confirmação de email
 
@@ -16,6 +18,7 @@ Aplicativo mobile React Native/Expo do sistema RECOVER - Plataforma de Achados e
 - Carrossel de fotos de alta resolução nos detalhes do pet (`ItemDetailScreen`) com navegação paginada e modal de ampliação em tela cheia
 - Filtros por status, categoria e localização
 - Seletor de localização no cabeçalho com botão destacado e ícone de edição interativo
+- Cadastro de itens com dados detalhados para animais (espécie, sexo/gênero macho/fêmea, raça, cor, porte, idade e coleira)
 - Seleção no mapa interativo com geocodificação reversa e edição completa de endereço (rua, número da casa, bairro, cidade, estado e texto completo)
 - Cards de publicação com localização organizada (Cidade - Estado em destaque e complemento de rua/número/bairro logo abaixo)
 - Publicação em nome de terceiros (amigo, parente, vizinho, ONG) com campos dedicados para nome e telefone direto do tutor/responsável

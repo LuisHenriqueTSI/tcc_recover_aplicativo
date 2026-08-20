@@ -664,6 +664,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
             />
             <Separator />
             <AnimalInfoRow
+              icon={<MaterialIcons name="wc" size={18} color="#6B7280" />}
+              label="Sexo / Gênero"
+              value={item.gender || item.extra_fields?.gender}
+            />
+            <Separator />
+            <AnimalInfoRow
               icon={<MaterialIcons name="label" size={18} color="#6B7280" />}
               label="Raça"
               value={item.breed}

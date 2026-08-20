@@ -37,6 +37,7 @@ const PET_SPECIES_OPTIONS = [
 const PET_SPECIES_CHIPS = PET_SPECIES_OPTIONS.filter((option) => option.value);
 const PET_COLOR_OPTIONS = ['Preto', 'Branco', 'Marrom', 'Laranja', 'Cinza', 'Amarelo', 'Dourado', 'Caramelo'];
 const PET_SIZE_OPTIONS = ['Pequeno', 'Médio', 'Grande', 'Gigante'];
+const PET_GENDER_OPTIONS = ['Macho', 'Fêmea', 'Não informado'];
 const PET_AGE_OPTIONS = ['Filhote', 'Adulto', 'Idoso', 'Não informado'];
 const PET_BREED_OPTIONS = ['Sem raça definida'];
 const PET_COLOR_ALIASES = {
@@ -295,6 +296,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
   // Campos detalhados para animal (colunas diretas da tabela + extra_fields)
   const [animalSpecies, setAnimalSpecies] = useState(editItem?.species || editItem?.extra_fields?.species || '');
+  const [animalGender, setAnimalGender] = useState(editItem?.gender || editItem?.extra_fields?.gender || '');
   const [animalBreed, setAnimalBreed] = useState(editItem?.breed || editItem?.extra_fields?.breed || '');
   const [animalSize, setAnimalSize] = useState(editItem?.size || editItem?.extra_fields?.size || '');
   const [animalAge, setAnimalAge] = useState(editItem?.age || editItem?.extra_fields?.age || '');
@@ -660,6 +662,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
       if (typeof editItem.species !== 'undefined') setAnimalSpecies(editItem.species);
       else if (editItem.extra_fields && typeof editItem.extra_fields.species !== 'undefined') setAnimalSpecies(editItem.extra_fields.species);
       
+      if (typeof editItem.gender !== 'undefined') setAnimalGender(editItem.gender);
+      else if (editItem.extra_fields && typeof editItem.extra_fields.gender !== 'undefined') setAnimalGender(editItem.extra_fields.gender);
+
       if (typeof editItem.breed !== 'undefined') setAnimalBreed(editItem.breed);
       else if (editItem.extra_fields && typeof editItem.extra_fields.breed !== 'undefined') setAnimalBreed(editItem.extra_fields.breed);
       
@@ -953,6 +958,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
       if (itemType === 'animal') {
         if (suggestions.species) setAnimalSpecies(normalizeSpeciesValue(suggestions.species));
+        if (suggestions.gender) setAnimalGender(normalizeOptionValue(suggestions.gender, PET_GENDER_OPTIONS));
         if (suggestions.breed) setAnimalBreed(suggestions.breed);
         if (suggestions.size) setAnimalSize(normalizeOptionValue(suggestions.size, PET_SIZE_OPTIONS));
         if (suggestions.age) setAnimalAge(normalizeOptionValue(suggestions.age, PET_AGE_OPTIONS));
@@ -1115,6 +1121,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         color: toNull(color),
         serial_number: toNull(serialNumber),
         species: toNull(animalSpecies),
+        gender: toNull(animalGender),
         breed: toNull(animalBreed),
         size: toNull(animalSize),
         age: toNull(animalAge),
@@ -1125,6 +1132,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           color: toNull(color),
           serial_number: toNull(serialNumber),
           species: toNull(animalSpecies),
+          gender: toNull(animalGender),
           breed: toNull(animalBreed),
           size: toNull(animalSize),
           age: toNull(animalAge),
@@ -1485,6 +1493,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   setColor(nextColors.join(' com '));
                 }}
               />
+              <SelectionChips label="Sexo / Gênero" options={PET_GENDER_OPTIONS} value={animalGender} onChange={setAnimalGender} />
               <SelectionChips label="Porte" options={PET_SIZE_OPTIONS} value={animalSize} onChange={setAnimalSize} />
               <SelectionChips label="Idade" options={PET_AGE_OPTIONS} value={animalAge} onChange={setAnimalAge} />
               <SelectionChips label="Raça" options={PET_BREED_OPTIONS} value={animalBreed} onChange={setAnimalBreed} />

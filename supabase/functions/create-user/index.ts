@@ -195,6 +195,7 @@ Deno.serve(async (req: Request) => {
       phone: whatsapp,
       whatsappSent: whatsappResult.ok,
       whatsappStatus: whatsappResult.status,
+      devCode: !whatsappResult.ok ? code : undefined,
     });
   }
 
