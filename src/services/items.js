@@ -817,14 +817,22 @@ export const renewItem = async (itemId) => {
 
 const cleanupExpiredItemsClientSide = async () => {
   try {
-    console.log('[cleanupExpiredItemsClientSide] Buscando itens permanentes para remoção...');
+    const { data: authData } = await supabase.auth.getUser();
+    const currentUser = authData?.user;
+    if (!currentUser?.id) {
+      // Usuário não autenticado não pode deletar itens no banco
+      return { removed: 0, ids: [], skipped: true };
+    }
+
+    console.log('[cleanupExpiredItemsClientSide] Buscando itens expirados do usuário logado para remoção...');
 
     const cutoffDate = new Date(Date.now() - getPermanentDeleteDays() * 24 * 60 * 60 * 1000).toISOString();
-    console.log('[cleanupExpiredItemsClientSide] cutoffDate (created_at):', cutoffDate);
 
+    // No cliente, apenas busca e remove os itens pertencentes ao usuário logado
     const { data, error } = await supabase
       .from('items')
       .select('id, owner_id, title, created_at, resolved')
+      .eq('owner_id', currentUser.id)
       .lte('created_at', cutoffDate);
 
     if (error) {
@@ -839,12 +847,11 @@ const cleanupExpiredItemsClientSide = async () => {
 
     const expiredItems = (data || []).filter(item => item && item.id && shouldDeletePermanently(item));
     if (expiredItems.length === 0) {
-      console.log('[cleanupExpiredItemsClientSide] Nenhum item permanente para remover.');
       return { removed: 0, ids: [] };
     }
 
     const expiredIds = expiredItems.map(item => item.id).filter(Boolean);
-    console.log('[cleanupExpiredItemsClientSide] Itens permanentes para remoção encontrados:', expiredIds);
+    console.log('[cleanupExpiredItemsClientSide] Itens permanentes do usuário encontrados para remoção:', expiredIds);
 
     for (const item of expiredItems) {
       try {

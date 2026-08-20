@@ -482,7 +482,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         onPress={() => setMapModalVisible(true)}
       >
         <Text style={styles.mapButtonText}>
-          {mapLocation ? 'Alterar localização no mapa' : 'Escolher localização no mapa'}
+          {mapLocation ? '📍 Alterar localização no mapa' : '🗺️ Escolher localização no mapa'}
         </Text>
       </TouchableOpacity>
       {mapLocation && (
@@ -490,17 +490,103 @@ const RegisterItemScreen = ({ navigation, route }) => {
           Ponto selecionado: {mapLocation.latitude.toFixed(5)}, {mapLocation.longitude.toFixed(5)}
         </Text>
       )}
-      {mapAddressText && (
-        <View style={styles.addressEditorContainer}>
-          <Text style={styles.label}>Endereço informado</Text>
-          <TextInput
-            style={styles.addressInput}
-            value={mapAddressText}
-            onChangeText={setMapAddressText}
-            placeholder="Edite o endereço gerado pelo mapa"
-            multiline
-            textAlignVertical="top"
-          />
+      {mapLocation && (
+        <View style={styles.addressFieldsContainer}>
+          <Text style={[styles.label, { marginBottom: 8 }]}>Endereço no local (editável)</Text>
+          
+          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+            <View style={{ flex: 2.2 }}>
+              <Text style={styles.smallInputLabel}>Rua / Logradouro</Text>
+              <TextInput
+                style={styles.singleLineInput}
+                value={mapLocationDetails?.street || ''}
+                onChangeText={(t) => {
+                  const updated = { ...(mapLocationDetails || {}), street: t };
+                  setMapLocationDetails(updated);
+                  const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
+                  setMapAddressText(formatted);
+                }}
+                placeholder="Ex: Rua das Flores"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.smallInputLabel}>Nº da Casa</Text>
+              <TextInput
+                style={styles.singleLineInput}
+                value={mapLocationDetails?.number || ''}
+                onChangeText={(t) => {
+                  const updated = { ...(mapLocationDetails || {}), number: t };
+                  setMapLocationDetails(updated);
+                  const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
+                  setMapAddressText(formatted);
+                }}
+                placeholder="Ex: 123"
+              />
+            </View>
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+            <View style={{ flex: 1.5 }}>
+              <Text style={styles.smallInputLabel}>Bairro</Text>
+              <TextInput
+                style={styles.singleLineInput}
+                value={mapLocationDetails?.district || neighborhood || ''}
+                onChangeText={(t) => {
+                  setNeighborhood(t);
+                  const updated = { ...(mapLocationDetails || {}), district: t };
+                  setMapLocationDetails(updated);
+                  const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
+                  setMapAddressText(formatted);
+                }}
+                placeholder="Ex: Centro"
+              />
+            </View>
+            <View style={{ flex: 1.5 }}>
+              <Text style={styles.smallInputLabel}>Cidade</Text>
+              <TextInput
+                style={styles.singleLineInput}
+                value={city}
+                onChangeText={(t) => {
+                  setCity(t);
+                  const updated = { ...(mapLocationDetails || {}), city: t };
+                  setMapLocationDetails(updated);
+                  const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
+                  setMapAddressText(formatted);
+                }}
+                placeholder="Ex: Pelotas"
+              />
+            </View>
+            <View style={{ flex: 0.8 }}>
+              <Text style={styles.smallInputLabel}>Estado</Text>
+              <TextInput
+                style={styles.singleLineInput}
+                value={state}
+                onChangeText={(t) => {
+                  const upper = t.toUpperCase();
+                  setState(upper);
+                  const updated = { ...(mapLocationDetails || {}), state: upper };
+                  setMapLocationDetails(updated);
+                  const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
+                  setMapAddressText(formatted);
+                }}
+                placeholder="Ex: RS"
+                maxLength={2}
+                autoCapitalize="characters"
+              />
+            </View>
+          </View>
+
+          <View style={styles.addressEditorContainer}>
+            <Text style={styles.smallInputLabel}>Endereço Completo</Text>
+            <TextInput
+              style={styles.addressInput}
+              value={mapAddressText}
+              onChangeText={setMapAddressText}
+              placeholder="Edite o endereço gerado pelo mapa"
+              multiline
+              textAlignVertical="top"
+            />
+          </View>
         </View>
       )}
     </>
@@ -511,30 +597,28 @@ const RegisterItemScreen = ({ navigation, route }) => {
       visible={mapModalVisible}
       initialLocation={mapLocation}
       onClose={() => setMapModalVisible(false)}
-      onConfirm={({ coordinate, address }) => {
+      onConfirm={({ coordinate, address, addressDetails, addressText }) => {
         setMapLocation(coordinate);
-        setCity(address?.city || '');
-        const region = String(address?.region || '').trim();
-        const normalizedRegion = region.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        setState(states.includes(region) ? region : (BRAZIL_REGION_TO_UF[normalizedRegion] || ''));
-        setNeighborhood(address?.district || address?.subregion || '');
-        const nextLocationDetails = address ? {
-          street: address.street || address.name || '',
-          number: address.name && /^\d+$/.test(String(address.name)) ? address.name : address.houseNumber || '',
-          district: address.district || address.subregion || '',
-          city: address.city || address.subregion || '',
-          state: region,
-          postalCode: address.postalCode || '',
-        } : null;
-        setMapLocationDetails(nextLocationDetails);
-        const nextAddressText = [
-          nextLocationDetails?.street,
-          nextLocationDetails?.number,
-          nextLocationDetails?.district,
-          nextLocationDetails?.city,
-          nextLocationDetails?.state,
-        ].filter(Boolean).join(', ');
-        setMapAddressText(nextAddressText);
+        const resolvedCity = addressDetails?.city || address?.city || address?.subregion || '';
+        const resolvedRegion = addressDetails?.state || address?.region || '';
+        const resolvedDistrict = addressDetails?.district || address?.district || address?.subregion || '';
+        
+        setCity(resolvedCity);
+        const normalizedRegion = resolvedRegion.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        setState(states.includes(resolvedRegion) ? resolvedRegion : (BRAZIL_REGION_TO_UF[normalizedRegion] || resolvedRegion));
+        setNeighborhood(resolvedDistrict);
+
+        const details = addressDetails || {
+          street: address?.street || address?.name || '',
+          number: address?.houseNumber || (address?.name && /^\d+$/.test(String(address.name)) ? address.name : ''),
+          district: resolvedDistrict,
+          city: resolvedCity,
+          state: resolvedRegion,
+          postalCode: address?.postalCode || '',
+          text: addressText || '',
+        };
+        setMapLocationDetails(details);
+        setMapAddressText(addressText || details.text || [details.street, details.number, details.district, details.city, details.state].filter(Boolean).join(', '));
         setMapModalVisible(false);
       }}
     />
@@ -2107,19 +2191,43 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     marginBottom: 16,
   },
-  button: {
-    marginTop: 12,
-  },
   addressEditorContainer: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  addressFieldsContainer: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: 12,
     marginBottom: 16,
+  },
+  smallInputLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4B5563',
+    marginBottom: 4,
+  },
+  singleLineInput: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    fontSize: 14,
+    color: '#111827',
+    backgroundColor: '#F9FAFB',
   },
   addressInput: {
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 8,
-    padding: 12,
-    minHeight: 60,
-    backgroundColor: '#FFFFFF',
+    padding: 10,
+    minHeight: 50,
+    backgroundColor: '#F9FAFB',
+    fontSize: 13,
+    color: '#374151',
   },
 });
 

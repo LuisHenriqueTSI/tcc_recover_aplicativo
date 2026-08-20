@@ -16,7 +16,7 @@ Aplicativo mobile React Native/Expo do sistema RECOVER - Plataforma de Achados e
 - Carrossel de fotos de alta resolução nos detalhes do pet (`ItemDetailScreen`) com navegação paginada e modal de ampliação em tela cheia
 - Filtros por status, categoria e localização
 - Seletor de localização no cabeçalho com botão destacado e ícone de edição interativo
-- Rótulos contextuais de localização em todo o app ("Última vez visto" para perdidos / "Local onde foi encontrado" para encontrados)
+- Seleção no mapa interativo com geocodificação reversa e edição completa de endereço (rua, número da casa, bairro, cidade, estado e texto completo)
 - Cards de publicação com localização organizada (Cidade - Estado em destaque e complemento de rua/número/bairro logo abaixo)
 - Publicação em nome de terceiros (amigo, parente, vizinho, ONG) com campos dedicados para nome e telefone direto do tutor/responsável
 - Recompensas opcionais

@@ -344,31 +344,64 @@ const HomeScreen = ({ navigation, route }) => {
   const { user, userProfile, isAdmin, refreshProfile, setUserProfile, signOut } = useAuth();
   // Corrige erro: garantir estado do modal de perfil
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  // Localidade do perfil (fixa)
+  // Localidade do perfil e sessão
   const [showProfileLocationModal, setShowProfileLocationModal] = useState(false);
+  const [sessionCity, setSessionCity] = useState('');
+  const [sessionState, setSessionState] = useState('');
   const [profileEditState, setProfileEditState] = useState('');
   const [profileEditCity, setProfileEditCity] = useState('');
   const [profileMapVisible, setProfileMapVisible] = useState(false);
 
   useEffect(() => {
-    setProfileEditState(userProfile?.state || '');
-    setProfileEditCity(userProfile?.city || '');
+    if (userProfile?.state && userProfile?.city) {
+      setProfileEditState(userProfile.state);
+      setProfileEditCity(userProfile.city);
+      setSessionState(userProfile.state);
+      setSessionCity(userProfile.city);
+    }
   }, [userProfile]);
 
-  // Salvar localidade do perfil
+  // Localidade ativa para exibição no cabeçalho
+  const activeCity = user ? (userProfile?.city || sessionCity) : sessionCity;
+  const activeState = user ? (userProfile?.state || sessionState) : sessionState;
+  const displayLocation = (activeCity && activeState)
+    ? `${activeCity}, ${activeState}`
+    : (activeCity || activeState || 'Brasil');
+
+  // Salvar localidade (perfil ou sessão)
   const handleSaveProfileLocation = async () => {
-    if (!user || !profileEditState || !profileEditCity) return;
-    try {
-      await userService.updateProfile(user.id, {
-        state: profileEditState,
-        city: profileEditCity,
-      });
-      if (typeof refreshProfile === 'function') refreshProfile();
-      setShowProfileLocationModal(false);
-    } catch (err) {
-      Alert.alert('Erro', 'Não foi possível atualizar a localidade do perfil.');
+    if (!profileEditState || !profileEditCity) return;
+    
+    setSessionCity(profileEditCity);
+    setSessionState(profileEditState);
+    setLocationFilter(`${profileEditCity}, ${profileEditState}`);
+    setLocationFilterTouched(true);
+
+    if (user) {
+      try {
+        await userService.updateProfile(user.id, {
+          state: profileEditState,
+          city: profileEditCity,
+        });
+        if (typeof refreshProfile === 'function') refreshProfile();
+      } catch (err) {
+        console.warn('[HomeScreen] Falha ao atualizar perfil no Supabase:', err.message);
+      }
     }
+    setShowProfileLocationModal(false);
   };
+
+  // Limpar filtro de localidade e voltar para "Brasil"
+  const handleResetToBrazil = () => {
+    setSessionCity('');
+    setSessionState('');
+    setProfileEditCity('');
+    setProfileEditState('');
+    setLocationFilter('');
+    setLocationFilterTouched(true);
+    setShowProfileLocationModal(false);
+  };
+
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -398,7 +431,7 @@ const HomeScreen = ({ navigation, route }) => {
     return unsubscribe;
   }, [navigation]);
 
-  // Atualiza localidade ao focar (mantém lógica anterior)
+  // Atualiza localidade ao focar
   useFocusEffect(
     React.useCallback(() => {
       if (userProfile?.city && userProfile?.state && !locationFilterTouched) {
@@ -514,60 +547,110 @@ const HomeScreen = ({ navigation, route }) => {
     }
   };
 
-  const applyFilters = (itemsToFilter) => {
-    let filtered = itemsToFilter;
+  const normalizeText = (text = '') =>
+    String(text || '')
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
 
-    if (filters.status !== 'all') {
+  const applyFilters = (itemsToFilter) => {
+    let filtered = itemsToFilter || [];
+
+    // Filtro por status (Perdido / Encontrado)
+    if (filters.status && filters.status !== 'all') {
       filtered = filtered.filter(item => item.status === filters.status);
     }
 
-    if (filters.category !== 'all') {
+    // Filtro por categoria (animal, objeto, etc)
+    if (filters.category && filters.category !== 'all') {
       filtered = filtered.filter(item => item.category === filters.category);
     }
+
+    // Filtro por espécie (Cachorro, Gato, etc)
     if (filters.animalType && filters.animalType !== 'all') {
+      const selected = normalizeText(filters.animalType);
       filtered = filtered.filter(item => {
-        const species = String(item.species || '').trim().toLowerCase();
-        const selected = String(filters.animalType).trim().toLowerCase();
-        return species === selected || (selected === 'cachorro' && species.includes('cachorro')) || (selected === 'gato' && species.includes('gato')) || (selected === 'bovino' && species.includes('bovino')) || (selected === 'ave' && species.includes('ave')) || (selected === 'cavalo' && species.includes('cavalo')) || (selected === 'outro' && species && !['cachorro', 'gato', 'bovino', 'ave', 'cavalo'].some(type => species.includes(type)));
+        const species = normalizeText(item.species || item.extra_fields?.species || '');
+        if (selected === 'outro') {
+          return species && !['cachorro', 'gato', 'bovino', 'ave', 'cavalo'].some(t => species.includes(t));
+        }
+        return species.includes(selected) || selected.includes(species);
       });
     }
 
-    if (filters.showMyItems && user) {
-      filtered = filtered.filter(item => item.owner_id === user?.id);
+    // Filtro "Meus Itens"
+    if (filters.showMyItems && user?.id) {
+      filtered = filtered.filter(item => item.owner_id === user.id);
     }
 
+    // Filtro por Localização (Cidade / Estado)
     if (locationFilter && locationFilter.trim().length > 0) {
-      const locationParts = locationFilter
+      const parts = locationFilter
         .split(',')
-        .map(part => part.trim())
+        .map(p => normalizeText(p))
         .filter(Boolean);
 
-      const normalizedParts = locationParts.map(part => part.toLowerCase());
-      const stateToken = normalizedParts.find(part => states.some(stateName => stateName.toLowerCase() === part || stateName.toLowerCase().replace(/\s+/g, '') === part));
-      const cityToken = normalizedParts.find(part => part !== stateToken);
-      const neighborhoodToken = normalizedParts.find(part => part !== stateToken && part !== cityToken);
+      // Identifica estado (UF ou nome por extenso)
+      const stateToken = parts.find(p =>
+        states.some(uf => normalizeText(uf) === p) ||
+        Object.keys(normalizedRegionToUf).some(reg => reg === p)
+      );
+      const targetUf = stateToken
+        ? (states.find(uf => normalizeText(uf) === stateToken) || normalizedRegionToUf[stateToken] || stateToken).toUpperCase()
+        : null;
+
+      // Identifica cidade
+      const cityToken = parts.find(p => p !== stateToken);
 
       filtered = filtered.filter(item => {
-        const itemCity = (item.city || '').toLowerCase();
-        const itemState = (item.state || '').toLowerCase();
-        const itemNeighborhood = (item.neighborhood || '').toLowerCase();
+        const rawItemCity = item.city || item.extra_fields?.location_details?.city || '';
+        const rawItemState = item.state || item.extra_fields?.location_details?.state || '';
 
-        const matchesCity = !cityToken || itemCity === cityToken;
-        const matchesState = !stateToken || itemState === stateToken;
-        const matchesNeighborhood = !neighborhoodToken || itemNeighborhood === neighborhoodToken;
+        const itemCityNorm = normalizeText(rawItemCity);
+        const itemStateNorm = normalizeText(rawItemState);
+        const itemStateUf = (
+          states.find(uf => normalizeText(uf) === itemStateNorm) ||
+          normalizedRegionToUf[itemStateNorm] ||
+          rawItemState
+        ).toUpperCase();
 
-        const hasMapLocation = Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude));
-        const hasTextLocation = Boolean(itemCity || itemState || itemNeighborhood);
+        const matchesCity = !cityToken || itemCityNorm.includes(cityToken) || cityToken.includes(itemCityNorm);
+        const matchesState = !targetUf || itemStateUf === targetUf;
 
-        // Um item localizado pelo mapa continua visível mesmo sem cidade/estado preenchidos.
-        if (hasMapLocation && !hasTextLocation) return true;
-        return matchesCity && matchesState && matchesNeighborhood;
+        return matchesCity && matchesState;
+      });
+    }
+
+    // Filtro por termo de busca
+    const search = normalizeText(searchTerm);
+    if (search.length > 0) {
+      filtered = filtered.filter(item => {
+        const extra = item.extra_fields || {};
+        const locDetails = extra.location_details || {};
+        const searchableFields = [
+          item.title,
+          item.description,
+          item.species,
+          item.breed,
+          item.city,
+          item.state,
+          item.neighborhood,
+          extra.species,
+          extra.breed,
+          extra.animal_name,
+          extra.third_party_owner?.name,
+          locDetails.city,
+          locDetails.state,
+          locDetails.district,
+          locDetails.street,
+        ];
+        return searchableFields.some(val => normalizeText(val).includes(search));
       });
     }
 
     console.log('[HomeScreen] Itens após filtros:', filtered.length);
     setFilteredItems(filtered);
-    // Reset expansão ao trocar filtros para evitar blocos estranhos
     setExpandedItem(null);
     setExpandedItemDetails(null);
   };
@@ -577,8 +660,8 @@ const HomeScreen = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
-    loadItems();
-  }, [filters, user, locationFilter]);
+    applyFilters(items);
+  }, [filters, user, locationFilter, searchTerm, items]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -721,31 +804,6 @@ const HomeScreen = ({ navigation, route }) => {
     }
   };
 
-  // Atualiza os itens filtrados ao digitar na busca
-  useEffect(() => {
-    const search = searchTerm?.trim().toLowerCase() || '';
-    if (!search) {
-      setFilteredItems(items);
-      return;
-    }
-    const filtered = items.filter(item => {
-      const extraFields = item.extra_fields || {};
-      const searchableFields = [
-        item.title,
-        item.description,
-        item.species,
-        extraFields.species,
-        extraFields.breed,
-        extraFields.animal_name,
-        item.city,
-        item.state,
-        item.neighborhood,
-      ];
-      return searchableFields.some(value => String(value || '').toLowerCase().includes(search));
-    });
-    setFilteredItems(filtered);
-  }, [searchTerm, items]);
-
   return (
     <View style={styles.container}>
       {/* Overlay para fechar o menu ao clicar fora */}
@@ -776,13 +834,17 @@ const HomeScreen = ({ navigation, route }) => {
                 borderWidth: 1,
                 borderColor: 'rgba(255, 255, 255, 0.35)',
               }}
-              onPress={() => setShowProfileLocationModal(true)}
-              accessibilityLabel={`Localidade do perfil: ${userProfile?.city || 'Selecionar'}, ${userProfile?.state || ''}`}
+              onPress={() => {
+                setProfileEditCity(activeCity);
+                setProfileEditState(activeState);
+                setShowProfileLocationModal(true);
+              }}
+              accessibilityLabel={`Localidade: ${displayLocation}`}
               activeOpacity={0.75}
             >
               <MaterialIcons name="place" size={15} color="#FFFFFF" style={{ marginRight: 4 }} />
               <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '600', marginRight: 6 }}>
-                {userProfile?.city && userProfile?.state ? `${userProfile.city}, ${userProfile.state}` : 'Definir localização'}
+                {displayLocation}
               </Text>
               <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderRadius: 10, padding: 2 }}>
                 <MaterialIcons name="edit" size={12} color="#FFFFFF" />
@@ -876,7 +938,7 @@ const HomeScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         )}
 
-        {/* Modal para atualizar localidade do perfil */}
+        {/* Modal para atualizar localidade do perfil ou filtrar por região */}
         <Modal
           visible={!!showProfileLocationModal}
           transparent
@@ -884,25 +946,34 @@ const HomeScreen = ({ navigation, route }) => {
           onRequestClose={() => setShowProfileLocationModal(false)}
         >
           <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
-            <View style={{ backgroundColor:'#fff', borderRadius:12, paddingVertical:24, paddingHorizontal:16, minWidth:360, maxWidth: '95%' }}>
-              <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Atualizar Localidade do Perfil</Text>
-              <Text style={{ color:'#6B7280', marginBottom:8 }}>Escolha sua localização no mapa:</Text>
+            <View style={{ backgroundColor:'#fff', borderRadius:14, paddingVertical:24, paddingHorizontal:18, minWidth:340, maxWidth: '95%' }}>
+              <Text style={{ fontWeight:'bold', fontSize:17, color:'#4F46E5', marginBottom:4 }}>
+                {user ? 'Atualizar Localidade' : 'Filtrar por Região'}
+              </Text>
+              <Text style={{ color:'#6B7280', fontSize:13, marginBottom:14 }}>
+                {user
+                  ? 'Escolha sua cidade e estado para personalizar o feed e seu perfil:'
+                  : 'Escolha uma cidade e estado para visualizar publicações dessa região:'}
+              </Text>
               <TouchableOpacity
                 onPress={() => {
                   setShowProfileLocationModal(false);
                   setProfileMapVisible(true);
                 }}
-                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#4F46E5', borderRadius: 8, paddingVertical: 11, marginBottom: 16 }}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#4F46E5', borderRadius: 10, paddingVertical: 12, marginBottom: 14 }}
               >
-                <MaterialIcons name="map" size={18} color="#4F46E5" />
+                <MaterialIcons name="map" size={19} color="#4F46E5" />
                 <Text style={{ color: '#4F46E5', fontWeight: '700', marginLeft: 8 }}>Escolher no mapa</Text>
               </TouchableOpacity>
-              {(profileEditCity || profileEditState) && (
-                <Text style={{ color: '#374151', textAlign: 'center', marginBottom: 16 }}>
-                  Localização selecionada: {[profileEditCity, profileEditState].filter(Boolean).join(', ')}
-                </Text>
-              )}
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 8 }}>
+              {(profileEditCity || profileEditState) ? (
+                <View style={{ backgroundColor: '#EEF2FF', padding: 10, borderRadius: 8, marginBottom: 14, alignItems: 'center' }}>
+                  <Text style={{ color: '#374151', fontSize: 13, fontWeight: '500' }}>Localização selecionada:</Text>
+                  <Text style={{ color: '#4F46E5', fontSize: 15, fontWeight: '800', marginTop: 2 }}>
+                    {[profileEditCity, profileEditState].filter(Boolean).join(', ')}
+                  </Text>
+                </View>
+              ) : null}
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 4 }}>
                 <Button
                   title="Cancelar"
                   variant="secondary"
@@ -917,6 +988,16 @@ const HomeScreen = ({ navigation, route }) => {
                   style={{ flex: 1, minHeight: 46 }}
                 />
               </View>
+              {(sessionCity || userProfile?.city || locationFilter) ? (
+                <TouchableOpacity
+                  onPress={handleResetToBrazil}
+                  style={{ marginTop: 12, alignItems: 'center', paddingVertical: 6 }}
+                >
+                  <Text style={{ color: '#6B7280', fontSize: 13, fontWeight: '600', textDecorationLine: 'underline' }}>
+                    🇧🇷 Ver publicações de todo o Brasil
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           </View>
         </Modal>
@@ -924,10 +1005,12 @@ const HomeScreen = ({ navigation, route }) => {
           visible={profileMapVisible}
           mode="profile"
           onClose={() => setProfileMapVisible(false)}
-          onConfirm={({ address }) => {
-            const region = String(address?.region || '').trim();
-            const stateValue = states.includes(region) ? region : normalizedRegionToUf[normalizeRegionName(region)] || '';
-            const cityValue = address?.city || address?.subregion || address?.district || '';
+          onConfirm={({ address, addressDetails }) => {
+            const region = String(addressDetails?.state || address?.region || '').trim();
+            const stateValue = states.includes(region.toUpperCase())
+              ? region.toUpperCase()
+              : (normalizedRegionToUf[normalizeRegionName(region)] || region);
+            const cityValue = addressDetails?.city || address?.city || address?.subregion || address?.district || '';
             setProfileEditState(stateValue);
             setProfileEditCity(cityValue);
             setProfileMapVisible(false);
