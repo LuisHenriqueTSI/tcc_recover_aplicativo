@@ -51,7 +51,7 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
     console.log('[listItemsWithPhotosAndOwner] Carregando itens otimizados:', filters);
     let query = supabase
       .from('items')
-      .select('*, profiles!owner_id(name, email)')
+      .select('*, profiles!owner_id(name, email, whatsapp, phone)')
       .order('created_at', { ascending: false });
 
     if (filters.status) query = query.eq('status', filters.status);
@@ -656,10 +656,10 @@ export const getItemDetails = async (itemId) => {
       .select('id, url')
       .eq('item_id', itemId);
 
-    // Get owner profile (incluindo created_at)
+    // Get owner profile (incluindo created_at e contato)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, name, avatar_url, email, created_at')
+      .select('id, name, avatar_url, email, whatsapp, phone, created_at')
       .eq('id', item.owner_id)
       .single();
 

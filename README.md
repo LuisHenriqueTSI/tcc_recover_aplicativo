@@ -22,6 +22,11 @@ Aplicativo mobile React Native/Expo do sistema RECOVER - Plataforma de Achados e
 - Recompensas opcionais
 - Reivindicação e histórico de avistamentos
 
+✅ **Compartilhamento Visual para Redes Sociais**
+- Geração automática de cartaz visual (flyer) em alta resolução do pet com faixa de alerta colorida (Perdido/Encontrado), foto principal, características, localização contextual, data do ocorrido, recompensa e telefone/WhatsApp de contato direto
+- Compartilhamento de imagem nativo direto para WhatsApp, Instagram Stories/Feed, Facebook, Telegram e outras redes sem sair do app
+- Modal interativo de pré-visualização do cartaz antes do envio com opções de compartilhar imagem ou texto
+
 ✅ **Chat**
 - Mensagens em tempo real entre usuários
 - Notificações de novas mensagens
