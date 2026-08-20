@@ -1376,7 +1376,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 0 }} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Localização e Recompensa</Text>
           <Text style={styles.locationHint}>
-            Escolha no mapa onde o pet foi {status === 'lost' ? 'perdido' : 'encontrado'}.
+            Escolha no mapa onde o pet foi {status === 'lost' ? 'visto pela última vez' : 'encontrado'}.
           </Text>
           {renderMapLocationButton()}
 

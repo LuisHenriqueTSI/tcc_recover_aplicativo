@@ -577,7 +577,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
         {/* Bairro e Data */}
         <View style={styles.locationGrid}>
           <View style={styles.locationCard}>
-            <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Localização</Text>
+            <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>
+              {item.status === 'lost' ? 'Última vez visto' : 'Local onde foi encontrado'}
+            </Text>
             <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold', lineHeight: 22 }}>
               {formatCityState(item)}
             </Text>

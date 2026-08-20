@@ -13,6 +13,9 @@ Aplicativo mobile React Native/Expo do sistema RECOVER - Plataforma de Achados e
 - Cadastro de itens em 4 etapas com integração de mapa e endereço
 - Upload de múltiplas fotos
 - Filtros por status, categoria e localização
+- Seletor de localização no cabeçalho com botão destacado e ícone de edição interativo
+- Rótulos contextuais de localização em todo o app ("Última vez visto" para perdidos / "Local onde foi encontrado" para encontrados)
+- Cards de publicação com localização organizada (Cidade - Estado em destaque e complemento de rua/número/bairro logo abaixo)
 - Tela de detalhes com visualização clara de localização (Cidade e Estado em destaque, com rua, número e bairro)
 - Recompensas opcionais
 - Reivindicação e histórico de avistamentos
@@ -38,12 +41,17 @@ Aplicativo mobile React Native/Expo do sistema RECOVER - Plataforma de Achados e
 - Histórico de itens
 - Pontos e nível
 
+✅ **Mapa Interativo**
+- Visualização dos pets com fotos e moldura colorida indicando o status (Verde para Encontrado / Laranja para Perdido)
+- Busca de localidades via OpenStreetMap e catálogo nacional
+- Centralização rápida na localização atual do usuário
+- Cards e balões informativos interativos para abrir os detalhes do pet
+
 📋 **Em Desenvolvimento**
 - Implementação completa de Chat com Supabase Realtime
-- Mapa com localização dos itens
-- Notificações push
-- Câmera e galeria
-- Painel Admin
+- Notificações push nativas
+- Câmera e galeria ao vivo
+- Painel Admin avançado
 
 ## 🚀 Setup
 

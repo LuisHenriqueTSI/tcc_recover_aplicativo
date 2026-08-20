@@ -56,6 +56,37 @@ const formatItemDate = (value) => {
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 };
 
+const formatCityState = (item) => {
+  const city = (item?.city || item?.extra_fields?.location_details?.city || '').trim();
+  const state = (item?.state || item?.extra_fields?.location_details?.state || '').trim();
+  const parts = [city, state].filter(Boolean);
+  if (parts.length > 0) {
+    return parts.join(' - ');
+  }
+  return item?.neighborhood || item?.extra_fields?.location_details?.district || 'Localização não informada';
+};
+
+const formatStreetNumberNeighborhood = (item) => {
+  const details = item?.extra_fields?.location_details;
+  const street = (details?.street || item?.street || '').trim();
+  const number = (details?.number || item?.house_number || item?.number || '').trim();
+  const district = (details?.district || item?.neighborhood || '').trim();
+
+  const streetPart = street && number ? `${street}, ${number}` : street || (number ? `Nº ${number}` : '');
+  const parts = [streetPart, district].filter(Boolean);
+
+  if (parts.length > 0) {
+    return parts.join(' - ');
+  }
+
+  const rawText = (details?.text || item?.address || '').trim();
+  if (rawText && rawText !== formatCityState(item)) {
+    return rawText;
+  }
+
+  return '';
+};
+
 // ItemCard agora é um componente fora do HomeScreen
 const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress }) => {
   const [carouselIndex, setCarouselIndex] = React.useState(0);
@@ -133,13 +164,25 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             </Text>
           </View>
         )}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, marginTop: 14 }}>
-          <MaterialIcons name="place" size={16} color="#9CA3AF" style={{ marginRight: 2 }} />
-          <Text style={{ fontSize: 13, color: '#6B7280', marginRight: 12, fontWeight: 500 }}>{
-            (safeCity && safeState ? `${safeCity}, ${safeState}` : (safeCity || safeState || '-')) + (safeNeighborhood ? ` - ${safeNeighborhood}` : '')
-          }</Text>
-          <MaterialIcons name="event" size={15} color="#9CA3AF" style={{ marginRight: 2 }} />
-          <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 500 }}>{formatItemDate(item.date)}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8, marginTop: 14 }}>
+          <MaterialIcons name="place" size={18} color="#4F46E5" style={{ marginRight: 6, marginTop: 1 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: item.status === 'lost' ? '#D97706' : '#16A34A', textTransform: 'uppercase', marginBottom: 2 }}>
+              {item.status === 'lost' ? 'Última vez visto' : 'Local onde foi encontrado'}
+            </Text>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: '#1F2937', lineHeight: 19 }}>
+              {formatCityState(item)}
+            </Text>
+            {formatStreetNumberNeighborhood(item) ? (
+              <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 2, lineHeight: 18 }}>
+                {formatStreetNumberNeighborhood(item)}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+          <MaterialIcons name="event" size={15} color="#9CA3AF" style={{ marginRight: 6 }} />
+          <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: '500' }}>{formatItemDate(item.date)}</Text>
         </View>
         {/* Barra divisória fina */}
         <View style={{ height: 1, backgroundColor: '#E5E7EB', marginBottom: 10 }} />
@@ -592,16 +635,30 @@ const HomeScreen = ({ navigation, route }) => {
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
             <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22, marginBottom: 2 }}>Recover</Text>
-            {userProfile?.city && userProfile?.state && (
-              <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}
-                onPress={() => setShowProfileLocationModal(true)}
-                accessibilityLabel={`Localidade do perfil: ${userProfile.city}, ${userProfile.state}`}
-              >
-                <MaterialIcons name="place" size={16} color="#fff" style={{ marginRight: 2 }} />
-                <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>{userProfile.city}, {userProfile.state}</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: 20,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                marginTop: 4,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.35)',
+              }}
+              onPress={() => setShowProfileLocationModal(true)}
+              accessibilityLabel={`Localidade do perfil: ${userProfile?.city || 'Selecionar'}, ${userProfile?.state || ''}`}
+              activeOpacity={0.75}
+            >
+              <MaterialIcons name="place" size={15} color="#FFFFFF" style={{ marginRight: 4 }} />
+              <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '600', marginRight: 6 }}>
+                {userProfile?.city && userProfile?.state ? `${userProfile.city}, ${userProfile.state}` : 'Definir localização'}
+              </Text>
+              <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderRadius: 10, padding: 2 }}>
+                <MaterialIcons name="edit" size={12} color="#FFFFFF" />
+              </View>
+            </TouchableOpacity>
           </View>
           {user && (
             <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12 }}>

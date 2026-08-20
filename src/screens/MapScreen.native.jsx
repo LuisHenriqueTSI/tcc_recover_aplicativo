@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import MapView, { Callout, Marker } from 'react-native-maps';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import * as itemsService from '../services/items';
 import { citiesByState, neighborhoodsByCity, states } from '../lib/br-locations';
-import OptimizedImage from '../components/OptimizedImage';
+
+
 
 const BRAZIL_REGION = {
   latitude: -14.235,
@@ -278,42 +279,15 @@ const MapScreen = ({ navigation }) => {
         showsBuildings={false}
         customMapStyle={PETS_ONLY_MAP_STYLE}
       >
-        {items.map((item) => {
-          const photoUrl = item.item_photos?.[0]?.url;
-          const coordinate = { latitude: Number(item.latitude), longitude: Number(item.longitude) };
-          const isFound = item.status === 'found';
-          const statusColor = isFound ? '#16A34A' : '#F97316';
-          return (
-            <Marker
-              key={String(item.id)}
-              coordinate={coordinate}
-              onPress={() => setSelectedItem(item)}
-              onCalloutPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
-            >
-              <View style={[styles.marker, { backgroundColor: statusColor }]} collapsable={false}>
-                <View style={styles.markerImageFrame}>
-                  {photoUrl ? (
-                    <OptimizedImage
-                      uri={photoUrl}
-                      style={styles.markerImage}
-                      onLoad={() => console.log('[MapScreen] Foto carregada:', photoUrl)}
-                      onError={(error) => console.warn('[MapScreen] Falha ao carregar foto:', photoUrl, error.nativeEvent.error)}
-                    />
-                  ) : (
-                    <Text style={styles.markerFallback}>🐾</Text>
-                  )}
-                </View>
-              </View>
-              <Callout>
-                <View style={styles.callout}>
-                  <Text style={styles.calloutTitle} numberOfLines={1}>{item.title || 'Pet'}</Text>
-                  <Text style={styles.calloutStatus}>{item.status === 'found' ? 'Encontrado' : 'Perdido'}</Text>
-                  <Text style={styles.calloutAction}>Toque para ver detalhes</Text>
-                </View>
-              </Callout>
-            </Marker>
-          );
-        })}
+        {items.map((item) => (
+          <PetMapMarker
+            key={String(item.id)}
+            item={item}
+            isSelected={selectedItem?.id === item.id}
+            onPress={() => setSelectedItem(item)}
+            onCalloutPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
+          />
+        ))}
       </MapView>
 
       <View style={styles.searchBar}>
@@ -368,6 +342,9 @@ const MapScreen = ({ navigation }) => {
           <Text style={styles.infoTitle} numberOfLines={1}>{selectedItem.title || 'Pet'}</Text>
           <Text style={[styles.infoStatus, { color: selectedItem.status === 'found' ? '#16A34A' : '#F97316' }]}>
             {selectedItem.status === 'found' ? 'Animal encontrado' : 'Animal perdido'}
+          </Text>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: selectedItem.status === 'found' ? '#16A34A' : '#F97316', marginTop: 4 }}>
+            {selectedItem.status === 'found' ? 'Local onde foi encontrado:' : 'Última vez visto em:'}
           </Text>
           <Text style={styles.infoLocation} numberOfLines={1}>
             {[selectedItem.city, selectedItem.state, selectedItem.neighborhood].filter(Boolean).join(' - ') || 'Localização escolhida no mapa'}
@@ -460,37 +437,29 @@ const styles = StyleSheet.create({
   locationNoticeText: { color: '#374151', lineHeight: 19 },
   retryButton: { alignSelf: 'flex-start', marginTop: 8 },
   retryText: { color: '#4F46E5', fontWeight: '700' },
-  marker: {
+  markerContainer: {
     width: 52,
     height: 52,
-    borderRadius: 28,
-    padding: 3,
+    borderRadius: 6,
+    padding: 3.5,
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 6,
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowRadius: 4,
   },
-  markerImageFrame: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
+  markerContainerSelected: {
+    transform: [{ scale: 1.15 }],
   },
-  markerImage: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    overflow: 'hidden',
-    resizeMode: 'cover',
+  markerPhoto: {
+    width: 45,
+    height: 45,
+    borderRadius: 3,
+    backgroundColor: '#E5E7EB',
   },
-  markerFallback: { fontSize: 25 },
+  markerFallback: { fontSize: 24 },
   infoCard: {
     position: 'absolute',
     left: 16,
@@ -540,6 +509,52 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   loadingText: { color: '#374151' },
+});
+
+const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) => {
+  const [tracksViewChanges, setTracksViewChanges] = useState(true);
+  const photoUrl = item.item_photos?.[0]?.url;
+  const coordinate = { latitude: Number(item.latitude), longitude: Number(item.longitude) };
+  const isFound = item.status === 'found';
+  const statusColor = isFound ? '#16A34A' : '#F97316';
+
+  return (
+    <Marker
+      coordinate={coordinate}
+      onPress={onPress}
+      onCalloutPress={onCalloutPress}
+      tracksViewChanges={tracksViewChanges}
+    >
+      <View
+        style={[
+          styles.markerContainer,
+          { backgroundColor: statusColor },
+          isSelected && styles.markerContainerSelected,
+        ]}
+        collapsable={false}
+      >
+        {photoUrl ? (
+          <Image
+            source={{ uri: photoUrl }}
+            style={styles.markerPhoto}
+            resizeMode="cover"
+            onLoadEnd={() => {
+              setTimeout(() => setTracksViewChanges(false), 500);
+            }}
+          />
+        ) : (
+          <Text style={styles.markerFallback}>🐾</Text>
+        )}
+      </View>
+      <Callout>
+        <View style={styles.callout}>
+          <Text style={styles.calloutTitle} numberOfLines={1}>{item.title || 'Pet'}</Text>
+          <Text style={[styles.calloutStatus, { color: statusColor }]}>{item.status === 'found' ? 'Encontrado' : 'Perdido'}</Text>
+          <Text style={styles.calloutAction}>Toque para ver detalhes</Text>
+        </View>
+      </Callout>
+    </Marker>
+  );
 });
 
 export default MapScreen;
