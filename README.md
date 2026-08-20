@@ -10,11 +10,12 @@ Aplicativo mobile React Native/Expo do sistema RECOVER - Plataforma de Achados e
 - Confirmação de email
 
 ✅ **Itens Perdidos/Encontrados**
-- Cadastro de itens em 4 etapas
+- Cadastro de itens em 4 etapas com integração de mapa e endereço
 - Upload de múltiplas fotos
 - Filtros por status, categoria e localização
-- Detalhes expandíveis de itens
+- Tela de detalhes com visualização clara de localização (Cidade e Estado em destaque, com rua, número e bairro)
 - Recompensas opcionais
+- Reivindicação e histórico de avistamentos
 
 ✅ **Chat**
 - Mensagens em tempo real entre usuários
@@ -269,6 +270,3 @@ MIT - Veja LICENSE para detalhes.
 - [Supabase](https://supabase.io) - Backend
 - [Expo](https://expo.io) - Ferramentas React Native
 - [React Navigation](https://reactnavigation.org) - Navegação
-
-
--npx expo start --clear --tunnel
