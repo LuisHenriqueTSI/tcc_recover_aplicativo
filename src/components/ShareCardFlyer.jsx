@@ -7,7 +7,21 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
 
   const isLost = item.status === 'lost';
   const statusColor = isLost ? '#DC2626' : '#16A34A';
-  const statusHeaderTitle = isLost ? '🚨 ANIMAL PERDIDO' : '✅ ANIMAL ENCONTRADO';
+
+  // Cabeçalho dinâmico por espécie (ex: GATO ENCONTRADO, CACHORRO PERDIDO)
+  const speciesRaw = String(item.species || '').trim();
+  const getHeaderTitle = () => {
+    if (speciesRaw) {
+      const upper = speciesRaw.toUpperCase();
+      if (upper === 'AVE') {
+        return isLost ? 'AVE PERDIDA' : 'AVE ENCONTRADA';
+      }
+      return isLost ? `${upper} PERDIDO` : `${upper} ENCONTRADO`;
+    }
+    return isLost ? 'ANIMAL PERDIDO' : 'ANIMAL ENCONTRADO';
+  };
+
+  const statusHeaderTitle = getHeaderTitle();
   const locationLabel = isLost ? 'ÚLTIMA VEZ VISTO EM:' : 'LOCAL ONDE FOI ENCONTRADO:';
 
   // Informações de localização
@@ -45,156 +59,162 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
     ? item.rewards.find((r) => r?.status === 'active')
     : null;
 
-  // Contato do responsável
-  const rawPhone =
-    item.profiles?.whatsapp ||
-    item.profiles?.phone ||
-    item.contact_phone ||
-    item.phone ||
-    item.extra_fields?.contact_phone ||
-    null;
-
-  const formatPhone = (phone) => {
+  // Formatação de telefone com o 9 a mais (padrão brasileiro)
+  const formatPhoneWithNine = (phone) => {
     if (!phone) return null;
-    const cleaned = String(phone).replace(/\D/g, '');
+    let cleaned = String(phone).replace(/\D/g, '');
+    
+    // Se tiver 10 dígitos (DDD + 8 dígitos), insere o 9 no celular
+    if (cleaned.length === 10) {
+      cleaned = cleaned.slice(0, 2) + '9' + cleaned.slice(2);
+    }
+    
+    // Formata padrão nacional com 11 dígitos: (XX) 9XXXX-XXXX
     if (cleaned.length === 11) {
       return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
     }
-    if (cleaned.length === 10) {
-      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
+    
+    if (cleaned.length === 8) {
+      cleaned = '9' + cleaned;
     }
+    if (cleaned.length === 9) {
+      return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
+    }
+
     return phone;
   };
 
-  const ownerName = item.profiles?.name || item.owner_name || 'Usuário do Recover';
-  const formattedPhone = formatPhone(rawPhone);
+  // Verifica se a publicação foi feita em nome de terceiro
+  const thirdParty = item.extra_fields?.third_party_owner;
+  const isThirdParty = Boolean(thirdParty && thirdParty.active && (thirdParty.name || thirdParty.phone));
+
+  // Contato do responsável (prioriza o tutor caso seja terceiro)
+  const rawPhone = (isThirdParty && thirdParty.phone)
+    ? thirdParty.phone
+    : (
+        item.profiles?.whatsapp ||
+        item.profiles?.phone ||
+        item.contact_phone ||
+        item.phone ||
+        item.extra_fields?.contact_phone ||
+        null
+      );
+
+  const formattedPhone = formatPhoneWithNine(rawPhone);
+  const ownerName = (isThirdParty && thirdParty.name)
+    ? thirdParty.name
+    : (item.profiles?.name || item.owner_name || 'Usuário do Recover');
+  const ownerLabel = isLost ? 'Tutor' : 'Encontrado por';
 
   return (
-    <View ref={ref} collapsable={false} style={styles.cardContainer}>
-      {/* Faixa Superior de Alerta */}
-      <View style={[styles.headerBanner, { backgroundColor: statusColor }]}>
-        <View style={styles.headerTopRow}>
-          <Text style={styles.headerAppBadge}>🐾 RECOVER</Text>
-          <Text style={styles.headerDate}>{formattedDate}</Text>
+    <View ref={ref} collapsable={false} style={styles.canvasWrapper}>
+      <View style={styles.cardContainer}>
+        {/* Faixa Superior de Alerta */}
+        <View style={[styles.headerBanner, { backgroundColor: statusColor }]}>
+          <View style={styles.headerTopRow}>
+            <Text style={styles.headerAppBadge}>🐾 RECOVER</Text>
+            {formattedDate ? <Text style={styles.headerDate}>{formattedDate}</Text> : null}
+          </View>
+          <Text style={styles.headerStatusText}>{statusHeaderTitle}</Text>
         </View>
-        <Text style={styles.headerStatusText}>{statusHeaderTitle}</Text>
-      </View>
 
-      {/* Conteúdo Central */}
-      <View style={styles.contentBody}>
-        {/* Foto do Pet */}
-        <View style={styles.imageContainer}>
-          {photoUrl ? (
-            <Image source={{ uri: photoUrl }} style={styles.petImage} resizeMode="cover" />
-          ) : (
-            <View style={styles.noPhotoBox}>
-              <MaterialIcons name="pets" size={54} color="#9CA3AF" />
-              <Text style={styles.noPhotoText}>Sem foto disponível</Text>
+        {/* Conteúdo Central */}
+        <View style={styles.contentBody}>
+          {/* Foto do Pet */}
+          <View style={styles.imageContainer}>
+            {photoUrl ? (
+              <Image source={{ uri: photoUrl }} style={styles.petImage} resizeMode="cover" />
+            ) : (
+              <View style={styles.noPhotoBox}>
+                <MaterialIcons name="pets" size={48} color="#9CA3AF" />
+                <Text style={styles.noPhotoText}>Sem foto disponível</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Título do Pet */}
+          <Text style={styles.petTitle} numberOfLines={2}>
+            {item.title || 'Animal sem identificação'}
+          </Text>
+
+          {/* Bloco de Localização Centralizado */}
+          <View style={styles.locationContainer}>
+            <View style={styles.locationHeaderRow}>
+              <MaterialIcons name="place" size={14} color={statusColor} />
+              <Text style={[styles.locationLabel, { color: statusColor }]}>{locationLabel}</Text>
+            </View>
+            {cityState ? <Text style={styles.cityStateText}>{cityState}</Text> : null}
+            {streetNeighborhood ? (
+              <Text style={styles.streetText}>{streetNeighborhood}</Text>
+            ) : null}
+          </View>
+
+          {/* Descrição limpa em itálico e cinza */}
+          {item.description ? (
+            <Text style={styles.descriptionText} numberOfLines={3}>
+              "{item.description}"
+            </Text>
+          ) : null}
+
+          {/* Contato Minimalista */}
+          <View style={styles.minimalContactContainer}>
+            <Text style={styles.contactOwnerText}>
+              {ownerLabel}: <Text style={styles.contactOwnerName}>{ownerName}</Text>
+            </Text>
+            {formattedPhone ? (
+              <View style={styles.phoneRow}>
+                <MaterialIcons name="phone" size={15} color="#059669" />
+                <Text style={styles.contactPhoneText}>{formattedPhone}</Text>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Bloco de Recompensa no final */}
+          {activeReward && (
+            <View style={styles.rewardContainer}>
+              <Text style={styles.rewardText}>
+                {activeReward.amount
+                  ? `RECOMPENSA OFERECIDA: R$ ${parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                  : 'RECOMPENSA OFERECIDA'}
+              </Text>
             </View>
           )}
         </View>
 
-        {/* Título e Características */}
-        <Text style={styles.petTitle} numberOfLines={2}>
-          {item.title || 'Animal sem identificação'}
-        </Text>
-
-        {/* Tags de características */}
-        <View style={styles.chipsRow}>
-          {item.species ? (
-            <View style={styles.chip}>
-              <Text style={styles.chipText}>🐾 {item.species}</Text>
-            </View>
-          ) : null}
-          {item.breed && item.breed !== 'Sem raça definida' ? (
-            <View style={styles.chip}>
-              <Text style={styles.chipText}>🐕 {item.breed}</Text>
-            </View>
-          ) : null}
-          {item.color ? (
-            <View style={styles.chip}>
-              <Text style={styles.chipText}>🎨 {item.color}</Text>
-            </View>
-          ) : null}
-          {item.size ? (
-            <View style={styles.chip}>
-              <Text style={styles.chipText}>📏 Porte {item.size}</Text>
-            </View>
-          ) : null}
+        {/* Rodapé / Chamada para Compartilhar */}
+        <View style={styles.footerContainer}>
+          <Text style={styles.footerText}>
+            📢 Compartilhe para ajudar a trazer este pet de volta!
+          </Text>
         </View>
-
-        {/* Bloco de Recompensa (se houver) */}
-        {activeReward && (
-          <View style={styles.rewardContainer}>
-            <MaterialIcons name="emoji-events" size={20} color="#D97706" />
-            <Text style={styles.rewardText}>
-              {activeReward.amount
-                ? `RECOMPENSA: R$ ${parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                : 'RECOMPENSA OFERECIDA'}
-            </Text>
-          </View>
-        )}
-
-        {/* Bloco de Localização */}
-        <View style={styles.locationContainer}>
-          <View style={styles.locationHeaderRow}>
-            <MaterialIcons name="place" size={18} color={statusColor} />
-            <Text style={[styles.locationLabel, { color: statusColor }]}>{locationLabel}</Text>
-          </View>
-          {cityState ? <Text style={styles.cityStateText}>{cityState}</Text> : null}
-          {streetNeighborhood ? (
-            <Text style={styles.streetText}>{streetNeighborhood}</Text>
-          ) : null}
-        </View>
-
-        {/* Descrição curta se houver */}
-        {item.description ? (
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.descriptionText} numberOfLines={3}>
-              "{item.description}"
-            </Text>
-          </View>
-        ) : null}
-
-        {/* Caixa de Contato */}
-        <View style={styles.contactContainer}>
-          <View style={styles.contactHeaderRow}>
-            <MaterialIcons name="phone" size={18} color="#047857" />
-            <Text style={styles.contactLabel}>SE VOCÊ VIU OU TEM INFORMAÇÕES:</Text>
-          </View>
-          {formattedPhone ? (
-            <Text style={styles.contactPhone}>📞 {formattedPhone}</Text>
-          ) : null}
-          <Text style={styles.contactOwner}>👤 Responsável: {ownerName}</Text>
-        </View>
-      </View>
-
-      {/* Rodapé / Chamada para Compartilhar */}
-      <View style={styles.footerContainer}>
-        <Text style={styles.footerText}>
-          📢 Por favor, ajude a compartilhar! Sua ajuda faz toda a diferença.
-        </Text>
       </View>
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  cardContainer: {
-    width: 360,
+  canvasWrapper: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardContainer: {
+    width: 300,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     overflow: 'hidden',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   headerBanner: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     alignItems: 'center',
   },
   headerTopRow: {
@@ -202,41 +222,43 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   headerAppBadge: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: '800',
-    letterSpacing: 1,
+    letterSpacing: 0.8,
     backgroundColor: 'rgba(0,0,0,0.25)',
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: 5,
   },
   headerDate: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: '600',
     opacity: 0.9,
   },
   headerStatusText: {
     color: '#FFFFFF',
-    fontSize: 22,
+    fontSize: 17,
     fontWeight: '900',
     letterSpacing: 0.5,
-    marginTop: 2,
+    marginTop: 1,
+    textAlign: 'center',
   },
   contentBody: {
-    padding: 16,
+    padding: 10,
+    alignItems: 'center',
   },
   imageContainer: {
     width: '100%',
-    height: 230,
-    borderRadius: 14,
+    height: 160,
+    borderRadius: 10,
     overflow: 'hidden',
     backgroundColor: '#F1F5F9',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   petImage: {
     width: '100%',
@@ -249,145 +271,132 @@ const styles = StyleSheet.create({
   },
   noPhotoText: {
     color: '#94A3B8',
-    fontSize: 13,
-    marginTop: 6,
+    fontSize: 12,
+    marginTop: 4,
     fontWeight: '500',
   },
   petTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '800',
     color: '#0F172A',
-    marginBottom: 8,
+    marginBottom: 6,
     textAlign: 'center',
   },
-  chipsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 6,
-    marginBottom: 12,
-  },
-  chip: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  chipText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#334155',
-  },
   rewardContainer: {
-    flexDirection: 'row',
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FEF3C7',
-    borderWidth: 1.5,
-    borderColor: '#FDE68A',
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-    gap: 6,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+    borderRadius: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    marginTop: 5,
   },
   rewardText: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '800',
     color: '#B45309',
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    textAlign: 'center',
   },
   locationContainer: {
+    width: '100%',
     backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    marginBottom: 10,
+    marginBottom: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   locationHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
-    marginBottom: 4,
+    marginBottom: 1,
   },
   locationLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.5,
+    textAlign: 'center',
   },
   cityStateText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
     color: '#1E293B',
-    lineHeight: 20,
+    lineHeight: 18,
+    textAlign: 'center',
   },
   streetText: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#64748B',
-    marginTop: 2,
-  },
-  descriptionContainer: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: '#94A3B8',
+    marginTop: 1,
+    textAlign: 'center',
   },
   descriptionText: {
-    fontSize: 13,
-    color: '#475569',
+    fontSize: 12,
+    color: '#64748B',
     fontStyle: 'italic',
-    lineHeight: 18,
+    textAlign: 'center',
+    lineHeight: 16,
+    marginVertical: 3,
+    paddingHorizontal: 6,
   },
-  contactContainer: {
-    backgroundColor: '#ECFDF5',
-    borderWidth: 1.5,
-    borderColor: '#A7F3D0',
-    borderRadius: 12,
-    padding: 12,
+  minimalContactContainer: {
+    width: '100%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
   },
-  contactHeaderRow: {
+  contactOwnerText: {
+    fontSize: 12,
+    color: '#475569',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  contactOwnerName: {
+    color: '#0F172A',
+    fontWeight: '700',
+  },
+  phoneRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
-    marginBottom: 4,
+    marginTop: 2,
   },
-  contactLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#065F46',
-    letterSpacing: 0.5,
-  },
-  contactPhone: {
-    fontSize: 19,
+  contactPhoneText: {
+    fontSize: 16,
     fontWeight: '900',
-    color: '#047857',
-    marginVertical: 2,
-  },
-  contactOwner: {
-    fontSize: 12,
-    color: '#065F46',
-    fontWeight: '600',
+    color: '#059669',
+    letterSpacing: 0.3,
   },
   footerContainer: {
     backgroundColor: '#F8FAFC',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#64748B',
     textAlign: 'center',
     fontWeight: '600',
-    lineHeight: 15,
   },
 });
 

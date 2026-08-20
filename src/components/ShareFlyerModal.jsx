@@ -110,7 +110,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
             </View>
           </ScrollView>
 
-          {/* Botões de Ação Inferiores */}
+          {/* Botão de Ação Inferior */}
           <View style={styles.actionsContainer}>
             <TouchableOpacity
               style={[styles.primaryShareBtn, capturing && styles.btnDisabled]}
@@ -125,20 +125,10 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
                 </View>
               ) : (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <MaterialIcons name="photo-camera" size={20} color="#FFFFFF" />
-                  <Text style={styles.primaryShareBtnText}>Compartilhar Cartaz (Imagem)</Text>
+                  <MaterialIcons name="share" size={20} color="#FFFFFF" />
+                  <Text style={styles.primaryShareBtnText}>Compartilhar</Text>
                 </View>
               )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.secondaryShareBtn}
-              onPress={handleShareText}
-              disabled={capturing}
-              activeOpacity={0.8}
-            >
-              <MaterialIcons name="text-snippet" size={18} color="#4B5563" />
-              <Text style={styles.secondaryShareBtnText}>Compartilhar apenas Texto</Text>
             </TouchableOpacity>
           </View>
         </View>

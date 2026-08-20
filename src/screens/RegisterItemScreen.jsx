@@ -300,6 +300,17 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [animalAge, setAnimalAge] = useState(editItem?.age || editItem?.extra_fields?.age || '');
   const [animalCollar, setAnimalCollar] = useState(editItem?.collar || editItem?.extra_fields?.collar || '');
   
+  // Publicação em nome de terceiro
+  const [isThirdPartyOwner, setIsThirdPartyOwner] = useState(
+    Boolean(editItem?.extra_fields?.third_party_owner?.active)
+  );
+  const [thirdPartyName, setThirdPartyName] = useState(
+    editItem?.extra_fields?.third_party_owner?.name || ''
+  );
+  const [thirdPartyPhone, setThirdPartyPhone] = useState(
+    editItem?.extra_fields?.third_party_owner?.phone || ''
+  );
+
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -415,6 +426,52 @@ const RegisterItemScreen = ({ navigation, route }) => {
           )}
         </View>
       )}
+
+      {/* Seção de Publicação em nome de terceiro */}
+      <View style={styles.thirdPartySection}>
+        <TouchableOpacity
+          style={styles.checkboxContainer}
+          onPress={() => setIsThirdPartyOwner(!isThirdPartyOwner)}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.checkbox, isThirdPartyOwner && styles.checkboxChecked]}>
+            {isThirdPartyOwner && <Text style={styles.checkmark}>✓</Text>}
+          </View>
+          <Text style={styles.checkboxLabel}>
+            Estou publicando em nome de outra pessoa
+          </Text>
+        </TouchableOpacity>
+
+        {isThirdPartyOwner && (
+          <View style={styles.thirdPartyInputsBox}>
+            <Text style={styles.thirdPartyHint}>
+              Informe o nome e telefone do tutor/dono real para contato direto:
+            </Text>
+            <Input
+              label="Nome do Tutor / Responsável *"
+              placeholder="Ex: Dona Maria"
+              value={thirdPartyName}
+              onChangeText={setThirdPartyName}
+              style={styles.input}
+            />
+            <Input
+              label="Telefone / WhatsApp do Tutor *"
+              placeholder="Ex: (53) 99999-8888"
+              value={thirdPartyPhone}
+              onChangeText={(text) => {
+                const digits = String(text).replace(/\D/g, '').slice(0, 11);
+                let formatted = digits;
+                if (digits.length > 2 && digits.length <= 6) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+                else if (digits.length > 6 && digits.length <= 10) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+                else if (digits.length > 10) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+                setThirdPartyPhone(formatted);
+              }}
+              keyboardType="phone-pad"
+              style={styles.input}
+            />
+          </View>
+        )}
+      </View>
     </View>
   );
 
@@ -563,15 +620,49 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
   const buildAutoTitle = () => {
     if (itemType !== 'animal') {
-      return 'Animal';
+      return 'Item';
     }
 
     const species = normalizeSpeciesValue(animalSpecies) || 'Animal';
-    const statusLabel = status === 'lost' ? 'perdido' : 'encontrado';
-    const colorLabel = color?.trim().toLowerCase() || 'cor não informada';
-    const location = neighborhood || city || 'localização selecionada no mapa';
+    const isFemale = species.toLowerCase() === 'ave';
+    const statusLabel = status === 'lost' ? (isFemale ? 'perdida' : 'perdido') : (isFemale ? 'encontrada' : 'encontrado');
+    const colorLabel = color && color.trim() && color.trim().toLowerCase() !== 'cor não informada' ? color.trim().toLowerCase() : '';
+    
+    // Prioriza rua/praça selecionada, depois bairro/distrito, depois cidade
+    const rawLoc = (
+      mapLocationDetails?.street ||
+      neighborhood ||
+      mapLocationDetails?.district ||
+      city ||
+      mapLocationDetails?.city ||
+      ''
+    ).trim();
 
-    return `${species}, ${colorLabel}, ${statusLabel}, em ${location.trim()}`;
+    const formatLocationPhrase = (loc) => {
+      if (!loc) return '';
+      const lower = loc.toLowerCase();
+      if (/^(no|na|em|nos|nas|ao|à)\s+/i.test(loc)) return loc;
+      if (/^(praça|praca|rua|avenida|av\.|alameda|travessa|vila|estrada|rodovia|cohab|praia|zona)\b/i.test(lower)) {
+        return `na ${loc}`;
+      }
+      if (/^(centro|parque|bairro|jardim|porto|balneário|balneario|morro|largo|recanto|condomínio|condominio|loteamento|shopping)\b/i.test(lower) || lower === 'centro') {
+        return `no ${loc}`;
+      }
+      return `em ${loc}`;
+    };
+
+    const locationPhrase = formatLocationPhrase(rawLoc);
+
+    if (colorLabel && locationPhrase) {
+      return `${species} ${colorLabel} ${statusLabel} ${locationPhrase}`.trim();
+    }
+    if (colorLabel && !locationPhrase) {
+      return `${species} ${colorLabel} ${statusLabel}`.trim();
+    }
+    if (!colorLabel && locationPhrase) {
+      return `${species} ${statusLabel} ${locationPhrase}`.trim();
+    }
+    return `${species} ${statusLabel}`.trim();
   };
 
   const formatDateDisplay = (dateString) => {
@@ -837,6 +928,17 @@ const RegisterItemScreen = ({ navigation, route }) => {
       return false;
     }
 
+    if (isThirdPartyOwner) {
+      if (!thirdPartyName || !thirdPartyName.trim()) {
+        setError('Informe o nome do tutor/responsável');
+        return false;
+      }
+      if (!thirdPartyPhone || !thirdPartyPhone.trim()) {
+        setError('Informe o telefone de contato do tutor');
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -944,6 +1046,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
           age: toNull(animalAge),
           collar: toNull(animalCollar),
           location_details: exactLocationDetails,
+          third_party_owner: isThirdPartyOwner && (thirdPartyName.trim() || thirdPartyPhone.trim()) ? {
+            active: true,
+            name: thirdPartyName.trim(),
+            phone: thirdPartyPhone.trim(),
+          } : null,
         },
       };
 
@@ -1903,16 +2010,35 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontWeight: '700',
   },
-  mapSelectedText: {
-    color: '#6B7280',
-    fontSize: 12,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
   locationHint: {
     color: '#6B7280',
     fontSize: 13,
     marginBottom: 12,
+  },
+  rewardSection: {
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  thirdPartySection: {
+    marginTop: 16,
+    marginBottom: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 12,
+  },
+  thirdPartyInputsBox: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  thirdPartyHint: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 10,
+    lineHeight: 16,
   },
   checkboxContainer: {
     flexDirection: 'row',

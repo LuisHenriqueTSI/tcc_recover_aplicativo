@@ -276,6 +276,28 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
           ) : null}
         </View>
 
+        {/* Informações do Tutor real (se publicado por terceiro) */}
+        {item.extra_fields?.third_party_owner?.active && item.extra_fields?.third_party_owner?.name ? (
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#F0FDF4',
+            borderRadius: 8,
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            marginBottom: 10,
+            borderWidth: 1,
+            borderColor: '#DCFCE7',
+          }}>
+            <MaterialIcons name="person-pin" size={15} color="#16A34A" />
+            <Text style={{ fontSize: 12, color: '#166534', fontWeight: '700', marginLeft: 4 }}>
+              {item.status === 'lost' ? 'Tutor:' : 'Responsável:'}{' '}
+              <Text style={{ fontWeight: '600' }}>{item.extra_fields.third_party_owner.name}</Text>
+              {item.extra_fields.third_party_owner.phone ? ` • 📞 ${item.extra_fields.third_party_owner.phone}` : ''}
+            </Text>
+          </View>
+        ) : null}
+
         {/* Rodapé: Dono e Ação */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -591,7 +613,7 @@ const HomeScreen = ({ navigation, route }) => {
     if (itemStatus === 'found') {
       const claim = await claimsService.getClaimForItemByUser(itemId, user.id);
       if (claim?.status !== 'approved') {
-        Alert.alert('Chat bloqueado', 'O chat só será liberado após o dono da publicação aprovar sua reivindicação.');
+        Alert.alert('Chat bloqueado', 'O chat só será liberado após o tutor da publicação aprovar sua reivindicação.');
         return;
       }
     }

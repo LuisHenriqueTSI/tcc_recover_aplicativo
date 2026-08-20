@@ -115,7 +115,7 @@ export default function ClaimsManagementScreen({ navigation }) {
           onPress: async () => {
             setProcessingClaimId(claimId);
             try {
-              await rejectClaim(claimId, 'Rejeitado pelo dono do item');
+              await rejectClaim(claimId, 'Rejeitado pelo tutor da publicação');
               setClaims(claims.filter(c => c.id !== claimId));
               setExpandedClaimId(null);
               Alert.alert('Reivindicação rejeitada', 'O usuário foi notificado.');

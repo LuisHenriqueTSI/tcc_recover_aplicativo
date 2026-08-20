@@ -22,6 +22,7 @@ import { formatarDataMembro } from './_dateUtils';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import ShareButton from '../components/ShareButton';
+import ShareFlyerModal from '../components/ShareFlyerModal';
 import ItemClaimModal from './ItemClaimModal';
 
 import SightingModal from '../components/SightingModal';
@@ -100,6 +101,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [fullScreenPhotoModal, setFullScreenPhotoModal] = useState(false);
   const [fullScreenIndex, setFullScreenIndex] = useState(0);
+  const [shareFlyerVisible, setShareFlyerVisible] = useState(false);
   const screenWidth = Dimensions.get('window').width;
 
   useEffect(() => {
@@ -386,7 +388,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
     if (!item) return;
 
     if (item.status === 'found' && user.id !== item.owner_id && claimAccessState !== 'approved') {
-      Alert.alert('Chat bloqueado', 'O chat só será liberado após o dono da publicação aprovar sua reivindicação.');
+      Alert.alert('Chat bloqueado', 'O chat só será liberado após o tutor da publicação aprovar sua reivindicação.');
       return;
     }
 
@@ -753,6 +755,29 @@ const ItemDetailScreen = ({ route, navigation }) => {
           </View>
         )}
 
+        {/* Informações do Tutor / Dono Real quando publicado por terceiro */}
+        {item.extra_fields?.third_party_owner?.active && item.extra_fields?.third_party_owner?.name && (
+          <View style={{ backgroundColor: '#F0FDF4', borderRadius: 14, marginHorizontal: 16, marginTop: 16, marginBottom: 0, padding: 16, borderWidth: 1.5, borderColor: '#BBF7D0' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <MaterialIcons name="person-pin" size={20} color="#16A34A" />
+              <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#166534' }}>
+                {item.status === 'lost' ? 'Tutor do Animal' : 'Responsável pelo Animal'}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 16, fontWeight: '800', color: '#0F172A', marginBottom: 2 }}>
+              {item.extra_fields.third_party_owner.name}
+            </Text>
+            {item.extra_fields.third_party_owner.phone ? (
+              <Text style={{ fontSize: 15, fontWeight: '700', color: '#15803D' }}>
+                📞 {item.extra_fields.third_party_owner.phone}
+              </Text>
+            ) : null}
+            <Text style={{ fontSize: 12, color: '#15803D', opacity: 0.8, marginTop: 4 }}>
+              * Anúncio realizado por terceiro em nome do tutor acima.
+            </Text>
+          </View>
+        )}
+
         {/* Publicado por */}
         {owner && (
           <View style={{ backgroundColor: '#fff', borderRadius: 14, marginHorizontal: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
@@ -858,6 +883,30 @@ const ItemDetailScreen = ({ route, navigation }) => {
             )}
           </View>
         )}
+
+        {/* Botão de Compartilhar Cartaz Destacado */}
+        <View style={{ marginHorizontal: 16, marginTop: 14 }}>
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#EEF2FF',
+              borderWidth: 1.5,
+              borderColor: '#6366F1',
+              borderRadius: 12,
+              paddingVertical: 12,
+              gap: 8,
+            }}
+            onPress={() => setShareFlyerVisible(true)}
+            activeOpacity={0.85}
+          >
+            <MaterialIcons name="share" size={20} color="#4F46E5" />
+            <Text style={{ color: '#4F46E5', fontWeight: '800', fontSize: 15 }}>
+              Compartilhar Cartaz do Pet
+            </Text>
+          </TouchableOpacity>
+        </View>
 
 
         {/* Contato Rápido */}
@@ -1136,6 +1185,13 @@ const ItemDetailScreen = ({ route, navigation }) => {
           ) : null}
         </View>
       </Modal>
+
+      <ShareFlyerModal
+        visible={shareFlyerVisible}
+        onClose={() => setShareFlyerVisible(false)}
+        item={item}
+        imageUrl={photos?.[0]?.url}
+      />
     </ScrollView>
   );
 // Componente InfoRow para exibir label e valor alinhados (usado para outros tipos)

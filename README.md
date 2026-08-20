@@ -18,14 +18,14 @@ Aplicativo mobile React Native/Expo do sistema RECOVER - Plataforma de Achados e
 - Seletor de localização no cabeçalho com botão destacado e ícone de edição interativo
 - Rótulos contextuais de localização em todo o app ("Última vez visto" para perdidos / "Local onde foi encontrado" para encontrados)
 - Cards de publicação com localização organizada (Cidade - Estado em destaque e complemento de rua/número/bairro logo abaixo)
-- Tela de detalhes com visualização clara de localização (Cidade e Estado em destaque, com rua, número e bairro)
+- Publicação em nome de terceiros (amigo, parente, vizinho, ONG) com campos dedicados para nome e telefone direto do tutor/responsável
 - Recompensas opcionais
 - Reivindicação e histórico de avistamentos
 
 ✅ **Compartilhamento Visual para Redes Sociais**
-- Geração automática de cartaz visual (flyer) em alta resolução do pet com faixa de alerta colorida (Perdido/Encontrado), foto principal, características, localização contextual, data do ocorrido, recompensa e telefone/WhatsApp de contato direto
+- Geração automática de cartaz visual (flyer) em alta resolução do pet com faixa de alerta colorida (Perdido/Encontrado), foto principal, características, localização contextual, data do ocorrido, recompensa e telefone/WhatsApp de contato direto (com suporte a tutor terceiro)
 - Compartilhamento de imagem nativo direto para WhatsApp, Instagram Stories/Feed, Facebook, Telegram e outras redes sem sair do app
-- Modal interativo de pré-visualização do cartaz antes do envio com opções de compartilhar imagem ou texto
+- Modal interativo de pré-visualização do cartaz antes do envio com botão direto de compartilhamento de imagem
 
 ✅ **Chat**
 - Mensagens em tempo real entre usuários
