@@ -37,22 +37,35 @@ const formatItemDate = (value) => {
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 };
 
-const formatItemLocation = (item) => [item?.city, item?.state]
-  .map((value) => String(value || '').trim())
-  .filter(Boolean)
-  .join(', ');
+const formatCityState = (item) => {
+  const city = (item?.city || item?.extra_fields?.location_details?.city || '').trim();
+  const state = (item?.state || item?.extra_fields?.location_details?.state || '').trim();
+  const parts = [city, state].filter(Boolean);
+  if (parts.length > 0) {
+    return parts.join(' - ');
+  }
+  return item?.neighborhood || item?.extra_fields?.location_details?.district || 'Localização não informada';
+};
 
-const formatMapLocationDetails = (item) => {
+const formatStreetNumberNeighborhood = (item) => {
   const details = item?.extra_fields?.location_details;
-  if (!details) return '';
+  const street = (details?.street || item?.street || '').trim();
+  const number = (details?.number || item?.house_number || '').trim();
+  const district = (details?.district || item?.neighborhood || '').trim();
 
-  const textValue = typeof details.text === 'string' && details.text.trim() ? details.text.trim() : '';
-  if (textValue) return textValue;
+  const streetPart = street && number ? `${street}, ${number}` : street || (number ? `Nº ${number}` : '');
+  const parts = [streetPart, district].filter(Boolean);
 
-  return [details.street, details.number, details.district, details.city, details.state, details.postalCode]
-    .map((value) => String(value || '').trim())
-    .filter(Boolean)
-    .join(', ');
+  if (parts.length > 0) {
+    return parts.join(', ');
+  }
+
+  const rawText = (details?.text || item?.address || '').trim();
+  if (rawText) {
+    return rawText;
+  }
+
+  return '';
 };
 
 const ItemDetailScreen = ({ route, navigation }) => {
@@ -565,24 +578,14 @@ const ItemDetailScreen = ({ route, navigation }) => {
         <View style={styles.locationGrid}>
           <View style={styles.locationCard}>
             <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Localização</Text>
-            {formatMapLocationDetails(item) ? (
-              <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold', lineHeight: 22 }}>{formatMapLocationDetails(item)}</Text>
-            ) : (
-              <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold' }}>{item.neighborhood || item.city || item.state || 'Localização não informada'}</Text>
-            )}
-            {formatItemLocation(item) ? (
-              <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>{formatItemLocation(item)}</Text>
-            ) : null}
-            {formatMapLocationDetails(item) && formatItemLocation(item) ? (
-              <Text style={{ fontSize: 12, color: '#64748B', marginTop: 6, lineHeight: 18 }}>
-                {formatMapLocationDetails(item)}
+            <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold', lineHeight: 22 }}>
+              {formatCityState(item)}
+            </Text>
+            {formatStreetNumberNeighborhood(item) ? (
+              <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 4, lineHeight: 18 }}>
+                {formatStreetNumberNeighborhood(item)}
               </Text>
             ) : null}
-            {item.extra_fields?.location_details?.text && (
-              <Text style={{ fontSize: 11, color: '#9CA3AF', marginTop: 6 }}>
-                Endereço detalhado
-              </Text>
-            )}
           </View>
           <View style={styles.locationCard}>
             <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Data</Text>

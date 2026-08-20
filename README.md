@@ -269,3 +269,6 @@ MIT - Veja LICENSE para detalhes.
 - [Supabase](https://supabase.io) - Backend
 - [Expo](https://expo.io) - Ferramentas React Native
 - [React Navigation](https://reactnavigation.org) - Navegação
+
+
+-npx expo start --clear --tunnel
