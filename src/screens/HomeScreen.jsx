@@ -153,44 +153,99 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
         </View>
       </View>
       {/* Conteúdo */}
-      <View style={{ padding: 16, paddingBottom: 10 }}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#374151', marginBottom: 16 }}>{safeTitle}</Text>
-        <Text style={{ fontSize: 14, color: '#6B7280', marginBottom: 16 }}>{safeDescription}</Text>
+      <View style={{ padding: 16, paddingBottom: 12 }}>
+        {/* Título */}
+        <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: safeDescription?.trim() ? 6 : 10 }}>
+          {safeTitle}
+        </Text>
+
+        {/* Descrição (renderiza apenas se existir texto) */}
+        {safeDescription?.trim() ? (
+          <Text style={{ fontSize: 14, color: '#4B5563', lineHeight: 20, marginBottom: 12 }} numberOfLines={2}>
+            {safeDescription}
+          </Text>
+        ) : null}
+
+        {/* Recompensa (se houver) */}
         {activeReward && (
-          <View style={styles.rewardBadge}>
+          <View style={[styles.rewardBadge, { marginBottom: 12 }]}>
             <Text style={styles.rewardBadgeText}>
               {activeReward.amount ? `Recompensa: R$ ${parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Recompensa oferecida'}
               {activeReward.description ? ` • ${activeReward.description}` : ''}
             </Text>
           </View>
         )}
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8, marginTop: 14 }}>
-          <MaterialIcons name="place" size={18} color="#4F46E5" style={{ marginRight: 6, marginTop: 1 }} />
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 11, fontWeight: '700', color: item.status === 'lost' ? '#D97706' : '#16A34A', textTransform: 'uppercase', marginBottom: 2 }}>
-              {item.status === 'lost' ? 'Última vez visto' : 'Local onde foi encontrado'}
-            </Text>
-            <Text style={{ fontSize: 14, fontWeight: '700', color: '#1F2937', lineHeight: 19 }}>
-              {formatCityState(item)}
-            </Text>
-            {formatStreetNumberNeighborhood(item) ? (
-              <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 2, lineHeight: 18 }}>
-                {formatStreetNumberNeighborhood(item)}
+
+        {/* Bloco de Localização e Data Moderno */}
+        <View style={{
+          backgroundColor: '#F8FAFC',
+          borderRadius: 12,
+          padding: 12,
+          borderWidth: 1,
+          borderColor: '#E2E8F0',
+          marginBottom: 12,
+        }}>
+          {/* Cabeçalho do bloco: Rótulo de Status à esquerda e Data à direita */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <MaterialIcons
+                name="place"
+                size={16}
+                color={item.status === 'lost' ? '#D97706' : '#16A34A'}
+              />
+              <Text style={{
+                fontSize: 11,
+                fontWeight: '700',
+                color: item.status === 'lost' ? '#D97706' : '#16A34A',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}>
+                {item.status === 'lost' ? 'Última vez visto' : 'Local onde foi encontrado'}
               </Text>
+            </View>
+            {item.date ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                <MaterialIcons name="event" size={13} color="#94A3B8" />
+                <Text style={{ fontSize: 12, color: '#64748B', fontWeight: '500' }}>
+                  {formatItemDate(item.date)}
+                </Text>
+              </View>
             ) : null}
           </View>
+
+          {/* Endereço: Cidade - Estado e Complemento */}
+          <Text style={{ fontSize: 15, fontWeight: '700', color: '#1E293B', lineHeight: 20, marginTop: 2 }}>
+            {formatCityState(item)}
+          </Text>
+          {formatStreetNumberNeighborhood(item) ? (
+            <Text style={{ fontSize: 13, color: '#64748B', marginTop: 2, lineHeight: 18 }}>
+              {formatStreetNumberNeighborhood(item)}
+            </Text>
+          ) : null}
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-          <MaterialIcons name="event" size={15} color="#9CA3AF" style={{ marginRight: 6 }} />
-          <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: '500' }}>{formatItemDate(item.date)}</Text>
-        </View>
-        {/* Barra divisória fina */}
-        <View style={{ height: 1, backgroundColor: '#E5E7EB', marginBottom: 10 }} />
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>{safeOwnerName}</Text>
-          <TouchableOpacity onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F3F4F6', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 }}>
-            <MaterialIcons name="visibility" size={18} color="#1F2937" style={{ marginRight: 4 }} />
-            <Text style={{ color: '#1F2937', fontSize: 14 }}>Ver detalhes</Text>
+
+        {/* Rodapé: Dono e Ação */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ fontSize: 13, color: '#64748B' }}>Por </Text>
+            <Text style={{ fontSize: 13, color: '#1E293B', fontWeight: '600' }} numberOfLines={1}>
+              {safeOwnerName || 'Usuário'}
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={onPress}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#EEF2FF',
+              borderRadius: 20,
+              paddingHorizontal: 14,
+              paddingVertical: 7,
+            }}
+            activeOpacity={0.8}
+          >
+            <MaterialIcons name="visibility" size={16} color="#4F46E5" style={{ marginRight: 5 }} />
+            <Text style={{ color: '#4F46E5', fontSize: 13, fontWeight: '700' }}>Ver detalhes</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -773,9 +828,20 @@ const HomeScreen = ({ navigation, route }) => {
                   Localização selecionada: {[profileEditCity, profileEditState].filter(Boolean).join(', ')}
                 </Text>
               )}
-              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 }}>
-                <Button title="Cancelar" onPress={() => setShowProfileLocationModal(false)} style={{ marginRight: 8, backgroundColor: '#E5E7EB', color: '#222' }} />
-                <Button title="Salvar" onPress={handleSaveProfileLocation} disabled={!profileEditState || !profileEditCity} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 8 }}>
+                <Button
+                  title="Cancelar"
+                  variant="secondary"
+                  onPress={() => setShowProfileLocationModal(false)}
+                  style={{ flex: 1, minHeight: 46 }}
+                />
+                <Button
+                  title="Salvar"
+                  variant="primary"
+                  onPress={handleSaveProfileLocation}
+                  disabled={!profileEditState || !profileEditCity}
+                  style={{ flex: 1, minHeight: 46 }}
+                />
               </View>
             </View>
           </View>
@@ -904,25 +970,32 @@ const HomeScreen = ({ navigation, route }) => {
                 </View>
               </>
             )}
-            <View style={{ flexDirection:'row', justifyContent:'flex-end', gap:8 }}>
-              <TouchableOpacity onPress={() => {
-                setEditState(user ? editState : '');
-                setEditCity(user ? editCity : '');
-                setEditNeighborhood('');
-              }} style={{ paddingVertical:8, paddingHorizontal:16, backgroundColor:'#E5E7EB', borderRadius:6, marginRight:8 }}>
-                <Text style={{ color:'#222', fontWeight:'bold' }}>Limpar Filtro</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 8 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setEditState(user ? editState : '');
+                  setEditCity(user ? editCity : '');
+                  setEditNeighborhood('');
+                }}
+                style={{ paddingVertical: 10, paddingHorizontal: 12, backgroundColor: '#F3F4F6', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB' }}
+              >
+                <Text style={{ color: '#374151', fontWeight: 'bold', fontSize: 13 }}>Limpar Filtro</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setEditLocationModal(false)} style={{ paddingVertical:8, paddingHorizontal:16 }}>
-                <Text style={{ color:'#6B7280', fontWeight:'bold' }}>Cancelar</Text>
+              <TouchableOpacity
+                onPress={() => setEditLocationModal(false)}
+                style={{ paddingVertical: 10, paddingHorizontal: 14, backgroundColor: '#E5E7EB', borderRadius: 8 }}
+              >
+                <Text style={{ color: '#1F2937', fontWeight: 'bold', fontSize: 13 }}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={async () => {
-                setLocationFilterTouched(true);
-                setEditLocationModal(false);
-                setLocationFilter(`${editCity}, ${editState}${editNeighborhood ? ', ' + editNeighborhood : ''}`);
-                loadItems(); // Carrega imediatamente após salvar
-                // Atualiza localidade no perfil do usuário
-                try {
-                  if (user && user.id) {
+              <TouchableOpacity
+                onPress={async () => {
+                  setLocationFilterTouched(true);
+                  setEditLocationModal(false);
+                  setLocationFilter(`${editCity}, ${editState}${editNeighborhood ? ', ' + editNeighborhood : ''}`);
+                  loadItems(); // Carrega imediatamente após salvar
+                  // Atualiza localidade no perfil do usuário
+                  try {
+                    if (user && user.id) {
                     await userService.updateProfile(user.id, { neighborhood: editNeighborhood });
                   }
                 } catch (e) {
