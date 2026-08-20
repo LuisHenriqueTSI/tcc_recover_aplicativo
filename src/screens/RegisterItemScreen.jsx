@@ -579,6 +579,114 @@ const RegisterItemScreen = ({ navigation, route }) => {
     return date.toLocaleDateString('pt-BR');
   };
 
+  const MAX_PHOTOS = 6;
+
+  const pickAndCropImage = async () => {
+    try {
+      if (photos.length >= MAX_PHOTOS) {
+        Alert.alert('Limite de fotos atingido', `Você pode adicionar no máximo ${MAX_PHOTOS} fotos.`);
+        return;
+      }
+
+      console.log('[pickAndCropImage] Requesting permissions...');
+      const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (libraryStatus !== 'granted') {
+        Alert.alert('Permissão negada', 'Precisamos de acesso à galeria para selecionar fotos');
+        return;
+      }
+
+      console.log('[pickAndCropImage] Launching image picker with cropping...');
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const optimizedPhoto = await ImageManipulator.manipulateAsync(
+          asset.uri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        const photo = {
+          uri: optimizedPhoto.uri,
+          type: 'image/jpeg',
+          name: `${Date.now()}_${asset.fileName || 'pet.jpg'}`,
+        };
+
+        if (itemType === 'pet') {
+          const validation = await validatePetPhoto({ imageUri: photo.uri });
+          if (!validation.isPet) {
+            Alert.alert(
+              'Foto não permitida',
+              'Não foi possível validar essa imagem. Tente enviar uma foto mais nítida, bem iluminada e com o animal visível, como um cão, gato, bovino ou outro animal.'
+            );
+            return;
+          }
+        }
+
+        setPhotos((previousPhotos) => [...previousPhotos, photo]);
+        Alert.alert('Sucesso', 'Foto adicionada e recortada com sucesso!');
+      }
+    } catch (error) {
+      console.error('[RegisterItem] Falha ao selecionar foto com corte:', error);
+      Alert.alert('Erro', 'Falha ao selecionar foto: ' + error.message);
+    }
+  };
+
+  const reCropPhoto = async (index) => {
+    try {
+      const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (libraryStatus !== 'granted') {
+        Alert.alert('Permissão negada', 'Precisamos de acesso à galeria para cortar fotos');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const optimizedPhoto = await ImageManipulator.manipulateAsync(
+          asset.uri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        const newPhoto = {
+          uri: optimizedPhoto.uri,
+          type: 'image/jpeg',
+          name: `${Date.now()}_${asset.fileName || 'pet_cropped.jpg'}`,
+        };
+
+        if (itemType === 'pet') {
+          const validation = await validatePetPhoto({ imageUri: newPhoto.uri });
+          if (!validation.isPet) {
+            Alert.alert(
+              'Foto não permitida',
+              'Não foi possível validar essa imagem. Tente enviar uma foto mais nítida, bem iluminada e com o animal visível.'
+            );
+            return;
+          }
+        }
+
+        const updated = [...photos];
+        updated[index] = newPhoto;
+        setPhotos(updated);
+        Alert.alert('Sucesso', 'Foto atualizada e recortada com sucesso!');
+      }
+    } catch (error) {
+      console.error('[RegisterItem] Erro ao recortar foto:', error);
+      Alert.alert('Erro', 'Falha ao recortar foto: ' + error.message);
+    }
+  };
+
   const pickImage = async () => {
     try {
       console.log('[pickImage] Requesting permissions...');
@@ -1106,13 +1214,18 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 </View>
               </View>
 
-              <Text style={styles.title}>Fotos do Animal</Text>
-              <TouchableOpacity
-                style={styles.uploadButton}
-                onPress={pickImage}
-              >
-                <Text style={styles.uploadButtonText}>+ Adicionar Fotos</Text>
-              </TouchableOpacity>
+              {photos.length < MAX_PHOTOS ? (
+                <TouchableOpacity
+                  style={[styles.uploadButton, { marginTop: 8 }]}
+                  onPress={pickAndCropImage}
+                >
+                  <Text style={styles.uploadButtonText}>+ Adicionar Foto ({photos.length}/{MAX_PHOTOS})</Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={[styles.uploadButton, { borderColor: '#E5E7EB', backgroundColor: '#F3F4F6', paddingVertical: 14 }]}>
+                  <Text style={[styles.uploadButtonText, { color: '#9CA3AF', fontSize: 14 }]}>Limite de {MAX_PHOTOS} fotos atingido</Text>
+                </View>
+              )}
               {photos.length > 0 && (
                 <TouchableOpacity
                   style={styles.aiButton}
@@ -1128,7 +1241,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               )}
               {photos.length > 0 && (
                 <View style={styles.photosContainer}>
-                  <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
+                  <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length}/{MAX_PHOTOS})</Text>
                   <View style={styles.photoGrid}>
                     {photos.map((photo, index) => (
                       <View key={`${photo.uri}-${index}`} style={styles.photoItem}>
@@ -1142,6 +1255,24 @@ const RegisterItemScreen = ({ navigation, route }) => {
                           onPress={() => removePhoto(index)}
                         >
                           <Text style={styles.removePhotoText}>✕</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={{
+                            position: 'absolute',
+                            bottom: 4,
+                            left: 4,
+                            right: 4,
+                            backgroundColor: 'rgba(0,0,0,0.7)',
+                            borderRadius: 6,
+                            paddingVertical: 3,
+                            alignItems: 'center',
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                            gap: 3,
+                          }}
+                          onPress={() => reCropPhoto(index)}
+                        >
+                          <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>✂️ Ajustar</Text>
                         </TouchableOpacity>
                       </View>
                     ))}
@@ -1247,8 +1378,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
               </View>
             </View>
 
-            <Text style={styles.title}>Fotos do Item</Text>
-
             {itemType === 'document' && (
               <View style={styles.warningContainer}>
                 <Text style={styles.warningText}>
@@ -1259,12 +1388,18 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
             {itemType !== 'document' && (
               <>
-                <TouchableOpacity
-                  style={styles.uploadButton}
-                  onPress={pickImage}
-                >
-                  <Text style={styles.uploadButtonText}>+ Adicionar Fotos</Text>
-                </TouchableOpacity>
+                {photos.length < MAX_PHOTOS ? (
+                  <TouchableOpacity
+                    style={styles.uploadButton}
+                    onPress={pickAndCropImage}
+                  >
+                    <Text style={styles.uploadButtonText}>+ Adicionar Foto ({photos.length}/{MAX_PHOTOS})</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <View style={[styles.uploadButton, { borderColor: '#E5E7EB', backgroundColor: '#F3F4F6', paddingVertical: 14 }]}>
+                    <Text style={[styles.uploadButtonText, { color: '#9CA3AF', fontSize: 14 }]}>Limite de {MAX_PHOTOS} fotos atingido</Text>
+                  </View>
+                )}
 
                 {photos.length > 0 && (
                   <TouchableOpacity
@@ -1282,7 +1417,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
                 {photos.length > 0 && (
                   <View style={styles.photosContainer}>
-                    <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length})</Text>
+                    <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length}/{MAX_PHOTOS})</Text>
                     <View style={styles.photoGrid}>
                       {photos.map((photo, index) => (
                         <View key={`${photo.uri}-${index}`} style={styles.photoItem}>
@@ -1296,6 +1431,24 @@ const RegisterItemScreen = ({ navigation, route }) => {
                             onPress={() => removePhoto(index)}
                           >
                             <Text style={styles.removePhotoText}>✕</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={{
+                              position: 'absolute',
+                              bottom: 4,
+                              left: 4,
+                              right: 4,
+                              backgroundColor: 'rgba(0,0,0,0.7)',
+                              borderRadius: 6,
+                              paddingVertical: 3,
+                              alignItems: 'center',
+                              flexDirection: 'row',
+                              justifyContent: 'center',
+                              gap: 3,
+                            }}
+                            onPress={() => reCropPhoto(index)}
+                          >
+                            <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>✂️ Ajustar</Text>
                           </TouchableOpacity>
                         </View>
                       ))}

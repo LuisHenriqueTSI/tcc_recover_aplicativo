@@ -11,7 +11,9 @@ Aplicativo mobile React Native/Expo do sistema RECOVER - Plataforma de Achados e
 
 ✅ **Itens Perdidos/Encontrados**
 - Cadastro de itens em 4 etapas com integração de mapa e endereço
-- Upload de múltiplas fotos
+- Adição de até 6 fotos com enquadramento/corte nativo e botão "✂️ Ajustar" por miniatura para reenquadrar antes de publicar
+- Carrossel interativo de fotos nos cards do feed (`HomeScreen`) com pontos de paginação e contador de fotos (`1/3`)
+- Carrossel de fotos de alta resolução nos detalhes do pet (`ItemDetailScreen`) com navegação paginada e modal de ampliação em tela cheia
 - Filtros por status, categoria e localização
 - Seletor de localização no cabeçalho com botão destacado e ícone de edição interativo
 - Rótulos contextuais de localização em todo o app ("Última vez visto" para perdidos / "Local onde foi encontrado" para encontrados)

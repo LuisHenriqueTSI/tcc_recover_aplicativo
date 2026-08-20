@@ -11,6 +11,7 @@ import {
   FlatList,
   Modal,
   TextInput,
+  Dimensions,
 } from 'react-native';
 import { MaterialIcons, FontAwesome, FontAwesome5, Entypo } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -96,6 +97,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [reportReason, setReportReason] = useState('');
   const [reportDetails, setReportDetails] = useState('');
   const [reporting, setReporting] = useState(false);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [fullScreenPhotoModal, setFullScreenPhotoModal] = useState(false);
+  const [fullScreenIndex, setFullScreenIndex] = useState(0);
+  const screenWidth = Dimensions.get('window').width;
 
   useEffect(() => {
     navigation.setOptions({
@@ -523,19 +528,70 @@ const ItemDetailScreen = ({ route, navigation }) => {
         {/* Fotos do animal no topo */}
         <View style={styles.heroImage}>
           {photos && photos.length > 0 ? (
-            <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={{ width: '100%', height: 240 }} contentContainerStyle={{ flexGrow: 1 }}>
-              {photos.map((photo, idx) => (
-                <View key={photo.id || idx} style={{ width: '100%', height: 240 }}>
-                  <Image
-                    source={{ uri: photo.url }}
-                    style={styles.heroImageItem}
-                    resizeMode="cover"
-                  />
+            <View style={{ width: '100%', height: 280, position: 'relative' }}>
+              <ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onMomentumScrollEnd={(e) => {
+                  const newIndex = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
+                  setActivePhotoIndex(newIndex);
+                }}
+                style={{ width: screenWidth, height: 280 }}
+              >
+                {photos.map((photo, idx) => (
+                  <TouchableOpacity
+                    key={photo.id || idx}
+                    activeOpacity={0.95}
+                    onPress={() => {
+                      setFullScreenIndex(idx);
+                      setFullScreenPhotoModal(true);
+                    }}
+                    style={{ width: screenWidth, height: 280 }}
+                  >
+                    <Image
+                      source={{ uri: photo.url }}
+                      style={{ width: screenWidth, height: 280, backgroundColor: '#F3F4F6' }}
+                      resizeMode="cover"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              {/* Contador de fotos */}
+              {photos.length > 1 && (
+                <View style={{ position: 'absolute', top: 16, left: 16, backgroundColor: 'rgba(0, 0, 0, 0.65)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4, zIndex: 10 }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>
+                    {activePhotoIndex + 1}/{photos.length}
+                  </Text>
                 </View>
-              ))}
-            </ScrollView>
+              )}
+
+              {/* Indicador de toque para ampliar */}
+              <View style={{ position: 'absolute', bottom: 12, right: 16, backgroundColor: 'rgba(0, 0, 0, 0.6)', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 4, flexDirection: 'row', alignItems: 'center', gap: 4, zIndex: 10 }}>
+                <MaterialIcons name="zoom-in" size={16} color="#FFFFFF" />
+                <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '600' }}>Toque para ampliar</Text>
+              </View>
+
+              {/* Pontos de Paginação */}
+              {photos.length > 1 && (
+                <View style={{ position: 'absolute', bottom: 12, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, zIndex: 10 }}>
+                  {photos.map((_, dotIndex) => (
+                    <View
+                      key={dotIndex}
+                      style={{
+                        width: activePhotoIndex === dotIndex ? 18 : 6,
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: activePhotoIndex === dotIndex ? '#FFFFFF' : 'rgba(255, 255, 255, 0.5)',
+                      }}
+                    />
+                  ))}
+                </View>
+              )}
+            </View>
           ) : (
-            <View style={{ flex: 1, height: 240, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F3F4F6' }}>
+            <View style={{ width: '100%', height: 280, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F3F4F6' }}>
               <MaterialIcons name="image-not-supported" size={48} color="#D1D5DB" />
               <Text style={{ marginTop: 8, color: '#9CA3AF', fontSize: 14 }}>Sem foto</Text>
             </View>
@@ -1044,6 +1100,42 @@ const ItemDetailScreen = ({ route, navigation }) => {
           checkApprovedClaim(item);
         }}
       />
+
+      {/* Modal de visualização de foto em tela cheia */}
+      <Modal
+        visible={fullScreenPhotoModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setFullScreenPhotoModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: '#000000', justifyContent: 'center', alignItems: 'center' }}>
+          <TouchableOpacity
+            onPress={() => setFullScreenPhotoModal(false)}
+            style={{ position: 'absolute', top: 48, right: 20, zIndex: 20, backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 20, padding: 8 }}
+          >
+            <MaterialIcons name="close" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          {photos && photos.length > 0 ? (
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              contentOffset={{ x: fullScreenIndex * screenWidth, y: 0 }}
+              style={{ width: screenWidth, flex: 1 }}
+            >
+              {photos.map((photo, idx) => (
+                <View key={photo.id || idx} style={{ width: screenWidth, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                  <Image
+                    source={{ uri: photo.url }}
+                    style={{ width: screenWidth, height: '80%' }}
+                    resizeMode="contain"
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          ) : null}
+        </View>
+      </Modal>
     </ScrollView>
   );
 // Componente InfoRow para exibir label e valor alinhados (usado para outros tipos)

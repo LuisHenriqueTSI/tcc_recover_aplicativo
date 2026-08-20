@@ -90,7 +90,7 @@ const formatStreetNumberNeighborhood = (item) => {
 // ItemCard agora é um componente fora do HomeScreen
 const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress }) => {
   const [carouselIndex, setCarouselIndex] = React.useState(0);
-  const flatListRef = React.useRef(null);
+  const [cardWidth, setCardWidth] = React.useState(0);
   // Cores para status e categoria
   const statusColor = item.status === 'lost' ? '#F87171' : '#34D399';
   const statusLabel = item.status === 'lost' ? 'Perdido' : 'Encontrado';
@@ -101,7 +101,6 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
   };
   const cat = categoryColors[item.category] || categoryColors.other;
   const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
-  const showCarousel = photos.length > 1;
   const IMAGE_HEIGHT = 290;
   // Defensive string conversion for all text props
   const safeTitle = item.title != null ? String(item.title) : '';
@@ -115,24 +114,50 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
     : null;
   return (
     <Card style={{ padding: 0, marginHorizontal: 8, marginVertical: 10, borderRadius: 18, overflow: 'hidden', backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
-      {/* Imagem */}
-      <View style={{ position: 'relative', width: '100%', height: IMAGE_HEIGHT }}>
+      {/* Imagem / Carrossel de Fotos */}
+      <View
+        style={{ position: 'relative', width: '100%', height: IMAGE_HEIGHT }}
+        onLayout={(e) => setCardWidth(e.nativeEvent.layout.width)}
+      >
         {photos.length > 0 ? (
-          <OptimizedImage
-            uri={photos[0].url}
-            style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
-            resizeMode="cover"
-            resizeMethod="resize"
-            onLoad={() => console.log('[HomeScreen] Foto carregada:', photos[0].url)}
-            onError={(error) => console.warn('[HomeScreen] Falha ao carregar foto:', photos[0].url, error.nativeEvent.error)}
-          />
+          photos.length > 1 && cardWidth > 0 ? (
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) => {
+                const newIndex = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
+                setCarouselIndex(newIndex);
+              }}
+              style={{ width: cardWidth, height: IMAGE_HEIGHT }}
+            >
+              {photos.map((photo, index) => (
+                <View key={photo.id || index} style={{ width: cardWidth, height: IMAGE_HEIGHT }}>
+                  <OptimizedImage
+                    uri={photo.url}
+                    style={{ width: cardWidth, height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
+                    resizeMode="cover"
+                    resizeMethod="resize"
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          ) : (
+            <OptimizedImage
+              uri={photos[0].url}
+              style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
+              resizeMode="cover"
+              resizeMethod="resize"
+            />
+          )
         ) : (
           <View style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }}>
             <Text style={{ color: '#9CA3AF' }}>Sem foto</Text>
           </View>
         )}
+
         {/* Badges */}
-        <View style={{ position: 'absolute', top: 12, left: 12, flexDirection: 'row', gap: 8 }}>
+        <View style={{ position: 'absolute', top: 12, left: 12, flexDirection: 'row', gap: 8, zIndex: 10 }}>
           <View style={{ backgroundColor: statusColor, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 2, marginRight: 6 }}>
             <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>{statusLabel}</Text>
           </View>
@@ -140,8 +165,35 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 13 }}>{cat.label}</Text>
           </View>
         </View>
+
+        {/* Contador de fotos (se houver mais de 1 foto) */}
+        {photos.length > 1 && (
+          <View style={{ position: 'absolute', top: 12, right: 54, backgroundColor: 'rgba(0, 0, 0, 0.65)', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3, zIndex: 10 }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '700' }}>
+              {carouselIndex + 1}/{photos.length}
+            </Text>
+          </View>
+        )}
+
+        {/* Pontos de Paginação na parte inferior da foto */}
+        {photos.length > 1 && (
+          <View style={{ position: 'absolute', bottom: 10, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, zIndex: 10 }}>
+            {photos.map((_, dotIndex) => (
+              <View
+                key={dotIndex}
+                style={{
+                  width: carouselIndex === dotIndex ? 16 : 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: carouselIndex === dotIndex ? '#FFFFFF' : 'rgba(255, 255, 255, 0.5)',
+                }}
+              />
+            ))}
+          </View>
+        )}
+
         {item.owner_id === user?.id && item.renewalInfo?.needsRenewal && Number.isFinite(item.renewalInfo?.daysRemaining) && (
-          <View style={{ position: 'absolute', bottom: 12, left: 12, right: 12, backgroundColor: 'rgba(245, 158, 11, 0.95)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 }}>
+          <View style={{ position: 'absolute', bottom: 12, left: 12, right: 12, backgroundColor: 'rgba(245, 158, 11, 0.95)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, zIndex: 10 }}>
             <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>
               Renove esta publicação em {item.renewalInfo.daysRemaining} dia{item.renewalInfo.daysRemaining === 1 ? '' : 's'}
             </Text>
