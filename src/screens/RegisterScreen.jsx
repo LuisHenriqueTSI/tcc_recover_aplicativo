@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -21,21 +20,10 @@ import MapLocationPicker from '../components/MapLocationPicker';
 
 const formatBrazilianPhone = (value = '') => {
   const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
-
   if (!digits) return '';
-
-  if (digits.length <= 2) {
-    return digits;
-  }
-
-  if (digits.length <= 6) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-  }
-
-  if (digits.length <= 10) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-  }
-
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 };
 
@@ -47,7 +35,6 @@ const RegisterScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
 
-  // Localização via mapa
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedAddressText, setSelectedAddressText] = useState('');
@@ -60,7 +47,48 @@ const RegisterScreen = ({ navigation }) => {
   const [verificationCode, setVerificationCode] = useState('');
   const [pendingSignupData, setPendingSignupData] = useState(null);
 
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef(null);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        const height = e.endCoordinates?.height || 280;
+        setKeyboardHeight(height);
+      }
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const scrollToOffset = (offset = 0) => {
+    scrollViewRef.current?.scrollTo({ y: offset, animated: true });
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: offset, animated: true });
+    }, 120);
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: offset, animated: true });
+    }, 280);
+  };
+
+  const scrollToEndOfForm = () => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 120);
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 280);
+  };
 
   const handleMapSelectLocation = (data) => {
     if (!data) return;
@@ -194,10 +222,13 @@ const RegisterScreen = ({ navigation }) => {
       >
         <ScrollView
           ref={scrollViewRef}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: keyboardHeight > 0 ? keyboardHeight + 260 : 200 },
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={true}
         >
           {/* Logo Circular */}
           <View style={styles.circularLogoContainer}>
@@ -224,6 +255,7 @@ const RegisterScreen = ({ navigation }) => {
               inputStyle={styles.inputField}
               autoCapitalize="words"
               returnKeyType="next"
+              onFocus={() => scrollToOffset(0)}
             />
 
             {/* Seção de Localização */}
@@ -271,6 +303,7 @@ const RegisterScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="next"
+              onFocus={() => scrollToOffset(120)}
             />
 
             <Input
@@ -283,6 +316,7 @@ const RegisterScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="next"
+              onFocus={() => scrollToOffset(200)}
             />
 
             <Input
@@ -295,6 +329,7 @@ const RegisterScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="next"
+              onFocus={() => scrollToOffset(300)}
             />
 
             <Input
@@ -307,6 +342,7 @@ const RegisterScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="done"
+              onFocus={scrollToEndOfForm}
             />
 
             {pendingVerification ? (
@@ -323,6 +359,7 @@ const RegisterScreen = ({ navigation }) => {
                   keyboardType="number-pad"
                   style={styles.input}
                   inputStyle={styles.inputField}
+                  onFocus={scrollToEndOfForm}
                 />
               </View>
             ) : null}

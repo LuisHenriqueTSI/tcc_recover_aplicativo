@@ -18,11 +18,32 @@ const Input = ({
   numberOfLines = 1,
   editable = true,
   style,
+  inputStyle,
   error,
+  autoCapitalize,
+  onFocus,
+  onBlur,
+  ...rest
 }) => {
-  // Estado local para alternar visualização da senha
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = secureTextEntry;
+
+  const handleChangeText = (text) => {
+    if (!onChangeText) return;
+
+    // Do not transform password, emails, or when autoCapitalize is explicitly 'none'
+    if (isPassword || autoCapitalize === 'none' || keyboardType === 'email-address' || keyboardType === 'phone-pad') {
+      onChangeText(text);
+      return;
+    }
+
+    if (autoCapitalize === 'characters') {
+      onChangeText(text.toUpperCase());
+      return;
+    }
+
+    onChangeText(text);
+  };
 
   return (
     <View style={style}>
@@ -33,6 +54,7 @@ const Input = ({
         <TextInput
           style={[
             styles.input,
+            inputStyle,
             multiline && styles.multilineInput,
             error && styles.inputError,
             isPassword && { paddingRight: 44 },
@@ -41,30 +63,28 @@ const Input = ({
           placeholderTextColor="#9CA3AF"
           value={value}
           editable={editable}
-          onChangeText={text => {
-            if (typeof text === 'string' && text.length > 0) {
-              const capitalized = text.charAt(0).toUpperCase() + text.slice(1);
-              onChangeText(capitalized);
-            } else {
-              onChangeText(text);
-            }
-          }}
+          onChangeText={handleChangeText}
           secureTextEntry={isPassword ? !showPassword : false}
           keyboardType={keyboardType}
           multiline={multiline}
           numberOfLines={numberOfLines}
+          autoCapitalize={autoCapitalize || (isPassword || keyboardType === 'email-address' ? 'none' : 'sentences')}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          {...rest}
         />
         {isPassword && (
           <Feather
             name={showPassword ? 'eye-off' : 'eye'}
-            size={22}
-            color="#9CA3AF"
+            size={20}
+            color="#64748B"
             onPress={() => setShowPassword((v) => !v)}
             style={{
               position: 'absolute',
               right: 12,
-              top: 12,
+              top: 13,
               zIndex: 10,
+              padding: 4,
             }}
             accessibilityRole="button"
             accessibilityLabel={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
@@ -82,18 +102,18 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
-    color: '#1F2937',
+    marginBottom: 6,
+    color: '#0F172A',
   },
   input: {
-    borderWidth: 0,
-    borderColor: 'transparent',
-    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
     paddingVertical: 12,
-    paddingHorizontal: 4,
-    fontSize: 16,
-    color: '#1F2937',
-    backgroundColor: 'transparent',
+    paddingHorizontal: 14,
+    fontSize: 15,
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
   },
   multilineInput: {
     minHeight: 100,
@@ -101,6 +121,7 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: '#EF4444',
+    backgroundColor: '#FEF2F2',
   },
   errorText: {
     color: '#EF4444',

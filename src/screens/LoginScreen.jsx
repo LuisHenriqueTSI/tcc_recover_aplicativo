@@ -21,6 +21,17 @@ const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const scrollViewRef = React.useRef(null);
+
+  const scrollToInput = (offset = 0) => {
+    scrollViewRef.current?.scrollTo({ y: offset, animated: true });
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: offset, animated: true });
+    }, 120);
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: offset, animated: true });
+    }, 280);
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -71,7 +82,8 @@ const LoginScreen = ({ navigation }) => {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          ref={scrollViewRef}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: 160 }]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
@@ -101,6 +113,7 @@ const LoginScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="next"
+              onFocus={() => scrollToInput(0)}
             />
 
             <Input
@@ -113,6 +126,7 @@ const LoginScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="done"
+              onFocus={() => scrollToInput(120)}
             />
 
             <TouchableOpacity
