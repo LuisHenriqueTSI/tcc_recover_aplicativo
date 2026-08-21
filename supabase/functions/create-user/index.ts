@@ -171,7 +171,7 @@ Deno.serve(async (req: Request) => {
   const verificationCode = String(body.verificationCode ?? '');
 
   if (action === 'send-verification') {
-    if (!email || !password || !name || !city || !state || !whatsapp) {
+    if (!email || !password || !name || !whatsapp) {
       return jsonResponse({ ok: false, error: 'missing-fields' }, 400);
     }
 
@@ -200,7 +200,7 @@ Deno.serve(async (req: Request) => {
   }
 
   if (action === 'create-user') {
-    if (!email || !password || !name || !city || !state || !whatsapp || !verificationCode) {
+    if (!email || !password || !name || !whatsapp || !verificationCode) {
       return jsonResponse({ ok: false, error: 'missing-fields' }, 400);
     }
 
@@ -250,6 +250,7 @@ Deno.serve(async (req: Request) => {
           city,
           state,
           whatsapp,
+          phone: whatsapp,
         },
       }),
     });
@@ -264,6 +265,32 @@ Deno.serve(async (req: Request) => {
 
     if (!adminResponse.ok) {
       return jsonResponse({ ok: false, error: adminPayload.error?.message || adminPayload.message || 'failed-to-create-user' }, adminResponse.status);
+    }
+
+    const createdUser = (adminPayload.user ?? adminPayload) as { id?: string };
+    if (createdUser?.id) {
+      try {
+        await fetch(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/profiles`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${serviceRoleKey}`,
+            apikey: serviceRoleKey,
+            Prefer: 'resolution=merge-duplicates',
+          },
+          body: JSON.stringify({
+            id: createdUser.id,
+            name: name || '',
+            email: email || '',
+            whatsapp: whatsapp || '',
+            phone: whatsapp || '',
+            city: city || '',
+            state: state || '',
+          }),
+        });
+      } catch (profileErr) {
+        console.warn('[create-user] Falha ao upsert em profiles:', profileErr);
+      }
     }
 
     return jsonResponse({

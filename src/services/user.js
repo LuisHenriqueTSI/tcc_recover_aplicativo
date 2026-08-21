@@ -42,7 +42,19 @@ export const getUser = async (userId) => {
 export const createProfileIfMissing = async (userId, profileData = {}) => {
   try {
     const existingProfile = await getUser(userId);
+    const phoneToSet = profileData.whatsapp || profileData.phone || '';
+
     if (existingProfile) {
+      if (phoneToSet && !existingProfile.whatsapp && !existingProfile.phone) {
+        await supabase
+          .from('profiles')
+          .update({
+            whatsapp: phoneToSet,
+            phone: phoneToSet,
+          })
+          .eq('id', userId);
+        return { ...existingProfile, whatsapp: phoneToSet, phone: phoneToSet };
+      }
       return existingProfile;
     }
 
@@ -54,6 +66,8 @@ export const createProfileIfMissing = async (userId, profileData = {}) => {
         email: profileData.email || '',
         city: profileData.city || '',
         state: profileData.state || '',
+        whatsapp: phoneToSet,
+        phone: phoneToSet,
         points: 0,
         level: 1,
       })

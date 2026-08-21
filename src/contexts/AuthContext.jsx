@@ -29,11 +29,14 @@ export const AuthProvider = ({ children }) => {
           setUser(currentUser);
 
           // Garante que o perfil exista após restaurar a sessão
+          const userPhone = currentUser.user_metadata?.whatsapp || currentUser.user_metadata?.phone || '';
           const profile = await userService.createProfileIfMissing(currentUser.id, {
             name: currentUser.user_metadata?.name,
             email: currentUser.email,
             city: currentUser.user_metadata?.city,
             state: currentUser.user_metadata?.state,
+            whatsapp: userPhone,
+            phone: userPhone,
           });
           if (profile) {
             setUserProfile(profile);
@@ -63,11 +66,14 @@ export const AuthProvider = ({ children }) => {
         if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
           if (session?.user) {
             setUser(session.user);
+            const sessionPhone = session.user.user_metadata?.whatsapp || session.user.user_metadata?.phone || '';
             const profile = await userService.createProfileIfMissing(session.user.id, {
               name: session.user.user_metadata?.name,
               email: session.user.email,
               city: session.user.user_metadata?.city,
               state: session.user.user_metadata?.state,
+              whatsapp: sessionPhone,
+              phone: sessionPhone,
             });
             if (profile) {
               setUserProfile(profile);

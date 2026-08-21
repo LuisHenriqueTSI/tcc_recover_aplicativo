@@ -6,16 +6,14 @@ import {
   Alert,
   Image,
   TouchableOpacity,
-  Platform,
   Keyboard,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
 import Input from '../components/Input';
-import MapLocationPicker from '../components/MapLocationPicker';
 
 const formatBrazilianPhone = (value = '') => {
   const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
@@ -34,33 +32,11 @@ const RegisterScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
 
-  const [selectedState, setSelectedState] = useState('');
-  const [selectedCity, setSelectedCity] = useState('');
-  const [selectedAddressText, setSelectedAddressText] = useState('');
-  const [selectedCoordinate, setSelectedCoordinate] = useState(null);
-  const [mapModalVisible, setMapModalVisible] = useState(false);
-
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [pendingSignupData, setPendingSignupData] = useState(null);
-
-  const handleMapSelectLocation = (data) => {
-    if (!data) return;
-    const resolvedCity = data.city || data.address?.city || data.addressDetails?.city || '';
-    const resolvedState = data.state || data.address?.region || data.addressDetails?.state || '';
-    const resolvedAddress = data.addressText || data.address?.fullAddress || data.addressDetails?.text || '';
-
-    setSelectedCity(resolvedCity);
-    setSelectedState(resolvedState);
-    setSelectedAddressText(resolvedAddress);
-    if (data.coordinate) {
-      setSelectedCoordinate(data.coordinate);
-    }
-    setErrors(prev => ({ ...prev, location: null, city: null }));
-    setMapModalVisible(false);
-  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -85,13 +61,11 @@ const RegisterScreen = ({ navigation }) => {
     if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Senhas não conferem';
     }
-    if (!selectedState || !selectedCity) {
-      newErrors.city = 'Escolha sua localização no mapa';
-      newErrors.location = 'Escolha sua localização no mapa';
-    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  const scrollRef = React.useRef(null);
 
   const handleRegister = async () => {
     Keyboard.dismiss();
@@ -110,8 +84,8 @@ const RegisterScreen = ({ navigation }) => {
           email: email.trim(),
           password,
           name: name.trim(),
-          city: selectedCity,
-          state: selectedState,
+          city: '',
+          state: '',
           whatsapp: whatsapp.replace(/\D/g, ''),
           verificationCode: verificationCode.trim(),
         });
@@ -123,10 +97,6 @@ const RegisterScreen = ({ navigation }) => {
         setConfirmPassword('');
         setWhatsapp('');
         setName('');
-        setSelectedState('');
-        setSelectedCity('');
-        setSelectedAddressText('');
-        setSelectedCoordinate(null);
         navigation.navigate('Login');
       } catch (error) {
         Alert.alert('Erro de Cadastro', error?.message || 'Falha ao confirmar o código.');
@@ -146,13 +116,16 @@ const RegisterScreen = ({ navigation }) => {
         email.trim(),
         password,
         name.trim(),
-        selectedCity,
-        selectedState,
+        '',
+        '',
         whatsapp.replace(/\D/g, '')
       );
       if (result?.pendingVerification) {
         setPendingVerification(true);
         setPendingSignupData(result);
+        setTimeout(() => {
+          scrollRef.current?.scrollToEnd?.(true);
+        }, 250);
         if (result?.devCode) {
           Alert.alert(
             'Código de Confirmação',
@@ -172,13 +145,17 @@ const RegisterScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <KeyboardAwareScrollView
-        contentContainerStyle={styles.scrollContent}
+        ref={scrollRef}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: pendingVerification ? 140 : 60 }
+        ]}
         enableOnAndroid={true}
         enableResetScrollToCoords={false}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        extraScrollHeight={Platform.OS === 'ios' ? 40 : 70}
-        extraHeight={Platform.OS === 'ios' ? 80 : 100}
+        extraScrollHeight={Platform.OS === 'ios' ? 80 : 120}
+        extraHeight={Platform.OS === 'ios' ? 120 : 160}
         keyboardOpeningTime={0}
       >
         {/* Logo Circular */}
@@ -204,43 +181,8 @@ const RegisterScreen = ({ navigation }) => {
             error={errors.name}
             style={styles.input}
             inputStyle={styles.inputField}
-            autoCapitalize="words"
             returnKeyType="next"
           />
-
-          {/* Seção de Localização */}
-          <View style={styles.locationSection}>
-            <Text style={styles.label}>Sua Localização *</Text>
-            <TouchableOpacity
-              style={styles.mapPickerButton}
-              onPress={() => {
-                Keyboard.dismiss();
-                setMapModalVisible(true);
-              }}
-              activeOpacity={0.8}
-            >
-              <MaterialIcons name="map" size={20} color="#2563EB" />
-              <Text style={styles.mapPickerButtonText}>
-                {selectedCity ? '🗺️ Alterar localização no mapa' : '🗺️ Escolher localização no mapa'}
-              </Text>
-            </TouchableOpacity>
-
-            {selectedCity ? (
-              <View style={styles.selectedLocationCard}>
-                <Text style={styles.selectedLocationText}>📍 {selectedCity}, {selectedState}</Text>
-                {selectedAddressText ? (
-                  <Text style={styles.selectedAddressSubtext} numberOfLines={2}>
-                    {selectedAddressText}
-                  </Text>
-                ) : null}
-              </View>
-            ) : null}
-
-            {errors.city ? <Text style={styles.error}>{errors.city}</Text> : null}
-            <Text style={styles.locationHelpText}>
-              Selecione o ponto no mapa para definir automaticamente sua cidade e estado.
-            </Text>
-          </View>
 
           <Input
             label="E-mail"
@@ -305,6 +247,9 @@ const RegisterScreen = ({ navigation }) => {
                 keyboardType="number-pad"
                 style={styles.input}
                 inputStyle={styles.inputField}
+                onFocus={() => {
+                  scrollRef.current?.scrollToEnd?.(true);
+                }}
               />
             </View>
           ) : null}
@@ -326,14 +271,6 @@ const RegisterScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
-
-      <MapLocationPicker
-        visible={mapModalVisible}
-        mode="profile"
-        onConfirm={handleMapSelectLocation}
-        onSelectLocation={handleMapSelectLocation}
-        onClose={() => setMapModalVisible(false)}
-      />
     </SafeAreaView>
   );
 };
@@ -346,14 +283,15 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 48,
+    paddingTop: 16,
+    paddingBottom: 40,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   circularLogoContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 104,
+    height: 104,
+    borderRadius: 52,
     backgroundColor: '#FFFFFF',
     alignSelf: 'center',
     alignItems: 'center',
@@ -374,7 +312,7 @@ const styles = StyleSheet.create({
   },
   headerBox: {
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   headerTitle: {
     fontSize: 22,
@@ -392,7 +330,7 @@ const styles = StyleSheet.create({
     maxWidth: 380,
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
-    paddingVertical: 16,
+    paddingVertical: 18,
     paddingHorizontal: 16,
     shadowColor: '#000',
     shadowOpacity: 0.04,
@@ -401,67 +339,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-  locationSection: {
-    marginBottom: 10,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0F172A',
-    marginBottom: 5,
-  },
-  mapPickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#EFF6FF',
-    borderWidth: 1.5,
-    borderColor: '#DBEAFE',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    gap: 8,
-    marginBottom: 5,
-  },
-  mapPickerButtonText: {
-    color: '#2563EB',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  selectedLocationCard: {
-    backgroundColor: '#E5F6ED',
-    borderWidth: 1,
-    borderColor: '#2E9B63',
-    borderRadius: 8,
-    padding: 9,
-    marginTop: 3,
-    marginBottom: 5,
-  },
-  selectedLocationText: {
-    color: '#217A4C',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  selectedAddressSubtext: {
-    color: '#2E9B63',
-    fontSize: 12,
-    marginTop: 2,
-    lineHeight: 16,
-    opacity: 0.9,
-  },
-  locationHelpText: {
-    color: '#64748B',
-    fontSize: 12,
-    lineHeight: 16,
-    marginTop: 2,
-  },
-  error: {
-    color: '#D64545',
-    fontSize: 13,
-    marginTop: 2,
-  },
   input: {
-    marginBottom: 10,
+    marginBottom: 12,
   },
   inputField: {
     backgroundColor: '#F8FAFC',
@@ -469,7 +348,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     borderWidth: 1,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 11,
     fontSize: 15,
   },
   verificationBox: {
@@ -478,7 +357,7 @@ const styles = StyleSheet.create({
     borderColor: '#FDBA74',
     borderRadius: 12,
     padding: 12,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   verificationTitle: {
     fontSize: 14,
@@ -493,10 +372,10 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   registerButton: {
-    marginTop: 6,
+    marginTop: 8,
     backgroundColor: '#2563EB',
     borderRadius: 12,
-    paddingVertical: 12,
+    paddingVertical: 13,
     marginBottom: 2,
   },
   registerButtonText: {
@@ -509,8 +388,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 12,
+    marginTop: 20,
+    marginBottom: 14,
   },
   footerText: {
     color: '#64748B',

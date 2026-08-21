@@ -19,12 +19,12 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - Tela inicial de apresentação (`SobreScreen.jsx`) com abordagem humanizada, espaçamento generoso e sem poluição visual.
 - Telas de Login e Cadastro acolhedoras ("Bem-vindo de volta" e "Criar sua conta").
 
-✅ **Autenticação**
-- Registro e login com email/senha via Supabase.
-- Cadastro de novo usuário com mapa interativo para escolha e preenchimento automático de cidade/estado.
+✅ **Autenticação e Cadastro Ágil**
+- Registro e login direto e simplificado com nome, email, WhatsApp e senha (sem exigência de localização no cadastro).
+- Ao entrar, o feed exibe automaticamente publicações de **Todo o Brasil**, com opção de filtrar por estado, cidade ou mapa no cabeçalho.
 - Rolagem inteligente e fluida com `KeyboardAwareScrollView` prevenindo sobreposição do teclado virtual nos formulários.
 - Verificação de cadastro em 2 etapas com código via WhatsApp (Twilio).
-- Perfis de usuário com foto de avatar personalizável.
+- Perfis de usuário com foto de avatar e edição de localidade opcional.
 - Confirmação de email e recuperação de senha.
 
 ✅ **Pets Perdidos e Encontrados**

@@ -356,17 +356,15 @@ const HomeScreen = ({ navigation, route }) => {
     if (userProfile?.state && userProfile?.city) {
       setProfileEditState(userProfile.state);
       setProfileEditCity(userProfile.city);
-      setSessionState(userProfile.state);
-      setSessionCity(userProfile.city);
     }
   }, [userProfile]);
 
-  // Localidade ativa para exibição no cabeçalho
-  const activeCity = user ? (userProfile?.city || sessionCity) : sessionCity;
-  const activeState = user ? (userProfile?.state || sessionState) : sessionState;
+  // Localidade ativa para exibição no cabeçalho (padrão Todo o Brasil)
+  const activeCity = sessionCity;
+  const activeState = sessionState;
   const displayLocation = (activeCity && activeState)
     ? `${activeCity}, ${activeState}`
-    : (activeCity || activeState || 'Brasil');
+    : (activeCity || activeState || 'Todo o Brasil');
 
   // Salvar localidade (perfil ou sessão)
   const handleSaveProfileLocation = async () => {
@@ -431,16 +429,15 @@ const HomeScreen = ({ navigation, route }) => {
     return unsubscribe;
   }, [navigation]);
 
-  // Atualiza localidade ao focar
+  // Ao focar na tela, sincroniza seletor interno caso o perfil possua cidade
   useFocusEffect(
     React.useCallback(() => {
-      if (userProfile?.city && userProfile?.state && !locationFilterTouched) {
+      if (userProfile?.city && userProfile?.state) {
         setEditState(userProfile.state);
         setEditCity(userProfile.city);
         setEditNeighborhood(userProfile.neighborhood || '');
-        setLocationFilter(`${userProfile.city}, ${userProfile.state}${userProfile.neighborhood ? ', ' + userProfile.neighborhood : ''}`);
       }
-    }, [userProfile, locationFilterTouched])
+    }, [userProfile])
   );
   const [expandedItem, setExpandedItem] = useState(null);
   const [expandedItemDetails, setExpandedItemDetails] = useState(null);

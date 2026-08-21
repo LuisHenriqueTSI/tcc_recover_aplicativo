@@ -28,23 +28,6 @@ const Input = ({
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = secureTextEntry;
 
-  const handleChangeText = (text) => {
-    if (!onChangeText) return;
-
-    // Do not transform password, emails, or when autoCapitalize is explicitly 'none'
-    if (isPassword || autoCapitalize === 'none' || keyboardType === 'email-address' || keyboardType === 'phone-pad') {
-      onChangeText(text);
-      return;
-    }
-
-    if (autoCapitalize === 'characters') {
-      onChangeText(text.toUpperCase());
-      return;
-    }
-
-    onChangeText(text);
-  };
-
   return (
     <View style={style}>
       {label && (
@@ -63,12 +46,12 @@ const Input = ({
           placeholderTextColor="#9CA3AF"
           value={value}
           editable={editable}
-          onChangeText={handleChangeText}
+          onChangeText={onChangeText}
           secureTextEntry={isPassword ? !showPassword : false}
           keyboardType={keyboardType}
           multiline={multiline}
           numberOfLines={numberOfLines}
-          autoCapitalize={autoCapitalize || (isPassword || keyboardType === 'email-address' ? 'none' : 'sentences')}
+          autoCapitalize={autoCapitalize || 'none'}
           onFocus={onFocus}
           onBlur={onBlur}
           {...rest}
