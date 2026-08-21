@@ -21,17 +21,6 @@ const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
-  const scrollViewRef = React.useRef(null);
-
-  const scrollToInput = (offset = 0) => {
-    scrollViewRef.current?.scrollTo({ y: offset, animated: true });
-    setTimeout(() => {
-      scrollViewRef.current?.scrollTo({ y: offset, animated: true });
-    }, 120);
-    setTimeout(() => {
-      scrollViewRef.current?.scrollTo({ y: offset, animated: true });
-    }, 280);
-  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -79,11 +68,10 @@ const LoginScreen = ({ navigation }) => {
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
         <ScrollView
-          ref={scrollViewRef}
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: 160 }]}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
@@ -113,7 +101,6 @@ const LoginScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="next"
-              onFocus={() => scrollToInput(0)}
             />
 
             <Input
@@ -126,7 +113,6 @@ const LoginScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="done"
-              onFocus={() => scrollToInput(120)}
             />
 
             <TouchableOpacity
@@ -170,28 +156,28 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingTop: 20,
     paddingBottom: 60,
     alignItems: 'center',
     justifyContent: 'center',
   },
   circularLogoContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     backgroundColor: '#FFFFFF',
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    borderWidth: 3.5,
+    borderWidth: 3,
     borderColor: '#EFF6FF',
     shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 10,
-    elevation: 6,
-    marginBottom: 12,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.14,
+    shadowRadius: 8,
+    elevation: 4,
+    marginBottom: 10,
   },
   circularLogo: {
     width: '100%',
@@ -199,13 +185,13 @@ const styles = StyleSheet.create({
   },
   headerBox: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '800',
     color: '#0F172A',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   headerSubtitle: {
     fontSize: 14,
@@ -217,7 +203,8 @@ const styles = StyleSheet.create({
     maxWidth: 380,
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
-    padding: 20,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 10,
@@ -238,7 +225,7 @@ const styles = StyleSheet.create({
   },
   forgotPasswordContainer: {
     alignSelf: 'flex-end',
-    marginBottom: 16,
+    marginBottom: 14,
     marginTop: 2,
   },
   forgotPassword: {
@@ -249,7 +236,7 @@ const styles = StyleSheet.create({
   loginButton: {
     backgroundColor: '#2563EB',
     borderRadius: 12,
-    paddingVertical: 13,
+    paddingVertical: 12,
     marginBottom: 2,
   },
   loginButtonText: {
@@ -262,8 +249,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 16,
+    marginTop: 20,
+    marginBottom: 14,
   },
   footerText: {
     color: '#64748B',

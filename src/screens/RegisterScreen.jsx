@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -47,48 +47,7 @@ const RegisterScreen = ({ navigation }) => {
   const [verificationCode, setVerificationCode] = useState('');
   const [pendingSignupData, setPendingSignupData] = useState(null);
 
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef(null);
-
-  useEffect(() => {
-    const showSub = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      (e) => {
-        const height = e.endCoordinates?.height || 280;
-        setKeyboardHeight(height);
-      }
-    );
-    const hideSub = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => {
-        setKeyboardHeight(0);
-      }
-    );
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
-
-  const scrollToOffset = (offset = 0) => {
-    scrollViewRef.current?.scrollTo({ y: offset, animated: true });
-    setTimeout(() => {
-      scrollViewRef.current?.scrollTo({ y: offset, animated: true });
-    }, 120);
-    setTimeout(() => {
-      scrollViewRef.current?.scrollTo({ y: offset, animated: true });
-    }, 280);
-  };
-
-  const scrollToEndOfForm = () => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 120);
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 280);
-  };
 
   const handleMapSelectLocation = (data) => {
     if (!data) return;
@@ -218,17 +177,14 @@ const RegisterScreen = ({ navigation }) => {
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
         <ScrollView
           ref={scrollViewRef}
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingBottom: keyboardHeight > 0 ? keyboardHeight + 260 : 200 },
-          ]}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          showsVerticalScrollIndicator={true}
+          showsVerticalScrollIndicator={false}
         >
           {/* Logo Circular */}
           <View style={styles.circularLogoContainer}>
@@ -255,7 +211,6 @@ const RegisterScreen = ({ navigation }) => {
               inputStyle={styles.inputField}
               autoCapitalize="words"
               returnKeyType="next"
-              onFocus={() => scrollToOffset(0)}
             />
 
             {/* Seção de Localização */}
@@ -303,7 +258,6 @@ const RegisterScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="next"
-              onFocus={() => scrollToOffset(120)}
             />
 
             <Input
@@ -316,7 +270,6 @@ const RegisterScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="next"
-              onFocus={() => scrollToOffset(200)}
             />
 
             <Input
@@ -329,7 +282,6 @@ const RegisterScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="next"
-              onFocus={() => scrollToOffset(300)}
             />
 
             <Input
@@ -342,7 +294,6 @@ const RegisterScreen = ({ navigation }) => {
               style={styles.input}
               inputStyle={styles.inputField}
               returnKeyType="done"
-              onFocus={scrollToEndOfForm}
             />
 
             {pendingVerification ? (
@@ -359,7 +310,6 @@ const RegisterScreen = ({ navigation }) => {
                   keyboardType="number-pad"
                   style={styles.input}
                   inputStyle={styles.inputField}
-                  onFocus={scrollToEndOfForm}
                 />
               </View>
             ) : null}
@@ -405,14 +355,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 80,
+    paddingTop: 12,
+    paddingBottom: 100,
     alignItems: 'center',
   },
   circularLogoContainer: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     backgroundColor: '#FFFFFF',
     alignSelf: 'center',
     alignItems: 'center',
@@ -421,11 +371,11 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#EFF6FF',
     shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.14,
-    shadowRadius: 8,
-    elevation: 4,
-    marginBottom: 10,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
+    marginBottom: 8,
   },
   circularLogo: {
     width: '100%',
@@ -433,13 +383,13 @@ const styles = StyleSheet.create({
   },
   headerBox: {
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: '800',
     color: '#0F172A',
-    marginBottom: 3,
+    marginBottom: 2,
   },
   headerSubtitle: {
     fontSize: 14,
@@ -451,7 +401,7 @@ const styles = StyleSheet.create({
     maxWidth: 380,
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
-    paddingVertical: 18,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     shadowColor: '#000',
     shadowOpacity: 0.04,
@@ -461,13 +411,13 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   locationSection: {
-    marginBottom: 12,
+    marginBottom: 10,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
     color: '#0F172A',
-    marginBottom: 6,
+    marginBottom: 5,
   },
   mapPickerButton: {
     flexDirection: 'row',
@@ -477,10 +427,10 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#DBEAFE',
     borderRadius: 10,
-    paddingVertical: 11,
+    paddingVertical: 10,
     paddingHorizontal: 12,
     gap: 8,
-    marginBottom: 6,
+    marginBottom: 5,
   },
   mapPickerButtonText: {
     color: '#2563EB',
@@ -492,9 +442,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2E9B63',
     borderRadius: 8,
-    padding: 10,
-    marginTop: 4,
-    marginBottom: 6,
+    padding: 9,
+    marginTop: 3,
+    marginBottom: 5,
   },
   selectedLocationText: {
     color: '#217A4C',
@@ -512,15 +462,15 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontSize: 12,
     lineHeight: 16,
-    marginTop: 3,
+    marginTop: 2,
   },
   error: {
     color: '#D64545',
     fontSize: 13,
-    marginTop: 3,
+    marginTop: 2,
   },
   input: {
-    marginBottom: 12,
+    marginBottom: 10,
   },
   inputField: {
     backgroundColor: '#F8FAFC',
@@ -528,6 +478,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     borderWidth: 1,
     paddingHorizontal: 14,
+    paddingVertical: 10,
     fontSize: 15,
   },
   verificationBox: {
@@ -536,7 +487,7 @@ const styles = StyleSheet.create({
     borderColor: '#FDBA74',
     borderRadius: 12,
     padding: 12,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   verificationTitle: {
     fontSize: 14,
@@ -547,14 +498,14 @@ const styles = StyleSheet.create({
   verificationDesc: {
     fontSize: 12,
     color: '#7C2D12',
-    marginBottom: 8,
+    marginBottom: 6,
     lineHeight: 16,
   },
   registerButton: {
-    marginTop: 8,
+    marginTop: 6,
     backgroundColor: '#2563EB',
     borderRadius: 12,
-    paddingVertical: 13,
+    paddingVertical: 12,
     marginBottom: 2,
   },
   registerButtonText: {
@@ -567,8 +518,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 16,
+    marginTop: 16,
+    marginBottom: 12,
   },
   footerText: {
     color: '#64748B',
