@@ -1,17 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   Alert,
   Image,
   TouchableOpacity,
-  KeyboardAvoidingView,
   Platform,
   Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
@@ -46,8 +45,6 @@ const RegisterScreen = ({ navigation }) => {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [pendingSignupData, setPendingSignupData] = useState(null);
-
-  const scrollViewRef = useRef(null);
 
   const handleMapSelectLocation = (data) => {
     if (!data) return;
@@ -174,164 +171,161 @@ const RegisterScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView
-        style={styles.keyboardContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.scrollContent}
+        enableOnAndroid={true}
+        enableResetScrollToCoords={false}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        extraScrollHeight={Platform.OS === 'ios' ? 40 : 70}
+        extraHeight={Platform.OS === 'ios' ? 80 : 100}
+        keyboardOpeningTime={0}
       >
-        <ScrollView
-          ref={scrollViewRef}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Logo Circular */}
-          <View style={styles.circularLogoContainer}>
-            <Image
-              source={require('../assets/logo_wefind.png')}
-              style={styles.circularLogo}
-              resizeMode="contain"
-            />
-          </View>
+        {/* Logo Circular */}
+        <View style={styles.circularLogoContainer}>
+          <Image
+            source={require('../assets/logo_wefind.png')}
+            style={styles.circularLogo}
+            resizeMode="contain"
+          />
+        </View>
 
-          <View style={styles.headerBox}>
-            <Text style={styles.headerTitle}>Criar sua conta</Text>
-            <Text style={styles.headerSubtitle}>Junte-se à nossa comunidade</Text>
-          </View>
+        <View style={styles.headerBox}>
+          <Text style={styles.headerTitle}>Criar sua conta</Text>
+          <Text style={styles.headerSubtitle}>Junte-se à nossa comunidade</Text>
+        </View>
 
-          <View style={styles.formBox}>
-            <Input
-              label="Nome Completo"
-              placeholder="Ex: João da Silva"
-              value={name}
-              onChangeText={setName}
-              error={errors.name}
-              style={styles.input}
-              inputStyle={styles.inputField}
-              autoCapitalize="words"
-              returnKeyType="next"
-            />
+        <View style={styles.formBox}>
+          <Input
+            label="Nome Completo"
+            placeholder="Ex: João da Silva"
+            value={name}
+            onChangeText={setName}
+            error={errors.name}
+            style={styles.input}
+            inputStyle={styles.inputField}
+            autoCapitalize="words"
+            returnKeyType="next"
+          />
 
-            {/* Seção de Localização */}
-            <View style={styles.locationSection}>
-              <Text style={styles.label}>Sua Localização *</Text>
-              <TouchableOpacity
-                style={styles.mapPickerButton}
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setMapModalVisible(true);
-                }}
-                activeOpacity={0.8}
-              >
-                <MaterialIcons name="map" size={20} color="#2563EB" />
-                <Text style={styles.mapPickerButtonText}>
-                  {selectedCity ? '🗺️ Alterar localização no mapa' : '🗺️ Escolher localização no mapa'}
-                </Text>
-              </TouchableOpacity>
-
-              {selectedCity ? (
-                <View style={styles.selectedLocationCard}>
-                  <Text style={styles.selectedLocationText}>📍 {selectedCity}, {selectedState}</Text>
-                  {selectedAddressText ? (
-                    <Text style={styles.selectedAddressSubtext} numberOfLines={2}>
-                      {selectedAddressText}
-                    </Text>
-                  ) : null}
-                </View>
-              ) : null}
-
-              {errors.city ? <Text style={styles.error}>{errors.city}</Text> : null}
-              <Text style={styles.locationHelpText}>
-                Selecione o ponto no mapa para definir automaticamente sua cidade e estado.
+          {/* Seção de Localização */}
+          <View style={styles.locationSection}>
+            <Text style={styles.label}>Sua Localização *</Text>
+            <TouchableOpacity
+              style={styles.mapPickerButton}
+              onPress={() => {
+                Keyboard.dismiss();
+                setMapModalVisible(true);
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="map" size={20} color="#2563EB" />
+              <Text style={styles.mapPickerButtonText}>
+                {selectedCity ? '🗺️ Alterar localização no mapa' : '🗺️ Escolher localização no mapa'}
               </Text>
-            </View>
+            </TouchableOpacity>
 
-            <Input
-              label="E-mail"
-              placeholder="seu@email.com"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              error={errors.email}
-              style={styles.input}
-              inputStyle={styles.inputField}
-              returnKeyType="next"
-            />
-
-            <Input
-              label="WhatsApp (com DDD)"
-              placeholder="(11) 99999-9999"
-              value={formatBrazilianPhone(whatsapp)}
-              onChangeText={text => setWhatsapp(text.replace(/\D/g, ''))}
-              keyboardType="phone-pad"
-              error={errors.whatsapp || errors.phone}
-              style={styles.input}
-              inputStyle={styles.inputField}
-              returnKeyType="next"
-            />
-
-            <Input
-              label="Senha"
-              placeholder="Mínimo 6 caracteres"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={true}
-              error={errors.password}
-              style={styles.input}
-              inputStyle={styles.inputField}
-              returnKeyType="next"
-            />
-
-            <Input
-              label="Confirmar Senha"
-              placeholder="Repita sua senha"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry={true}
-              error={errors.confirmPassword}
-              style={styles.input}
-              inputStyle={styles.inputField}
-              returnKeyType="done"
-            />
-
-            {pendingVerification ? (
-              <View style={styles.verificationBox}>
-                <Text style={styles.verificationTitle}>🔐 Verificação por WhatsApp</Text>
-                <Text style={styles.verificationDesc}>
-                  Digite o código de 6 dígitos que enviamos para o seu WhatsApp:
-                </Text>
-                <Input
-                  label="Código de verificação"
-                  placeholder="123456"
-                  value={verificationCode}
-                  onChangeText={setVerificationCode}
-                  keyboardType="number-pad"
-                  style={styles.input}
-                  inputStyle={styles.inputField}
-                />
+            {selectedCity ? (
+              <View style={styles.selectedLocationCard}>
+                <Text style={styles.selectedLocationText}>📍 {selectedCity}, {selectedState}</Text>
+                {selectedAddressText ? (
+                  <Text style={styles.selectedAddressSubtext} numberOfLines={2}>
+                    {selectedAddressText}
+                  </Text>
+                ) : null}
               </View>
             ) : null}
 
-            <Button
-              title={isSubmitting ? 'Processando...' : pendingVerification ? 'Confirmar código' : 'Cadastrar'}
-              onPress={handleRegister}
-              disabled={isSubmitting}
-              loading={isSubmitting}
-              style={styles.registerButton}
-              textStyle={styles.registerButtonText}
-            />
+            {errors.city ? <Text style={styles.error}>{errors.city}</Text> : null}
+            <Text style={styles.locationHelpText}>
+              Selecione o ponto no mapa para definir automaticamente sua cidade e estado.
+            </Text>
           </View>
 
-          <View style={styles.footerRow}>
-            <Text style={styles.footerText}>Já tem uma conta? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.7}>
-              <Text style={styles.createAccountText}>Fazer login</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          <Input
+            label="E-mail"
+            placeholder="seu@email.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email}
+            style={styles.input}
+            inputStyle={styles.inputField}
+            returnKeyType="next"
+          />
+
+          <Input
+            label="WhatsApp (com DDD)"
+            placeholder="(11) 99999-9999"
+            value={formatBrazilianPhone(whatsapp)}
+            onChangeText={text => setWhatsapp(text.replace(/\D/g, ''))}
+            keyboardType="phone-pad"
+            error={errors.whatsapp || errors.phone}
+            style={styles.input}
+            inputStyle={styles.inputField}
+            returnKeyType="next"
+          />
+
+          <Input
+            label="Senha"
+            placeholder="Mínimo 6 caracteres"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={true}
+            error={errors.password}
+            style={styles.input}
+            inputStyle={styles.inputField}
+            returnKeyType="next"
+          />
+
+          <Input
+            label="Confirmar Senha"
+            placeholder="Repita sua senha"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry={true}
+            error={errors.confirmPassword}
+            style={styles.input}
+            inputStyle={styles.inputField}
+            returnKeyType="done"
+          />
+
+          {pendingVerification ? (
+            <View style={styles.verificationBox}>
+              <Text style={styles.verificationTitle}>🔐 Verificação por WhatsApp</Text>
+              <Text style={styles.verificationDesc}>
+                Digite o código de 6 dígitos que enviamos para o seu WhatsApp:
+              </Text>
+              <Input
+                label="Código de verificação"
+                placeholder="123456"
+                value={verificationCode}
+                onChangeText={setVerificationCode}
+                keyboardType="number-pad"
+                style={styles.input}
+                inputStyle={styles.inputField}
+              />
+            </View>
+          ) : null}
+
+          <Button
+            title={isSubmitting ? 'Processando...' : pendingVerification ? 'Confirmar código' : 'Cadastrar'}
+            onPress={handleRegister}
+            disabled={isSubmitting}
+            loading={isSubmitting}
+            style={styles.registerButton}
+            textStyle={styles.registerButtonText}
+          />
+        </View>
+
+        <View style={styles.footerRow}>
+          <Text style={styles.footerText}>Já tem uma conta? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.7}>
+            <Text style={styles.createAccountText}>Fazer login</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScrollView>
 
       <MapLocationPicker
         visible={mapModalVisible}
@@ -349,14 +343,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFB',
   },
-  keyboardContainer: {
-    flex: 1,
-  },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 100,
+    paddingBottom: 48,
     alignItems: 'center',
   },
   circularLogoContainer: {

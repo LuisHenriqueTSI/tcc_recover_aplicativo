@@ -2,16 +2,15 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   Alert,
   Image,
   TouchableOpacity,
-  KeyboardAvoidingView,
   Platform,
   Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -65,82 +64,80 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView
-        style={styles.keyboardContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.scrollContent}
+        enableOnAndroid={true}
+        enableResetScrollToCoords={false}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        extraScrollHeight={Platform.OS === 'ios' ? 40 : 60}
+        extraHeight={Platform.OS === 'ios' ? 80 : 100}
+        keyboardOpeningTime={0}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.circularLogoContainer}>
-            <Image
-              source={require('../assets/logo_wefind.png')}
-              style={styles.circularLogo}
-              resizeMode="contain"
-            />
-          </View>
+        <View style={styles.circularLogoContainer}>
+          <Image
+            source={require('../assets/logo_wefind.png')}
+            style={styles.circularLogo}
+            resizeMode="contain"
+          />
+        </View>
 
-          <View style={styles.headerBox}>
-            <Text style={styles.headerTitle}>Bem-vindo de volta</Text>
-            <Text style={styles.headerSubtitle}>Acesse sua conta para continuar</Text>
-          </View>
+        <View style={styles.headerBox}>
+          <Text style={styles.headerTitle}>Bem-vindo de volta</Text>
+          <Text style={styles.headerSubtitle}>Acesse sua conta para continuar</Text>
+        </View>
 
-          <View style={styles.formBox}>
-            <Input
-              label="E-mail"
-              placeholder="seu@email.com"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              error={errors.email}
-              style={styles.input}
-              inputStyle={styles.inputField}
-              returnKeyType="next"
-            />
+        <View style={styles.formBox}>
+          <Input
+            label="E-mail"
+            placeholder="seu@email.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email}
+            style={styles.input}
+            inputStyle={styles.inputField}
+            returnKeyType="next"
+          />
 
-            <Input
-              label="Senha"
-              placeholder="••••••••"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={true}
-              error={errors.password}
-              style={styles.input}
-              inputStyle={styles.inputField}
-              returnKeyType="done"
-            />
+          <Input
+            label="Senha"
+            placeholder="••••••••"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={true}
+            error={errors.password}
+            style={styles.input}
+            inputStyle={styles.inputField}
+            returnKeyType="done"
+          />
 
-            <TouchableOpacity
-              onPress={() => navigation.navigate('EsqueciSenha')}
-              style={styles.forgotPasswordContainer}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.forgotPassword}>Esqueceu sua senha?</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('EsqueciSenha')}
+            style={styles.forgotPasswordContainer}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.forgotPassword}>Esqueceu sua senha?</Text>
+          </TouchableOpacity>
 
-            <Button
-              title={loading ? 'Entrando...' : 'Entrar'}
-              onPress={handleLogin}
-              disabled={loading}
-              loading={loading}
-              style={styles.loginButton}
-              textStyle={styles.loginButtonText}
-            />
-          </View>
+          <Button
+            title={loading ? 'Entrando...' : 'Entrar'}
+            onPress={handleLogin}
+            disabled={loading}
+            loading={loading}
+            style={styles.loginButton}
+            textStyle={styles.loginButtonText}
+          />
+        </View>
 
-          <View style={styles.footerRow}>
-            <Text style={styles.footerText}>Não tem uma conta? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')} activeOpacity={0.7}>
-              <Text style={styles.createAccountText}>Criar conta</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        <View style={styles.footerRow}>
+          <Text style={styles.footerText}>Não tem uma conta? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Register')} activeOpacity={0.7}>
+            <Text style={styles.createAccountText}>Criar conta</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };
@@ -150,14 +147,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFB',
   },
-  keyboardContainer: {
-    flex: 1,
-  },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 60,
+    paddingBottom: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
