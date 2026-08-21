@@ -5,13 +5,16 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
-  ActivityIndicator,
   Image,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
 import Input from '../components/Input';
-import Card from '../components/Card';
 
 const LoginScreen = ({ navigation }) => {
   const { signIn, loading } = useAuth();
@@ -22,7 +25,7 @@ const LoginScreen = ({ navigation }) => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!email) {
+    if (!email.trim()) {
       newErrors.email = 'Email é obrigatório';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Email inválido';
@@ -39,11 +42,11 @@ const LoginScreen = ({ navigation }) => {
   };
 
   const handleLogin = async () => {
+    Keyboard.dismiss();
     if (!validateForm()) return;
 
     try {
-      const result = await signIn(email, password);
-      // Se o usuário não confirmou o email, Supabase retorna erro
+      const result = await signIn(email.trim(), password);
       if (result?.user && !result?.user.confirmed_at && !result?.user.email_confirmed_at && !result?.session) {
         Alert.alert(
           'Confirmação necessária',
@@ -51,8 +54,6 @@ const LoginScreen = ({ navigation }) => {
         );
         return;
       }
-      // NÃO navegue manualmente após login. O RootNavigator já faz o redirecionamento automático.
-      // Removido navigation.reset()
     } catch (error) {
       if (error.message && error.message.toLowerCase().includes('email not confirmed')) {
         Alert.alert('Confirmação necessária', 'Você precisa confirmar seu e-mail antes de fazer login. Verifique sua caixa de entrada.');
@@ -62,74 +63,108 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
-
   return (
-    <View style={styles.bgFull}>
-      <ScrollView contentContainerStyle={styles.centeredScroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.circularLogoContainer}>
-          <Image source={require('../assets/logo_wefind.png')} style={styles.circularLogo} resizeMode="contain" />
-        </View>
-        <View style={{ alignItems: 'center', marginBottom: 12, marginTop: 4 }}>
-          <Text style={{ fontSize: 24, fontWeight: '800', color: '#0F172A', marginBottom: 2 }}>Bem-vindo de volta</Text>
-          <Text style={{ fontSize: 14, color: '#64748B', textAlign: 'center' }}>Acesse sua conta para continuar</Text>
-        </View>
-        <View style={styles.formBox}>
-          <Input
-            label="E-mail"
-            placeholder="seu@email.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            error={errors.email}
-            style={styles.input}
-            inputStyle={styles.inputField}
-          />
-          <Input
-            label="Senha"
-            placeholder="••••••••"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={true}
-            error={errors.password}
-            style={styles.input}
-            inputStyle={styles.inputField}
-          />
-          <Text style={styles.forgotPassword} onPress={() => navigation.navigate('EsqueciSenha')}>Esqueceu sua senha?</Text>
-          <Button
-            title={loading ? 'Entrar...' : 'Entrar'}
-            onPress={handleLogin}
-            disabled={loading}
-            loading={loading}
-            style={styles.loginButton}
-            textStyle={styles.loginButtonText}
-          />
-        </View>
-        <View style={styles.footerRow}>
-          <Text style={styles.footerText}>Não tem conta? </Text>
-          <Text style={styles.createAccountText} onPress={() => navigation.navigate('Register')}>Criar conta</Text>
-        </View>
-      </ScrollView>
-    </View>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <KeyboardAvoidingView
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.circularLogoContainer}>
+            <Image
+              source={require('../assets/logo_wefind.png')}
+              style={styles.circularLogo}
+              resizeMode="contain"
+            />
+          </View>
+
+          <View style={styles.headerBox}>
+            <Text style={styles.headerTitle}>Bem-vindo de volta</Text>
+            <Text style={styles.headerSubtitle}>Acesse sua conta para continuar</Text>
+          </View>
+
+          <View style={styles.formBox}>
+            <Input
+              label="E-mail"
+              placeholder="seu@email.com"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              error={errors.email}
+              style={styles.input}
+              inputStyle={styles.inputField}
+              returnKeyType="next"
+            />
+
+            <Input
+              label="Senha"
+              placeholder="••••••••"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={true}
+              error={errors.password}
+              style={styles.input}
+              inputStyle={styles.inputField}
+              returnKeyType="done"
+            />
+
+            <TouchableOpacity
+              onPress={() => navigation.navigate('EsqueciSenha')}
+              style={styles.forgotPasswordContainer}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.forgotPassword}>Esqueceu sua senha?</Text>
+            </TouchableOpacity>
+
+            <Button
+              title={loading ? 'Entrando...' : 'Entrar'}
+              onPress={handleLogin}
+              disabled={loading}
+              loading={loading}
+              style={styles.loginButton}
+              textStyle={styles.loginButtonText}
+            />
+          </View>
+
+          <View style={styles.footerRow}>
+            <Text style={styles.footerText}>Não tem uma conta? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')} activeOpacity={0.7}>
+              <Text style={styles.createAccountText}>Criar conta</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  bgFull: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#F8FAFB',
   },
-  centeredScroll: {
+  keyboardContainer: {
+    flex: 1,
+  },
+  scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 60,
     alignItems: 'center',
-    minHeight: '100%',
-    paddingVertical: 32,
-    backgroundColor: '#F8FAFB',
+    justifyContent: 'center',
   },
   circularLogoContainer: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     backgroundColor: '#FFFFFF',
     alignSelf: 'center',
     alignItems: 'center',
@@ -142,29 +177,42 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.16,
     shadowRadius: 10,
     elevation: 6,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   circularLogo: {
     width: '100%',
     height: '100%',
   },
+  headerBox: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+  },
   formBox: {
     width: '100%',
-    maxWidth: 340,
+    maxWidth: 380,
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
-    padding: 24,
-    marginTop: 8,
+    padding: 20,
     shadowColor: '#000',
     shadowOpacity: 0.04,
-    shadowRadius: 8,
+    shadowRadius: 10,
     elevation: 2,
-    alignSelf: 'center',
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
   input: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   inputField: {
     backgroundColor: '#F8FAFC',
@@ -174,27 +222,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 15,
   },
-  loginButton: {
-    marginTop: 12,
-    backgroundColor: '#2563EB',
-    borderRadius: 14,
-    paddingVertical: 14,
-    marginBottom: 4,
-  },
-  loginButtonText: {
-    fontWeight: 'bold',
-    fontSize: 17,
-    letterSpacing: 0.5,
-    color: '#FFFFFF',
+  forgotPasswordContainer: {
+    alignSelf: 'flex-end',
+    marginBottom: 16,
+    marginTop: 2,
   },
   forgotPassword: {
     color: '#2563EB',
-    fontSize: 14,
-    marginBottom: 8,
-    marginTop: -8,
-    textAlign: 'left',
-    textDecorationLine: 'underline',
+    fontSize: 13,
     fontWeight: '600',
+  },
+  loginButton: {
+    backgroundColor: '#2563EB',
+    borderRadius: 12,
+    paddingVertical: 13,
+    marginBottom: 2,
+  },
+  loginButtonText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    letterSpacing: 0.3,
+    color: '#FFFFFF',
   },
   footerRow: {
     flexDirection: 'row',
@@ -205,12 +253,12 @@ const styles = StyleSheet.create({
   },
   footerText: {
     color: '#64748B',
-    fontSize: 15,
+    fontSize: 14,
   },
   createAccountText: {
     color: '#2563EB',
     fontWeight: 'bold',
-    fontSize: 15,
+    fontSize: 14,
     textDecorationLine: 'underline',
   },
 });

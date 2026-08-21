@@ -34,7 +34,7 @@ const regionToUf = {
 const normalizeRegionName = (value) => String(value || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const normalizedRegionToUf = Object.fromEntries(Object.entries(regionToUf).map(([name, uf]) => [normalizeRegionName(name), uf]));
 
-const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm }) => {
+const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm, onSelectLocation }) => {
   const [coordinate, setCoordinate] = useState(initialLocation || null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
@@ -173,12 +173,17 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm 
       postalCode: postalCode.trim(),
     };
 
-    onConfirm({
-      coordinate,
-      address,
-      addressDetails,
-      addressText: addressDetails.text,
-    });
+    const callback = onConfirm || onSelectLocation;
+    if (callback) {
+      callback({
+        coordinate,
+        address,
+        addressDetails,
+        addressText: addressDetails.text,
+        city: city.trim(),
+        state: stateUf.trim(),
+      });
+    }
   };
 
   return (
