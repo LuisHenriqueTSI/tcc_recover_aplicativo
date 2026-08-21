@@ -22,6 +22,7 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 ✅ **Autenticação**
 - Registro e login com email/senha via Supabase.
 - Cadastro de novo usuário com mapa interativo para escolha e preenchimento automático de cidade/estado.
+- Rolagem inteligente e fluida com `KeyboardAwareScrollView` prevenindo sobreposição do teclado virtual nos formulários.
 - Verificação de cadastro em 2 etapas com código via WhatsApp (Twilio).
 - Perfis de usuário com foto de avatar personalizável.
 - Confirmação de email e recuperação de senha.
