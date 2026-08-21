@@ -6,11 +6,10 @@ import {
   Linking,
   StyleSheet,
   Image,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
-import COLORS from '../constants/theme';
 
 const SobreScreen = ({ navigation }) => {
   const handleStart = async () => {

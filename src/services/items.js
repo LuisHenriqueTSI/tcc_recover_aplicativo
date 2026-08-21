@@ -879,14 +879,18 @@ export const cleanupExpiredItems = async () => {
   }
 
   try {
+    const accessToken = await getAuthAccessToken();
+    if (!accessToken) {
+      return cleanupExpiredItemsClientSide();
+    }
+
     console.log('[cleanupExpiredItems] Chamando Edge Function de limpeza permanente...');
 
-    const accessToken = await getAuthAccessToken();
     const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 

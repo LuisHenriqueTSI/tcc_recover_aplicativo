@@ -70,6 +70,22 @@ const RegisterScreen = ({ navigation }) => {
   const [pendingSignupData, setPendingSignupData] = useState(null);
   const isBusy = loading || isSubmitting;
 
+  const handleMapSelectLocation = (locationData) => {
+    if (!locationData) return;
+    const resolvedState = locationData.state || '';
+    const resolvedCity = locationData.city || '';
+    const resolvedAddress = locationData.address || locationData.fullAddress || '';
+
+    setSelectedState(resolvedState);
+    setSelectedCity(resolvedCity);
+    setSelectedAddressText(resolvedAddress);
+    if (locationData.coordinate) {
+      setSelectedCoordinate(locationData.coordinate);
+    }
+    setErrors(prev => ({ ...prev, location: null, city: null }));
+    setMapModalVisible(false);
+  };
+
   const validateForm = () => {
     const newErrors = {};
     if (!name.trim()) {
@@ -94,6 +110,7 @@ const RegisterScreen = ({ navigation }) => {
       newErrors.confirmPassword = 'Senhas não conferem';
     }
     if (!selectedState || !selectedCity) {
+      newErrors.city = 'Escolha sua localização no mapa';
       newErrors.location = 'Escolha sua localização no mapa';
     }
     setErrors(newErrors);
