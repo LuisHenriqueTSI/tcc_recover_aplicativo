@@ -209,8 +209,8 @@ export const validatePetPhoto = async ({ imageUri }) => {
           ? {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${openRouterApiKey}`,
-              'HTTP-Referer': 'https://recover-app.local',
-              'X-Title': 'RECOVER App',
+              'HTTP-Referer': 'https://wefind-app.local',
+              'X-Title': 'WeFIND App',
             }
           : {
               'Content-Type': 'application/json',
@@ -339,8 +339,8 @@ export const analyzeItemWithVision = async ({ imageUri, itemType = 'object', sta
           ? {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${openRouterApiKey}`,
-              'HTTP-Referer': 'https://recover-app.local',
-              'X-Title': 'RECOVER App',
+              'HTTP-Referer': 'https://wefind-app.local',
+              'X-Title': 'WeFIND App',
             }
           : {
               'Content-Type': 'application/json',

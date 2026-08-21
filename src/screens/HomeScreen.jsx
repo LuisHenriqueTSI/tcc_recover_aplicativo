@@ -96,7 +96,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
   const statusLabel = item.status === 'lost' ? 'Perdido' : 'Encontrado';
   const animalLabel = String(item.species || 'Animal').trim() || 'Animal';
   const categoryColors = {
-    animal: { bg: '#E0E7FF', text: '#6366F1', label: animalLabel },
+    animal: { bg: '#DBEAFE', text: '#2563EB', label: animalLabel },
     other: { bg: '#F3F4F6', text: '#6B7280', label: animalLabel },
   };
   const cat = categoryColors[item.category] || categoryColors.other;
@@ -311,15 +311,15 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: '#EEF2FF',
+              backgroundColor: '#EFF6FF',
               borderRadius: 20,
               paddingHorizontal: 14,
               paddingVertical: 7,
             }}
             activeOpacity={0.8}
           >
-            <MaterialIcons name="visibility" size={16} color="#4F46E5" style={{ marginRight: 5 }} />
-            <Text style={{ color: '#4F46E5', fontSize: 13, fontWeight: '700' }}>Ver detalhes</Text>
+            <MaterialIcons name="visibility" size={16} color="#2563EB" style={{ marginRight: 5 }} />
+            <Text style={{ color: '#2563EB', fontSize: 13, fontWeight: '700' }}>Ver detalhes</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -795,7 +795,7 @@ const HomeScreen = ({ navigation, route }) => {
         user_id: user.id,
         type: 'test',
         title: 'Teste de WhatsApp',
-        message: 'Esta é uma notificação de teste do app Recover.',
+        message: 'Esta é uma notificação de teste do app WeFIND.',
         item_id: null,
       });
       Alert.alert('Teste enviado', 'A notificação foi criada e o encaminhamento para WhatsApp foi acionado.');
@@ -818,21 +818,21 @@ const HomeScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       )}
       {/* App Bar ajustada: filtro de localidade ao lado da busca */}
-      <View style={{ backgroundColor: '#4F46E5', paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#4F46E5' }}>
+      <View style={{ backgroundColor: '#2563EB', paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#2563EB' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 22, marginBottom: 2 }}>Recover</Text>
+            <Text style={{ color: '#fff', fontWeight: '900', fontSize: 23, letterSpacing: 0.8, marginBottom: 2 }}>WeFIND</Text>
             <TouchableOpacity
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                backgroundColor: 'rgba(255, 255, 255, 0.16)',
                 borderRadius: 20,
                 paddingHorizontal: 10,
                 paddingVertical: 5,
                 marginTop: 4,
                 borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.35)',
+                borderColor: 'rgba(255, 255, 255, 0.28)',
               }}
               onPress={() => {
                 setProfileEditCity(activeCity);
@@ -842,11 +842,11 @@ const HomeScreen = ({ navigation, route }) => {
               accessibilityLabel={`Localidade: ${displayLocation}`}
               activeOpacity={0.75}
             >
-              <MaterialIcons name="place" size={15} color="#FFFFFF" style={{ marginRight: 4 }} />
+              <MaterialIcons name="place" size={15} color="#FEA937" style={{ marginRight: 4 }} />
               <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '600', marginRight: 6 }}>
                 {displayLocation}
               </Text>
-              <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderRadius: 10, padding: 2 }}>
+              <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 10, padding: 2 }}>
                 <MaterialIcons name="edit" size={12} color="#FFFFFF" />
               </View>
             </TouchableOpacity>
@@ -862,7 +862,7 @@ const HomeScreen = ({ navigation, route }) => {
                 {userProfile?.avatar_url ? (
                   <Image source={{ uri: userProfile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E7EB' }} />
                 ) : (
-                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#60A5FA', alignItems: 'center', justifyContent: 'center' }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#F28213', alignItems: 'center', justifyContent: 'center' }}>
                     <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>{userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}</Text>
                   </View>
                 )}
@@ -881,7 +881,7 @@ const HomeScreen = ({ navigation, route }) => {
                 </View>
                 <View style={styles.profileMenuIdentity}>
                   <Text style={styles.profileMenuName} numberOfLines={1}>{userProfile?.name || 'Usuário'}</Text>
-                  <Text style={styles.profileMenuEmail} numberOfLines={1}>{user?.email || 'Conta Recover'}</Text>
+                  <Text style={styles.profileMenuEmail} numberOfLines={1}>{user?.email || 'Conta WeFIND'}</Text>
                 </View>
               </View>
               {isAdmin && (
@@ -893,7 +893,7 @@ const HomeScreen = ({ navigation, route }) => {
                   style={styles.profileMenuItem}
                 >
                   <View style={[styles.profileMenuIcon, styles.profileMenuAdminIcon]}>
-                    <MaterialIcons name="admin-panel-settings" size={18} color="#4F46E5" />
+                    <MaterialIcons name="admin-panel-settings" size={18} color="#2563EB" />
                   </View>
                   <Text style={styles.profileMenuItemText}>Administração</Text>
                   <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
@@ -907,7 +907,7 @@ const HomeScreen = ({ navigation, route }) => {
                 style={styles.profileMenuItem}
               >
                 <View style={styles.profileMenuIcon}>
-                  <MaterialIcons name="person-outline" size={18} color="#4F46E5" />
+                  <MaterialIcons name="person-outline" size={18} color="#2563EB" />
                 </View>
                 <Text style={styles.profileMenuItemText}>Perfil</Text>
                 <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
@@ -932,9 +932,9 @@ const HomeScreen = ({ navigation, route }) => {
         {isAdmin && (
           <TouchableOpacity
             onPress={handleSendTestNotification}
-            style={{ marginTop: 12, backgroundColor: '#fff', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14, alignItems: 'center', borderWidth: 1, borderColor: '#C7D2FE' }}
+            style={{ marginTop: 12, backgroundColor: '#fff', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14, alignItems: 'center', borderWidth: 1, borderColor: '#BFDBFE' }}
           >
-            <Text style={{ color: '#4F46E5', fontWeight: '700', fontSize: 14 }}>Testar WhatsApp</Text>
+            <Text style={{ color: '#2563EB', fontWeight: '700', fontSize: 14 }}>Testar WhatsApp</Text>
           </TouchableOpacity>
         )}
 
@@ -947,7 +947,7 @@ const HomeScreen = ({ navigation, route }) => {
         >
           <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
             <View style={{ backgroundColor:'#fff', borderRadius:14, paddingVertical:24, paddingHorizontal:18, minWidth:340, maxWidth: '95%' }}>
-              <Text style={{ fontWeight:'bold', fontSize:17, color:'#4F46E5', marginBottom:4 }}>
+              <Text style={{ fontWeight:'bold', fontSize:17, color:'#2563EB', marginBottom:4 }}>
                 {user ? 'Atualizar Localidade' : 'Filtrar por Região'}
               </Text>
               <Text style={{ color:'#6B7280', fontSize:13, marginBottom:14 }}>
@@ -960,15 +960,15 @@ const HomeScreen = ({ navigation, route }) => {
                   setShowProfileLocationModal(false);
                   setProfileMapVisible(true);
                 }}
-                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#4F46E5', borderRadius: 10, paddingVertical: 12, marginBottom: 14 }}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#2563EB', borderRadius: 10, paddingVertical: 12, marginBottom: 14 }}
               >
-                <MaterialIcons name="map" size={19} color="#4F46E5" />
-                <Text style={{ color: '#4F46E5', fontWeight: '700', marginLeft: 8 }}>Escolher no mapa</Text>
+                <MaterialIcons name="map" size={19} color="#2563EB" />
+                <Text style={{ color: '#2563EB', fontWeight: '700', marginLeft: 8 }}>Escolher no mapa</Text>
               </TouchableOpacity>
               {(profileEditCity || profileEditState) ? (
-                <View style={{ backgroundColor: '#EEF2FF', padding: 10, borderRadius: 8, marginBottom: 14, alignItems: 'center' }}>
+                <View style={{ backgroundColor: '#EFF6FF', padding: 10, borderRadius: 8, marginBottom: 14, alignItems: 'center' }}>
                   <Text style={{ color: '#374151', fontSize: 13, fontWeight: '500' }}>Localização selecionada:</Text>
-                  <Text style={{ color: '#4F46E5', fontSize: 15, fontWeight: '800', marginTop: 2 }}>
+                  <Text style={{ color: '#2563EB', fontSize: 15, fontWeight: '800', marginTop: 2 }}>
                     {[profileEditCity, profileEditState].filter(Boolean).join(', ')}
                   </Text>
                 </View>
@@ -1024,8 +1024,8 @@ const HomeScreen = ({ navigation, route }) => {
         <Text style={{ color: '#1E1B4B', fontSize: 14, fontWeight: '800', marginBottom: 7 }}>
           Encontre um pet perdido ou encontrado
         </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 2, borderColor: '#312E81', paddingHorizontal: 14, height: 48, shadowColor: '#312E81', shadowOpacity: 0.12, shadowRadius: 6, elevation: 2 }}>
-          <MaterialIcons name="search" size={23} color="#312E81" style={{ marginRight: 8 }} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 2, borderColor: '#1E3A8A', paddingHorizontal: 14, height: 48, shadowColor: '#1E3A8A', shadowOpacity: 0.12, shadowRadius: 6, elevation: 2 }}>
+          <MaterialIcons name="search" size={23} color="#1E3A8A" style={{ marginRight: 8 }} />
           <Input
             placeholder="Nome, raça, espécie ou cidade..."
             value={searchTerm}
@@ -1048,7 +1048,7 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={{ backgroundColor:'#fff', borderRadius:12, paddingVertical:24, paddingHorizontal:16, minWidth:360, maxWidth: '95%' }}>
             {user ? (
               <>
-                <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Filtrar por Bairro</Text>
+                <Text style={{ fontWeight:'bold', fontSize:16, color:'#2563EB', marginBottom:8 }}>Filtrar por Bairro</Text>
                 <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione o bairro para filtrar. Cidade e estado são do seu perfil.</Text>
                 <Text style={{ marginBottom: 6 }}>Estado</Text>
                 <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: '#F3F4F6' }}>
@@ -1075,7 +1075,7 @@ const HomeScreen = ({ navigation, route }) => {
               </>
             ) : (
               <>
-                <Text style={{ fontWeight:'bold', fontSize:16, color:'#4F46E5', marginBottom:8 }}>Filtrar por Localidade</Text>
+                <Text style={{ fontWeight:'bold', fontSize:16, color:'#2563EB', marginBottom:8 }}>Filtrar por Localidade</Text>
                 <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione estado, cidade e bairro para filtrar.</Text>
                 <Text style={{ marginBottom: 6 }}>Estado</Text>
                 <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
@@ -1159,7 +1159,7 @@ const HomeScreen = ({ navigation, route }) => {
                   console.log('[HomeScreen] Erro ao atualizar localidade no perfil:', e.message);
                 }
               }} style={{ paddingVertical:8, paddingHorizontal:16 }}>
-                <Text style={{ color:'#4F46E5', fontWeight:'bold' }}>Salvar</Text>
+                <Text style={{ color:'#2563EB', fontWeight:'bold' }}>Salvar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1173,7 +1173,7 @@ const HomeScreen = ({ navigation, route }) => {
             onPress={() => setShowAdvancedFilters(v => !v)}
             accessibilityLabel="Abrir filtros avançados"
           >
-            <MaterialIcons name="tune" size={21} color={showAdvancedFilters ? '#fff' : '#312E81'} />
+            <MaterialIcons name="tune" size={21} color={showAdvancedFilters ? '#fff' : '#1E3A8A'} />
           </TouchableOpacity>
           <TouchableOpacity
           style={[
@@ -1232,7 +1232,7 @@ const HomeScreen = ({ navigation, route }) => {
         <View style={styles.advancedFiltersPanel}>
           <Text style={styles.advancedFiltersTitle}>Mais filtros</Text>
           <View style={styles.speciesPickerWrapper}>
-            <MaterialIcons name="pets" size={19} color="#312E81" style={{ marginLeft: 12 }} />
+            <MaterialIcons name="pets" size={19} color="#1E3A8A" style={{ marginLeft: 12 }} />
             <Picker
               selectedValue={advancedFilters.animalType || 'all'}
               onValueChange={value => {
@@ -1252,7 +1252,7 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
           <View style={styles.locationFilterRow}>
             <TouchableOpacity onPress={() => setEditLocationModal(true)} style={styles.locationFilterButton}>
-              <MaterialIcons name="place" size={20} color="#312E81" style={{ marginRight: 8 }} />
+              <MaterialIcons name="place" size={20} color="#1E3A8A" style={{ marginRight: 8 }} />
               <Text style={styles.locationFilterText}>Filtrar por bairro</Text>
             </TouchableOpacity>
           </View>
@@ -1332,7 +1332,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E0E7FF',
+    borderColor: '#DBEAFE',
     shadowColor: '#111827',
     shadowOpacity: 0.18,
     shadowRadius: 14,
@@ -1354,7 +1354,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#2563EB',
     overflow: 'hidden',
   },
   profileMenuAvatarImage: { width: 36, height: 36 },
@@ -1375,9 +1375,9 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#EFF6FF',
   },
-  profileMenuAdminIcon: { backgroundColor: '#EDE9FE' },
+  profileMenuAdminIcon: { backgroundColor: '#EFF6FF' },
   profileMenuLogoutIcon: { backgroundColor: '#FEF2F2' },
   profileMenuItemText: { flex: 1, marginLeft: 10, color: '#1F2937', fontSize: 14, fontWeight: '700' },
   profileMenuLogoutText: { flex: 1, marginLeft: 10, color: '#DC2626', fontSize: 14, fontWeight: '700' },
@@ -1411,13 +1411,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#EFF6FF',
     borderWidth: 1,
-    borderColor: '#C7D2FE',
+    borderColor: '#BFDBFE',
   },
   filterToggleActive: {
-    backgroundColor: '#312E81',
-    borderColor: '#312E81',
+    backgroundColor: '#1E3A8A',
+    borderColor: '#1E3A8A',
   },
   advancedFiltersPanel: {
     padding: 14,
@@ -1506,8 +1506,8 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   filterChipActive: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4338CA',
+    backgroundColor: '#2563EB',
+    borderColor: '#1D4ED8',
   },
   filterChipText: {
     fontSize: 12,
@@ -1595,7 +1595,7 @@ const styles = StyleSheet.create({
   ownerName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#4F46E5',
+    color: '#2563EB',
   },
   ownerEmail: {
     fontSize: 11,
@@ -1609,7 +1609,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderRadius: 6,
     borderLeftWidth: 3,
-    borderLeftColor: '#4F46E5',
+    borderLeftColor: '#2563EB',
   },
   expandedContent: {
     marginVertical: 12,
@@ -1660,7 +1660,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#2563EB',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,

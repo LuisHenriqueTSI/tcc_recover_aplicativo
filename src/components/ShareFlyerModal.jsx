@@ -30,7 +30,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
     const phone = item.profiles?.whatsapp || item.profiles?.phone || item.contact_phone || '';
     const phoneInfo = phone ? `\n📞 Contato: ${phone}` : '';
     
-    return `🐾 *RECOVER - AJUDE A ENCONTRAR*\n\n${status}: *${item.title || 'Animal'}*\n\n📍 Local: ${location}\n📅 Data: ${formattedDate}${phoneInfo}\n\n"${item.description || ''}"\n\nPor favor, compartilhe!`;
+    return `🐾 *WeFIND - AJUDE A ENCONTRAR*\n\n${status}: *${item.title || 'Animal'}*\n\n📍 Local: ${location}\n📅 Data: ${formattedDate}${phoneInfo}\n\n"${item.description || ''}"\n\nPor favor, compartilhe!`;
   };
 
   const handleShareImage = async () => {
@@ -88,7 +88,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
           {/* Cabeçalho do Modal */}
           <View style={styles.modalHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <MaterialIcons name="share" size={22} color="#4F46E5" />
+              <MaterialIcons name="share" size={22} color="#2563EB" />
               <Text style={styles.modalHeaderTitle}>Compartilhar Pet</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -206,12 +206,12 @@ const styles = StyleSheet.create({
     borderTopColor: '#F1F5F9',
   },
   primaryShareBtn: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#2563EB',
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#4F46E5',
+    shadowColor: '#2563EB',
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 3,

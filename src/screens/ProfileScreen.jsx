@@ -64,7 +64,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   if (loading) {
-    return <View style={styles.loading}><ActivityIndicator size="large" color="#4F46E5" /><Text style={styles.loadingText}>Abrindo seu perfil...</Text></View>;
+    return <View style={styles.loading}><ActivityIndicator size="large" color="#2563EB" /><Text style={styles.loadingText}>Abrindo seu perfil...</Text></View>;
   }
 
   const formatDisplayPhone = (value) => {
@@ -129,7 +129,7 @@ const ProfileScreen = ({ navigation }) => {
 
       <Text style={styles.sectionTitle}>Mais opções</Text>
       <View style={styles.links}>
-        {secondaryLinks.map((item, index) => <React.Fragment key={item.route}><TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate(item.route)} activeOpacity={0.75}><View style={styles.linkIcon}><Feather name={item.icon} size={19} color="#4F46E5" /></View><View style={styles.linkCopy}><Text style={styles.linkTitle}>{item.label}</Text><Text style={styles.linkDescription}>{item.description}</Text></View><Feather name="chevron-right" size={19} color="#9CA3AF" /></TouchableOpacity>{index === 0 ? <View style={styles.linkDivider} /> : null}</React.Fragment>)}
+        {secondaryLinks.map((item, index) => <React.Fragment key={item.route}><TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate(item.route)} activeOpacity={0.75}><View style={styles.linkIcon}><Feather name={item.icon} size={19} color="#2563EB" /></View><View style={styles.linkCopy}><Text style={styles.linkTitle}>{item.label}</Text><Text style={styles.linkDescription}>{item.description}</Text></View><Feather name="chevron-right" size={19} color="#9CA3AF" /></TouchableOpacity>{index === 0 ? <View style={styles.linkDivider} /> : null}</React.Fragment>)}
       </View>
 
       <TouchableOpacity style={styles.logout} onPress={signOut} activeOpacity={0.8}><Feather name="log-out" size={17} color="#B91C1C" /><Text style={styles.logoutText}>Sair da conta</Text></TouchableOpacity>
@@ -138,40 +138,40 @@ const ProfileScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  container: { flex: 1, backgroundColor: '#F8FAFB' },
   content: { paddingBottom: 42 },
-  loading: { flex: 1, backgroundColor: '#F9FAFB', alignItems: 'center', justifyContent: 'center' },
-  loadingText: { color: '#6B7280', fontSize: 13, marginTop: 10 },
-  profileHeader: { backgroundColor: '#fff', paddingHorizontal: 20, paddingTop: 18, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6', alignItems: 'center' },
+  loading: { flex: 1, backgroundColor: '#F8FAFB', alignItems: 'center', justifyContent: 'center' },
+  loadingText: { color: '#64748B', fontSize: 13, marginTop: 10 },
+  profileHeader: { backgroundColor: '#fff', paddingHorizontal: 20, paddingTop: 18, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#F1F5F9', alignItems: 'center' },
   avatarButton: { position: 'relative', marginBottom: 12 },
-  avatarEditButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', marginLeft: 10, borderWidth: 1, borderColor: '#E5E7EB' },
+  avatarEditButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center', marginLeft: 10, borderWidth: 1, borderColor: '#E2E8F0' },
   avatarImage: { width: 104, height: 104, borderRadius: 52, borderWidth: 3, borderColor: '#fff' },
-  avatarFallback: { width: 104, height: 104, borderRadius: 52, backgroundColor: '#4F46E5', borderWidth: 3, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  avatarFallback: { width: 104, height: 104, borderRadius: 52, backgroundColor: '#2563EB', borderWidth: 3, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
   avatarInitial: { color: '#fff', fontSize: 38, fontWeight: '800' },
-  camera: { position: 'absolute', bottom: 6, right: 6, width: 30, height: 30, borderRadius: 15, backgroundColor: '#4F46E5', borderWidth: 2, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  camera: { position: 'absolute', bottom: 6, right: 6, width: 30, height: 30, borderRadius: 15, backgroundColor: '#2563EB', borderWidth: 2, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
   nameRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  name: { color: '#111827', fontSize: 22, fontWeight: '800' },
-  phone: { color: '#6B7280', fontSize: 14, fontWeight: '600', textAlign: 'center' },
-  phonePlaceholder: { color: '#9CA3AF', fontSize: 13, fontWeight: '500', textAlign: 'center' },
-  stats: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 16, marginHorizontal: 20, marginTop: 17, paddingVertical: 14, flexDirection: 'row' },
+  name: { color: '#0F172A', fontSize: 22, fontWeight: '800' },
+  phone: { color: '#64748B', fontSize: 14, fontWeight: '600', textAlign: 'center' },
+  phonePlaceholder: { color: '#94A3B8', fontSize: 13, fontWeight: '500', textAlign: 'center' },
+  stats: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, marginHorizontal: 20, marginTop: 17, paddingVertical: 14, flexDirection: 'row' },
   stat: { flex: 1, alignItems: 'center' },
-  statDivider: { width: 1, backgroundColor: '#E5E7EB' },
-  statValue: { color: '#1F2937', fontSize: 23, fontWeight: '800' },
-  indigoValue: { color: '#4F46E5' },
-  statLabel: { color: '#6B7280', fontSize: 11, marginTop: 3 },
-  publicationsButton: { backgroundColor: '#4F46E5', borderRadius: 17, marginHorizontal: 20, marginTop: 17, padding: 14, flexDirection: 'row', alignItems: 'center' },
-  publicationsIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: '#4338CA', alignItems: 'center', justifyContent: 'center', marginRight: 11 },
+  statDivider: { width: 1, backgroundColor: '#E2E8F0' },
+  statValue: { color: '#0F172A', fontSize: 23, fontWeight: '800' },
+  indigoValue: { color: '#2563EB' },
+  statLabel: { color: '#64748B', fontSize: 11, marginTop: 3 },
+  publicationsButton: { backgroundColor: '#2563EB', borderRadius: 17, marginHorizontal: 20, marginTop: 17, padding: 14, flexDirection: 'row', alignItems: 'center' },
+  publicationsIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: '#1D4ED8', alignItems: 'center', justifyContent: 'center', marginRight: 11 },
   publicationsCopy: { flex: 1 },
   publicationsTitle: { color: '#fff', fontSize: 15, fontWeight: '800' },
-  publicationsText: { color: '#E0E7FF', fontSize: 11, marginTop: 4 },
-  sectionTitle: { color: '#374151', fontSize: 16, fontWeight: '800', marginHorizontal: 20, marginTop: 27, marginBottom: 10 },
-  links: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 16, marginHorizontal: 20, paddingHorizontal: 14 },
+  publicationsText: { color: '#DBEAFE', fontSize: 11, marginTop: 4 },
+  sectionTitle: { color: '#0F172A', fontSize: 16, fontWeight: '800', marginHorizontal: 20, marginTop: 27, marginBottom: 10 },
+  links: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, marginHorizontal: 20, paddingHorizontal: 14 },
   linkRow: { minHeight: 68, flexDirection: 'row', alignItems: 'center' },
-  linkIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  linkIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   linkCopy: { flex: 1 },
-  linkTitle: { color: '#1F2937', fontSize: 14, fontWeight: '800' },
-  linkDescription: { color: '#6B7280', fontSize: 11, marginTop: 3 },
-  linkDivider: { height: 1, backgroundColor: '#F3F4F6', marginLeft: 50 },
+  linkTitle: { color: '#0F172A', fontSize: 14, fontWeight: '800' },
+  linkDescription: { color: '#64748B', fontSize: 11, marginTop: 3 },
+  linkDivider: { height: 1, backgroundColor: '#F1F5F9', marginLeft: 50 },
   logout: { height: 48, borderWidth: 1, borderColor: '#FECACA', backgroundColor: '#FEF2F2', borderRadius: 13, marginHorizontal: 20, marginTop: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   logoutText: { color: '#B91C1C', fontSize: 13, fontWeight: '800' },
 });

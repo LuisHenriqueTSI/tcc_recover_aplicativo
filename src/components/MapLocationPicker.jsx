@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
   container: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 20 },
   title: { color: '#111827', fontSize: 18, fontWeight: '700', marginBottom: 8 },
   description: { color: '#4B5563', lineHeight: 20, marginBottom: 18 },
-  button: { backgroundColor: '#4F46E5', borderRadius: 8, padding: 13, alignItems: 'center' },
+  button: { backgroundColor: '#2563EB', borderRadius: 8, padding: 13, alignItems: 'center' },
   buttonText: { color: '#FFFFFF', fontWeight: '700' },
 });
 

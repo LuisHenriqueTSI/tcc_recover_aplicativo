@@ -66,10 +66,12 @@ const LoginScreen = ({ navigation }) => {
   return (
     <View style={styles.bgFull}>
       <ScrollView contentContainerStyle={styles.centeredScroll} keyboardShouldPersistTaps="handled">
-        <Image source={require('../assets/logo_recover.png')} style={styles.logoImg} resizeMode="contain" />
-        <View style={{ alignItems: 'center', marginBottom: 8, marginTop: -8 }}>
-          <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#4F46E5', marginBottom: 2 }}>Entrar no aplicativo.</Text>
-          <Text style={{ fontSize: 15, color: '#6B7280', textAlign: 'center' }}>Acesse sua conta para continuar</Text>
+        <View style={styles.circularLogoContainer}>
+          <Image source={require('../assets/logo_wefind.png')} style={styles.circularLogo} resizeMode="contain" />
+        </View>
+        <View style={{ alignItems: 'center', marginBottom: 12, marginTop: 4 }}>
+          <Text style={{ fontSize: 24, fontWeight: '800', color: '#0F172A', marginBottom: 2 }}>Bem-vindo de volta</Text>
+          <Text style={{ fontSize: 14, color: '#64748B', textAlign: 'center' }}>Acesse sua conta para continuar</Text>
         </View>
         <View style={styles.formBox}>
           <Input
@@ -114,7 +116,7 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   bgFull: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F8FAFB',
   },
   centeredScroll: {
     flexGrow: 1,
@@ -122,20 +124,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minHeight: '100%',
     paddingVertical: 32,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F8FAFB',
   },
-  // header removido
-  logoImg: {
-    width: 220,
-    height: 220,
+  circularLogoContainer: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: '#FFFFFF',
     alignSelf: 'center',
-    marginBottom: 0,
-    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 3.5,
+    borderColor: '#EFF6FF',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 6,
+    marginBottom: 8,
+  },
+  circularLogo: {
+    width: '100%',
+    height: '100%',
   },
   formBox: {
     width: '100%',
     maxWidth: 340,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderRadius: 18,
     padding: 24,
     marginTop: 8,
@@ -144,21 +160,23 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   input: {
     marginBottom: 16,
   },
   inputField: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F8FAFC',
     borderRadius: 10,
-    borderColor: '#E5E7EB',
+    borderColor: '#E2E8F0',
     borderWidth: 1,
     paddingHorizontal: 14,
     fontSize: 15,
   },
   loginButton: {
     marginTop: 12,
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#2563EB',
     borderRadius: 14,
     paddingVertical: 14,
     marginBottom: 4,
@@ -167,15 +185,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 17,
     letterSpacing: 0.5,
-    color: '#fff',
+    color: '#FFFFFF',
   },
   forgotPassword: {
-    color: '#4F46E5',
+    color: '#2563EB',
     fontSize: 14,
     marginBottom: 8,
     marginTop: -8,
     textAlign: 'left',
     textDecorationLine: 'underline',
+    fontWeight: '600',
   },
   footerRow: {
     flexDirection: 'row',
@@ -185,11 +204,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   footerText: {
-    color: '#6B7280',
+    color: '#64748B',
     fontSize: 15,
   },
   createAccountText: {
-    color: '#4F46E5',
+    color: '#2563EB',
     fontWeight: 'bold',
     fontSize: 15,
     textDecorationLine: 'underline',

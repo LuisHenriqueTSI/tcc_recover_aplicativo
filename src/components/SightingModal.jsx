@@ -93,7 +93,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
             autoCapitalize="none"
           />
           <TouchableOpacity onPress={handlePickImage} style={{ marginBottom: 10, backgroundColor: '#E5E7EB', borderRadius: 8, padding: 10, alignItems: 'center' }}>
-            <Text style={{ color: '#4F46E5', fontWeight: 'bold' }}>{uploading ? 'Abrindo galeria...' : (photoUrl ? 'Trocar foto' : 'Adicionar foto')}</Text>
+            <Text style={{ color: '#2563EB', fontWeight: 'bold' }}>{uploading ? 'Abrindo galeria...' : (photoUrl ? 'Trocar foto' : 'Adicionar foto')}</Text>
           </TouchableOpacity>
           {photoUrl ? (
             <Image source={{ uri: photoUrl }} style={styles.photoPreview} />

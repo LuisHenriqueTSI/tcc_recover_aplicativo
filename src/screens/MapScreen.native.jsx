@@ -259,7 +259,7 @@ const MapScreen = ({ navigation }) => {
   if (locationStatus === 'checking') {
     return (
       <View style={styles.permissionState}>
-        <ActivityIndicator color="#4F46E5" size="large" />
+        <ActivityIndicator color="#2563EB" size="large" />
         <Text style={styles.permissionTitle}>Obtendo sua localização</Text>
         <Text style={styles.permissionText}>Precisamos dela para abrir o mapa perto de você.</Text>
       </View>
@@ -364,7 +364,7 @@ const MapScreen = ({ navigation }) => {
           onPress={handleCenterOnUser}
           accessibilityLabel="Voltar para minha localização"
         >
-          <MaterialIcons name="my-location" size={24} color="#4F46E5" />
+          <MaterialIcons name="my-location" size={24} color="#2563EB" />
         </TouchableOpacity>
       )}
 
@@ -390,7 +390,7 @@ const MapScreen = ({ navigation }) => {
 
       {loading && (
         <View style={styles.loadingState}>
-          <ActivityIndicator color="#4F46E5" />
+          <ActivityIndicator color="#2563EB" />
           <Text style={styles.loadingText}>Carregando localizações...</Text>
         </View>
       )}
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   searchInput: { flex: 1, minHeight: 42, paddingHorizontal: 10, color: '#111827', fontSize: 14 },
-  searchButton: { minHeight: 42, paddingHorizontal: 14, borderRadius: 8, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center' },
+  searchButton: { minHeight: 42, paddingHorizontal: 14, borderRadius: 8, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center' },
   searchButtonText: { color: '#FFFFFF', fontWeight: '700' },
   suggestionsList: { position: 'absolute', top: 120, left: 22, right: 22, zIndex: 11, borderRadius: 10, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 8, elevation: 4, overflow: 'hidden' },
   suggestionItem: { paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
   locationNotice: { position: 'absolute', left: 16, right: 16, bottom: 22, padding: 14, borderRadius: 12, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 8, elevation: 3 },
   locationNoticeText: { color: '#374151', lineHeight: 19 },
   retryButton: { alignSelf: 'flex-start', marginTop: 8 },
-  retryText: { color: '#4F46E5', fontWeight: '700' },
+  retryText: { color: '#2563EB', fontWeight: '700' },
   markerContainer: {
     width: 52,
     height: 52,
@@ -479,11 +479,11 @@ const styles = StyleSheet.create({
   infoStatus: { fontWeight: '700', marginTop: 4 },
   infoLocation: { color: '#4B5563', marginTop: 7 },
   infoDescription: { color: '#6B7280', marginTop: 6, lineHeight: 18 },
-  detailsButton: { marginTop: 12, paddingVertical: 10, borderRadius: 8, backgroundColor: '#4F46E5', alignItems: 'center' },
+  detailsButton: { marginTop: 12, paddingVertical: 10, borderRadius: 8, backgroundColor: '#2563EB', alignItems: 'center' },
   detailsButtonText: { color: '#FFFFFF', fontWeight: '700' },
   callout: { width: 190, padding: 4 },
   calloutTitle: { color: '#111827', fontWeight: '700', fontSize: 15 },
-  calloutStatus: { color: '#4F46E5', marginTop: 3 },
+  calloutStatus: { color: '#2563EB', marginTop: 3 },
   calloutAction: { color: '#6B7280', fontSize: 12, marginTop: 6 },
   emptyState: {
     position: 'absolute',

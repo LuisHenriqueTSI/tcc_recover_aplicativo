@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#EFF6FF',
   },
   notifTitle: {
     fontSize: 14,
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
   actionButtonSecondary: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#4F46E5',
+    borderColor: '#2563EB',
     marginRight: 0,
   },
   actionButtonText: {
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,

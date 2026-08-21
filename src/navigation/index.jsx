@@ -68,10 +68,10 @@ const PublicAppTabs = ({ navigation }) => {
         options={{
           title: 'Explorar',
           tabBarLabel: () => (
-            <Text style={{ color: '#4F46E5', fontSize: 13, marginBottom: 4, textAlign: 'center', fontWeight: 'bold' }}>Explorar</Text>
+            <Text style={{ color: '#2563EB', fontSize: 13, marginBottom: 4, textAlign: 'center', fontWeight: 'bold' }}>Explorar</Text>
           ),
           tabBarIcon: () => (
-            <MaterialIcons name="home" size={22} color="#4F46E5" />
+            <MaterialIcons name="home" size={22} color="#2563EB" />
           ),
         }}
       />
@@ -95,7 +95,7 @@ const PublicAppTabs = ({ navigation }) => {
                 justifyContent: 'center',
                 marginHorizontal: 8,
                 marginVertical: 4,
-                backgroundColor: '#4F46E5',
+                backgroundColor: '#2563EB',
                 borderRadius: 24,
                 flexDirection: 'row',
                 minWidth: 80,
@@ -134,7 +134,7 @@ const PublicStack = () => {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#4F46E5',
+          backgroundColor: '#2563EB',
           paddingTop: 38,
           paddingBottom: 18,
         },
@@ -318,7 +318,7 @@ const MainAppTabs = ({ navigation }) => {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: '#4F46E5',
+        tabBarActiveTintColor: '#2563EB',
         tabBarInactiveTintColor: '#9CA3AF',
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
@@ -376,7 +376,7 @@ const MainAppTabs = ({ navigation }) => {
           title: 'Mensagens',
           tabBarLabel: 'Mensagens',
           headerTitle: 'Mensagens',
-          headerStyle: { backgroundColor: '#4F46E5' },
+          headerStyle: { backgroundColor: '#2563EB' },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
           tabBarIcon: ({ color, size }) => (
@@ -398,7 +398,7 @@ const MainAppTabs = ({ navigation }) => {
           title: 'Perfil',
           tabBarLabel: 'Perfil',
           headerTitle: 'Perfil',
-          headerStyle: { backgroundColor: '#4F46E5' },
+          headerStyle: { backgroundColor: '#2563EB' },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
           tabBarIcon: ({ color, size }) => (
@@ -416,7 +416,7 @@ const MainStackHeader = ({ navigation, route, options, back }) => {
     : options.headerTitle || options.title || '';
 
   return (
-    <SafeAreaView edges={['top']} style={{ backgroundColor: '#4F46E5' }}>
+    <SafeAreaView edges={['top']} style={{ backgroundColor: '#2563EB' }}>
       <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
         {back && (
           <TouchableOpacity

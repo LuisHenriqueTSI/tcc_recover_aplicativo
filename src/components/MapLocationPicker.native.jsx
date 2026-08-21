@@ -215,7 +215,7 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm 
 
           {(loadingLocation || geocoding) && (
             <View style={styles.loadingOverlay}>
-              <ActivityIndicator color="#4F46E5" size="small" />
+              <ActivityIndicator color="#2563EB" size="small" />
               <Text style={styles.loadingText}>
                 {loadingLocation ? 'Obtendo sua localização...' : 'Identificando endereço...'}
               </Text>
@@ -231,7 +231,7 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm 
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.cardHeader}>
-              <MaterialIcons name="edit-location-alt" size={20} color="#4F46E5" />
+              <MaterialIcons name="edit-location-alt" size={20} color="#2563EB" />
               <Text style={styles.cardTitle}>Endereço selecionado (editável)</Text>
             </View>
 
@@ -315,7 +315,7 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm 
               </>
             ) : (
               <View style={styles.emptyPromptBox}>
-                <MaterialIcons name="touch-app" size={24} color="#6366F1" />
+                <MaterialIcons name="touch-app" size={24} color="#2563EB" />
                 <Text style={styles.emptyPromptText}>
                   Toque em qualquer ponto do mapa acima para selecionar e preencher o endereço automaticamente.
                 </Text>
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: '700', color: '#111827' },
   subtitle: { marginTop: 2, color: '#6B7280', fontSize: 13 },
   closeButton: { padding: 8, paddingHorizontal: 12 },
-  closeText: { color: '#4F46E5', fontWeight: '700', fontSize: 15 },
+  closeText: { color: '#2563EB', fontWeight: '700', fontSize: 15 },
   mapContainer: { flex: 1, position: 'relative' },
   map: { width: '100%', height: '100%' },
   loadingOverlay: {
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#EFF6FF',
     borderRadius: 10,
     padding: 12,
     marginVertical: 10,
@@ -439,18 +439,18 @@ const styles = StyleSheet.create({
   emptyPromptText: {
     flex: 1,
     fontSize: 13,
-    color: '#4338CA',
+    color: '#1D4ED8',
     lineHeight: 18,
   },
   confirmButton: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#2563EB',
     paddingVertical: 13,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
     marginBottom: 8,
   },
-  disabledButton: { backgroundColor: '#A5B4FC' },
+  disabledButton: { backgroundColor: '#93C5FD' },
   confirmText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
 });
 

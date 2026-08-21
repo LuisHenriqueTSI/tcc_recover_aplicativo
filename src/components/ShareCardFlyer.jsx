@@ -6,7 +6,7 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
   if (!item) return null;
 
   const isLost = item.status === 'lost';
-  const statusColor = isLost ? '#DC2626' : '#16A34A';
+  const statusColor = isLost ? '#D64545' : '#2E9B63';
 
   // Cabeçalho dinâmico por espécie (ex: GATO ENCONTRADO, CACHORRO PERDIDO)
   const speciesRaw = String(item.species || '').trim();
@@ -103,7 +103,7 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
   const formattedPhone = formatPhoneWithNine(rawPhone);
   const ownerName = (isThirdParty && thirdParty.name)
     ? thirdParty.name
-    : (item.profiles?.name || item.owner_name || 'Usuário do Recover');
+    : (item.profiles?.name || item.owner_name || 'Usuário do WeFIND');
   const ownerLabel = isLost ? 'Tutor' : 'Encontrado por';
 
   return (
@@ -112,7 +112,7 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
         {/* Faixa Superior de Alerta */}
         <View style={[styles.headerBanner, { backgroundColor: statusColor }]}>
           <View style={styles.headerTopRow}>
-            <Text style={styles.headerAppBadge}>🐾 RECOVER</Text>
+            <Text style={styles.headerAppBadge}>🐾 WeFIND</Text>
             {formattedDate ? <Text style={styles.headerDate}>{formattedDate}</Text> : null}
           </View>
           <Text style={styles.headerStatusText}>{statusHeaderTitle}</Text>

@@ -202,7 +202,7 @@ const ChatScreen = (props) => {
         <View style={styles.chatHeader}>
           <View style={styles.chatAvatar}>
             <Image
-              source={conversation?.avatarUrl ? { uri: conversation.avatarUrl } : require('../assets/logo_recover.png')}
+              source={conversation?.avatarUrl ? { uri: conversation.avatarUrl } : require('../assets/logo_wefind.png')}
               style={styles.chatAvatarImage}
             />
           </View>
@@ -210,7 +210,7 @@ const ChatScreen = (props) => {
             <Text style={styles.chatHeaderName} numberOfLines={1}>{conversation?.otherName || 'Usuário'}</Text>
             {conversation?.itemTitle ? <Text style={styles.chatHeaderPet} numberOfLines={1}>{conversation.itemTitle}</Text> : null}
           </View>
-          <Feather name="message-circle" size={20} color="#C7D2FE" />
+          <Feather name="message-circle" size={20} color="#BFDBFE" />
         </View>
         <FlatList
           ref={flatListRef}
@@ -235,7 +235,7 @@ const ChatScreen = (props) => {
         <SafeAreaView edges={["bottom"]} style={{ backgroundColor: '#fff' }}>
           <View style={styles.inputRow}>
             <TouchableOpacity onPress={handlePickPhoto} style={styles.photoButton}>
-              <Text style={{ color: '#4F46E5', fontWeight: 'bold' }}>Foto</Text>
+              <Text style={{ color: '#2563EB', fontWeight: 'bold' }}>Foto</Text>
             </TouchableOpacity>
             <TextInput
               style={styles.input}
@@ -257,8 +257,8 @@ const ChatScreen = (props) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
-  chatHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#312E81', borderBottomWidth: 1, borderBottomColor: '#4338CA' },
-  chatAvatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#EEF2FF', overflow: 'hidden', marginRight: 10 },
+  chatHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#1E3A8A', borderBottomWidth: 1, borderBottomColor: '#1D4ED8' },
+  chatAvatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#EFF6FF', overflow: 'hidden', marginRight: 10 },
   chatAvatarImage: { width: 42, height: 42, borderRadius: 21, resizeMode: 'cover' },
   chatHeaderContent: { flex: 1, minWidth: 0 },
   chatHeaderName: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },

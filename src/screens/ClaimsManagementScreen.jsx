@@ -143,7 +143,7 @@ export default function ClaimsManagementScreen({ navigation }) {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <ActivityIndicator size="large" color="#2563EB" />
       </View>
     );
   }
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemTabActive: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#2563EB',
   },
   itemTabText: {
     fontSize: 14,
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
   },
   itemLabel: {
     fontSize: 12,
-    color: '#4F46E5',
+    color: '#2563EB',
     marginTop: 6,
     fontWeight: '600',
   },

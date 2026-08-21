@@ -80,13 +80,13 @@ export default function NotificationBell({ style }) {
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Notificações</Text>
           {loading ? (
-            <ActivityIndicator size="large" color="#4F46E5" style={{ marginVertical: 24 }} />
+            <ActivityIndicator size="large" color="#2563EB" style={{ marginVertical: 24 }} />
           ) : (
             <>
               {unreadCount > 0 && (
                 <TouchableOpacity style={styles.notificationBox} onPress={() => { setModalVisible(false); }}>
                   <View style={styles.notificationRow}>
-                    <MaterialIcons name="chat" size={22} color="#4F46E5" style={{ marginRight: 8 }} />
+                    <MaterialIcons name="chat" size={22} color="#2563EB" style={{ marginRight: 8 }} />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.notificationTitle}>{unreadCount === 1 ? 'Nova mensagem' : `${unreadCount} novas mensagens`}</Text>
                       <Text style={styles.notificationDesc}>Clique para ver suas mensagens</Text>
@@ -100,7 +100,7 @@ export default function NotificationBell({ style }) {
                 renderItem={({ item }) => (
                   <View style={styles.notificationBox}>
                     <View style={styles.notificationRow}>
-                      <MaterialIcons name="search" size={22} color="#4F46E5" style={{ marginRight: 8 }} />
+                      <MaterialIcons name="search" size={22} color="#2563EB" style={{ marginRight: 8 }} />
                       <View style={{ flex: 1 }}>
                         <Text style={styles.notificationTitle}>Você encontrou seu pet?</Text>
                         <Text style={styles.notificationDesc}>{item.title}{item.location ? ` - 📍 ${item.location}` : ''}</Text>
@@ -111,7 +111,7 @@ export default function NotificationBell({ style }) {
                         <Text style={styles.actionButtonText}>{loading ? 'Salvando...' : 'Sim! 🎉'}</Text>
                       </TouchableOpacity>
                       <TouchableOpacity style={[styles.actionButton, styles.actionButtonSecondary]} onPress={() => handleNo(item)} disabled={loading}>
-                        <Text style={[styles.actionButtonText, { color: '#4F46E5' }]}>Ainda não</Text>
+                        <Text style={[styles.actionButtonText, { color: '#2563EB' }]}>Ainda não</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -175,15 +175,17 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontWeight: 'bold',
     fontSize: 18,
-    color: '#4F46E5',
+    color: '#2563EB',
     marginBottom: 12,
     textAlign: 'center',
   },
   notificationBox: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F8FAFC',
     borderRadius: 8,
     padding: 12,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   notificationRow: {
     flexDirection: 'row',
@@ -193,11 +195,11 @@ const styles = StyleSheet.create({
   notificationTitle: {
     fontWeight: 'bold',
     fontSize: 15,
-    color: '#4F46E5',
+    color: '#2563EB',
   },
   notificationDesc: {
     fontSize: 13,
-    color: '#374151',
+    color: '#344A51',
   },
   actionRow: {
     flexDirection: 'row',
@@ -206,26 +208,26 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#2E9B63',
     borderRadius: 6,
     paddingVertical: 8,
     alignItems: 'center',
     marginRight: 6,
   },
   actionButtonSecondary: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#4F46E5',
+    borderColor: '#D5DEE1',
     marginRight: 0,
   },
   actionButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 14,
   },
   emptyText: {
     textAlign: 'center',
-    color: '#6B7280',
+    color: '#66787E',
     marginTop: 24,
     fontSize: 14,
   },

@@ -142,7 +142,7 @@ const InboxScreen = () => {
         >
         <View style={styles.avatarCircle}>
           <Image
-            source={item.avatarUrl ? { uri: item.avatarUrl } : require('../assets/logo_recover.png')}
+            source={item.avatarUrl ? { uri: item.avatarUrl } : require('../assets/logo_wefind.png')}
             style={styles.avatarImage}
           />
         </View>
@@ -154,7 +154,7 @@ const InboxScreen = () => {
           {item.itemTitle ? <Text style={styles.itemTitle} numberOfLines={1}>{item.itemTitle}</Text> : null}
           {item.lastPhotoUrl ? (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Feather name="image" size={16} color="#6366F1" style={{ marginRight: 4 }} />
+              <Feather name="image" size={16} color="#2563EB" style={{ marginRight: 4 }} />
               <Text style={styles.lastMessage} numberOfLines={1}>Imagem enviada</Text>
             </View>
           ) : (
@@ -179,7 +179,7 @@ const InboxScreen = () => {
     );
   };
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" color="#4F46E5" />;
+  if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" color="#2563EB" />;
   if (error) return <Text style={styles.error}>{error}</Text>;
 
   return (
@@ -205,7 +205,7 @@ const InboxScreen = () => {
       </View>
       {search.trim() ? (
         searching ? (
-          <ActivityIndicator style={{ flex: 1, marginTop: 32 }} size="large" color="#4F46E5" />
+          <ActivityIndicator style={{ flex: 1, marginTop: 32 }} size="large" color="#2563EB" />
         ) : searchResults.length > 0 ? (
           <FlatList
             data={searchResults}
@@ -216,7 +216,7 @@ const InboxScreen = () => {
                 style={[styles.convBtn, { flexDirection: 'column', alignItems: 'flex-start' }]}
                 activeOpacity={0.85}
               >
-                <Text style={{ fontWeight: 'bold', color: '#4F46E5', marginBottom: 2 }}>{item.conversation.otherName} {item.conversation.itemTitle ? `• ${item.conversation.itemTitle}` : ''}</Text>
+                <Text style={{ fontWeight: 'bold', color: '#2563EB', marginBottom: 2 }}>{item.conversation.otherName} {item.conversation.itemTitle ? `• ${item.conversation.itemTitle}` : ''}</Text>
                 <Text style={{ color: '#1F2937', fontSize: 15, backgroundColor: '#FFF9C4', borderRadius: 6, padding: 4 }}>{item.message.content}</Text>
                 <Text style={{ color: '#6B7280', fontSize: 12, marginTop: 2 }}>{new Date(item.message.sent_at).toLocaleString()}</Text>
               </TouchableOpacity>
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#111827',
     borderWidth: 1,
-    borderColor: '#C7D2FE',
+    borderColor: '#BFDBFE',
   },
   convBtn: {
     flexDirection: 'row',
@@ -308,8 +308,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   convBtnSelected: {
-    borderColor: '#C7D2FE',
-    backgroundColor: '#EEF2FF',
+    borderColor: '#BFDBFE',
+    backgroundColor: '#EFF6FF',
   },
   convMainButton: {
     flex: 1,
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   itemTitle: {
-    color: '#6366F1',
+    color: '#2563EB',
     fontSize: 13,
     marginBottom: 2,
   },

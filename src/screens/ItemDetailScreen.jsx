@@ -108,7 +108,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
     navigation.setOptions({
       title: 'Detalhes do Pet',
       headerStyle: {
-        backgroundColor: '#4F46E5',
+        backgroundColor: '#2563EB',
       },
       headerTintColor: '#fff',
       headerTitleStyle: {
@@ -510,7 +510,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <ActivityIndicator size="large" color="#2563EB" />
       </View>
     );
   }
@@ -823,11 +823,11 @@ const ItemDetailScreen = ({ route, navigation }) => {
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 0, justifyContent: 'flex-end', paddingTop: 8, borderTopWidth: 1, borderTopColor: '#F3F4F6' }}>
                 {isOwner && (
                   <TouchableOpacity
-                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EEF2FF', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10, marginRight: 4 }}
+                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10, marginRight: 4 }}
                     onPress={handleEditItem}
                   >
-                    <MaterialIcons name="edit" size={18} color="#6366F1" />
-                    <Text style={{ color: '#6366F1', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Editar</Text>
+                    <MaterialIcons name="edit" size={18} color="#2563EB" />
+                    <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Editar</Text>
                   </TouchableOpacity>
                 )}
                 {isOwner && renewalInfo.canRenew && (
@@ -854,10 +854,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
               <View style={{ flexDirection: 'column', gap: 8, marginTop: 8 }}>
                 {shouldShowClaimButton && (
                   <TouchableOpacity
-                    style={{ borderWidth: 2, borderColor: '#4F46E5', borderRadius: 8, paddingVertical: 12, alignItems: 'center', backgroundColor: '#EEF2FF' }}
+                    style={{ borderWidth: 2, borderColor: '#2563EB', borderRadius: 8, paddingVertical: 12, alignItems: 'center', backgroundColor: '#EFF6FF' }}
                     onPress={() => setClaimModalVisible(true)}
                   >
-                    <Text style={{ color: '#4F46E5', fontWeight: 'bold', fontSize: 15 }}>Esse é meu!</Text>
+                    <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 15 }}>Esse é meu!</Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity
@@ -897,9 +897,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: '#EEF2FF',
+              backgroundColor: '#EFF6FF',
               borderWidth: 1.5,
-              borderColor: '#6366F1',
+              borderColor: '#2563EB',
               borderRadius: 12,
               paddingVertical: 12,
               gap: 8,
@@ -907,8 +907,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
             onPress={() => setShareFlyerVisible(true)}
             activeOpacity={0.85}
           >
-            <MaterialIcons name="share" size={20} color="#4F46E5" />
-            <Text style={{ color: '#4F46E5', fontWeight: '800', fontSize: 15 }}>
+            <MaterialIcons name="share" size={20} color="#2563EB" />
+            <Text style={{ color: '#2563EB', fontWeight: '800', fontSize: 15 }}>
               Compartilhar Cartaz do Pet
             </Text>
           </TouchableOpacity>
@@ -931,8 +931,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
             <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937' }}>Comentários ({sightings.length})</Text>
             <TouchableOpacity style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }} onPress={handleReportSighting}>
-              <MaterialIcons name="add-comment" size={18} color="#6366F1" />
-              <Text style={{ color: '#6366F1', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Comentar</Text>
+              <MaterialIcons name="add-comment" size={18} color="#2563EB" />
+              <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Comentar</Text>
             </TouchableOpacity>
           </View>
           {sightings.length === 0 ? (
@@ -964,7 +964,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                       {user && s.user_id === user.id && (
                         <View style={{ flexDirection: 'row', marginLeft: 8 }}>
                           <TouchableOpacity onPress={() => handleEditComment(s)} style={{ marginRight: 8 }}>
-                            <MaterialIcons name="edit" size={18} color="#6366F1" />
+                            <MaterialIcons name="edit" size={18} color="#2563EB" />
                           </TouchableOpacity>
                           <TouchableOpacity onPress={() => handleDeleteComment(s)}>
                             <MaterialIcons name="delete" size={18} color="#EF4444" />
@@ -982,24 +982,24 @@ const ItemDetailScreen = ({ route, navigation }) => {
                         {instagram ? (
                           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
                             <FontAwesome name="instagram" size={14} color="#C13584" style={{ marginRight: 4 }} />
-                            <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>@{instagram}</Text>
+                            <Text style={{ color: '#2563EB', fontSize: 12, marginLeft: 2 }}>@{instagram}</Text>
                           </View>
                         ) : null}
                         {whatsapp ? (
                           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
                             <FontAwesome name="whatsapp" size={14} color="#25D366" style={{ marginRight: 4 }} />
-                            <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{whatsapp}</Text>
+                            <Text style={{ color: '#2563EB', fontSize: 12, marginLeft: 2 }}>{whatsapp}</Text>
                           </View>
                         ) : null}
                         {facebook ? (
                           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
                             <FontAwesome name="facebook-square" size={14} color="#1877F3" style={{ marginRight: 4 }} />
-                            <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{facebook}</Text>
+                            <Text style={{ color: '#2563EB', fontSize: 12, marginLeft: 2 }}>{facebook}</Text>
                           </View>
                         ) : null}
                         {contatoExtra ? (
                           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
-                            <Text style={{ color: '#6366F1', fontSize: 12, marginLeft: 2 }}>{contatoExtra}</Text>
+                            <Text style={{ color: '#2563EB', fontSize: 12, marginLeft: 2 }}>{contatoExtra}</Text>
                           </View>
                         ) : null}
                       </View>
@@ -1035,7 +1035,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   onPress={() => setReportReason(reason)}
                   style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10 }}
                 >
-                  <MaterialIcons name={reportReason === reason ? 'radio-button-checked' : 'radio-button-unchecked'} size={21} color={reportReason === reason ? '#4F46E5' : '#9CA3AF'} />
+                  <MaterialIcons name={reportReason === reason ? 'radio-button-checked' : 'radio-button-unchecked'} size={21} color={reportReason === reason ? '#2563EB' : '#9CA3AF'} />
                   <Text style={{ color: '#374151', fontSize: 14, marginLeft: 9 }}>{reason}</Text>
                 </TouchableOpacity>
               ))}
@@ -1125,7 +1125,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 }}
                 style={{ marginBottom: 10, backgroundColor: '#E5E7EB', borderRadius: 8, padding: 10, alignItems: 'center' }}
               >
-                <Text style={{ color: '#4F46E5', fontWeight: 'bold' }}>{editUploading ? 'Abrindo galeria...' : (editCommentPhotoUrl ? 'Trocar foto' : 'Adicionar foto')}</Text>
+                <Text style={{ color: '#2563EB', fontWeight: 'bold' }}>{editUploading ? 'Abrindo galeria...' : (editCommentPhotoUrl ? 'Trocar foto' : 'Adicionar foto')}</Text>
               </TouchableOpacity>
               {editCommentPhotoUrl ? (
                 <Image source={{ uri: editCommentPhotoUrl }} style={{ width: '100%', height: 110, borderRadius: 8, marginBottom: 10 }} />
@@ -1135,7 +1135,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   <Text style={{ color: '#6B7280', fontWeight: 'bold', fontSize: 15 }}>Cancelar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleSaveEditComment} style={{ paddingVertical: 8, paddingHorizontal: 16 }}>
-                  <Text style={{ color: '#4F46E5', fontWeight: 'bold', fontSize: 15 }}>Salvar</Text>
+                  <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 15 }}>Salvar</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -1364,10 +1364,10 @@ const styles = StyleSheet.create({
     color: '#059669',
   },
   badgeCategory: {
-    backgroundColor: '#E0E7FF',
+    backgroundColor: '#DBEAFE',
   },
   badgeCategoryText: {
-    color: '#6366F1',
+    color: '#2563EB',
     fontWeight: 'bold',
     fontSize: 13,
   },
@@ -1518,14 +1518,14 @@ const styles = StyleSheet.create({
   editButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#EFF6FF',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
     marginRight: 8,
   },
   editButtonText: {
-    color: '#6366F1',
+    color: '#2563EB',
     fontWeight: 'bold',
     fontSize: 15,
     marginLeft: 6,
@@ -1545,7 +1545,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   commentsCountBadge: {
-    backgroundColor: '#E0E7FF',
+    backgroundColor: '#DBEAFE',
     borderRadius: 10,
     paddingHorizontal: 8,
     marginLeft: 8,
@@ -1554,7 +1554,7 @@ const styles = StyleSheet.create({
     height: 22,
   },
   commentsCountText: {
-    color: '#6366F1',
+    color: '#2563EB',
     fontWeight: 'bold',
     fontSize: 13,
   },
@@ -1562,13 +1562,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: 'auto',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#EFF6FF',
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   addCommentButtonText: {
-    color: '#6366F1',
+    color: '#2563EB',
     fontWeight: 'bold',
     fontSize: 13,
     marginLeft: 4,
@@ -1640,7 +1640,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   commentContactText: {
-    color: '#6366F1',
+    color: '#2563EB',
     fontSize: 12,
     marginLeft: 2,
   },

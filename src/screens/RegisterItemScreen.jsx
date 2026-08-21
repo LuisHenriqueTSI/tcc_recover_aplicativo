@@ -1312,7 +1312,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         key: 'animal',
         label: 'Pet',
         desc: 'Cães, gatos, aves e outros animais',
-        color: '#F3E8FF',
+        color: '#EFF6FF',
         icon: '🐾'
       }
     ];
@@ -1842,7 +1842,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           />
         </View>
         {loading && (
-          <ActivityIndicator size="large" color="#4F46E5" style={{ marginTop: 20 }} />
+          <ActivityIndicator size="large" color="#2563EB" style={{ marginTop: 20 }} />
         )}
       </View>
     );
@@ -1918,8 +1918,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   statusButtonActive: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
   },
   statusText: {
     fontSize: 14,
@@ -1943,13 +1943,13 @@ const styles = StyleSheet.create({
   uploadButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#4F46E5',
+    color: '#2563EB',
   },
   aiButton: {
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#2563EB',
     marginBottom: 16,
   },
   aiButtonText: {
@@ -2080,8 +2080,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   selectionChipSelected: {
-    borderColor: '#4F46E5',
-    backgroundColor: '#EEF2FF',
+    borderColor: '#2563EB',
+    backgroundColor: '#EFF6FF',
   },
   selectionChipText: {
     color: '#4B5563',
@@ -2089,18 +2089,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   selectionChipTextSelected: {
-    color: '#4338CA',
+    color: '#1D4ED8',
   },
   mapButton: {
     borderWidth: 1,
-    borderColor: '#4F46E5',
+    borderColor: '#2563EB',
     borderRadius: 8,
     paddingVertical: 11,
     alignItems: 'center',
     marginBottom: 12,
   },
   mapButtonText: {
-    color: '#4F46E5',
+    color: '#2563EB',
     fontWeight: '700',
   },
   locationHint: {

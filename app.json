@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "RECOVER",
-    "slug": "recover-app",
+    "name": "WeFIND",
+    "slug": "wefind-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "scheme": "recover",
+    "scheme": "wefind",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#4F46E5"
+      "backgroundColor": "#FFFFFF"
     },
     "plugins": [
       [
@@ -30,7 +30,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.recover.app",
+      "bundleIdentifier": "com.wefind.app",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Permitir acesso às suas fotos para registrar itens",
         "NSCameraUsageDescription": "Permitir acesso à câmera para tirar fotos"
@@ -39,10 +39,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#4F46E5"
+        "backgroundColor": "#FFFFFF"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.recover.app"
+      "package": "com.wefind.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"

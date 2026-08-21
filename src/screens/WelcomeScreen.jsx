@@ -47,12 +47,13 @@ const WelcomeScreen = ({ navigation }) => {
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Image source={require('../assets/logo_recover.png')} style={styles.logoImg} resizeMode="contain" />
+        <View style={styles.circularLogoContainer}>
+          <Image source={require('../assets/logo_wefind.png')} style={styles.circularLogo} resizeMode="contain" />
+        </View>
       </View>
 
       {/* Hero Section */}
       <View style={styles.heroSection}>
-        {/* <Text style={styles.heroTitle}>Bem-vindo ao RECOVER</Text> */}
         <Text style={styles.heroDescription}>
           Ajudamos pessoas a encontrar pets perdidos e conectar quem achou com quem procura
         </Text>
@@ -62,7 +63,7 @@ const WelcomeScreen = ({ navigation }) => {
       <View style={styles.statsContainer}>
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4F46E5" />
+            <ActivityIndicator size="large" color="#004559" />
             <Text style={styles.loadingText}>Carregando estatísticas...</Text>
           </View>
         ) : (
@@ -176,24 +177,38 @@ const WelcomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F8FAFB',
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     padding: 20,
     paddingTop: 10,
     alignItems: 'center',
   },
-  logoImg: {
-    width: 220,
-    height: 220,
+  circularLogoContainer: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: '#FFFFFF',
     alignSelf: 'center',
-    marginBottom: 0,
-    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 3.5,
+    borderColor: '#EFF6FF',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  circularLogo: {
+    width: '100%',
+    height: '100%',
   },
   subtitle: {
     fontSize: 14,
-    color: '#E0E7FF',
+    color: '#64748B',
     marginTop: 4,
   },
   heroSection: {
@@ -203,12 +218,12 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: '#2563EB',
     marginBottom: 8,
   },
   heroDescription: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#64748B',
     textAlign: 'center',
   },
   statsContainer: {
@@ -225,11 +240,11 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#4F46E5',
+    color: '#2563EB',
   },
   statLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#64748B',
     marginTop: 4,
     textAlign: 'center',
   },
@@ -239,7 +254,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: '#0F172A',
     marginBottom: 16,
   },
   step: {
@@ -250,7 +265,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#2563EB',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,

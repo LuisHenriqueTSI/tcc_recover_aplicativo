@@ -32,7 +32,7 @@ const DashboardScreen = ({ navigation }) => {
   if (loading || !statistics) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <ActivityIndicator size="large" color="#2563EB" />
       </View>
     );
   }
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#4F46E5',
+    color: '#2563EB',
   },
   chartTitle: {
     fontSize: 16,

@@ -256,7 +256,7 @@ export const signOut = async () => {
 export const sendPasswordReset = async (email) => {
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'recover://reset-password',
+      redirectTo: 'wefind://reset-password',
     });
     return error;
   } catch (error) {

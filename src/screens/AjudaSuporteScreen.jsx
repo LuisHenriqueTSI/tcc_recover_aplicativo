@@ -23,7 +23,7 @@ const AjudaSuporteScreen = () => {
             <View key={faq.question}>
               <TouchableOpacity style={styles.faqRow} onPress={() => setOpenFaq(isOpen ? null : index)} activeOpacity={0.7}>
                 <Text style={styles.question}>{faq.question}</Text>
-                <Feather name={isOpen ? 'minus' : 'plus'} size={19} color="#4F46E5" />
+                <Feather name={isOpen ? 'minus' : 'plus'} size={19} color="#2563EB" />
               </TouchableOpacity>
               {isOpen ? <Text style={styles.answer}>{faq.answer}</Text> : null}
               {index < faqs.length - 1 ? <View style={styles.divider} /> : null}
@@ -34,8 +34,8 @@ const AjudaSuporteScreen = () => {
 
       <Text style={styles.sectionTitle}>Fale com a equipe</Text>
       <View style={styles.contactRow}>
-        <TouchableOpacity style={styles.contactCard} onPress={() => openContact('mailto:suporte@recoverapp.com')} activeOpacity={0.8}>
-          <View style={[styles.contactIcon, { backgroundColor: '#EEF2FF' }]}><Feather name="mail" size={21} color="#4F46E5" /></View>
+        <TouchableOpacity style={styles.contactCard} onPress={() => openContact('mailto:suporte@wefindapp.com')} activeOpacity={0.8}>
+          <View style={[styles.contactIcon, { backgroundColor: '#EFF6FF' }]}><Feather name="mail" size={21} color="#2563EB" /></View>
           <Text style={styles.contactTitle}>E-mail</Text>
           <Text style={styles.contactText}>Enviar uma mensagem</Text>
         </TouchableOpacity>

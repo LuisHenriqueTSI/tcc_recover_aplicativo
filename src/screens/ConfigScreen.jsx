@@ -55,12 +55,12 @@ const ConfigScreen = ({ navigation }) => {
 
   const SettingRow = ({ icon, title, description, onPress, right }) => (
     <TouchableOpacity style={styles.row} onPress={onPress} disabled={!onPress} activeOpacity={0.7}>
-      <View style={styles.rowIcon}><Feather name={icon} size={19} color="#4F46E5" /></View>
+      <View style={styles.rowIcon}><Feather name={icon} size={19} color="#2563EB" /></View>
       <View style={styles.rowCopy}>
         <Text style={styles.rowTitle}>{title}</Text>
         {description ? <Text style={styles.rowDescription}>{description}</Text> : null}
       </View>
-      {right || <Feather name="chevron-right" size={20} color="#A1A1AA" />}
+      {right || <Feather name="chevron-right" size={20} color="#8A9A9F" />}
     </TouchableOpacity>
   );
 
@@ -68,14 +68,14 @@ const ConfigScreen = ({ navigation }) => {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.sectionLabel}>Preferências</Text>
       <View style={styles.panel}>
-        <SettingRow icon="bell" title="Notificações" description="Receber novidades e mensagens do app" right={<Switch value={preferences.notifications} onValueChange={() => togglePreference('notifications')} trackColor={{ false: '#D4D4D8', true: '#A5B4FC' }} thumbColor={preferences.notifications ? '#4F46E5' : '#F4F4F5'} />} />
+        <SettingRow icon="bell" title="Notificações" description="Receber novidades e mensagens do app" right={<Switch value={preferences.notifications} onValueChange={() => togglePreference('notifications')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.notifications ? '#2563EB' : '#F8FAFC'} />} />
         <View style={styles.divider} />
-        <SettingRow icon="clock" title="Lembretes de publicações" description="Avisar quando uma publicação precisar de renovação" right={<Switch value={preferences.reminders} onValueChange={() => togglePreference('reminders')} trackColor={{ false: '#D4D4D8', true: '#A5B4FC' }} thumbColor={preferences.reminders ? '#4F46E5' : '#F4F4F5'} />} />
+        <SettingRow icon="clock" title="Lembretes de publicações" description="Avisar quando uma publicação precisar de renovação" right={<Switch value={preferences.reminders} onValueChange={() => togglePreference('reminders')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.reminders ? '#2563EB' : '#F8FAFC'} />} />
       </View>
 
-      <Text style={styles.sectionLabel}>Conta e segurança</Text>
+      <Text style={styles.sectionLabel}>Conta</Text>
       <View style={styles.panel}>
-        <SettingRow icon="user" title="Editar perfil" description="Nome, localização, telefone e foto" onPress={() => navigation.navigate('EditProfile')} />
+        <SettingRow icon="user" title="Editar perfil" description="Nome, telefone e localização" onPress={() => navigation.navigate('EditProfile')} />
         <View style={styles.divider} />
         <SettingRow icon="lock" title="Alterar senha" description="Mantenha sua conta protegida" onPress={handlePasswordChange} />
         <View style={styles.divider} />
@@ -86,16 +86,16 @@ const ConfigScreen = ({ navigation }) => {
       <View style={styles.panel}>
         <SettingRow icon="help-circle" title="Ajuda e suporte" onPress={() => navigation.navigate('AjudaSuporte')} />
         <View style={styles.divider} />
-        <SettingRow icon="file-text" title="Termos de uso" onPress={() => Linking.openURL('https://recover.com/termos')} />
+        <SettingRow icon="file-text" title="Termos de uso" onPress={() => Linking.openURL('https://wefind.app/termos')} />
         <View style={styles.divider} />
-        <SettingRow icon="shield" title="Política de privacidade" onPress={() => Linking.openURL('https://recover.com/privacidade')} />
+        <SettingRow icon="shield" title="Política de privacidade" onPress={() => Linking.openURL('https://wefind.app/privacidade')} />
       </View>
 
       <TouchableOpacity style={styles.logout} onPress={signOut} activeOpacity={0.8}>
         <Feather name="log-out" size={18} color="#DC2626" />
         <Text style={styles.logoutText}>Sair da conta</Text>
       </TouchableOpacity>
-      <Text style={styles.version}>Recover • versão 1.0.0</Text>
+      <Text style={styles.version}>WeFIND • versão 1.0.0</Text>
 
       <Modal visible={passwordModalVisible} transparent animationType="fade" onRequestClose={() => setPasswordModalVisible(false)}>
         <View style={styles.modalBackdrop}>
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   sectionLabel: { color: '#71717A', fontSize: 12, fontWeight: '800', letterSpacing: 1, marginBottom: 9, marginLeft: 3, textTransform: 'uppercase' },
   panel: { backgroundColor: '#fff', borderRadius: 16, paddingHorizontal: 15, marginBottom: 22, borderWidth: 1, borderColor: '#E4E4E7' },
   row: { minHeight: 68, flexDirection: 'row', alignItems: 'center' },
-  rowIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  rowIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   rowCopy: { flex: 1, paddingVertical: 10 },
   rowTitle: { color: '#18181B', fontSize: 15, fontWeight: '700' },
   rowDescription: { color: '#71717A', fontSize: 12, marginTop: 3, lineHeight: 17 },
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 10, marginTop: 17 },
   cancelButton: { paddingVertical: 11, paddingHorizontal: 10 },
   cancelText: { color: '#71717A', fontWeight: '700' },
-  saveButton: { backgroundColor: '#4F46E5', borderRadius: 10, paddingVertical: 11, paddingHorizontal: 14 },
+  saveButton: { backgroundColor: '#2563EB', borderRadius: 10, paddingVertical: 11, paddingHorizontal: 14 },
   saveText: { color: '#fff', fontWeight: '800' },
 });
 

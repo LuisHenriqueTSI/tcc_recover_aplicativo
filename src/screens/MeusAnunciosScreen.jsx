@@ -100,7 +100,7 @@ const MeusAnunciosScreen = ({ navigation }) => {
   const attentionCount = (grouped.renovar || []).length + (grouped.inativos || []).length;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadItems(true)} tintColor="#4F46E5" colors={['#4F46E5']} />}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadItems(true)} tintColor="#2563EB" colors={['#2563EB']} />}>
       <View style={styles.summaryBar}>
         <View style={styles.summaryItem}><Text style={styles.summaryValue}>{items.length}</Text><Text style={styles.summaryLabel}>pets</Text></View>
         <View style={styles.summaryDivider} />
@@ -109,10 +109,10 @@ const MeusAnunciosScreen = ({ navigation }) => {
         <View style={styles.summaryItem}><Text style={[styles.summaryValue, { color: '#B45309' }]}>{attentionCount}</Text><Text style={styles.summaryLabel}>atenção</Text></View>
       </View>
 
-      {loading ? <ActivityIndicator size="large" color="#4F46E5" style={styles.loader} /> : null}
+      {loading ? <ActivityIndicator size="large" color="#2563EB" style={styles.loader} /> : null}
       {!loading && !items.length ? (
         <View style={styles.empty}>
-          <View style={styles.emptyIcon}><Feather name="inbox" size={28} color="#6366F1" /></View>
+          <View style={styles.emptyIcon}><Feather name="inbox" size={28} color="#2563EB" /></View>
           <Text style={styles.emptyTitle}>Nada publicado ainda</Text>
           <Text style={styles.emptyText}>Quando você publicar um pet perdido ou encontrado, ele aparecerá aqui.</Text>
           <TouchableOpacity style={styles.publishButton} onPress={() => navigation.navigate('RegisterItem')}><Feather name="plus" size={17} color="#fff" /><Text style={styles.publishText}>Criar publicação</Text></TouchableOpacity>
@@ -126,35 +126,35 @@ const MeusAnunciosScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F5F5' },
+  container: { flex: 1, backgroundColor: '#F8FAFB' },
   content: { padding: 16, paddingBottom: 44 },
-  summaryBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1, borderColor: '#E1E4E6', borderRadius: 10, paddingVertical: 13, paddingHorizontal: 14, marginBottom: 22 },
+  summaryBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingVertical: 13, paddingHorizontal: 14, marginBottom: 22 },
   summaryItem: { flex: 1 },
-  summaryValue: { color: '#27272A', fontSize: 21, fontWeight: '800' },
-  summaryLabel: { color: '#71717A', fontSize: 11, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
-  summaryDivider: { height: 30, width: 1, backgroundColor: '#E4E4E7', marginHorizontal: 10 },
+  summaryValue: { color: '#0F172A', fontSize: 21, fontWeight: '800' },
+  summaryLabel: { color: '#64748B', fontSize: 11, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
+  summaryDivider: { height: 30, width: 1, backgroundColor: '#E2E8F0', marginHorizontal: 10 },
   loader: { marginTop: 32 },
   section: { marginBottom: 20 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingHorizontal: 2 },
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  sectionTitle: { color: '#27272A', fontSize: 15, fontWeight: '800' },
-  count: { color: '#52525B', backgroundColor: '#E4E4E7', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, fontSize: 11, fontWeight: '800' },
-  itemCard: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E1E4E6', borderRadius: 10, padding: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center', minHeight: 84 },
+  sectionTitle: { color: '#0F172A', fontSize: 15, fontWeight: '800' },
+  count: { color: '#475569', backgroundColor: '#F1F5F9', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, fontSize: 11, fontWeight: '800' },
+  itemCard: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, padding: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center', minHeight: 84 },
   itemIcon: { width: 44, height: 44, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 11 },
   itemContent: { flex: 1, minWidth: 0 },
-  itemTitle: { color: '#18181B', fontSize: 14, fontWeight: '800', marginBottom: 5 },
+  itemTitle: { color: '#0F172A', fontSize: 14, fontWeight: '800', marginBottom: 5 },
   metaLine: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  itemMeta: { color: '#A1A1AA', fontSize: 12, flex: 1 },
+  itemMeta: { color: '#94A3B8', fontSize: 12, flex: 1 },
   statusPill: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 4, marginTop: 7 },
   statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 5 },
   statusText: { fontSize: 11, fontWeight: '800' },
-  renewButton: { backgroundColor: '#4F46E5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 5, marginLeft: 7 },
+  renewButton: { backgroundColor: '#2563EB', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 5, marginLeft: 7 },
   renewText: { color: '#fff', fontSize: 12, fontWeight: '800' },
-  empty: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E1E4E6', padding: 26, alignItems: 'center', marginTop: 4 },
-  emptyIcon: { width: 56, height: 56, borderRadius: 14, backgroundColor: '#EEF2FF', justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
-  emptyTitle: { color: '#27272A', fontSize: 17, fontWeight: '800' },
-  emptyText: { color: '#71717A', textAlign: 'center', fontSize: 13, lineHeight: 19, marginTop: 7, marginBottom: 18 },
-  publishButton: { backgroundColor: '#4F46E5', borderRadius: 8, paddingVertical: 11, paddingHorizontal: 17, flexDirection: 'row', alignItems: 'center', gap: 7 },
+  empty: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', padding: 26, alignItems: 'center', marginTop: 4 },
+  emptyIcon: { width: 56, height: 56, borderRadius: 14, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
+  emptyTitle: { color: '#0F172A', fontSize: 17, fontWeight: '800' },
+  emptyText: { color: '#64748B', textAlign: 'center', fontSize: 13, lineHeight: 19, marginTop: 7, marginBottom: 18 },
+  publishButton: { backgroundColor: '#2563EB', borderRadius: 8, paddingVertical: 11, paddingHorizontal: 17, flexDirection: 'row', alignItems: 'center', gap: 7 },
   publishText: { color: '#fff', fontSize: 13, fontWeight: '800' },
 });
 

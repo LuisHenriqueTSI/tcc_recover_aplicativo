@@ -169,290 +169,92 @@ const RegisterScreen = ({ navigation }) => {
   return (
     <View style={styles.bgFull}>
       <ScrollView contentContainerStyle={styles.centeredScroll} keyboardShouldPersistTaps="handled">
-        <Image source={require('../assets/logo_recover.png')} style={styles.logoImg} resizeMode="contain" />
-        <View style={{ alignItems: 'center', marginBottom: 8, marginTop: -8 }}>
-          <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#4F46E5', marginBottom: 2 }}>Criar conta</Text>
-          <Text style={{ fontSize: 15, color: '#6B7280', textAlign: 'center' }}>Junte-se à nossa comunidade</Text>
+        <View style={styles.circularLogoContainer}>
+          <Image source={require('../assets/logo_wefind.png')} style={styles.circularLogo} resizeMode="contain" />
+        </View>
+        <View style={{ alignItems: 'center', marginBottom: 8, marginTop: 4 }}>
+          <Text style={{ fontSize: 22, fontWeight: '800', color: '#0F172A', marginBottom: 2 }}>Criar sua conta</Text>
+          <Text style={{ fontSize: 14, color: '#64748B', textAlign: 'center' }}>Junte-se à nossa comunidade</Text>
         </View>
         <View style={styles.formBox}>
-          <Input
-            label="Nome Completo"
-            placeholder="Seu Nome"
-            value={name}
-            onChangeText={setName}
-            error={errors.name}
-            style={styles.input}
-            inputStyle={styles.inputField}
-          />
+          <Input label="Nome Completo" placeholder="Seu Nome" value={name} onChangeText={setName} error={errors.name} style={styles.input} inputStyle={styles.inputField} />
 
-          {/* Seção de Localização com Mapa */}
           <View style={styles.locationSection}>
             <Text style={styles.label}>Sua Localização *</Text>
-            
-            <TouchableOpacity
-              style={styles.mapPickerButton}
-              onPress={() => setMapModalVisible(true)}
-              activeOpacity={0.8}
-            >
-              <MaterialIcons name="map" size={20} color="#4F46E5" />
+            <TouchableOpacity style={styles.mapPickerButton} onPress={() => setMapModalVisible(true)} activeOpacity={0.8}>
+              <MaterialIcons name="map" size={20} color="#2563EB" />
               <Text style={styles.mapPickerButtonText}>
-                {selectedCity && selectedState ? '📍 Alterar localização no mapa' : '🗺️ Escolher localização no mapa'}
+                {selectedCity ? '🗺️ Alterar no mapa' : '🗺️ Escolher localização no mapa'}
               </Text>
             </TouchableOpacity>
 
-            {(selectedCity || selectedState) ? (
+            {selectedCity ? (
               <View style={styles.selectedLocationCard}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <MaterialIcons name="place" size={18} color="#16A34A" />
-                  <Text style={styles.selectedLocationText}>
-                    {[selectedCity, selectedState].filter(Boolean).join(', ')}
-                  </Text>
-                </View>
-                {selectedAddressText ? (
-                  <Text style={styles.selectedAddressSubtext} numberOfLines={2}>
-                    {selectedAddressText}
-                  </Text>
-                ) : null}
+                <Text style={styles.selectedLocationText}>📍 {selectedCity}, {selectedState}</Text>
+                {selectedAddressText ? <Text style={styles.selectedAddressSubtext} numberOfLines={2}>{selectedAddressText}</Text> : null}
               </View>
-            ) : (
-              <Text style={styles.locationHelpText}>
-                Toque no botão para definir seu ponto no mapa e preencher sua cidade e estado.
-              </Text>
-            )}
+            ) : null}
 
-            {errors.location ? <Text style={styles.error}>{errors.location}</Text> : null}
+            {errors.city ? <Text style={styles.error}>{errors.city}</Text> : null}
+            <Text style={styles.locationHelpText}>Selecione o ponto no mapa para definir automaticamente sua cidade e estado.</Text>
           </View>
 
-          <Input
-            label="E-mail"
-            placeholder="seu@email.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            error={errors.email}
-            style={styles.input}
-            inputStyle={styles.inputField}
-          />
-          <Input
-            label="WhatsApp"
-            placeholder="(11) 99999-9999"
-            value={formatBrazilianPhone(whatsapp)}
-            onChangeText={text => setWhatsapp(text.replace(/\D/g, ''))}
-            keyboardType="phone-pad"
-            error={errors.whatsapp}
-            style={styles.input}
-            inputStyle={styles.inputField}
-          />
-          <Input
-            label="Senha"
-            placeholder="••••••••"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={true}
-            error={errors.password}
-            style={styles.input}
-            inputStyle={styles.inputField}
-          />
-          <Input
-            label="Confirmar Senha"
-            placeholder="••••••••"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry={true}
-            error={errors.confirmPassword}
-            style={styles.input}
-            inputStyle={styles.inputField}
-          />
+          <Input label="E-mail" placeholder="seu@email.com" value={email} onChangeText={setEmail} keyboardType="email-address" error={errors.email} style={styles.input} inputStyle={styles.inputField} />
+          <Input label="WhatsApp (com DDD)" placeholder="(11) 99999-9999" value={formatBrazilianPhone(whatsapp)} onChangeText={text => setWhatsapp(text.replace(/\D/g, ''))} keyboardType="phone-pad" error={errors.phone} style={styles.input} inputStyle={styles.inputField} />
+          <Input label="Senha" placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry={true} error={errors.password} style={styles.input} inputStyle={styles.inputField} />
+          <Input label="Confirmar Senha" placeholder="••••••••" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry={true} error={errors.confirmPassword} style={styles.input} inputStyle={styles.inputField} />
+          
           {pendingVerification ? (
-            <Input
-              label="Código de verificação"
-              placeholder="123456"
-              value={verificationCode}
-              onChangeText={text => setVerificationCode(text.replace(/\D/g, '').slice(0, 6))}
-              keyboardType="number-pad"
-              style={styles.input}
-              inputStyle={styles.inputField}
-            />
+            <Input label="Código de verificação" placeholder="123456" value={verificationCode} onChangeText={setVerificationCode} keyboardType="number-pad" style={styles.input} inputStyle={styles.inputField} />
           ) : null}
+
           <Button
-            title={isBusy ? 'Processando...' : pendingVerification ? 'Confirmar código' : 'Cadastrar-se'}
+            title={isSubmitting ? 'Processando...' : pendingVerification ? 'Confirmar código' : 'Cadastrar'}
             onPress={handleRegister}
-            disabled={isBusy}
-            loading={isBusy}
+            disabled={isSubmitting}
+            loading={isSubmitting}
             style={styles.loginButton}
             textStyle={styles.loginButtonText}
           />
         </View>
         <View style={styles.footerRow}>
           <Text style={styles.footerText}>Já tem conta? </Text>
-          <Text style={styles.createAccountText} onPress={() => navigation.navigate('Login')}>Fazer Login</Text>
+          <Text style={styles.createAccountText} onPress={() => navigation.navigate('Login')}>Fazer login</Text>
         </View>
       </ScrollView>
 
-      {/* Modal do Mapa para Selecionar Localização */}
       <MapLocationPicker
         visible={mapModalVisible}
-        initialLocation={selectedCoordinate}
         mode="profile"
+        onSelectLocation={handleMapSelectLocation}
         onClose={() => setMapModalVisible(false)}
-        onConfirm={({ coordinate, address, addressDetails, addressText }) => {
-          setSelectedCoordinate(coordinate);
-          const resolvedCity = addressDetails?.city || address?.city || address?.subregion || address?.district || '';
-          const rawRegion = String(addressDetails?.state || address?.region || '').trim();
-          const normRegion = normalizeRegionName(rawRegion);
-          const resolvedState = states.includes(rawRegion.toUpperCase())
-            ? rawRegion.toUpperCase()
-            : (normalizedRegionToUf[normRegion] || rawRegion);
-
-          setSelectedCity(resolvedCity);
-          setSelectedState(resolvedState);
-          setSelectedAddressText(addressText || addressDetails?.text || '');
-          setErrors(prev => ({ ...prev, location: undefined, selectedCity: undefined, selectedState: undefined }));
-          setMapModalVisible(false);
-        }}
       />
     </View>
   );
 };
 
-
 const styles = StyleSheet.create({
-  label: {
-    fontSize: 15,
-    color: '#374151',
-    marginBottom: 4,
-    fontWeight: '600',
-  },
-  locationSection: {
-    marginBottom: 10,
-  },
-  mapPickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#EEF2FF',
-    borderWidth: 1.5,
-    borderColor: '#6366F1',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    gap: 8,
-    marginBottom: 6,
-  },
-  mapPickerButtonText: {
-    color: '#4F46E5',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  selectedLocationCard: {
-    backgroundColor: '#F0FDF4',
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-    borderRadius: 8,
-    padding: 8,
-    marginTop: 2,
-    marginBottom: 4,
-  },
-  selectedLocationText: {
-    color: '#166534',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  selectedAddressSubtext: {
-    color: '#15803D',
-    fontSize: 12,
-    marginTop: 2,
-    opacity: 0.85,
-  },
-  locationHelpText: {
-    color: '#6B7280',
-    fontSize: 12,
-    lineHeight: 16,
-    marginTop: 2,
-  },
-  error: {
-    color: '#EF4444',
-    fontSize: 13,
-    marginTop: 2,
-  },
-  bgFull: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  centeredScroll: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100%',
-    paddingVertical: 4,
-    backgroundColor: '#F9FAFB',
-  },
-  logoImg: {
-    width: 220,
-    height: 220,
-    alignSelf: 'center',
-    marginBottom: 0,
-    backgroundColor: 'transparent',
-  },
-  formBox: {
-    width: '100%',
-    maxWidth: 340,
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    marginTop: 0,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    alignSelf: 'center',
-  },
-  input: {
-    marginBottom: 8,
-  },
-  inputField: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 10,
-    borderColor: '#E5E7EB',
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    fontSize: 15,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    marginBottom: 6,
-    alignItems: 'flex-end',
-  },
-  loginButton: {
-    marginTop: 8,
-    backgroundColor: '#4F46E5',
-    borderRadius: 14,
-    paddingVertical: 10,
-    marginBottom: 2,
-  },
-  loginButtonText: {
-    fontWeight: 'bold',
-    fontSize: 17,
-    letterSpacing: 0.5,
-  },
-  footerRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  footerText: {
-    color: '#6B7280',
-    fontSize: 15,
-  },
-  createAccountText: {
-    color: '#4F46E5',
-    fontWeight: 'bold',
-    fontSize: 15,
-    textDecorationLine: 'underline',
-  },
+  locationSection: { marginBottom: 10 },
+  label: { fontSize: 14, fontWeight: '600', color: '#0F172A', marginBottom: 6 },
+  mapPickerButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#EFF6FF', borderWidth: 1.5, borderColor: '#DBEAFE', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, gap: 8, marginBottom: 6 },
+  mapPickerButtonText: { color: '#2563EB', fontSize: 14, fontWeight: '700' },
+  selectedLocationCard: { backgroundColor: '#E5F6ED', borderWidth: 1, borderColor: '#2E9B63', borderRadius: 8, padding: 8, marginTop: 2, marginBottom: 4 },
+  selectedLocationText: { color: '#217A4C', fontSize: 14, fontWeight: '700' },
+  selectedAddressSubtext: { color: '#2E9B63', fontSize: 12, marginTop: 2, opacity: 0.9 },
+  locationHelpText: { color: '#64748B', fontSize: 12, lineHeight: 16, marginTop: 2 },
+  error: { color: '#D64545', fontSize: 13, marginTop: 2 },
+  bgFull: { flex: 1, backgroundColor: '#F8FAFB' },
+  centeredScroll: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', minHeight: '100%', paddingVertical: 4, backgroundColor: '#F8FAFB' },
+  circularLogoContainer: { width: 110, height: 110, borderRadius: 55, backgroundColor: '#FFFFFF', alignSelf: 'center', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 3.5, borderColor: '#EFF6FF', shadowColor: '#2563EB', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.16, shadowRadius: 8, elevation: 4, marginBottom: 4 },
+  circularLogo: { width: '100%', height: '100%' },
+  formBox: { width: '100%', maxWidth: 340, backgroundColor: '#FFFFFF', borderRadius: 18, paddingVertical: 10, paddingHorizontal: 10, marginTop: 0, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, alignSelf: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
+  input: { marginBottom: 8 },
+  inputField: { backgroundColor: '#F8FAFC', borderRadius: 10, borderColor: '#E2E8F0', borderWidth: 1, paddingHorizontal: 14, fontSize: 15 },
+  loginButton: { marginTop: 8, backgroundColor: '#2563EB', borderRadius: 14, paddingVertical: 10, marginBottom: 2 },
+  loginButtonText: { fontWeight: 'bold', fontSize: 17, letterSpacing: 0.5, color: '#FFFFFF' },
+  footerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 16, marginBottom: 8 },
+  footerText: { color: '#64748B', fontSize: 15 },
+  createAccountText: { color: '#2563EB', fontWeight: 'bold', fontSize: 15, textDecorationLine: 'underline' },
 });
 
 export default RegisterScreen;
