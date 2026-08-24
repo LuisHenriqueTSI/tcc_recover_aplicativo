@@ -22,7 +22,7 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 ✅ **Autenticação, Notificações e WhatsApp**
 - Registro e login direto e simplificado com nome, email, WhatsApp e senha (sem exigência de localização no cadastro).
 - **Verificação em 2 etapas por WhatsApp:** Envio do código de 6 dígitos via Evolution API / Supabase Functions com opção de reenvio com timer de recarga e edição rápida de dados.
-- **Notificações e Alertas por WhatsApp:** Caixa de consentimento no cadastro (`whatsapp_notifications_enabled`) e controle de preferências na tela de configurações (`ConfigScreen.jsx`) com integração nativa da Evolution API para envio de alertas, avistamentos e mensagens.
+- **Notificações e Alertas por WhatsApp:** Caixa de consentimento no cadastro (`whatsapp_notifications_enabled`), controle de preferências na tela de configurações (`ConfigScreen.jsx`), botão de disparo de teste instantâneo e alertas em tempo real para os tutores sobre **novos avistamentos de pets** via Evolution API.
 - Ao entrar, o feed exibe automaticamente publicações de **Todo o Brasil**, com opção de filtrar por estado, cidade ou mapa no cabeçalho.
 - Rolagem inteligente e fluida com `KeyboardAwareScrollView` prevenindo sobreposição do teclado virtual nos formulários.
 - Perfis de usuário com foto de avatar e edição de localidade opcional.

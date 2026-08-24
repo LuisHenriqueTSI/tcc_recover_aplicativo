@@ -302,40 +302,32 @@ export async function createNotification({ user_id, type, title, message, item_i
     itemId: item_id,
   });
 
-  console.log('[notifications.createNotification] Payload a inserir:', payload);
+  // Sempre dispara a notificação para o WhatsApp (se o usuário deu consentimento)
+  try {
+    await dispatchSystemNotificationToWhatsApp({
+      userId: user_id,
+      title,
+      message,
+      type,
+    });
+  } catch (whatsappError) {
+    console.warn('[notifications.createNotification] Falha ao enviar para WhatsApp:', whatsappError);
+  }
 
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('notifications')
-      .insert(payload)
-      .select()
-      .single();
+      .insert(payload);
 
     if (error) {
-      console.error('[notifications.createNotification] Erro ao inserir:', error);
-      if (!shouldIgnoreNotificationError(error)) {
-        throw error;
-      }
-      return null;
+      console.warn('[notifications.createNotification] Aviso ao inserir no banco:', error.message);
+    } else {
+      console.log('[notifications.createNotification] ✓ Notificação salva no banco com sucesso');
     }
-
-    console.log('[notifications.createNotification] ✓ Notificação criada com sucesso:', data.id);
-
-    try {
-      await dispatchSystemNotificationToWhatsApp({
-        userId: user_id,
-        title,
-        message,
-        type,
-      });
-    } catch (whatsappError) {
-      console.warn('[notifications.createNotification] Falha ao enviar para WhatsApp:', whatsappError);
-    }
-
-    return data;
+    return payload;
   } catch (err) {
-    console.error('[notifications.createNotification] Exceção:', err);
-    throw err;
+    console.warn('[notifications.createNotification] Exceção ao salvar no banco:', err.message);
+    return null;
   }
 }
 

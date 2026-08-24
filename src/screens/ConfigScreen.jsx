@@ -85,6 +85,35 @@ const ConfigScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
+  const handleTestWhatsAppNotification = async () => {
+    if (!user?.id) {
+      Alert.alert('Login necessário', 'Você precisa estar logado para testar.');
+      return;
+    }
+
+    try {
+      const { dispatchSystemNotificationToWhatsApp } = require('../services/whatsappNotifications');
+      const result = await dispatchSystemNotificationToWhatsApp({
+        userId: user.id,
+        title: '🐾 Teste de Alerta WeFIND',
+        message: 'Olá! Este é um teste confirmando que o seu WhatsApp está 100% configurado para receber notificações do WeFIND.',
+        type: 'test_alert',
+      });
+
+      if (result?.sent) {
+        Alert.alert('Sucesso! 🎉', 'Mensagem de teste enviada para o seu WhatsApp cadastrado.');
+      } else if (result?.reason === 'user-opted-out') {
+        Alert.alert('Notificações desativadas', 'Você desativou o recebimento de mensagens no WhatsApp. Ative a chave acima para receber.');
+      } else if (result?.reason === 'missing-whatsapp') {
+        Alert.alert('WhatsApp não cadastrado', 'Edite seu perfil para informar seu número de WhatsApp.');
+      } else {
+        Alert.alert('Status do Envio', result?.reason || 'Verifique o status da Evolution API.');
+      }
+    } catch (err) {
+      Alert.alert('Erro ao enviar', err.message || 'Falha ao disparar mensagem.');
+    }
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.sectionLabel}>Preferências</Text>
@@ -94,6 +123,8 @@ const ConfigScreen = ({ navigation }) => {
         <SettingRow icon="message-circle" title="Notificações por WhatsApp" description="Receber avisos e avistamentos de pets no seu WhatsApp" right={<Switch value={preferences.whatsappNotifications} onValueChange={() => togglePreference('whatsappNotifications')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.whatsappNotifications ? '#2563EB' : '#F8FAFC'} />} />
         <View style={styles.divider} />
         <SettingRow icon="clock" title="Lembretes de publicações" description="Avisar quando uma publicação precisar de renovação" right={<Switch value={preferences.reminders} onValueChange={() => togglePreference('reminders')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.reminders ? '#2563EB' : '#F8FAFC'} />} />
+        <View style={styles.divider} />
+        <SettingRow icon="send" title="Enviar teste no WhatsApp" description="Disparar um alerta de teste para o seu número agora" onPress={handleTestWhatsAppNotification} />
       </View>
 
       <Text style={styles.sectionLabel}>Conta</Text>

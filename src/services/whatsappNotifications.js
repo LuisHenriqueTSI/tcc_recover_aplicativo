@@ -79,7 +79,10 @@ export async function sendWhatsAppMessage({ phone, title, message, text }) {
 }
 
 export async function dispatchSystemNotificationToWhatsApp({ userId, title, message, type }) {
+  console.log('[dispatchSystemNotificationToWhatsApp] ➡️ Iniciando envio para userId:', userId, { title, type });
+
   if (!userId || !title || !message) {
+    console.warn('[dispatchSystemNotificationToWhatsApp] ❌ Dados insuficientes:', { userId, title, message });
     return { sent: false, reason: 'missing-data' };
   }
 
@@ -90,24 +93,32 @@ export async function dispatchSystemNotificationToWhatsApp({ userId, title, mess
       .eq('id', userId)
       .maybeSingle();
 
+    console.log('[dispatchSystemNotificationToWhatsApp] 👤 Perfil obtido:', { profile, profileError });
+
     if (profileError) {
       console.warn('[whatsapp-notifications] Falha ao buscar perfil:', profileError);
       return { sent: false, reason: 'profile-error', error: profileError };
     }
 
     if (profile?.whatsapp_notifications_enabled === false) {
-      console.log('[whatsapp-notifications] Usuário optou por não receber notificações por WhatsApp:', userId);
+      console.log('[whatsapp-notifications] ⚠️ Usuário optou por não receber notificações por WhatsApp:', userId);
       return { sent: false, reason: 'user-opted-out' };
     }
 
-    const phone = normalizeWhatsAppNumber(profile?.whatsapp || profile?.phone);
+    const rawPhone = profile?.whatsapp || profile?.phone;
+    const phone = normalizeWhatsAppNumber(rawPhone);
+    console.log('[dispatchSystemNotificationToWhatsApp] 📞 Telefone processado:', { rawPhone, normalized: phone });
+
     if (!phone) {
-      console.warn('[whatsapp-notifications] Nenhum WhatsApp/telefone encontrado para o usuário:', userId);
+      console.warn('[whatsapp-notifications] ❌ Nenhum WhatsApp/telefone encontrado para o usuário:', userId);
       return { sent: false, reason: 'missing-whatsapp' };
     }
 
     // 1. Tenta envio direto para Evolution API
+    console.log('[dispatchSystemNotificationToWhatsApp] 🚀 Disparando sendWhatsAppMessage direto...');
     const directResult = await sendWhatsAppMessage({ phone, title, message });
+    console.log('[dispatchSystemNotificationToWhatsApp] 📡 Resultado envio direto:', directResult);
+
     if (directResult.sent) {
       return directResult;
     }

@@ -72,7 +72,7 @@ const formatStreetNumberNeighborhood = (item) => {
 
 const ItemDetailScreen = ({ route, navigation }) => {
   const { itemId } = route.params;
-  const { user, isAdmin } = useAuth();
+  const { user, userProfile, isAdmin } = useAuth();
   const [item, setItem] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [owner, setOwner] = useState(null);
@@ -459,9 +459,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
   };
 
   const handleSubmitSighting = async (form) => {
+    console.log('[ItemDetailScreen.handleSubmitSighting] ➡️ Iniciando com form:', form);
     setSightingLoading(true);
     try {
-      await sightingsService.createSighting({
+      const created = await sightingsService.createSighting({
         item_id: itemId,
         user_id: user.id,
         location: form.location,
@@ -469,10 +470,36 @@ const ItemDetailScreen = ({ route, navigation }) => {
         contact_info: form.contact_info,
         photo_url: form.photo_url,
       });
+      console.log('[ItemDetailScreen.handleSubmitSighting] ✓ Avistamento criado no banco:', created);
       setSightingModalVisible(false);
       loadSightings();
-      Alert.alert('Sucesso', 'Comentário enviado!');
+
+      console.log('[ItemDetailScreen.handleSubmitSighting] item atual:', { itemId, owner_id: item?.owner_id, title: item?.title });
+
+      // Notifica o tutor do pet sobre o novo avistamento (inclusive por WhatsApp se opt-in)
+      if (item?.owner_id) {
+        try {
+          const { createNotification } = require('../services/notifications');
+          const commenterName = userProfile?.name || user?.user_metadata?.name || 'Um membro da comunidade';
+          console.log('[ItemDetailScreen] Disparando notificação de avistamento para o tutor:', { ownerId: item.owner_id, commenter: commenterName });
+          const notifRes = await createNotification({
+            user_id: item.owner_id,
+            type: 'sighting',
+            title: `🐾 Novo avistamento de ${item.title || 'seu pet'}!`,
+            message: `${commenterName} informou ter avistado o pet em: ${form.location || 'Local informado'}.\n\nDetalhes: "${form.description || ''}"\n\nAcesse o WeFIND para conferir.`,
+            item_id: item.id,
+          });
+          console.log('[ItemDetailScreen] Resultado da createNotification:', notifRes);
+        } catch (notifErr) {
+          console.error('[ItemDetailScreen] Falha ao enviar notificação de avistamento:', notifErr);
+        }
+      } else {
+        console.warn('[ItemDetailScreen] ⚠️ item.owner_id não encontrado!', item);
+      }
+
+      Alert.alert('Sucesso', 'Comentário e avistamento enviados!');
     } catch (e) {
+      console.error('[ItemDetailScreen.handleSubmitSighting] ❌ Erro:', e);
       Alert.alert('Erro', 'Não foi possível enviar o comentário.');
     } finally {
       setSightingLoading(false);
