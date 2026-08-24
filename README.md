@@ -19,11 +19,12 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - Tela inicial de apresentação (`SobreScreen.jsx`) com abordagem humanizada, espaçamento generoso e sem poluição visual.
 - Telas de Login e Cadastro acolhedoras ("Bem-vindo de volta" e "Criar sua conta").
 
-✅ **Autenticação e Cadastro Ágil**
+✅ **Autenticação, Notificações e WhatsApp**
 - Registro e login direto e simplificado com nome, email, WhatsApp e senha (sem exigência de localização no cadastro).
+- **Verificação em 2 etapas por WhatsApp:** Envio do código de 6 dígitos via Evolution API / Supabase Functions com opção de reenvio com timer de recarga e edição rápida de dados.
+- **Notificações e Alertas por WhatsApp:** Caixa de consentimento no cadastro (`whatsapp_notifications_enabled`) e controle de preferências na tela de configurações (`ConfigScreen.jsx`) com integração nativa da Evolution API para envio de alertas, avistamentos e mensagens.
 - Ao entrar, o feed exibe automaticamente publicações de **Todo o Brasil**, com opção de filtrar por estado, cidade ou mapa no cabeçalho.
 - Rolagem inteligente e fluida com `KeyboardAwareScrollView` prevenindo sobreposição do teclado virtual nos formulários.
-- Verificação de cadastro em 2 etapas com código via WhatsApp (Twilio).
 - Perfis de usuário com foto de avatar e edição de localidade opcional.
 - Confirmação de email e recuperação de senha.
 

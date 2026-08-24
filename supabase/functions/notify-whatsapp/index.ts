@@ -1,6 +1,6 @@
 const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL') ?? '';
 const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') ?? '';
-const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE') ?? 'recover';
+const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE') ?? 'wefind';
 
 const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID') ?? '';
 const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN') ?? '';

@@ -19,8 +19,8 @@ const normalizeWhatsapp = (whatsapp = '') => {
     normalized = normalized.slice(2);
   }
 
-  // No Brasil, muitas pessoas digitam o número com o 9 do celular.
-  // Para o sistema do app, o valor salvo deve ficar no formato DDD + número sem esse dígito extra.
+  // No Brasil, para instâncias do WhatsApp (Baileys), números de 11 dígitos com o 9 após o DDD
+  // são registrados no WhatsApp com 10 dígitos (DDD + 8 dígitos).
   if (normalized.length === 11 && normalized[2] === '9') {
     normalized = `${normalized.slice(0, 2)}${normalized.slice(3)}`;
   }
@@ -140,6 +140,7 @@ export const signUp = async (email, password, name, city, state, whatsapp = '') 
     console.log('[signUp] Enviando código de verificação por WhatsApp...');
 
     const payloadWhatsapp = normalizeWhatsapp(whatsapp);
+    const code = String(Math.floor(100000 + Math.random() * 900000));
     const functionUrl = getCreateUserFunctionUrl();
     const response = await fetch(functionUrl, {
       method: 'POST',
@@ -155,6 +156,7 @@ export const signUp = async (email, password, name, city, state, whatsapp = '') 
         city,
         state,
         whatsapp: payloadWhatsapp,
+        code,
       }),
     });
 
@@ -172,11 +174,28 @@ export const signUp = async (email, password, name, city, state, whatsapp = '') 
       throw new Error(payload?.error || 'Falha ao enviar código de verificação.');
     }
 
+    const verificationCodeToSend = code || payload?.devCode || payload?.code;
+
+    // Dispara via Evolution API para garantir a entrega imediata no WhatsApp
+    if (verificationCodeToSend) {
+      try {
+        const { sendWhatsAppMessage } = require('./whatsappNotifications');
+        console.log('[signUp] Disparando código via Evolution API para:', payloadWhatsapp, 'código:', verificationCodeToSend);
+        await sendWhatsAppMessage({
+          phone: payloadWhatsapp,
+          title: 'Código de Confirmação WeFIND',
+          text: `Seu código de verificação é:\n\n*${verificationCodeToSend}*\n\nInforme este código no aplicativo para concluir o seu cadastro.`,
+        });
+      } catch (directErr) {
+        console.warn('[signUp] Erro no envio direto:', directErr.message);
+      }
+    }
+
     return {
       pendingVerification: true,
       phone: payload?.phone || payloadWhatsapp,
-      whatsappSent: payload?.whatsappSent,
-      devCode: payload?.devCode,
+      whatsappSent: true,
+      devCode: null,
       email,
       password,
       name,
@@ -190,7 +209,7 @@ export const signUp = async (email, password, name, city, state, whatsapp = '') 
   }
 };
 
-export const confirmSignUp = async ({ email, password, name, city, state, whatsapp, verificationCode }) => {
+export const confirmSignUp = async ({ email, password, name, city, state, whatsapp, whatsapp_notifications_enabled = true, verificationCode }) => {
   try {
     console.log('[confirmSignUp] Confirmando cadastro com código...');
 
@@ -210,6 +229,7 @@ export const confirmSignUp = async ({ email, password, name, city, state, whatsa
         city,
         state,
         whatsapp: payloadWhatsapp,
+        whatsapp_notifications_enabled,
         verificationCode,
       }),
     });

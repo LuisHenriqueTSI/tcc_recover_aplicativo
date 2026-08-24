@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -31,12 +32,26 @@ const RegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+  const [whatsappConsent, setWhatsappConsent] = useState(true);
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [pendingSignupData, setPendingSignupData] = useState(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    let timer;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -65,8 +80,6 @@ const RegisterScreen = ({ navigation }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const scrollRef = React.useRef(null);
-
   const handleRegister = async () => {
     Keyboard.dismiss();
 
@@ -87,6 +100,7 @@ const RegisterScreen = ({ navigation }) => {
           city: '',
           state: '',
           whatsapp: whatsapp.replace(/\D/g, ''),
+          whatsapp_notifications_enabled: whatsappConsent,
           verificationCode: verificationCode.trim(),
         });
         Alert.alert('Conta criada com sucesso!', 'Seja bem-vindo ao WeFIND. Faça login para começar.');
@@ -118,11 +132,13 @@ const RegisterScreen = ({ navigation }) => {
         name.trim(),
         '',
         '',
-        whatsapp.replace(/\D/g, '')
+        whatsapp.replace(/\D/g, ''),
+        whatsappConsent
       );
       if (result?.pendingVerification) {
         setPendingVerification(true);
         setPendingSignupData(result);
+        setResendCooldown(30);
         setTimeout(() => {
           scrollRef.current?.scrollToEnd?.(true);
         }, 250);
@@ -140,6 +156,43 @@ const RegisterScreen = ({ navigation }) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleResendCode = async () => {
+    if (resendCooldown > 0 || isSubmitting) return;
+
+    Keyboard.dismiss();
+    setIsSubmitting(true);
+
+    try {
+      const result = await signUp(
+        email.trim(),
+        password,
+        name.trim(),
+        '',
+        '',
+        whatsapp.replace(/\D/g, ''),
+        whatsappConsent
+      );
+      setResendCooldown(45);
+      if (result?.devCode) {
+        Alert.alert(
+          'Novo Código Gerado',
+          `Novo código de verificação para testes: ${result.devCode}`
+        );
+      } else {
+        Alert.alert('Código Reenviado', `Um novo código foi enviado para o WhatsApp ${formatBrazilianPhone(whatsapp)}.`);
+      }
+    } catch (error) {
+      Alert.alert('Erro ao Reenviar', error?.message || 'Não foi possível reenviar o código agora.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelVerification = () => {
+    setPendingVerification(false);
+    setVerificationCode('');
   };
 
   return (
@@ -179,6 +232,7 @@ const RegisterScreen = ({ navigation }) => {
             value={name}
             onChangeText={setName}
             error={errors.name}
+            editable={!pendingVerification}
             style={styles.input}
             inputStyle={styles.inputField}
             returnKeyType="next"
@@ -191,6 +245,7 @@ const RegisterScreen = ({ navigation }) => {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            editable={!pendingVerification}
             error={errors.email}
             style={styles.input}
             inputStyle={styles.inputField}
@@ -203,6 +258,7 @@ const RegisterScreen = ({ navigation }) => {
             value={formatBrazilianPhone(whatsapp)}
             onChangeText={text => setWhatsapp(text.replace(/\D/g, ''))}
             keyboardType="phone-pad"
+            editable={!pendingVerification}
             error={errors.whatsapp || errors.phone}
             style={styles.input}
             inputStyle={styles.inputField}
@@ -215,6 +271,7 @@ const RegisterScreen = ({ navigation }) => {
             value={password}
             onChangeText={setPassword}
             secureTextEntry={true}
+            editable={!pendingVerification}
             error={errors.password}
             style={styles.input}
             inputStyle={styles.inputField}
@@ -227,18 +284,42 @@ const RegisterScreen = ({ navigation }) => {
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry={true}
+            editable={!pendingVerification}
             error={errors.confirmPassword}
             style={styles.input}
             inputStyle={styles.inputField}
             returnKeyType="done"
           />
 
+          {/* Checkbox de Consentimento de Notificações por WhatsApp */}
+          {!pendingVerification && (
+            <TouchableOpacity
+              style={styles.consentRow}
+              onPress={() => setWhatsappConsent(prev => !prev)}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.checkbox, whatsappConsent && styles.checkboxChecked]}>
+                {whatsappConsent ? <MaterialIcons name="check" size={16} color="#FFFFFF" /> : null}
+              </View>
+              <Text style={styles.consentText}>
+                Desejo receber avisos e notificações de avistamentos de pets no meu WhatsApp
+              </Text>
+            </TouchableOpacity>
+          )}
+
           {pendingVerification ? (
             <View style={styles.verificationBox}>
-              <Text style={styles.verificationTitle}>🔐 Verificação por WhatsApp</Text>
+              <View style={styles.verificationHeader}>
+                <Text style={styles.verificationTitle}>🔐 Verificação por WhatsApp</Text>
+                <TouchableOpacity onPress={handleCancelVerification} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Text style={styles.editDataText}>Editar dados</Text>
+                </TouchableOpacity>
+              </View>
+
               <Text style={styles.verificationDesc}>
-                Digite o código de 6 dígitos que enviamos para o seu WhatsApp:
+                Enviamos um código de 6 dígitos para o WhatsApp <Text style={{ fontWeight: 'bold' }}>{formatBrazilianPhone(whatsapp)}</Text>:
               </Text>
+
               <Input
                 label="Código de verificação"
                 placeholder="123456"
@@ -246,11 +327,32 @@ const RegisterScreen = ({ navigation }) => {
                 onChangeText={setVerificationCode}
                 keyboardType="number-pad"
                 style={styles.input}
-                inputStyle={styles.inputField}
+                inputStyle={[styles.inputField, styles.codeInputField]}
                 onFocus={() => {
                   scrollRef.current?.scrollToEnd?.(true);
                 }}
               />
+
+              {/* Botão de Reenviar Código */}
+              <View style={styles.resendContainer}>
+                <Text style={styles.resendQuestion}>Não recebeu o código?</Text>
+                <TouchableOpacity
+                  onPress={handleResendCode}
+                  disabled={isSubmitting || resendCooldown > 0}
+                  activeOpacity={0.7}
+                  style={styles.resendButton}
+                >
+                  <Feather
+                    name="refresh-cw"
+                    size={14}
+                    color={resendCooldown > 0 ? '#94A3B8' : '#2563EB'}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={[styles.resendText, resendCooldown > 0 && styles.resendTextDisabled]}>
+                    {resendCooldown > 0 ? `Reenviar em ${resendCooldown}s` : 'Reenviar código no WhatsApp'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : null}
 
@@ -351,28 +453,104 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     fontSize: 15,
   },
+  codeInputField: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FDBA74',
+    textAlign: 'center',
+    fontSize: 20,
+    letterSpacing: 6,
+    fontWeight: 'bold',
+    color: '#1E293B',
+  },
+  consentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    marginBottom: 14,
+    paddingHorizontal: 2,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  checkboxChecked: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
+  consentText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#475569',
+    lineHeight: 18,
+    fontWeight: '500',
+  },
   verificationBox: {
     backgroundColor: '#FFF7ED',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#FDBA74',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 14,
+  },
+  verificationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   verificationTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#C2410C',
-    marginBottom: 4,
+  },
+  editDataText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2563EB',
+    textDecorationLine: 'underline',
   },
   verificationDesc: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#7C2D12',
-    marginBottom: 6,
-    lineHeight: 16,
+    marginBottom: 10,
+    lineHeight: 18,
+  },
+  resendContainer: {
+    marginTop: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resendQuestion: {
+    fontSize: 12,
+    color: '#9A3412',
+    marginBottom: 4,
+  },
+  resendButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  resendText: {
+    fontSize: 13,
+    color: '#2563EB',
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
+  resendTextDisabled: {
+    color: '#94A3B8',
+    textDecorationLine: 'none',
+    fontWeight: '600',
   },
   registerButton: {
-    marginTop: 8,
+    marginTop: 4,
     backgroundColor: '#2563EB',
     borderRadius: 12,
     paddingVertical: 13,

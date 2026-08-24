@@ -8,11 +8,16 @@ import { updatePassword } from '../services/supabaseAuth';
 const preferenceKeys = {
   notifications: '@recover/preferences/notifications',
   reminders: '@recover/preferences/reminders',
+  whatsappNotifications: '@recover/preferences/whatsapp_notifications',
 };
 
 const ConfigScreen = ({ navigation }) => {
   const { user, userProfile, signOut, refreshProfile } = useAuth();
-  const [preferences, setPreferences] = useState({ notifications: true, reminders: true });
+  const [preferences, setPreferences] = useState({
+    notifications: true,
+    reminders: true,
+    whatsappNotifications: userProfile?.whatsapp_notifications_enabled !== false,
+  });
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
@@ -20,15 +25,31 @@ const ConfigScreen = ({ navigation }) => {
   useEffect(() => {
     const loadPreferences = async () => {
       const values = await AsyncStorage.multiGet(Object.values(preferenceKeys));
-      setPreferences({ notifications: values[0][1] !== 'false', reminders: values[1][1] !== 'false' });
+      setPreferences({
+        notifications: values[0][1] !== 'false',
+        reminders: values[1][1] !== 'false',
+        whatsappNotifications: userProfile?.whatsapp_notifications_enabled !== false,
+      });
     };
     loadPreferences();
-  }, []);
+  }, [userProfile]);
 
   const togglePreference = async (name) => {
     const value = !preferences[name];
     setPreferences(current => ({ ...current, [name]: value }));
     await AsyncStorage.setItem(preferenceKeys[name], String(value));
+
+    if (name === 'whatsappNotifications' && user?.id) {
+      try {
+        const { supabase } = require('../lib/supabase');
+        await supabase.from('profiles').update({
+          whatsapp_notifications_enabled: value,
+        }).eq('id', user.id);
+        if (typeof refreshProfile === 'function') refreshProfile();
+      } catch (err) {
+        console.warn('[ConfigScreen] Falha ao atualizar preferência de WhatsApp:', err.message);
+      }
+    }
   };
 
   const handlePasswordChange = () => {
@@ -68,7 +89,9 @@ const ConfigScreen = ({ navigation }) => {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.sectionLabel}>Preferências</Text>
       <View style={styles.panel}>
-        <SettingRow icon="bell" title="Notificações" description="Receber novidades e mensagens do app" right={<Switch value={preferences.notifications} onValueChange={() => togglePreference('notifications')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.notifications ? '#2563EB' : '#F8FAFC'} />} />
+        <SettingRow icon="bell" title="Notificações no App" description="Receber novidades e mensagens internas" right={<Switch value={preferences.notifications} onValueChange={() => togglePreference('notifications')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.notifications ? '#2563EB' : '#F8FAFC'} />} />
+        <View style={styles.divider} />
+        <SettingRow icon="message-circle" title="Notificações por WhatsApp" description="Receber avisos e avistamentos de pets no seu WhatsApp" right={<Switch value={preferences.whatsappNotifications} onValueChange={() => togglePreference('whatsappNotifications')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.whatsappNotifications ? '#2563EB' : '#F8FAFC'} />} />
         <View style={styles.divider} />
         <SettingRow icon="clock" title="Lembretes de publicações" description="Avisar quando uma publicação precisar de renovação" right={<Switch value={preferences.reminders} onValueChange={() => togglePreference('reminders')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.reminders ? '#2563EB' : '#F8FAFC'} />} />
       </View>

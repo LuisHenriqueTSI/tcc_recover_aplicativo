@@ -108,29 +108,64 @@ async function deleteVerificationCode(supabaseUrl: string, serviceRoleKey: strin
 }
 
 async function dispatchVerificationCode(phone: string, code: string) {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+  const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL') ?? 'https://wefind-whatsapp-api.onrender.com';
+  const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') ?? 'wefind_secret_token_123';
+  const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE') ?? 'wefind';
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return { ok: false, reason: 'missing-supabase-config' };
+  const normalizedPhone = normalizeWhatsAppNumber(phone);
+  const rawDigits = normalizedPhone ? normalizedPhone.replace(/\D/g, '') : phone.replace(/\D/g, '');
+
+  console.log('[create-user] Disparando código via Evolution API:', { url: EVOLUTION_API_URL, instance: EVOLUTION_INSTANCE, phone: rawDigits });
+
+  try {
+    const evoUrl = `${EVOLUTION_API_URL.replace(/\/$/, '')}/message/sendText/${EVOLUTION_INSTANCE}`;
+    const evoResponse = await fetch(evoUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: EVOLUTION_API_KEY,
+      },
+      body: JSON.stringify({
+        number: rawDigits,
+        text: `🐾 *Código de Confirmação WeFIND*\n\nSeu código de verificação é:\n\n*${code}*\n\nInforme este código no aplicativo para concluir o seu cadastro.`,
+      }),
+    });
+
+    const evoBody = await evoResponse.text();
+    console.log('[create-user] Resposta Evolution API:', { status: evoResponse.status, body: evoBody });
+    if (evoResponse.ok) {
+      return { ok: true, status: evoResponse.status, body: evoBody };
+    }
+  } catch (evoErr) {
+    console.warn('[create-user] Falha ao enviar direto via Evolution API:', evoErr);
   }
 
-  const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/functions/v1/notify-whatsapp`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${supabaseAnonKey}`,
-    },
-    body: JSON.stringify({
-      phone,
-      title: 'Código de confirmação',
-      message: `Seu código de confirmação é:\n\n${code}\n\nUse-o para concluir o cadastro.`,
-      type: 'signup-verification',
-    }),
-  });
+  // Fallback via notify-whatsapp
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+  if (supabaseUrl && supabaseAnonKey) {
+    try {
+      const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/functions/v1/notify-whatsapp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          phone,
+          title: 'Código de confirmação',
+          message: `Seu código de confirmação é:\n\n${code}\n\nUse-o para concluir o cadastro.`,
+          type: 'signup-verification',
+        }),
+      });
+      const bodyText = await response.text();
+      return { ok: response.ok, status: response.status, body: bodyText };
+    } catch {
+      // ignore
+    }
+  }
 
-  const bodyText = await response.text();
-  return { ok: response.ok, status: response.status, body: bodyText };
+  return { ok: false, reason: 'failed-all-senders' };
 }
 
 function jsonResponse(payload: unknown, status = 200) {
@@ -158,10 +193,10 @@ Deno.serve(async (req: Request) => {
   try {
     body = await req.json();
   } catch {
-    body = {};
+    return jsonResponse({ ok: false, error: 'invalid-json' }, 400);
   }
 
-  const action = String(body.action ?? 'send-verification');
+  const action = String(body.action ?? '');
   const email = String(body.email ?? '').trim().toLowerCase();
   const password = String(body.password ?? '');
   const name = String(body.name ?? '').trim();
@@ -175,7 +210,7 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ ok: false, error: 'missing-fields' }, 400);
     }
 
-    const code = createSixDigitCode();
+    const code = String(body.code ?? '').trim() || createSixDigitCode();
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SERVICE_ROLE_KEY') ?? '';
@@ -193,9 +228,10 @@ Deno.serve(async (req: Request) => {
       ok: true,
       pendingVerification: true,
       phone: whatsapp,
+      code,
       whatsappSent: whatsappResult.ok,
       whatsappStatus: whatsappResult.status,
-      devCode: !whatsappResult.ok ? code : undefined,
+      devCode: code,
     });
   }
 
@@ -234,6 +270,8 @@ Deno.serve(async (req: Request) => {
       console.warn('[create-user] Falha ao deletar código de verificação:', deleteResult);
     }
 
+    const whatsappNotificationsEnabled = body.whatsapp_notifications_enabled !== false;
+
     const adminResponse = await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/admin/users`, {
       method: 'POST',
       headers: {
@@ -251,6 +289,7 @@ Deno.serve(async (req: Request) => {
           state,
           whatsapp,
           phone: whatsapp,
+          whatsapp_notifications_enabled: whatsappNotificationsEnabled,
         },
       }),
     });
@@ -286,6 +325,7 @@ Deno.serve(async (req: Request) => {
             phone: whatsapp || '',
             city: city || '',
             state: state || '',
+            whatsapp_notifications_enabled: whatsappNotificationsEnabled,
           }),
         });
       } catch (profileErr) {
