@@ -137,64 +137,43 @@ export const signIn = async (email, password) => {
 
 export const signUp = async (email, password, name, city, state, whatsapp = '') => {
   try {
-    console.log('[signUp] Enviando código de verificação por WhatsApp...');
+    console.log('[signUp] Gerando código de verificação por WhatsApp...');
 
     const payloadWhatsapp = normalizeWhatsapp(whatsapp);
     const code = String(Math.floor(100000 + Math.random() * 900000));
-    const functionUrl = getCreateUserFunctionUrl();
-    const response = await fetch(functionUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: supabaseAnonKey,
-      },
-      body: JSON.stringify({
-        action: 'send-verification',
-        email,
-        password,
-        name,
-        city,
-        state,
-        whatsapp: payloadWhatsapp,
-        code,
-      }),
-    });
+    const normalizedPhone = payloadWhatsapp.startsWith('55') ? `+${payloadWhatsapp}` : `+55${payloadWhatsapp}`;
 
-    let payload = null;
+    // 1. Grava no banco de dados signup_verifications como fonte única da verdade
+    const { error: storeError } = await supabase.from('signup_verifications').upsert({
+      email: email.trim().toLowerCase(),
+      code: code,
+      whatsapp: normalizedPhone,
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+    }, { onConflict: 'email' });
+
+    if (storeError) {
+      console.warn('[signUp] Erro ao gravar verificação em signup_verifications:', storeError.message);
+    }
+
+    // 2. Dispara a mensagem com o código exato via Evolution API
     try {
-      payload = await response.json();
-    } catch (parseError) {
-      const text = await response.text();
-      payload = { error: text || parseError.message };
-    }
-
-    console.log('[signUp] Função URL:', functionUrl, 'status:', response.status, 'payload:', payload);
-
-    if (!response.ok) {
-      throw new Error(payload?.error || 'Falha ao enviar código de verificação.');
-    }
-
-    const verificationCodeToSend = code || payload?.devCode || payload?.code;
-
-    // Dispara via Evolution API para garantir a entrega imediata no WhatsApp
-    if (verificationCodeToSend) {
-      try {
-        const { sendWhatsAppMessage } = require('./whatsappNotifications');
-        console.log('[signUp] Disparando código via Evolution API para:', payloadWhatsapp, 'código:', verificationCodeToSend);
-        await sendWhatsAppMessage({
-          phone: payloadWhatsapp,
-          title: 'Código de Confirmação WeFIND',
-          text: `Seu código de verificação é:\n\n*${verificationCodeToSend}*\n\nInforme este código no aplicativo para concluir o seu cadastro.`,
-        });
-      } catch (directErr) {
-        console.warn('[signUp] Erro no envio direto:', directErr.message);
-      }
+      const { sendWhatsAppMessage } = require('./whatsappNotifications');
+      console.log('[signUp] Disparando código via Evolution API para:', payloadWhatsapp, 'código:', code);
+      await sendWhatsAppMessage({
+        phone: payloadWhatsapp,
+        title: 'Código de Confirmação WeFIND',
+        text: `Seu código de verificação é:\n\n*${code}*\n\nInforme este código no aplicativo para concluir o seu cadastro.`,
+      });
+    } catch (directErr) {
+      console.warn('[signUp] Erro no envio direto Evolution API:', directErr.message);
     }
 
     return {
       pendingVerification: true,
-      phone: payload?.phone || payloadWhatsapp,
+      phone: payloadWhatsapp,
       whatsappSent: true,
+      code,
       devCode: null,
       email,
       password,
