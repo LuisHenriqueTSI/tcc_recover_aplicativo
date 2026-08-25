@@ -482,11 +482,27 @@ const ItemDetailScreen = ({ route, navigation }) => {
           const { createNotification } = require('../services/notifications');
           const commenterName = userProfile?.name || user?.user_metadata?.name || 'Um membro da comunidade';
           console.log('[ItemDetailScreen] Disparando notificação de avistamento para o tutor:', { ownerId: item.owner_id, commenter: commenterName });
+
+          let mapsLink = '';
+          if (form.coordinate?.latitude && form.coordinate?.longitude) {
+            mapsLink = `https://www.google.com/maps/search/?api=1&query=${form.coordinate.latitude},${form.coordinate.longitude}`;
+          } else if (form.location) {
+            mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(form.location)}`;
+          }
+
+          let notificationMessage = `${commenterName} informou ter avistado o pet em: ${form.location || 'Local informado'}.\n\nDetalhes: "${form.description || ''}"`;
+
+          if (mapsLink) {
+            notificationMessage += `\n\n📍 *Ver localização no Google Maps:*\n${mapsLink}`;
+          }
+
+          notificationMessage += `\n\n🐾 *Acesse o aplicativo WeFIND para conferir mais detalhes.*`;
+
           const notifRes = await createNotification({
             user_id: item.owner_id,
             type: 'sighting',
             title: `🐾 Novo avistamento de ${item.title || 'seu pet'}!`,
-            message: `${commenterName} informou ter avistado o pet em: ${form.location || 'Local informado'}.\n\nDetalhes: "${form.description || ''}"\n\nAcesse o WeFIND para conferir.`,
+            message: notificationMessage,
             item_id: item.id,
           });
           console.log('[ItemDetailScreen] Resultado da createNotification:', notifRes);
@@ -1000,10 +1016,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
                       )}
                     </View>
                     <Text style={{ color: '#374151', marginBottom: 4, fontSize: 13 }}>{s.description}</Text>
-                    {s.photo_url ? (
-                      <Image source={{ uri: s.photo_url }} style={{ width: '100%', height: 110, borderRadius: 8, marginBottom: 4 }} />
+                    {s.location ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, marginVertical: 4, alignSelf: 'flex-start' }}>
+                        <MaterialIcons name="location-on" size={14} color="#2563EB" style={{ marginRight: 4 }} />
+                        <Text style={{ color: '#1E40AF', fontSize: 12, fontWeight: '600' }}>{s.location}</Text>
+                      </View>
                     ) : null}
-                    {s.location ? <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 2 }}>Local: {s.location}</Text> : null}
                     {(instagram || whatsapp || facebook || contatoExtra) ? (
                       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
                         {instagram ? (

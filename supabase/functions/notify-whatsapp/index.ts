@@ -100,6 +100,55 @@ async function sendViaTwilio(phone: string, text: string) {
 
 Deno.serve(async (req: Request) => {
   try {
+    // Suporte a redirecionamento Web / Deep Link para abrir o App ao clicar no link do WhatsApp
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      const itemId = url.searchParams.get('item') || url.searchParams.get('id') || '';
+      const deepLink = itemId ? `wefind://item/${itemId}` : 'wefind://';
+
+      const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐾 Abrindo WeFIND...</title>
+  <script>
+    window.location.href = "${deepLink}";
+    setTimeout(function() {
+      var btn = document.getElementById('manual-btn');
+      if (btn) btn.style.display = 'inline-block';
+    }, 1000);
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #F8FAFC; color: #0F172A; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; }
+    .card { background: #FFFFFF; border-radius: 24px; padding: 36px 24px; max-width: 400px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.08); border: 1px solid #E2E8F0; }
+    .logo { width: 64px; height: 64px; border-radius: 20px; background: #EFF6FF; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 16px; }
+    h1 { font-size: 20px; font-weight: 800; margin-bottom: 8px; color: #0F172A; }
+    p { font-size: 14px; color: #64748B; line-height: 1.5; margin-bottom: 24px; }
+    .btn { display: none; background: #2563EB; color: #FFFFFF; font-weight: 700; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-size: 15px; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🐾</div>
+    <h1>Abrindo no WeFIND</h1>
+    <p>Redirecionando para a publicação do pet no seu aplicativo...</p>
+    <a id="manual-btn" href="${deepLink}" class="btn">Toque para Abrir no App</a>
+  </div>
+</body>
+</html>`;
+
+      const headers = new Headers();
+      headers.set('Content-Type', 'text/html; charset=utf-8');
+      headers.set('Access-Control-Allow-Origin', '*');
+
+      return new Response(html, {
+        status: 200,
+        headers,
+      });
+    }
+
     const body = await req.json();
     const { phone, title, message, type } = body ?? {};
     const normalizedPhone = normalizeWhatsAppNumber(phone);

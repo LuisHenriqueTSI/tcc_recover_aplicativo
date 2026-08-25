@@ -34,6 +34,7 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - Adição de até 6 fotos com enquadramento/corte nativo e botão "✂️ Ajustar" por miniatura para reenquadrar antes de publicar.
 - Carrossel interativo de fotos nos cards do feed (`HomeScreen`) com pontos de paginação e contador de fotos (`1/3`).
 - Carrossel de fotos de alta resolução nos detalhes do pet (`ItemDetailScreen`) com navegação paginada e modal de ampliação em tela cheia.
+- **Avistamentos e Comentários com Mapa Interativo:** Modal de novo avistamento com seleção de localização por GPS/Mapa interativo em tela cheia, geocodificação reversa de endereço, pré-visualização de foto, contatos opcionais e envio automático de notificação no WhatsApp do tutor com link traçado do Google Maps.
 - Filtros rápidos por status, espécie, sexo e localização.
 - Seletor de localização no cabeçalho com botão destacado e ícone de edição interativo.
 - Geocodificação reversa com edição completa de endereço (rua, número da casa, bairro, cidade, estado).
