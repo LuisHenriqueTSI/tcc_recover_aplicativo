@@ -24,77 +24,62 @@ flowchart LR
     Visitor(["👤 Visitante"])
     User(["🧑‍💼 Usuário Autenticado"])
     Admin(["🛡️ Administrador"])
-    WhatsAppAPI["🤖 Evolution API (WhatsApp)"]
-    MapsAPI["🗺️ Serviço de Mapas / GPS"]
 
     %% Fronteira do Sistema
     subgraph WeFIND ["📱 Aplicativo WeFIND (Mobile)"]
         
-        %% Módulo de Autenticação
-        UC_Register(["Criar Conta"])
+        %% Módulo de Autenticação e Perfil
+        UC_Auth(["Efetuar Login"])
+        UC_Profile(["Manter Perfil de Usuário"])
         UC_Verify2FA(["Verificar Conta por WhatsApp"])
-        UC_Login(["Efetuar Login"])
-        UC_Profile(["Gerenciar Perfil e Notificações"])
 
         %% Módulo de Pets e Publicações
-        UC_Search(["Explorar e Filtrar Pets"])
+        UC_Search(["Consultar Pets no Feed"])
         UC_ViewDetail(["Visualizar Detalhes do Pet"])
-        UC_Publish(["Publicar Pet Perdido/Encontrado"])
-        UC_CropPhotos(["Ajustar e Cortar Fotos"])
-        UC_PublishThirdParty(["Publicar para Tutor Terceiro"])
         UC_ShareFlyer(["Gerar e Compartilhar Flyer"])
-        UC_ManageItems(["Gerenciar Meus Anúncios"])
+        UC_MaintainPets(["Manter Publicações de Pets"])
+        UC_CropPhotos(["Ajustar e Cortar Fotos"])
+        UC_ThirdParty(["Informar Tutor Terceiro"])
 
         %% Módulo de Avistamentos e Interação
-        UC_ReportSighting(["Informar Avistamento"])
+        UC_MaintainSightings(["Manter Avistamentos"])
         UC_PickMapLocation(["Selecionar Ponto no Mapa"])
         UC_NotifyOwnerWhatsApp(["Notificar Tutor no WhatsApp"])
-        UC_Chat(["Conversar via Chat em Tempo Real"])
+        
+        UC_MaintainChat(["Manter Conversas via Chat"])
 
         %% Módulo Administrativo
-        UC_Moderate(["Moderar Publicações"])
-        UC_ReviewReports(["Analisar Denúncias"])
+        UC_MaintainModeration(["Manter Moderação e Denúncias"])
     end
 
-    %% Relacionamentos Visitante
-    Visitor --> UC_Register
-    Visitor --> UC_Login
-    Visitor --> UC_Search
-    Visitor --> UC_ViewDetail
-    Visitor --> UC_ShareFlyer
+    %% Associações do Visitante (Linhas contínuas simples)
+    Visitor --- UC_Auth
+    Visitor --- UC_Profile
+    Visitor --- UC_Search
+    Visitor --- UC_ViewDetail
+    Visitor --- UC_ShareFlyer
 
-    %% Relacionamentos Usuário Autenticado
-    User --> UC_Publish
-    User --> UC_ReportSighting
-    User --> UC_Chat
-    User --> UC_ManageItems
-    User --> UC_Profile
-    User --> UC_ShareFlyer
-    User --> UC_ViewDetail
-    User --> UC_Search
+    %% Associações do Usuário Autenticado (Linhas contínuas simples)
+    User --- UC_Profile
+    User --- UC_Search
+    User --- UC_ViewDetail
+    User --- UC_ShareFlyer
+    User --- UC_MaintainPets
+    User --- UC_MaintainSightings
+    User --- UC_MaintainChat
 
-    %% Herança de Atores (Usuário herda Visitante)
-    User -.->|especializa| Visitor
+    %% Associações do Administrador
+    Admin --- UC_MaintainModeration
 
-    %% Relacionamentos Administrador
-    Admin --> UC_Moderate
-    Admin --> UC_ReviewReports
+    %% Inclusões Obrigatórias (<<include>>)
+    UC_Profile -.->|«include»| UC_Verify2FA
+    UC_MaintainPets -.->|«include»| UC_PickMapLocation
+    UC_MaintainSightings -.->|«include»| UC_PickMapLocation
 
-    %% Relacionamentos <<include>> (Inclusão Obrigatória)
-    UC_Register -.->|«include»| UC_Verify2FA
-    UC_Publish -.->|«include»| UC_CropPhotos
-    UC_Publish -.->|«include»| UC_PickMapLocation
-    UC_ReportSighting -.->|«include»| UC_PickMapLocation
-
-    %% Relacionamentos <<extend>> (Extensão Opcional)
-    UC_PublishThirdParty -.->|«extend»| UC_Publish
-    UC_NotifyOwnerWhatsApp -.->|«extend»| UC_ReportSighting
-    UC_ShareFlyer -.->|«extend»| UC_ViewDetail
-
-    %% Integrações com Sistemas Externos
-    UC_Verify2FA -.->|comunica| WhatsAppAPI
-    UC_NotifyOwnerWhatsApp -.->|comunica| WhatsAppAPI
-    UC_PickMapLocation -.->|comunica| MapsAPI
+    %% Extensões Opcionais (<<extend>>)
+    UC_CropPhotos -.->|«extend»| UC_MaintainPets
+    UC_ThirdParty -.->|«extend»| UC_MaintainPets
+    UC_NotifyOwnerWhatsApp -.->|«extend»| UC_MaintainSightings
 ```
 
 ---
