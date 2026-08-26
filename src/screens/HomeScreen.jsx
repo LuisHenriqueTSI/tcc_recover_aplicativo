@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Modal } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
 import { states, citiesByState, neighborhoodsByCity } from '../lib/br-locations';
@@ -460,22 +461,58 @@ const HomeScreen = ({ navigation, route }) => {
   const [userCoords, setUserCoords] = useState(null);
 
   useEffect(() => {
-    if (userProfile?.state && userProfile?.city) {
-      setProfileEditState(userProfile.state);
-      setProfileEditCity(userProfile.city);
-      if (userProfile.latitude && userProfile.longitude) {
-        const coords = { latitude: Number(userProfile.latitude), longitude: Number(userProfile.longitude) };
-        setProfileEditCoords(coords);
-        setUserCoords(coords);
-      } else {
-        geocodeCityState(userProfile.city, userProfile.state).then((coords) => {
-          if (coords) {
+    const loadInitialLocation = async () => {
+      try {
+        if (userProfile?.state && userProfile?.city) {
+          setSessionCity(userProfile.city);
+          setSessionState(userProfile.state);
+          setProfileEditState(userProfile.state);
+          setProfileEditCity(userProfile.city);
+          setLocationFilter(`${userProfile.city}, ${userProfile.state}`);
+
+          if (userProfile.latitude && userProfile.longitude) {
+            const coords = { latitude: Number(userProfile.latitude), longitude: Number(userProfile.longitude) };
             setProfileEditCoords(coords);
             setUserCoords(coords);
+          } else {
+            const coords = await geocodeCityState(userProfile.city, userProfile.state);
+            if (coords) {
+              setProfileEditCoords(coords);
+              setUserCoords(coords);
+            }
           }
-        });
+          return;
+        }
+
+        // Se não tiver no userProfile ou for visitante, tenta carregar do AsyncStorage
+        const storedLoc = await AsyncStorage.getItem('@wefind/saved_location');
+        if (storedLoc) {
+          const parsed = JSON.parse(storedLoc);
+          if (parsed?.city && parsed?.state) {
+            setSessionCity(parsed.city);
+            setSessionState(parsed.state);
+            setProfileEditState(parsed.state);
+            setProfileEditCity(parsed.city);
+            setLocationFilter(`${parsed.city}, ${parsed.state}`);
+
+            if (parsed.coords) {
+              setProfileEditCoords(parsed.coords);
+              setUserCoords(parsed.coords);
+            } else {
+              const coords = await geocodeCityState(parsed.city, parsed.state);
+              if (coords) {
+                setProfileEditCoords(coords);
+                setUserCoords(coords);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[HomeScreen] Erro ao carregar localização inicial:', err.message);
       }
-    }
+    };
+
+    loadInitialLocation();
   }, [userProfile]);
 
   // Localidade ativa para exibição no cabeçalho (padrão Todo o Brasil)
@@ -485,7 +522,7 @@ const HomeScreen = ({ navigation, route }) => {
     ? `${activeCity}, ${activeState}`
     : (activeCity || activeState || 'Todo o Brasil');
 
-  // Salvar localidade (perfil ou sessão)
+  // Salvar localidade (perfil e armazenamento local)
   const handleSaveProfileLocation = async () => {
     if (!profileEditState || !profileEditCity) return;
     
@@ -500,7 +537,22 @@ const HomeScreen = ({ navigation, route }) => {
     }
     setUserCoords(coords || null);
 
-    if (user) {
+    // Salva no AsyncStorage para persistência entre sessões
+    try {
+      await AsyncStorage.setItem(
+        '@wefind/saved_location',
+        JSON.stringify({
+          city: profileEditCity,
+          state: profileEditState,
+          coords: coords || null,
+        })
+      );
+    } catch (e) {
+      console.warn('[HomeScreen] Falha ao salvar localização no AsyncStorage:', e.message);
+    }
+
+    // Se o usuário estiver autenticado, salva permanentemente no Supabase
+    if (user?.id) {
       try {
         await userService.updateProfile(user.id, {
           state: profileEditState,
@@ -517,7 +569,7 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   // Limpar filtro de localidade e voltar para "Brasil"
-  const handleResetToBrazil = () => {
+  const handleResetToBrazil = async () => {
     setSessionCity('');
     setSessionState('');
     setProfileEditCity('');
@@ -526,6 +578,11 @@ const HomeScreen = ({ navigation, route }) => {
     setUserCoords(null);
     setLocationFilter('');
     setLocationFilterTouched(true);
+    try {
+      await AsyncStorage.removeItem('@wefind/saved_location');
+    } catch (e) {
+      console.warn('[HomeScreen] Falha ao limpar localização no AsyncStorage:', e.message);
+    }
     setShowProfileLocationModal(false);
   };
 
@@ -1109,12 +1166,12 @@ const HomeScreen = ({ navigation, route }) => {
           animationType="fade"
           onRequestClose={() => setShowProfileLocationModal(false)}
         >
-          <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
-            <View style={{ backgroundColor:'#fff', borderRadius:14, paddingVertical:24, paddingHorizontal:18, minWidth:340, maxWidth: '95%' }}>
-              <Text style={{ fontWeight:'bold', fontSize:17, color:'#2563EB', marginBottom:4 }}>
+          <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.5)', justifyContent:'center', alignItems:'center' }}>
+            <View style={{ backgroundColor: colors.surface, borderRadius: 16, paddingVertical: 24, paddingHorizontal: 18, minWidth: 340, maxWidth: '95%', borderWidth: 1, borderColor: colors.cardBorder }}>
+              <Text style={{ fontWeight:'bold', fontSize:17, color: colors.primary, marginBottom:4 }}>
                 {user ? 'Atualizar Localidade' : 'Filtrar por Região'}
               </Text>
-              <Text style={{ color:'#6B7280', fontSize:13, marginBottom:14 }}>
+              <Text style={{ color: colors.textSecondary, fontSize:13, marginBottom:14 }}>
                 {user
                   ? 'Escolha sua cidade e estado para personalizar o feed e seu perfil:'
                   : 'Escolha uma cidade e estado para visualizar publicações dessa região:'}
@@ -1123,15 +1180,15 @@ const HomeScreen = ({ navigation, route }) => {
               <View style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: '#EFF6FF',
+                backgroundColor: colors.primaryLight,
                 padding: 10,
                 borderRadius: 10,
                 marginBottom: 14,
                 borderWidth: 1,
-                borderColor: '#DBEAFE',
+                borderColor: isDark ? colors.cardBorder : '#DBEAFE',
               }}>
-                <MaterialIcons name="radar" size={20} color="#2563EB" style={{ marginRight: 8 }} />
-                <Text style={{ color: '#1E40AF', fontSize: 12, lineHeight: 16, flex: 1 }}>
+                <MaterialIcons name="radar" size={20} color={colors.primary} style={{ marginRight: 8 }} />
+                <Text style={{ color: isDark ? '#93C5FD' : '#1E40AF', fontSize: 12, lineHeight: 16, flex: 1 }}>
                   Ao definir sua localização, o aplicativo filtrará automaticamente os animais em um raio de <Text style={{ fontWeight: '800' }}>60 km</Text> de você.
                 </Text>
               </View>
@@ -1141,15 +1198,15 @@ const HomeScreen = ({ navigation, route }) => {
                   setShowProfileLocationModal(false);
                   setProfileMapVisible(true);
                 }}
-                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#2563EB', borderRadius: 10, paddingVertical: 12, marginBottom: 14 }}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.primary, borderRadius: 10, paddingVertical: 12, marginBottom: 14 }}
               >
-                <MaterialIcons name="map" size={19} color="#2563EB" />
-                <Text style={{ color: '#2563EB', fontWeight: '700', marginLeft: 8 }}>Escolher no mapa</Text>
+                <MaterialIcons name="map" size={19} color={colors.primary} />
+                <Text style={{ color: colors.primary, fontWeight: '700', marginLeft: 8 }}>Escolher no mapa</Text>
               </TouchableOpacity>
               {(profileEditCity || profileEditState) ? (
-                <View style={{ backgroundColor: '#F8FAFC', padding: 10, borderRadius: 8, marginBottom: 14, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0' }}>
-                  <Text style={{ color: '#374151', fontSize: 13, fontWeight: '500' }}>Localização selecionada:</Text>
-                  <Text style={{ color: '#2563EB', fontSize: 15, fontWeight: '800', marginTop: 2 }}>
+                <View style={{ backgroundColor: isDark ? colors.card : '#F8FAFC', padding: 10, borderRadius: 8, marginBottom: 14, alignItems: 'center', borderWidth: 1, borderColor: colors.cardBorder }}>
+                  <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '500' }}>Localização selecionada:</Text>
+                  <Text style={{ color: colors.primary, fontSize: 15, fontWeight: '800', marginTop: 2 }}>
                     {[profileEditCity, profileEditState].filter(Boolean).join(', ')}
                   </Text>
                 </View>
@@ -1174,7 +1231,7 @@ const HomeScreen = ({ navigation, route }) => {
                   onPress={handleResetToBrazil}
                   style={{ marginTop: 12, alignItems: 'center', paddingVertical: 6 }}
                 >
-                  <Text style={{ color: '#6B7280', fontSize: 13, fontWeight: '600', textDecorationLine: 'underline' }}>
+                  <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600', textDecorationLine: 'underline' }}>
                     🇧🇷 Ver publicações de todo o Brasil
                   </Text>
                 </TouchableOpacity>
