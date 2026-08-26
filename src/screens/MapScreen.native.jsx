@@ -377,26 +377,7 @@ const styles = StyleSheet.create({
   locationNoticeText: { color: '#374151', lineHeight: 19 },
   retryButton: { alignSelf: 'flex-start', marginTop: 8 },
   retryText: { color: '#2563EB', fontWeight: '700' },
-  markerRing: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    // Sombra suave colorida (cor definida inline via statusColor)
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.55,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  markerRingSelected: {
-    transform: [{ scale: 1.15 }],
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
-    elevation: 12,
-  },
-  markerInner: {
-    overflow: 'hidden',
-    backgroundColor: '#E5E7EB',
-  },
+  // markerRing, markerRingSelected e markerInner removidos — estilos inline no componente
   markerFallback: { fontSize: 22 },
   infoCard: {
     position: 'absolute',
@@ -458,10 +439,12 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#F97316');
   const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
 
-  // Tamanhos do circulo: maior quando selecionado
-  const size = isSelected ? 68 : 54;
-  const borderWidth = isSelected ? 4 : 3.5;
-  const innerSize = size - borderWidth * 2;
+  // Dimensões fixas — nunca dependem de overflow
+  const RING = isSelected ? 72 : 58;
+  const BORDER = isSelected ? 4 : 3.5;
+  const PHOTO = RING - BORDER * 2;   // diâmetro da foto
+  const PAD = 4;                      // padding extra para evitar clipping nativo Android
+  const WRAPPER = RING + PAD * 2;
 
   return (
     <Marker
@@ -471,40 +454,52 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
       tracksViewChanges={tracksViewChanges}
       anchor={{ x: 0.5, y: 0.5 }}
     >
-      {/* Anel colorido externo com sombra para indicar status */}
+      {/*
+        O wrapper extra com padding garante que o Android nunca corte
+        a borda externa do círculo ao calcular os bounds do View.
+      */}
       <View
-        style={[
-          styles.markerRing,
-          {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-            borderWidth: borderWidth,
-            borderColor: statusColor,
-            shadowColor: statusColor,
-          },
-          isSelected && styles.markerRingSelected,
-        ]}
         collapsable={false}
+        style={{
+          width: WRAPPER,
+          height: WRAPPER,
+          alignItems: 'center',
+          justifyContent: 'center',
+          // Sombra colorida (iOS)
+          shadowColor: statusColor,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isSelected ? 0.8 : 0.55,
+          shadowRadius: isSelected ? 10 : 6,
+        }}
       >
-        {/* Circulo interno (foto ou fallback) */}
+        {/* Anel colorido — SEM overflow:hidden para não cortar */}
         <View
-          style={[
-            styles.markerInner,
-            {
-              width: innerSize,
-              height: innerSize,
-              borderRadius: innerSize / 2,
-            },
-          ]}
+          style={{
+            width: RING,
+            height: RING,
+            borderRadius: RING / 2,
+            borderWidth: BORDER,
+            borderColor: statusColor,
+            backgroundColor: '#FFFFFF',
+            alignItems: 'center',
+            justifyContent: 'center',
+            // Sombra Android via elevation
+            elevation: isSelected ? 12 : 8,
+            transform: isSelected ? [{ scale: 1.1 }] : [],
+          }}
         >
           {photoUrl ? (
+            /*
+              borderRadius na própria Image + overflow:hidden apenas aqui
+              já que está dentro do anel e não será cortado pelo Android
+            */
             <Image
               source={{ uri: photoUrl }}
               style={{
-                width: innerSize,
-                height: innerSize,
-                borderRadius: innerSize / 2,
+                width: PHOTO,
+                height: PHOTO,
+                borderRadius: PHOTO / 2,
+                overflow: 'hidden',
               }}
               resizeMode="cover"
               onLoadEnd={() => {
@@ -514,15 +509,15 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
           ) : (
             <View
               style={{
-                width: innerSize,
-                height: innerSize,
-                borderRadius: innerSize / 2,
-                backgroundColor: statusColor + '22',
+                width: PHOTO,
+                height: PHOTO,
+                borderRadius: PHOTO / 2,
+                backgroundColor: statusColor + '28',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Text style={styles.markerFallback}>🐾</Text>
+              <Text style={{ fontSize: 20 }}>🐾</Text>
             </View>
           )}
         </View>
