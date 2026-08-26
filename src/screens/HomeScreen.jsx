@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import * as Location from 'expo-location';
 import { states, citiesByState, neighborhoodsByCity } from '../lib/br-locations';
 import * as userService from '../services/user';
 import {
@@ -36,6 +37,46 @@ import NotificationBell from '../components/NotificationBell';
 import OptimizedImage from '../components/OptimizedImage';
 import MapLocationPicker from '../components/MapLocationPicker';
 import { MaterialIcons } from '@expo/vector-icons';
+
+// Cálculo de distância geográfica precisa em KM (Fórmula de Haversine)
+const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+  const numLat1 = Number(lat1);
+  const numLon1 = Number(lon1);
+  const numLat2 = Number(lat2);
+  const numLon2 = Number(lon2);
+  if (isNaN(numLat1) || isNaN(numLon1) || isNaN(numLat2) || isNaN(numLon2)) return null;
+
+  const R = 6371; // Raio médio da Terra em km
+  const dLat = ((numLat2 - numLat1) * Math.PI) / 180;
+  const dLon = ((numLon2 - numLon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((numLat1 * Math.PI) / 180) *
+      Math.cos((numLat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+// Geocodificação de Cidade e Estado para Coordenadas
+const geocodeCityState = async (cityName, stateUf) => {
+  try {
+    if (!cityName || !stateUf) return null;
+    const query = `${cityName}, ${stateUf}, Brasil`;
+    const results = await Location.geocodeAsync(query);
+    if (results && results.length > 0) {
+      return {
+        latitude: results[0].latitude,
+        longitude: results[0].longitude,
+      };
+    }
+  } catch (err) {
+    console.log('[HomeScreen] Erro no geocoding da cidade:', err?.message || err);
+  }
+  return null;
+};
 
 const regionToUf = {
   Acre: 'AC', Alagoas: 'AL', Amapá: 'AP', Amazonas: 'AM', Bahia: 'BA', Ceará: 'CE',
@@ -293,12 +334,32 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             ) : null}
           </View>
 
-          {/* Endereço: Cidade - Estado e Complemento */}
-          <Text style={{ fontSize: 14, fontWeight: '700', color: '#1E293B', lineHeight: 18, marginTop: 1 }}>
-            {formatCityState(item)}
-          </Text>
+          {/* Endereço: Cidade - Estado, Complemento e Distância */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 1 }}>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: '#1E293B', lineHeight: 18, flex: 1 }} numberOfLines={1}>
+              {formatCityState(item)}
+            </Text>
+            {item._distanceKm != null ? (
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#EFF6FF',
+                paddingHorizontal: 7,
+                paddingVertical: 2.5,
+                borderRadius: 6,
+                borderWidth: 1,
+                borderColor: '#DBEAFE',
+                marginLeft: 6,
+              }}>
+                <MaterialIcons name="near-me" size={11} color="#2563EB" style={{ marginRight: 3 }} />
+                <Text style={{ fontSize: 11, fontWeight: '800', color: '#1D4ED8' }}>
+                  {item._distanceKm < 1 ? '< 1 km' : `a ${item._distanceKm < 10 ? item._distanceKm.toFixed(1) : Math.round(item._distanceKm)} km`}
+                </Text>
+              </View>
+            ) : null}
+          </View>
           {formatStreetNumberNeighborhood(item) ? (
-            <Text style={{ fontSize: 12, color: '#64748B', marginTop: 1, lineHeight: 16 }}>
+            <Text style={{ fontSize: 12, color: '#64748B', marginTop: 2, lineHeight: 16 }}>
               {formatStreetNumberNeighborhood(item)}
             </Text>
           ) : null}
@@ -378,12 +439,26 @@ const HomeScreen = ({ navigation, route }) => {
   const [sessionState, setSessionState] = useState('');
   const [profileEditState, setProfileEditState] = useState('');
   const [profileEditCity, setProfileEditCity] = useState('');
+  const [profileEditCoords, setProfileEditCoords] = useState(null);
   const [profileMapVisible, setProfileMapVisible] = useState(false);
+  const [userCoords, setUserCoords] = useState(null);
 
   useEffect(() => {
     if (userProfile?.state && userProfile?.city) {
       setProfileEditState(userProfile.state);
       setProfileEditCity(userProfile.city);
+      if (userProfile.latitude && userProfile.longitude) {
+        const coords = { latitude: Number(userProfile.latitude), longitude: Number(userProfile.longitude) };
+        setProfileEditCoords(coords);
+        setUserCoords(coords);
+      } else {
+        geocodeCityState(userProfile.city, userProfile.state).then((coords) => {
+          if (coords) {
+            setProfileEditCoords(coords);
+            setUserCoords(coords);
+          }
+        });
+      }
     }
   }, [userProfile]);
 
@@ -403,11 +478,19 @@ const HomeScreen = ({ navigation, route }) => {
     setLocationFilter(`${profileEditCity}, ${profileEditState}`);
     setLocationFilterTouched(true);
 
+    let coords = profileEditCoords;
+    if (!coords || !coords.latitude) {
+      coords = await geocodeCityState(profileEditCity, profileEditState);
+    }
+    setUserCoords(coords || null);
+
     if (user) {
       try {
         await userService.updateProfile(user.id, {
           state: profileEditState,
           city: profileEditCity,
+          latitude: coords?.latitude ?? null,
+          longitude: coords?.longitude ?? null,
         });
         if (typeof refreshProfile === 'function') refreshProfile();
       } catch (err) {
@@ -423,6 +506,8 @@ const HomeScreen = ({ navigation, route }) => {
     setSessionState('');
     setProfileEditCity('');
     setProfileEditState('');
+    setProfileEditCoords(null);
+    setUserCoords(null);
     setLocationFilter('');
     setLocationFilterTouched(true);
     setShowProfileLocationModal(false);
@@ -613,7 +698,7 @@ const HomeScreen = ({ navigation, route }) => {
       filtered = filtered.filter(item => item.owner_id === user.id);
     }
 
-    // Filtro por Localização (Cidade / Estado)
+    // Filtro por Localização com RAIO DE 60 KM
     if (locationFilter && locationFilter.trim().length > 0) {
       const parts = locationFilter
         .split(',')
@@ -632,23 +717,54 @@ const HomeScreen = ({ navigation, route }) => {
       // Identifica cidade
       const cityToken = parts.find(p => p !== stateToken);
 
-      filtered = filtered.filter(item => {
-        const rawItemCity = item.city || item.extra_fields?.location_details?.city || '';
-        const rawItemState = item.state || item.extra_fields?.location_details?.state || '';
+      filtered = filtered
+        .map(item => {
+          const itemLat = item.latitude ?? item.extra_fields?.location_details?.latitude;
+          const itemLng = item.longitude ?? item.extra_fields?.location_details?.longitude;
+          let distanceKm = null;
+          if (userCoords?.latitude && userCoords?.longitude && itemLat != null && itemLng != null) {
+            distanceKm = calculateDistanceKm(userCoords.latitude, userCoords.longitude, itemLat, itemLng);
+          }
+          return {
+            ...item,
+            _distanceKm: distanceKm,
+          };
+        })
+        .filter(item => {
+          // 1. Se possuir coordenadas do usuário e do pet: filtra rigorosamente pelo raio de 60 km
+          if (item._distanceKm != null) {
+            return item._distanceKm <= 60;
+          }
 
-        const itemCityNorm = normalizeText(rawItemCity);
-        const itemStateNorm = normalizeText(rawItemState);
-        const itemStateUf = (
-          states.find(uf => normalizeText(uf) === itemStateNorm) ||
-          normalizedRegionToUf[itemStateNorm] ||
-          rawItemState
-        ).toUpperCase();
+          // 2. Se o pet não possuir coordenadas gravadas: fallback textual para a mesma cidade/estado
+          const rawItemCity = item.city || item.extra_fields?.location_details?.city || '';
+          const rawItemState = item.state || item.extra_fields?.location_details?.state || '';
 
-        const matchesCity = !cityToken || itemCityNorm.includes(cityToken) || cityToken.includes(itemCityNorm);
-        const matchesState = !targetUf || itemStateUf === targetUf;
+          const itemCityNorm = normalizeText(rawItemCity);
+          const itemStateNorm = normalizeText(rawItemState);
+          const itemStateUf = (
+            states.find(uf => normalizeText(uf) === itemStateNorm) ||
+            normalizedRegionToUf[itemStateNorm] ||
+            rawItemState
+          ).toUpperCase();
 
-        return matchesCity && matchesState;
+          const matchesCity = !cityToken || itemCityNorm.includes(cityToken) || cityToken.includes(itemCityNorm);
+          const matchesState = !targetUf || itemStateUf === targetUf;
+
+          return matchesCity && matchesState;
+        });
+
+      // Ordenar por proximidade quando houver cálculo de distância
+      filtered.sort((a, b) => {
+        if (a._distanceKm != null && b._distanceKm != null) {
+          return a._distanceKm - b._distanceKm;
+        }
+        if (a._distanceKm != null) return -1;
+        if (b._distanceKm != null) return 1;
+        return 0;
       });
+    } else {
+      filtered = filtered.map(item => ({ ...item, _distanceKm: null }));
     }
 
     // Filtro por termo de busca
@@ -987,6 +1103,23 @@ const HomeScreen = ({ navigation, route }) => {
                   ? 'Escolha sua cidade e estado para personalizar o feed e seu perfil:'
                   : 'Escolha uma cidade e estado para visualizar publicações dessa região:'}
               </Text>
+              {/* Aviso Informativo de Raio de 60 km */}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#EFF6FF',
+                padding: 10,
+                borderRadius: 10,
+                marginBottom: 14,
+                borderWidth: 1,
+                borderColor: '#DBEAFE',
+              }}>
+                <MaterialIcons name="radar" size={20} color="#2563EB" style={{ marginRight: 8 }} />
+                <Text style={{ color: '#1E40AF', fontSize: 12, lineHeight: 16, flex: 1 }}>
+                  Ao definir sua localização, o aplicativo filtrará automaticamente os animais em um raio de <Text style={{ fontWeight: '800' }}>60 km</Text> de você.
+                </Text>
+              </View>
+
               <TouchableOpacity
                 onPress={() => {
                   setShowProfileLocationModal(false);
@@ -998,7 +1131,7 @@ const HomeScreen = ({ navigation, route }) => {
                 <Text style={{ color: '#2563EB', fontWeight: '700', marginLeft: 8 }}>Escolher no mapa</Text>
               </TouchableOpacity>
               {(profileEditCity || profileEditState) ? (
-                <View style={{ backgroundColor: '#EFF6FF', padding: 10, borderRadius: 8, marginBottom: 14, alignItems: 'center' }}>
+                <View style={{ backgroundColor: '#F8FAFC', padding: 10, borderRadius: 8, marginBottom: 14, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0' }}>
                   <Text style={{ color: '#374151', fontSize: 13, fontWeight: '500' }}>Localização selecionada:</Text>
                   <Text style={{ color: '#2563EB', fontSize: 15, fontWeight: '800', marginTop: 2 }}>
                     {[profileEditCity, profileEditState].filter(Boolean).join(', ')}
@@ -1037,7 +1170,7 @@ const HomeScreen = ({ navigation, route }) => {
           visible={profileMapVisible}
           mode="profile"
           onClose={() => setProfileMapVisible(false)}
-          onConfirm={({ address, addressDetails }) => {
+          onConfirm={({ address, addressDetails, coordinate }) => {
             const region = String(addressDetails?.state || address?.region || '').trim();
             const stateValue = states.includes(region.toUpperCase())
               ? region.toUpperCase()
@@ -1045,6 +1178,9 @@ const HomeScreen = ({ navigation, route }) => {
             const cityValue = addressDetails?.city || address?.city || address?.subregion || address?.district || '';
             setProfileEditState(stateValue);
             setProfileEditCity(cityValue);
+            if (coordinate && coordinate.latitude && coordinate.longitude) {
+              setProfileEditCoords(coordinate);
+            }
             setProfileMapVisible(false);
             setShowProfileLocationModal(true);
           }}
@@ -1316,6 +1452,32 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
         </View>
       )}
+      {/* Banner Informativo do Raio de 60 km */}
+      {Boolean(locationFilter) && (
+        <View style={styles.radiusBanner}>
+          <View style={styles.radiusBannerLeft}>
+            <View style={styles.radarIconContainer}>
+              <MaterialIcons name="radar" size={18} color="#2563EB" />
+            </View>
+            <View style={{ flex: 1, marginLeft: 8 }}>
+              <Text style={styles.radiusBannerTitle}>
+                Raio de 60 km ativo
+              </Text>
+              <Text style={styles.radiusBannerSubtitle} numberOfLines={1}>
+                Exibindo pets próximos a {displayLocation}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={handleResetToBrazil}
+            style={styles.radiusResetButton}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.radiusResetText}>Ver Brasil todo</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Quantidade de animais encontrados */}
       <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
         <Text style={{ color: '#6B7280', fontSize: 15 }}>
@@ -1360,7 +1522,31 @@ const HomeScreen = ({ navigation, route }) => {
         }
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Nenhum animal encontrado</Text>
+            <MaterialIcons name="pets" size={46} color="#CBD5E1" style={{ marginBottom: 10 }} />
+            <Text style={styles.emptyText}>
+              {locationFilter
+                ? `Nenhum animal encontrado em um raio de 60 km de ${displayLocation}.`
+                : 'Nenhum animal encontrado'}
+            </Text>
+            {locationFilter ? (
+              <TouchableOpacity
+                onPress={handleResetToBrazil}
+                style={{
+                  marginTop: 12,
+                  backgroundColor: '#EFF6FF',
+                  paddingVertical: 8,
+                  paddingHorizontal: 16,
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  borderColor: '#DBEAFE',
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={{ color: '#2563EB', fontWeight: '700', fontSize: 13 }}>
+                  🇧🇷 Ver animais de todo o Brasil
+                </Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         )}
       />
@@ -1700,8 +1886,62 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#9CA3AF',
+    fontSize: 15,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  radiusBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#EFF6FF',
+    marginHorizontal: 16,
+    marginBottom: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  radiusBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
+  },
+  radarIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#DBEAFE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radiusBannerTitle: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    color: '#1E40AF',
+  },
+  radiusBannerSubtitle: {
+    fontSize: 11,
+    color: '#3B82F6',
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  radiusResetButton: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#93C5FD',
+  },
+  radiusResetText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2563EB',
   },
   fabButton: {
     position: 'absolute',
