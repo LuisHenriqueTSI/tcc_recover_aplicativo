@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import * as supabaseAuth from '../services/supabaseAuth';
 import * as userService from '../services/user';
 import { supabase } from '../lib/supabase';
+import { useTheme } from './ThemeContext';
 
 export const AuthContext = createContext();
 
@@ -12,6 +13,7 @@ const profileIsAdmin = (profile) => (
 );
 
 export const AuthProvider = ({ children }) => {
+  const { setThemeMode, resetThemeToLight } = useTheme();
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +86,11 @@ export const AuthProvider = ({ children }) => {
           setUser(null);
           setUserProfile(null);
           setIsAdmin(false);
+          if (typeof resetThemeToLight === 'function') {
+            resetThemeToLight();
+          } else if (typeof setThemeMode === 'function') {
+            setThemeMode('light');
+          }
         }
       }
     );
@@ -91,7 +98,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       authListener?.subscription?.unsubscribe();
     };
-  }, []);
+  }, [resetThemeToLight, setThemeMode]);
 
   const signUp = useCallback(async (email, password, name, city, state, whatsapp) => {
     try {
@@ -147,11 +154,16 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setUserProfile(null);
       setIsAdmin(false);
+      if (typeof resetThemeToLight === 'function') {
+        await resetThemeToLight();
+      } else if (typeof setThemeMode === 'function') {
+        await setThemeMode('light');
+      }
     } catch (error) {
       console.log('[signOut] Erro:', error.message);
       throw error;
     }
-  }, []);
+  }, [resetThemeToLight, setThemeMode]);
 
   const refreshProfile = useCallback(async () => {
     if (user) {

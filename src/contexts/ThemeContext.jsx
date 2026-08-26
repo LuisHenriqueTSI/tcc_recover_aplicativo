@@ -77,6 +77,7 @@ const ThemeContext = createContext({
   isDark: false,
   colors: lightColors,
   setThemeMode: () => {},
+  resetThemeToLight: () => {},
   loadingTheme: false,
 });
 
@@ -110,13 +111,22 @@ export const ThemeProvider = ({ children }) => {
     }
   };
 
+  const resetThemeToLight = async () => {
+    try {
+      setThemeModeState('light');
+      await AsyncStorage.setItem(THEME_STORAGE_KEY, 'light');
+    } catch (e) {
+      console.warn('[ThemeContext] Erro ao resetar tema para claro:', e.message);
+    }
+  };
+
   const isDark =
     themeMode === 'dark' || (themeMode === 'system' && systemColorScheme === 'dark');
 
   const colors = isDark ? darkColors : lightColors;
 
   return (
-    <ThemeContext.Provider value={{ themeMode, isDark, colors, setThemeMode, loadingTheme }}>
+    <ThemeContext.Provider value={{ themeMode, isDark, colors, setThemeMode, resetThemeToLight, loadingTheme }}>
       {children}
     </ThemeContext.Provider>
   );
