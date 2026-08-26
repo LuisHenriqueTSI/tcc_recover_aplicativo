@@ -908,74 +908,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
           </View>
         </View>
 
-        {/* Informações detalhadas para outras categorias de objetos/documentos */}
-        {item.category === 'document' ? (
-          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
-            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Documento</Text>
-            <View style={{ gap: 0 }}>
-              <InfoRow label="Tipo de Documento" value={item.brand || item.extra_fields?.brand || 'Não informado'} />
-              <Separator />
-              <InfoRow label="Nome do Proprietário" value={item.extra_fields?.owner_name} />
-              <Separator />
-              <InfoRow label="Número do Documento" value={item.serial_number || item.extra_fields?.serial_number || 'Não informado'} />
-            </View>
-          </View>
-        ) : item.category === 'object' ? (
-          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
-            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Objeto</Text>
-            <View style={{ gap: 0 }}>
-              <InfoRow label="Marca" value={item.brand || item.extra_fields?.brand || 'Não informado'} />
-              <Separator />
-              <InfoRow label="Cor" value={item.color || item.extra_fields?.color || 'Não informado'} />
-              <Separator />
-              <InfoRow label="Características" value={item.serial_number || item.extra_fields?.serial_number || 'Não informado'} />
-            </View>
-          </View>
-        ) : item.category === 'electronics' ? (
-          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
-            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Eletrônico</Text>
-            <View style={{ gap: 0 }}>
-              <InfoRow label="Marca/Modelo" value={item.brand || item.extra_fields?.brand || 'Não informado'} />
-              <Separator />
-              <InfoRow label="Cor" value={item.color || item.extra_fields?.color || 'Não informado'} />
-              <Separator />
-              <InfoRow label="Número de Série/IMEI" value={item.serial_number || item.extra_fields?.serial_number || 'Não informado'} />
-            </View>
-          </View>
-        ) : item.category === 'jewelry' ? (
-          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
-            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações da Joia/Acessório</Text>
-            <View style={{ gap: 0 }}>
-              <InfoRow label="Material" value={item.brand || item.extra_fields?.brand || 'Não informado'} />
-              <Separator />
-              <InfoRow label="Cor" value={item.color || item.extra_fields?.color || 'Não informado'} />
-              <Separator />
-              <InfoRow label="Marcas Distintivas" value={item.serial_number || item.extra_fields?.serial_number || 'Não informado'} />
-            </View>
-          </View>
-        ) : item.category === 'clothing' ? (
-          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
-            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações da Roupa</Text>
-            <View style={{ gap: 0 }}>
-              <InfoRow label="Tamanho/Marca" value={item.brand || item.extra_fields?.brand || 'Não informado'} />
-              <Separator />
-              <InfoRow label="Cor" value={item.color || item.extra_fields?.color || 'Não informado'} />
-              <Separator />
-              <InfoRow label="Detalhes/Padrão" value={item.serial_number || item.extra_fields?.serial_number || 'Não informado'} />
-            </View>
-          </View>
-        ) : (
-          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
-            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937', marginBottom: 12 }}>Informações do Item</Text>
-            <View style={{ gap: 0 }}>
-              <InfoRow label="Marca/Tipo" value={item.brand || item.extra_fields?.brand || 'Não informado'} />
-              <Separator />
-              <InfoRow label="Cor" value={item.color || item.extra_fields?.color || 'Não informado'} />
-              <Separator />
-              <InfoRow label="Características" value={item.serial_number || item.extra_fields?.serial_number || 'Não informado'} />
-            </View>
-          </View>
-        )}
+
 
         {/* Informações do Tutor / Dono Real quando publicado por terceiro */}
         {item.extra_fields?.third_party_owner?.active && item.extra_fields?.third_party_owner?.name && (
