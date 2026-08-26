@@ -1267,7 +1267,20 @@ const HomeScreen = ({ navigation, route }) => {
               activeOpacity={0.85}
               accessibilityLabel="Minhas publicações"
             >
-              <MaterialIcons name="person-outline" size={16} color={filters.showMyItems ? '#FFFFFF' : '#4B5563'} />
+              <MaterialIcons
+                name="person-outline"
+                size={15}
+                color={filters.showMyItems ? '#FFFFFF' : '#4B5563'}
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={[
+                  styles.filterChipText,
+                  filters.showMyItems && styles.filterChipTextActive,
+                ]}
+              >
+                Minhas Publicações
+              </Text>
             </TouchableOpacity>
           )}
         </ScrollView>
