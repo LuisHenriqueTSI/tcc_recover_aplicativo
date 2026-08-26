@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { TouchableOpacity, Text, View, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { TouchableOpacity, Text, View, Image, Platform } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -49,17 +49,27 @@ const PublicHeaderRight = ({ navigation }) => (
   </TouchableOpacity>
 );
 
-// Public Stack (no auth required - shows Home, Map and Login)
+// Public Stack (no auth required - shows Home, Map and Login with safe insets & modern styling)
 const PublicAppTabs = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
+  const bottomPadding = insets.bottom > 0 ? insets.bottom + 4 : (Platform.OS === 'android' ? 14 : 8);
+  const tabHeight = 64 + (insets.bottom > 0 ? insets.bottom : (Platform.OS === 'android' ? 14 : 0));
+
   return (
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopColor: '#E5E7EB',
-          paddingTop: 4,
-          paddingBottom: 6,
-          height: 60,
+          backgroundColor: '#FFFFFF',
+          borderTopColor: '#E2E8F0',
+          borderTopWidth: 1,
+          paddingTop: 8,
+          paddingBottom: bottomPadding,
+          height: tabHeight,
+          elevation: 12,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
         },
         headerShown: false,
       }}
@@ -70,10 +80,31 @@ const PublicAppTabs = ({ navigation }) => {
         options={{
           title: 'Explorar',
           tabBarLabel: ({ focused }) => (
-            <Text style={{ color: focused ? '#2563EB' : '#6B7280', fontSize: 12, marginBottom: 2, textAlign: 'center', fontWeight: focused ? 'bold' : '500' }}>Explorar</Text>
+            <Text
+              style={{
+                color: focused ? '#2563EB' : '#64748B',
+                fontSize: 12,
+                marginTop: 2,
+                textAlign: 'center',
+                fontWeight: focused ? '700' : '500',
+              }}
+            >
+              Explorar
+            </Text>
           ),
           tabBarIcon: ({ focused }) => (
-            <MaterialIcons name="home" size={24} color={focused ? '#2563EB' : '#6B7280'} />
+            <View
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 42,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: focused ? '#EFF6FF' : 'transparent',
+              }}
+            >
+              <MaterialIcons name="grid-view" size={23} color={focused ? '#2563EB' : '#64748B'} />
+            </View>
           ),
         }}
       />
@@ -83,10 +114,31 @@ const PublicAppTabs = ({ navigation }) => {
         options={{
           title: 'Mapa',
           tabBarLabel: ({ focused }) => (
-            <Text style={{ color: focused ? '#2563EB' : '#6B7280', fontSize: 12, marginBottom: 2, textAlign: 'center', fontWeight: focused ? 'bold' : '500' }}>Mapa</Text>
+            <Text
+              style={{
+                color: focused ? '#2563EB' : '#64748B',
+                fontSize: 12,
+                marginTop: 2,
+                textAlign: 'center',
+                fontWeight: focused ? '700' : '500',
+              }}
+            >
+              Mapa
+            </Text>
           ),
           tabBarIcon: ({ focused }) => (
-            <MaterialIcons name="map" size={24} color={focused ? '#2563EB' : '#6B7280'} />
+            <View
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 42,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: focused ? '#EFF6FF' : 'transparent',
+              }}
+            >
+              <MaterialIcons name="map" size={23} color={focused ? '#2563EB' : '#64748B'} />
+            </View>
           ),
         }}
       />
@@ -98,24 +150,31 @@ const PublicAppTabs = ({ navigation }) => {
           tabBarLabel: () => null,
           tabBarIcon: () => null,
           tabBarButton: (props) => (
-            <TouchableOpacity
-              {...props}
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginHorizontal: 8,
-                marginVertical: 6,
-                backgroundColor: '#2563EB',
-                borderRadius: 20,
-                flexDirection: 'row',
-                paddingHorizontal: 16,
-                paddingVertical: 6,
-              }}
-              onPress={() => navigation.navigate('Login')}
-            >
-              <MaterialIcons name="login" size={18} color="#fff" style={{ marginRight: 6 }} />
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Entrar</Text>
-            </TouchableOpacity>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 }}>
+              <TouchableOpacity
+                {...props}
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#2563EB',
+                  borderRadius: 22,
+                  flexDirection: 'row',
+                  paddingHorizontal: 18,
+                  paddingVertical: 9,
+                  minWidth: 105,
+                  shadowColor: '#2563EB',
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: 0.28,
+                  shadowRadius: 5,
+                  elevation: 4,
+                }}
+                onPress={() => navigation.navigate('Login')}
+                activeOpacity={0.85}
+              >
+                <MaterialIcons name="login" size={17} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 13.5 }}>Entrar</Text>
+              </TouchableOpacity>
+            </View>
           ),
         }}
       />
@@ -321,16 +380,27 @@ const MainAppTabs = ({ navigation }) => {
     };
   }, [user?.id]);
 
+  const insets = useSafeAreaInsets();
+  const bottomPadding = insets.bottom > 0 ? insets.bottom + 4 : (Platform.OS === 'android' ? 12 : 8);
+  const tabHeight = 62 + (insets.bottom > 0 ? insets.bottom : (Platform.OS === 'android' ? 12 : 0));
+
   return (
     <Tab.Navigator
       screenOptions={{
         tabBarActiveTintColor: '#2563EB',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarInactiveTintColor: '#64748B',
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
-          borderTopColor: '#E5E7EB',
-          paddingBottom: 8,
-          paddingTop: 8,
+          borderTopColor: '#E2E8F0',
+          borderTopWidth: 1,
+          paddingBottom: bottomPadding,
+          paddingTop: 6,
+          height: tabHeight,
+          elevation: 12,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
         },
       }}
     >
