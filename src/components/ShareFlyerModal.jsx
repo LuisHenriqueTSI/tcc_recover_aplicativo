@@ -100,7 +100,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
           <View style={styles.modalHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <MaterialIcons name="share" size={22} color="#2563EB" />
-              <Text style={styles.modalHeaderTitle}>Compartilhar Pet</Text>
+              <Text style={styles.modalHeaderTitle}>Compartilhar Animal</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <MaterialIcons name="close" size={22} color="#6B7280" />

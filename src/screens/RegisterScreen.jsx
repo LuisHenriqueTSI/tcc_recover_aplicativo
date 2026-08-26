@@ -302,7 +302,7 @@ const RegisterScreen = ({ navigation }) => {
                 {whatsappConsent ? <MaterialIcons name="check" size={16} color="#FFFFFF" /> : null}
               </View>
               <Text style={styles.consentText}>
-                Desejo receber avisos e notificações de novas informações de pets no meu WhatsApp
+                Desejo receber avisos e notificações de novas informações de animais no meu WhatsApp
               </Text>
             </TouchableOpacity>
           )}

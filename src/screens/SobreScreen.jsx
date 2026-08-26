@@ -256,10 +256,10 @@ const SobreScreen = ({ navigation }) => {
         {/* Mensagem de Boas-Vindas */}
         <View style={styles.textSection}>
           <Text style={styles.headline}>
-            Cada pet tem uma história e uma família esperando por ele.
+            Cada animal tem uma história e uma família esperando por ele.
           </Text>
           <Text style={styles.subheadline}>
-            Conectamos quem perdeu e quem encontrou um animalzinho, de forma simples, rápida e acolhedora.
+            Conectamos quem perdeu e quem encontrou um animal, de forma simples, rápida e acolhedora.
           </Text>
         </View>
 
@@ -311,7 +311,7 @@ const SobreScreen = ({ navigation }) => {
         {/* Placar Comunitário WeFIND - Estilo Hero Card */}
         <View style={styles.placarHeroCard}>
           {/* Header Category em Roxo/Índigo */}
-          <Text style={styles.placarHeroCategory}>PETS REENCONTRADOS</Text>
+          <Text style={styles.placarHeroCategory}>ANIMAIS REENCONTRADOS</Text>
 
           {/* Linha com Ícone Fofo + Badge de Check + Contador */}
           <View style={styles.placarHeroRow}>
@@ -377,7 +377,7 @@ const SobreScreen = ({ navigation }) => {
           <View style={styles.featuredSectionHeader}>
             <View style={{ flex: 1 }}>
               <Text style={styles.featuredSectionTitle}>Histórias em destaque</Text>
-              <Text style={styles.featuredSectionSubtitle}>Relatos enviados por tutores que recuperaram seus pets</Text>
+              <Text style={styles.featuredSectionSubtitle}>Relatos enviados por tutores que recuperaram seus animais</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <TouchableOpacity
@@ -486,7 +486,7 @@ const SobreScreen = ({ navigation }) => {
             <Text style={styles.sectionSubtitle}>Recursos e atalhos rápidos para você começar</Text>
           </View>
 
-          {/* Passo 1: Cadastrar Pet */}
+          {/* Passo 1: Cadastrar Animal */}
           <TouchableOpacity
             style={styles.actionStepCard}
             onPress={() => navigation.navigate('RegisterItem')}
@@ -498,14 +498,14 @@ const SobreScreen = ({ navigation }) => {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.actionStepNumber}>PASSO 1</Text>
-                <Text style={styles.actionStepTitle}>Registre um Pet</Text>
+                <Text style={styles.actionStepTitle}>Registre um Animal</Text>
               </View>
             </View>
             <Text style={styles.actionStepDescription}>
-              Cadastre fotos, características e a localização onde o pet foi visto ou sumiu.
+              Cadastre fotos, características e a localização onde o animal foi visto ou sumiu.
             </Text>
             <View style={[styles.actionStepButtonBadge, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
-              <Text style={[styles.actionStepButtonText, { color: '#1D4ED8' }]}>Publicar Anúncio de Pet</Text>
+              <Text style={[styles.actionStepButtonText, { color: '#1D4ED8' }]}>Publicar Anúncio de Animal</Text>
               <MaterialIcons name="arrow-forward" size={15} color="#1D4ED8" />
             </View>
           </TouchableOpacity>
@@ -550,10 +550,10 @@ const SobreScreen = ({ navigation }) => {
               </View>
             </View>
             <Text style={styles.actionStepDescription}>
-              Converse diretamente com os tutores pelo chat e celebre os pets que já voltaram para casa!
+              Converse diretamente com os tutores pelo chat e celebre os animais que já voltaram para casa!
             </Text>
             <View style={[styles.actionStepButtonBadge, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
-              <Text style={[styles.actionStepButtonText, { color: '#047857' }]}>Ver Pets Reencontrados</Text>
+              <Text style={[styles.actionStepButtonText, { color: '#047857' }]}>Ver Animais Reencontrados</Text>
               <MaterialIcons name="arrow-forward" size={15} color="#047857" />
             </View>
           </TouchableOpacity>
@@ -676,7 +676,7 @@ const SobreScreen = ({ navigation }) => {
               {/* Depoimento */}
               <Text style={styles.inputLabel}>Relato / Depoimento do Reencontro</Text>
               <TextInput
-                placeholder="Conte como a comunidade ou o app ajudou no reencontro do seu pet..."
+                placeholder="Conte como a comunidade ou o app ajudou no reencontro do seu animal..."
                 placeholderTextColor="#94A3B8"
                 value={testimonialInput}
                 onChangeText={setTestimonialInput}

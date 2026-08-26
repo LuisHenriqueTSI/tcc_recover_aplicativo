@@ -193,10 +193,10 @@ const RecoveredPetsScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Rodapé / Informações do Pet */}
+        {/* Rodapé / Informações do Animal */}
         <View style={styles.cardFooter}>
           <Text style={styles.petName} numberOfLines={1}>
-            {item.title || 'Pet'}
+            {item.title || 'Animal'}
           </Text>
 
           <View style={styles.metaRow}>
@@ -220,7 +220,7 @@ const RecoveredPetsScreen = ({ navigation }) => {
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
       {/* Header com Busca e Filtros */}
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Pets Reencontrados 🎉</Text>
+        <Text style={styles.headerTitle}>Animais Reencontrados 🎉</Text>
         <Text style={styles.headerSubtitle}>
           Animais que voltaram para os seus lares e famílias
         </Text>
@@ -229,7 +229,7 @@ const RecoveredPetsScreen = ({ navigation }) => {
         <View style={styles.searchBar}>
           <MaterialIcons name="search" size={20} color="#64748B" style={{ marginRight: 8 }} />
           <TextInput
-            placeholder="Buscar pet reencontrado por nome, bairro..."
+            placeholder="Buscar animal reencontrado por nome, bairro..."
             placeholderTextColor="#64748B"
             value={searchTerm}
             onChangeText={setSearchTerm}
@@ -276,7 +276,7 @@ const RecoveredPetsScreen = ({ navigation }) => {
       {loading && !refreshing ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color="#059669" />
-          <Text style={styles.loadingText}>Carregando pets reencontrados...</Text>
+          <Text style={styles.loadingText}>Carregando animais reencontrados...</Text>
         </View>
       ) : (
         <FlatList
@@ -291,7 +291,7 @@ const RecoveredPetsScreen = ({ navigation }) => {
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
               <MaterialIcons name="sentiment-dissatisfied" size={48} color="#94A3B8" />
-              <Text style={styles.emptyTitle}>Nenhum pet reencontrado no momento</Text>
+              <Text style={styles.emptyTitle}>Nenhum animal reencontrado no momento</Text>
               <Text style={styles.emptySubtitle}>
                 Tente ajustar os termos da sua pesquisa ou filtros.
               </Text>

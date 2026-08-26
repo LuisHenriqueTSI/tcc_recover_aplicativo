@@ -357,7 +357,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     <View>
       <Text style={styles.label}>Localização</Text>
       <Text style={styles.locationHint}>
-        Escolha no mapa onde o pet foi {status === 'lost' ? 'perdido' : 'encontrado'}.
+        Escolha no mapa onde o animal foi {status === 'lost' ? 'perdido' : 'encontrado'}.
       </Text>
       {renderMapLocationButton()}
 
@@ -695,7 +695,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     return (
       <View style={styles.container}>
         <Card style={styles.messageCard}>
-          <Text style={styles.messageText}>Faça login para registrar um pet</Text>
+          <Text style={styles.messageText}>Faça login para registrar um animal</Text>
           <Button
             title="Ir para Login"
             onPress={() => navigation.navigate('Login')}
@@ -919,7 +919,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     setError('');
 
     if (!user) {
-      Alert.alert('Login necessário', 'Você precisa estar conectado para publicar um pet.', [
+      Alert.alert('Login necessário', 'Você precisa estar conectado para publicar um animal.', [
         { text: 'Cancelar', style: 'cancel' },
         { text: 'Entrar', onPress: () => navigation.navigate('Login') },
       ]);
@@ -927,7 +927,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     }
 
     if (!itemType) {
-      const msg = 'Selecione o tipo do pet';
+      const msg = 'Selecione o tipo do animal';
       setError(msg);
       Alert.alert('Campo obrigatório', msg);
       return false;
@@ -948,7 +948,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     }
 
     if (!photos || photos.length === 0) {
-      const msg = 'Adicione pelo menos uma foto do pet para facilitar a identificação pela comunidade.';
+      const msg = 'Adicione pelo menos uma foto do animal para facilitar a identificação pela comunidade.';
       setError(msg);
       Alert.alert('Foto obrigatória', msg);
       return false;
@@ -972,7 +972,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     }
 
     if (!mapLocation?.latitude || !mapLocation?.longitude) {
-      const msg = 'Toque em "Definir Local no Mapa" para escolher a localização do pet.';
+      const msg = 'Toque em "Definir Local no Mapa" para escolher a localização do animal.';
       setError(msg);
       Alert.alert('Localização necessária', msg);
       return false;
@@ -1195,7 +1195,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           });
         }
 
-        Alert.alert('Sucesso', 'Pet registrado com sucesso!', [
+        Alert.alert('Sucesso', 'Animal registrado com sucesso!', [
           {
             text: 'Ir para Home',
             onPress: () => {
@@ -1205,7 +1205,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         ]);
       }
     } catch (err) {
-      const errorMsg = err.message || 'Erro ao registrar pet';
+      const errorMsg = err.message || 'Erro ao registrar animal';
       console.error('Erro ao registrar:', err);
       setError(errorMsg);
       Alert.alert('Erro', errorMsg);
@@ -1255,10 +1255,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
       return (
         <ScrollView style={styles.container}>
           <View style={styles.header}>
-            <Text style={styles.title}>Editar Pet</Text>
+            <Text style={styles.title}>Editar Animal</Text>
             <Text style={styles.subtitle}>Tipo: {ITEM_TYPES[normalized]?.label || normalized || editItem.category}</Text>
             <Text style={{ color: '#4B5563', marginTop: 16, fontWeight: 'bold' }}>
-              Você pode ajustar detalhes do pet antes de salvar.
+              Você pode ajustar detalhes do animal antes de salvar.
             </Text>
           </View>
           <Button title="Avançar" onPress={() => {
@@ -1272,8 +1272,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
     const typeOptions = [
       {
         key: 'animal',
-        label: 'Pet',
-        desc: 'Cães, gatos, aves e outros animais',
+        label: 'Animal',
+        desc: 'Cães, gatos, aves, bovinos, cavalos e outros animais',
         color: '#EFF6FF',
         icon: '🐾'
       }
@@ -1282,7 +1282,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
       <ScrollView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
         <View style={{ alignItems: 'center', marginTop: 32, marginBottom: 12 }}>
           <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>Registrar</Text>
-          <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 16 }}>Seu pet perdido ou encontrado</Text>
+          <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 16 }}>Seu animal perdido ou encontrado</Text>
         </View>
         <View style={{ gap: 18, marginHorizontal: 12, marginBottom: 32 }}>
           {typeOptions.map((opt) => (
@@ -1309,7 +1309,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     );
   }
 
-  // Step 2: Detalhes do pet
+  // Step 2: Detalhes do animal
   if (step === 2) {
     const config = ITEM_TYPES[itemType];
     if (!config) {
@@ -1320,8 +1320,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
       return (
         <ScrollView style={styles.container}>
           <Card style={styles.card}>
-            <Text style={styles.title}>Erro ao carregar o pet</Text>
-            <Text>Por favor, tente iniciar o cadastro do pet novamente.</Text>
+            <Text style={styles.title}>Erro ao carregar o animal</Text>
+            <Text>Por favor, tente iniciar o cadastro do animal novamente.</Text>
             <Button title="Voltar" onPress={() => {
               setItemType(null);
               setStep(1);
@@ -1459,7 +1459,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                         />
                       </View>
                       <Text style={[styles.custodyOptionTitle, foundCustody === 'spotted' && styles.custodyOptionTitleActive]}>
-                        Apenas vi o pet
+                        Apenas vi o animal
                       </Text>
                       <Text style={styles.custodyOptionSub}>
                         Avistado na rua / sem recolhimento
@@ -1490,7 +1490,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                             Disponibilizar para adoção caso o dono não apareça
                           </Text>
                           <Text style={styles.adoptionToggleSubtitle}>
-                            ⏳ Janela obrigatória de 7 dias: O pet ficará listado como "Encontrado" durante a primeira semana de buscas. Se o tutor não for localizado após 1 semana, a adoção responsável será liberada.
+                            ⏳ Janela obrigatória de 7 dias: O animal ficará listado como "Encontrado" durante a primeira semana de buscas. Se o tutor não for localizado após 1 semana, a adoção responsável será liberada.
                           </Text>
                         </View>
                       </View>
@@ -1575,7 +1575,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               <SelectionChips label="Raça" options={PET_BREED_OPTIONS} value={animalBreed} onChange={setAnimalBreed} />
               <Input
                 label="Raça (opcional)"
-                placeholder="Digite a raça do pet"
+                placeholder="Digite a raça do animal"
                 value={animalBreed}
                 onChangeText={setAnimalBreed}
                 style={styles.input}
@@ -1791,7 +1791,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 0 }} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Localização e Recompensa</Text>
           <Text style={styles.locationHint}>
-            Escolha no mapa onde o pet foi {status === 'lost' ? 'visto pela última vez' : 'encontrado'}.
+            Escolha no mapa onde o animal foi {status === 'lost' ? 'visto pela última vez' : 'encontrado'}.
           </Text>
           {renderMapLocationButton()}
 

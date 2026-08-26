@@ -1049,10 +1049,10 @@ const HomeScreen = ({ navigation, route }) => {
         />
       </View>
 
-      {/* Busca de pets acima dos filtros */}
+      {/* Busca de animais acima dos filtros */}
       <View style={{ marginTop: 12, marginHorizontal: 16 }}>
         <Text style={{ color: '#1E1B4B', fontSize: 14, fontWeight: '800', marginBottom: 7 }}>
-          Encontre um pet perdido ou encontrado
+          Encontre um animal perdido ou encontrado
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', borderRadius: 14, borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 14, height: 48 }}>
           <MaterialIcons name="search" size={22} color="#64748B" style={{ marginRight: 8 }} />
@@ -1317,7 +1317,7 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
         </View>
       )}
-      {/* Quantidade de pets encontrados */}
+      {/* Quantidade de animais encontrados */}
       <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
         <Text style={{ color: '#6B7280', fontSize: 15 }}>
           {String(filteredItems.filter(item => {
@@ -1325,7 +1325,7 @@ const HomeScreen = ({ navigation, route }) => {
               ? true
               : String(item.species || '').toLowerCase().includes(String(advancedFilters.animalType).toLowerCase());
             return (advancedFilters.category === 'all' || item.category === advancedFilters.category) && matchesAnimalType;
-          }).length) + ' pets encontrados'}
+          }).length) + ' animais encontrados'}
         </Text>
       </View>
       <FlatList
@@ -1361,7 +1361,7 @@ const HomeScreen = ({ navigation, route }) => {
         }
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Nenhum pet encontrado</Text>
+            <Text style={styles.emptyText}>Nenhum animal encontrado</Text>
           </View>
         )}
       />

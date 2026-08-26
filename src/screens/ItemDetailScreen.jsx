@@ -830,13 +830,13 @@ const ItemDetailScreen = ({ route, navigation }) => {
               }}
             >
               {item.extra_fields?.found_custody === 'spotted'
-                ? 'Quem publicou apenas viu o pet no local informado e tirou a foto, mas não está com o animal. Se for ao local, compartilhe pistas nos comentários.'
+                ? 'Quem publicou apenas viu o animal no local informado e tirou a foto, mas não está com o animal. Se for ao local, compartilhe pistas nos comentários.'
                 : 'Quem encontrou acolheu o animal em sua casa ou espaço seguro enquanto o tutor é procurado pela comunidade.'}
             </Text>
           </View>
         )}
 
-        {/* Card de Período de Busca vs Adoção Liberada para Pet Encontrado com Intenção de Adoção */}
+        {/* Card de Período de Busca vs Adoção Liberada para Animal Encontrado com Intenção de Adoção */}
         {item.status === 'found' && !item.extra_fields?.is_direct_adoption && (
           itemsService.isPetAvailableForAdoption(item) ? (
             <View
@@ -857,7 +857,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 </Text>
               </View>
               <Text style={{ fontSize: 12.5, lineHeight: 18, color: '#BE185D' }}>
-                O período prioritário de 7 dias de busca pelo tutor foi concluído sem localização do dono original. O pet agora está aberto para adoção responsável com amor!
+                O período prioritário de 7 dias de busca pelo tutor foi concluído sem localização do dono original. O animal agora está aberto para adoção responsável com amor!
               </Text>
             </View>
           ) : (
@@ -880,7 +880,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   </Text>
                 </View>
                 <Text style={{ fontSize: 12.5, lineHeight: 18, color: '#92400E' }}>
-                  Este pet foi encontrado na rua e está na primeira semana obrigatória de busca pelo tutor original. Caso o dono não apareça até o final deste prazo, a adoção responsável será oficialmente liberada.
+                  Este animal foi encontrado na rua e está na primeira semana obrigatória de busca pelo tutor original. Caso o dono não apareça até o final deste prazo, a adoção responsável será oficialmente liberada.
                 </Text>
               </View>
             ) : null

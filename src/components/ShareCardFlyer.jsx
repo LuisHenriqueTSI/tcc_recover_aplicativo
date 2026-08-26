@@ -224,7 +224,7 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
         {/* Rodapé / Chamada para Compartilhar */}
         <View style={styles.footerContainer}>
           <Text style={styles.footerText}>
-            📢 Compartilhe para ajudar a trazer este pet de volta!
+            📢 Compartilhe para ajudar a trazer este animal de volta!
           </Text>
         </View>
       </View>
