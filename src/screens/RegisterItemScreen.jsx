@@ -433,12 +433,12 @@ const RegisterItemScreen = ({ navigation, route }) => {
       </Modal>
 
       {status === 'lost' && (
-        <View style={[styles.rewardSection, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FFFAED', borderColor: isDark ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A' }]}>
+        <View style={[styles.rewardSection, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <TouchableOpacity
             style={styles.checkboxContainer}
             onPress={() => setOfferReward(!offerReward)}
           >
-            <View style={[styles.checkbox, { borderColor: colors.border }, offerReward && styles.checkboxChecked]}>
+            <View style={[styles.checkbox, { borderColor: colors.border }, offerReward && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
               {offerReward && <Text style={styles.checkmark}>✓</Text>}
             </View>
             <Text style={[styles.checkboxLabel, { color: colors.text }]}>Oferecer Recompensa</Text>
@@ -466,7 +466,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           onPress={() => setIsThirdPartyOwner(!isThirdPartyOwner)}
           activeOpacity={0.8}
         >
-          <View style={[styles.checkbox, { borderColor: colors.border }, isThirdPartyOwner && styles.checkboxChecked]}>
+          <View style={[styles.checkbox, { borderColor: colors.border }, isThirdPartyOwner && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
             {isThirdPartyOwner && <Text style={styles.checkmark}>✓</Text>}
           </View>
           <Text style={[styles.checkboxLabel, { color: colors.text }]}>
@@ -1896,12 +1896,12 @@ const RegisterItemScreen = ({ navigation, route }) => {
           </Modal>
 
           {status === 'lost' && (
-            <View style={[styles.rewardSection, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FFFAED', borderColor: isDark ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A' }]}>
+            <View style={[styles.rewardSection, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
               <TouchableOpacity
                 style={styles.checkboxContainer}
                 onPress={() => setOfferReward(!offerReward)}
               >
-                <View style={[styles.checkbox, { borderColor: colors.border }, offerReward && styles.checkboxChecked]}>
+                <View style={[styles.checkbox, { borderColor: colors.border }, offerReward && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
                   {offerReward && <Text style={styles.checkmark}>✓</Text>}
                 </View>
                 <Text style={[styles.checkboxLabel, { color: colors.text }]}>Oferecer Recompensa</Text>
@@ -2270,14 +2270,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginHorizontal: 16,
   },
-  rewardSection: {
-    backgroundColor: '#FFFAED',
-    borderWidth: 1,
-    borderColor: '#FDE68A',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 20,
-  },
+
   selectionGroup: {
     marginBottom: 14,
   },
@@ -2329,6 +2322,11 @@ const styles = StyleSheet.create({
   rewardSection: {
     marginTop: 16,
     marginBottom: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 12,
   },
   thirdPartySection: {
     marginTop: 16,
@@ -2367,8 +2365,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#FBBF24',
-    borderColor: '#FBBF24',
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
   },
   checkmark: {
     color: '#FFFFFF',
