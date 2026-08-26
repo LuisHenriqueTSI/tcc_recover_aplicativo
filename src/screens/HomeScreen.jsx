@@ -690,7 +690,6 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   const [items, setItems] = useState([]);
-  const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({
@@ -710,35 +709,42 @@ const HomeScreen = ({ navigation, route }) => {
   const [editCity, setEditCity] = useState(userProfile?.city || '');
   const [editNeighborhood, setEditNeighborhood] = useState('');
 
-  // Sempre recarrega os itens silenciosamente ao focar na HomeTab
+  // Carrega do cache E do servidor em paralelo, mas aplica o servidor como fonte de verdade
+  // O cache serve apenas como warmup do estado sem acionar renderização separada de filtros
+  useEffect(() => {
+    let cancelled = false;
+    const bootstrap = async () => {
+      // 1. Tenta pre-popular do cache para reduzir o tempo de tela em branco
+      try {
+        const cached = await AsyncStorage.getItem('@wefind/cached_feed_items');
+        if (cached && !cancelled) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const valid = parsed.filter(item => item && !item.resolved && !itemsService.shouldHideItem?.(item));
+            if (valid.length > 0 && !cancelled) {
+              setItems(valid);
+              setLoading(false);
+            }
+          }
+        }
+      } catch (e) {}
+
+      // 2. Busca do servidor (substitui o cache silenciosamente)
+      if (!cancelled) {
+        await loadItems();
+      }
+    };
+    bootstrap();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Sempre recarrega silenciosamente ao focar na HomeTab
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       loadItems(true);
     });
     return unsubscribe;
   }, [navigation]);
-
-  // Carregamento instantâneo de cache na inicialização
-  useEffect(() => {
-    const loadCachedFeed = async () => {
-      try {
-        const cached = await AsyncStorage.getItem('@wefind/cached_feed_items');
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const valid = parsed.filter(item => item && !item.resolved && !itemsService.shouldHideItem?.(item));
-            if (valid.length > 0) {
-              setItems(valid);
-              applyFilters(valid);
-              setLoading(false);
-            }
-          }
-        }
-      } catch (e) {}
-    };
-    loadCachedFeed();
-    loadItems();
-  }, []);
 
   // Ao focar na tela, sincroniza seletor interno caso o perfil possua cidade
   useFocusEffect(
@@ -784,7 +790,6 @@ const HomeScreen = ({ navigation, route }) => {
       }
 
       setItems(allItems);
-      applyFilters(allItems);
 
       // Salva no cache local para abertura instantânea (0ms) subsequente
       if (!searchTerm && filters.status === 'all' && (!filters.animalType || filters.animalType === 'all') && !filters.showMyItems) {
@@ -799,10 +804,6 @@ const HomeScreen = ({ navigation, route }) => {
       }
     } catch (error) {
       console.error('[HomeScreen] Erro ao carregar itens:', error);
-      if (items.length === 0) {
-        setItems([]);
-        setFilteredItems([]);
-      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -847,8 +848,11 @@ const HomeScreen = ({ navigation, route }) => {
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase();
 
-  const applyFilters = (itemsToFilter) => {
-    let filtered = itemsToFilter || [];
+  // filteredItems é derivado deterministicamente de items + todos os filtros.
+  // Sendo um useMemo, qualquer mudança em items OU nos filtros produz exatamente
+  // UM render consistente — sem competição entre cache e servidor.
+  const filteredItems = React.useMemo(() => {
+    let filtered = items || [];
 
     // Remove publicações fantasmas (resolvidas ou expiradas) do feed público
     if (!filters.showMyItems) {
@@ -886,7 +890,7 @@ const HomeScreen = ({ navigation, route }) => {
       filtered = filtered.filter(item => item.owner_id === user.id);
     }
 
-    // Calcula a distância exata de cada item em relação às coordenadas do usuário (se disponíveis)
+    // Calcula distância de cada item em relação às coordenadas do usuário (se disponíveis)
     filtered = filtered.map(item => {
       const itemLat = item.latitude ?? item.extra_fields?.location_details?.latitude;
       const itemLng = item.longitude ?? item.extra_fields?.location_details?.longitude;
@@ -894,10 +898,7 @@ const HomeScreen = ({ navigation, route }) => {
       if (userCoords?.latitude && userCoords?.longitude && itemLat != null && itemLng != null) {
         distanceKm = calculateDistanceKm(userCoords.latitude, userCoords.longitude, itemLat, itemLng);
       }
-      return {
-        ...item,
-        _distanceKm: distanceKm,
-      };
+      return { ...item, _distanceKm: distanceKm };
     });
 
     // Filtro por Localização com RAIO DE BUSCA
@@ -908,7 +909,6 @@ const HomeScreen = ({ navigation, route }) => {
         .map(p => normalizeText(p))
         .filter(Boolean);
 
-      // Identifica estado (UF ou nome por extenso)
       const stateToken = parts.find(p =>
         states.some(uf => normalizeText(uf) === p) ||
         Object.keys(normalizedRegionToUf).some(reg => reg === p)
@@ -916,20 +916,13 @@ const HomeScreen = ({ navigation, route }) => {
       const targetUf = stateToken
         ? (states.find(uf => normalizeText(uf) === stateToken) || normalizedRegionToUf[stateToken] || stateToken).toUpperCase()
         : null;
-
-      // Identifica cidade
       const cityToken = parts.find(p => p !== stateToken);
 
       filtered = filtered.filter(item => {
-        // 1. Se possuir coordenadas: filtra estritamente pelo raio selecionado
-        if (item._distanceKm != null) {
-          return item._distanceKm <= maxRadius;
-        }
+        if (item._distanceKm != null) return item._distanceKm <= maxRadius;
 
-        // 2. Se o pet não possuir coordenadas gravadas: fallback textual para a mesma cidade/estado
         const rawItemCity = item.city || item.extra_fields?.location_details?.city || '';
         const rawItemState = item.state || item.extra_fields?.location_details?.state || '';
-
         const itemCityNorm = normalizeText(rawItemCity);
         const itemStateNorm = normalizeText(rawItemState);
         const itemStateUf = (
@@ -937,10 +930,8 @@ const HomeScreen = ({ navigation, route }) => {
           normalizedRegionToUf[itemStateNorm] ||
           rawItemState
         ).toUpperCase();
-
         const matchesCity = !cityToken || itemCityNorm.includes(cityToken) || cityToken.includes(itemCityNorm);
         const matchesState = !targetUf || itemStateUf === targetUf;
-
         return matchesCity && matchesState;
       });
     }
@@ -952,69 +943,33 @@ const HomeScreen = ({ navigation, route }) => {
         const extra = item.extra_fields || {};
         const locDetails = extra.location_details || {};
         const searchableFields = [
-          item.title,
-          item.description,
-          item.species,
-          item.breed,
-          item.city,
-          item.state,
-          item.neighborhood,
-          extra.species,
-          extra.breed,
-          extra.animal_name,
+          item.title, item.description, item.species, item.breed,
+          item.city, item.state, item.neighborhood,
+          extra.species, extra.breed, extra.animal_name,
           extra.third_party_owner?.name,
-          locDetails.city,
-          locDetails.state,
-          locDetails.district,
-          locDetails.street,
+          locDetails.city, locDetails.state, locDetails.district, locDetails.street,
         ];
         return searchableFields.some(val => normalizeText(val).includes(search));
       });
     }
 
-    // ORDENAÇÃO DEFINITIVA: MAIS PRÓXIMOS EM ORDEM CRESCENTE DE DISTÂNCIA
-    // 1. Menor distância em KM sempre no topo (ordem crescente: 0.1km, 0.5km, 1.2km, 8km...)
-    // 2. Empate ou sem coordenadas: itens mais recentes (created_at decrescente)
-    filtered.sort((a, b) => {
+    // ORDENAÇÃO: mais próximos primeiro (crescente), desempate por data mais recente
+    const sorted = [...filtered].sort((a, b) => {
       const aDist = a._distanceKm;
       const bDist = b._distanceKm;
-
-      if (aDist != null && bDist != null) {
-        if (Math.abs(aDist - bDist) > 0.05) {
-          return aDist - bDist; // Menor distância sempre no topo
-        }
-      } else if (aDist != null) {
-        return -1;
-      } else if (bDist != null) {
-        return 1;
+      if (aDist != null && bDist != null && Math.abs(aDist - bDist) > 0.05) {
+        return aDist - bDist;
       }
-
-      // Desempate por data mais recente
+      if (aDist != null && bDist == null) return -1;
+      if (aDist == null && bDist != null) return 1;
       const aDate = new Date(a.created_at || 0).getTime();
       const bDate = new Date(b.created_at || 0).getTime();
       return bDate - aDate;
     });
 
-    console.log('[HomeScreen] Itens após filtros:', filtered.length);
-    setFilteredItems(filtered);
-    setExpandedItem(null);
-    setExpandedItemDetails(null);
-  };
-
-  // Re-aplica filtros e ordenação por proximidade sempre que as coordenadas mudarem
-  useEffect(() => {
-    if (items && items.length > 0) {
-      applyFilters(items);
-    }
-  }, [userCoords, searchRadiusKm]);
-
-  useEffect(() => {
-    loadItems();
-  }, []);
-
-  useEffect(() => {
-    applyFilters(items);
-  }, [filters, user, locationFilter, searchTerm, items]);
+    console.log('[HomeScreen] Itens após filtros:', sorted.length);
+    return sorted;
+  }, [items, filters, user, locationFilter, searchTerm, userCoords, searchRadiusKm]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -1102,7 +1057,6 @@ const HomeScreen = ({ navigation, route }) => {
                 AsyncStorage.setItem('@wefind/cached_feed_items', JSON.stringify(next.slice(0, 40))).catch(() => {});
                 return next;
               });
-              setFilteredItems((prev) => prev.filter((i) => i.id !== itemId));
               Alert.alert('Sucesso', 'Item excluído com sucesso');
               loadItems(true);
             } catch (error) {
@@ -1133,7 +1087,6 @@ const HomeScreen = ({ navigation, route }) => {
                 AsyncStorage.setItem('@wefind/cached_feed_items', JSON.stringify(next.slice(0, 40))).catch(() => {});
                 return next;
               });
-              setFilteredItems((prev) => prev.filter((i) => i.id !== itemId));
               Alert.alert('Sucesso', 'Item marcado como resolvido!');
               loadItems(true);
             } catch (error) {

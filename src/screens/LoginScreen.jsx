@@ -14,6 +14,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import { getFriendlyAuthErrorMessage } from '../utils/authErrors';
 
 const LoginScreen = ({ navigation }) => {
   const { signIn, loading } = useAuth();
@@ -49,16 +50,13 @@ const LoginScreen = ({ navigation }) => {
       if (result?.user && !result?.user.confirmed_at && !result?.user.email_confirmed_at && !result?.session) {
         Alert.alert(
           'Confirmação necessária',
-          'Você precisa confirmar seu e-mail antes de fazer login. Verifique sua caixa de entrada.',
+          'Você precisa confirmar seu cadastro antes de fazer login. Verifique o código de validação no seu WhatsApp.',
         );
         return;
       }
     } catch (error) {
-      if (error.message && error.message.toLowerCase().includes('email not confirmed')) {
-        Alert.alert('Confirmação necessária', 'Você precisa confirmar seu e-mail antes de fazer login. Verifique sua caixa de entrada.');
-      } else {
-        Alert.alert('Erro de Login', error.message || 'Falha ao fazer login');
-      }
+      const friendlyMessage = getFriendlyAuthErrorMessage(error);
+      Alert.alert('Acesso não autorizado', friendlyMessage);
     }
   };
 
