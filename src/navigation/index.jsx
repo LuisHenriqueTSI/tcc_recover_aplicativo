@@ -33,6 +33,7 @@ import ConfigScreen from '../screens/ConfigScreen';
 import AjudaSuporteScreen from '../screens/AjudaSuporteScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import SobreScreen from '../screens/SobreScreen';
+import MuralReencontrosScreen from '../screens/MuralReencontrosScreen';
 import RecoveredPetsScreen from '../screens/RecoveredPetsScreen';
 import { listItems } from '../services/items';
 import { buildRenewalAlerts } from '../services/notifications';
@@ -238,6 +239,11 @@ const PublicStack = () => {
         name="RecoveredPets"
         component={RecoveredPetsScreen}
         options={{ title: 'Animais Reencontrados' }}
+      />
+      <Stack.Screen
+        name="MuralReencontros"
+        component={MuralReencontrosScreen}
+        options={{ title: 'Mural de Reencontros' }}
       />
       <Stack.Screen
         name="RegisterItem"
@@ -580,12 +586,17 @@ const MainStack = () => {
       <Stack.Screen
         name="Sobre"
         component={SobreScreen}
-        options={{ title: 'Finais Felizes & Impacto' }}
+        options={{ title: 'Sobre o WeFIND' }}
+      />
+      <Stack.Screen
+        name="MuralReencontros"
+        component={MuralReencontrosScreen}
+        options={{ title: 'Mural de Reencontros' }}
       />
       <Stack.Screen
         name="RecoveredPets"
         component={RecoveredPetsScreen}
-        options={{ title: 'Pets Reencontrados' }}
+        options={{ title: 'Animais Reencontrados' }}
       />
     </Stack.Navigator>
   );

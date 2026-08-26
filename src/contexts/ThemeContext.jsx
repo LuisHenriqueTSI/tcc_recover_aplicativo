@@ -20,7 +20,7 @@ export const lightColors = {
   primaryDark: '#1D4ED8',
   headerBg: '#2563EB',
   headerText: '#FFFFFF',
-  headerSubText: '#DDD6FE',
+  headerSubText: '#BFDBFE',
   tabBarBg: '#FFFFFF',
   tabBarBorder: '#E2E8F0',
   tabBarActive: '#2563EB',

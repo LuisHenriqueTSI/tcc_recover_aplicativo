@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   modalHeaderTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#1E1B4B',
+    color: '#0F172A',
   },
   closeButton: {
     padding: 6,

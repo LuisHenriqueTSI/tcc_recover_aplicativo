@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   chatAvatarImage: { width: 42, height: 42, borderRadius: 21, resizeMode: 'cover' },
   chatHeaderContent: { flex: 1, minWidth: 0 },
   chatHeaderName: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
-  chatHeaderPet: { color: '#DDD6FE', fontSize: 12, marginTop: 3 },
+  chatHeaderPet: { color: '#BFDBFE', fontSize: 12, marginTop: 3 },
   messageRow: { flexDirection: 'row', marginVertical: 4, paddingHorizontal: 4 },
   myMessage: { justifyContent: 'flex-end' },
   otherMessage: { justifyContent: 'flex-start' },

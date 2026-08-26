@@ -1605,7 +1605,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 4,
     borderRadius: 12,
-    backgroundColor: '#F5F3FF',
+    backgroundColor: '#EFF6FF',
   },
   profileMenuAvatar: {
     width: 36,
@@ -1688,7 +1688,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   advancedFiltersTitle: {
-    color: '#1E1B4B',
+    color: '#0F172A',
     fontSize: 13,
     fontWeight: '800',
     marginBottom: 10,
@@ -1706,7 +1706,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 52,
     minWidth: 0,
-    color: '#1E1B4B',
+    color: '#0F172A',
   },
   locationFilterRow: {
     marginTop: 14,
@@ -1722,7 +1722,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   locationFilterText: {
-    color: '#1E1B4B',
+    color: '#0F172A',
     fontSize: 16,
     fontWeight: '700',
   },

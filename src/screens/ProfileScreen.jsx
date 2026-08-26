@@ -7,8 +7,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import * as itemsService from '../services/items';
 
 const secondaryLinks = [
-  { label: 'Finais Felizes & Impacto', description: 'Animais recuperados e relatos', icon: 'heart', route: 'Sobre' },
-  { label: 'Sobre o WeFIND', description: 'Conheça o aplicativo e nossa missão', icon: 'info', route: 'Sobre', params: { forceFullView: true } },
+  { label: 'Mural de Reencontros', description: 'Animais recuperados e relatos da comunidade', icon: 'heart', route: 'MuralReencontros' },
+  { label: 'Sobre o WeFIND', description: 'Conheça o aplicativo e nossa missão', icon: 'info', route: 'Sobre' },
   { label: 'Configurações', description: 'Aparência, preferências e segurança', icon: 'settings', route: 'Config' },
   { label: 'Ajuda e suporte', description: 'Perguntas e contato', icon: 'help-circle', route: 'AjudaSuporte' },
 ];

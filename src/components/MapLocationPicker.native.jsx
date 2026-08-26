@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1E1B4B',
+    color: '#0F172A',
   },
   inputRow: {
     flexDirection: 'row',

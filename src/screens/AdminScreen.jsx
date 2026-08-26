@@ -149,8 +149,8 @@ const AdminScreen = () => {
       label: 'Histórias',
       value: stories.length,
       icon: 'auto-stories',
-      color: '#7C3AED',
-      background: '#F5F3FF',
+      color: '#2563EB',
+      background: '#EFF6FF',
     },
     {
       label: 'Denúncias',
@@ -284,8 +284,8 @@ const AdminScreen = () => {
 
       {stories.length === 0 ? (
         <View style={styles.emptyCard}>
-          <View style={[styles.emptyIcon, { backgroundColor: '#F5F3FF' }]}>
-            <MaterialIcons name="auto-stories" size={24} color="#7C3AED" />
+          <View style={[styles.emptyIcon, { backgroundColor: '#EFF6FF' }]}>
+            <MaterialIcons name="auto-stories" size={24} color="#2563EB" />
           </View>
           <Text style={styles.emptyTitle}>Nenhuma história cadastrada</Text>
           <Text style={styles.emptyText}>
