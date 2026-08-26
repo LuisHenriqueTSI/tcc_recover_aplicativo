@@ -7,6 +7,7 @@ import * as userService from '../services/user';
 import {
   View,
   Text,
+  TextInput,
   FlatList,
   ScrollView,
   TouchableOpacity,
@@ -1023,16 +1024,20 @@ const HomeScreen = ({ navigation, route }) => {
         <Text style={{ color: '#1E1B4B', fontSize: 14, fontWeight: '800', marginBottom: 7 }}>
           Encontre um pet perdido ou encontrado
         </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 2, borderColor: '#1E3A8A', paddingHorizontal: 14, height: 48, shadowColor: '#1E3A8A', shadowOpacity: 0.12, shadowRadius: 6, elevation: 2 }}>
-          <MaterialIcons name="search" size={23} color="#1E3A8A" style={{ marginRight: 8 }} />
-          <Input
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', borderRadius: 14, borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 14, height: 48 }}>
+          <MaterialIcons name="search" size={22} color="#64748B" style={{ marginRight: 8 }} />
+          <TextInput
             placeholder="Nome, raça, espécie ou cidade..."
             value={searchTerm}
             onChangeText={setSearchTerm}
-            style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, fontSize: 16, color: '#111827', paddingVertical: 0, paddingHorizontal: 0 }}
-            textStyle={{ fontSize: 16, color: '#111827' }}
-            placeholderTextColor="#475569"
+            style={{ flex: 1, backgroundColor: '#F1F5F9', fontSize: 15, color: '#0F172A', paddingVertical: 0, paddingHorizontal: 0 }}
+            placeholderTextColor="#64748B"
           />
+          {searchTerm ? (
+            <TouchableOpacity onPress={() => setSearchTerm('')} style={{ padding: 4 }}>
+              <MaterialIcons name="close" size={18} color="#64748B" />
+            </TouchableOpacity>
+          ) : null}
         </View>
       </View>
 

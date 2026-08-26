@@ -411,7 +411,7 @@ const SobreScreen = ({ navigation }) => {
                 onPress={handleStart}
                 activeOpacity={0.88}
               >
-                <Text style={styles.primaryButtonText}>Começar a Explorar Pets</Text>
+                <Text style={styles.primaryButtonText}>Começar a Explorar</Text>
                 <MaterialIcons name="arrow-forward" size={20} color="#FFFFFF" />
               </TouchableOpacity>
 
