@@ -230,7 +230,7 @@ const PublicStack = () => {
       <Stack.Screen
         name="EsqueciSenha"
         component={require('../screens/EsqueciSenhaScreen').default}
-        options={{ title: 'Redefinir senha' }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Register"

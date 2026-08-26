@@ -263,6 +263,131 @@ export const sendPasswordReset = async (email) => {
   }
 };
 
+/**
+ * Solicita código de 6 dígitos no WhatsApp para redefinir senha
+ */
+export const requestPasswordResetByWhatsApp = async (whatsapp) => {
+  try {
+    console.log('[requestPasswordResetByWhatsApp] Solicitando código para:', whatsapp);
+    const payloadWhatsapp = normalizeWhatsapp(whatsapp);
+    if (!payloadWhatsapp) {
+      throw new Error('Informe um número de WhatsApp válido com DDD.');
+    }
+
+    const functionUrl = getCreateUserFunctionUrl();
+    const response = await fetch(functionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseAnonKey,
+      },
+      body: JSON.stringify({
+        action: 'send-reset-code',
+        whatsapp: payloadWhatsapp,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.message || data.error || 'Não foi possível enviar o código para este WhatsApp.');
+    }
+
+    return {
+      success: true,
+      pendingVerification: true,
+      maskedPhone: data.maskedPhone || `(XX) *****-${payloadWhatsapp.slice(-4)}`,
+      whatsapp: payloadWhatsapp,
+    };
+  } catch (error) {
+    console.warn('[requestPasswordResetByWhatsApp] Erro:', error.message);
+    throw error;
+  }
+};
+
+/**
+ * Valida o código de 6 dígitos do WhatsApp e obtém o reset_token temporário
+ */
+export const verifyPasswordResetCode = async (whatsapp, code) => {
+  try {
+    console.log('[verifyPasswordResetCode] Validando código...');
+    const payloadWhatsapp = normalizeWhatsapp(whatsapp);
+    const trimmedCode = String(code || '').trim();
+
+    if (!trimmedCode || trimmedCode.length !== 6) {
+      throw new Error('Informe o código de 6 dígitos recebido.');
+    }
+
+    const functionUrl = getCreateUserFunctionUrl();
+    const response = await fetch(functionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseAnonKey,
+      },
+      body: JSON.stringify({
+        action: 'verify-reset-code',
+        whatsapp: payloadWhatsapp,
+        verificationCode: trimmedCode,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.message || data.error || 'Código incorreto ou expirado. Tente novamente.');
+    }
+
+    return {
+      success: true,
+      resetToken: data.resetToken,
+    };
+  } catch (error) {
+    console.warn('[verifyPasswordResetCode] Erro:', error.message);
+    throw error;
+  }
+};
+
+/**
+ * Salva a nova senha utilizando o reset_token de uso único
+ */
+export const resetPasswordWithToken = async (resetToken, newPassword) => {
+  try {
+    console.log('[resetPasswordWithToken] Salvando nova senha...');
+    if (!resetToken) {
+      throw new Error('Sessão expirada. Solicite o código novamente.');
+    }
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('A nova senha deve ter no mínimo 6 caracteres.');
+    }
+
+    const functionUrl = getCreateUserFunctionUrl();
+    const response = await fetch(functionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseAnonKey,
+      },
+      body: JSON.stringify({
+        action: 'reset-password',
+        resetToken,
+        newPassword,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.message || data.error || 'Não foi possível atualizar a senha.');
+    }
+
+    return {
+      success: true,
+      message: 'Senha redefinida com sucesso!',
+    };
+  } catch (error) {
+    console.warn('[resetPasswordWithToken] Erro:', error.message);
+    throw error;
+  }
+};
+
 export const updatePassword = async (newPassword) => {
   try {
     console.log('[updatePassword] Atualizando senha...');

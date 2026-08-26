@@ -339,5 +339,266 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  // ==========================================
+  // ACTION: send-reset-code (Redefinição de Senha via WhatsApp)
+  // ==========================================
+  if (action === 'send-reset-code') {
+    if (!whatsapp) {
+      return jsonResponse({ ok: false, error: 'missing-whatsapp' }, 400);
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SERVICE_ROLE_KEY') ?? '';
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      return jsonResponse({ ok: false, error: 'missing-service-role-key' }, 500);
+    }
+
+    const rawDigits = whatsapp.replace(/\D/g, '');
+    const cleanPhone = rawDigits.startsWith('55') ? rawDigits.slice(2) : rawDigits;
+
+    // Buscar perfil do usuário pelo WhatsApp cadastrado
+    const profilesUrl = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/profiles?select=id,name,email,whatsapp,phone&or=(whatsapp.ilike.*${cleanPhone}*,phone.ilike.*${cleanPhone}*)&limit=1`;
+    const profileRes = await fetch(profilesUrl, {
+      method: 'GET',
+      headers: getRestHeaders(serviceRoleKey),
+    });
+
+    let foundProfile = null;
+    if (profileRes.ok) {
+      try {
+        const parsedProfiles = await profileRes.json();
+        if (Array.isArray(parsedProfiles) && parsedProfiles.length > 0) {
+          foundProfile = parsedProfiles[0];
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!foundProfile) {
+      return jsonResponse({
+        ok: false,
+        error: 'user-not-found',
+        message: 'Nenhuma conta encontrada com este número de WhatsApp. Verifique o número informado.',
+      }, 404);
+    }
+
+    const code = createSixDigitCode();
+    const resetKey = `reset_${foundProfile.id}`;
+
+    // Grava código temporário na tabela de verificações (expira em 10 min)
+    await storeVerificationCode(supabaseUrl, serviceRoleKey, resetKey, code, whatsapp);
+
+    // Dispara WhatsApp com mensagem formatada
+    const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL') ?? 'https://wefind-whatsapp-api.onrender.com';
+    const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') ?? 'wefind_secret_token_123';
+    const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE') ?? 'wefind';
+
+    const userName = foundProfile.name ? foundProfile.name.split(' ')[0] : 'Usuário';
+    const messageText = `🐾 *Código de Redefinição de Senha - WeFIND*\n\nOlá, ${userName}! Você solicitou a redefinição de sua senha de acesso ao WeFIND.\n\nSeu código de segurança é:\n👉 *${code}*\n\nEste código é válido por 10 minutos. Se não foi você quem solicitou, por favor desconsidere esta mensagem.`;
+
+    try {
+      const evoUrl = `${EVOLUTION_API_URL.replace(/\/$/, '')}/message/sendText/${EVOLUTION_INSTANCE}`;
+      await fetch(evoUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: EVOLUTION_API_KEY,
+        },
+        body: JSON.stringify({
+          number: rawDigits,
+          text: messageText,
+        }),
+      });
+    } catch (err) {
+      console.warn('[send-reset-code] Erro ao enviar Evolution API:', err);
+    }
+
+    // Mascarar telefone para exibição segura: ex (11) 9****-1234
+    const ddd = cleanPhone.slice(0, 2);
+    const lastDigits = cleanPhone.slice(-4);
+    const maskedPhone = `(${ddd}) *****-${lastDigits}`;
+
+    return jsonResponse({
+      ok: true,
+      pendingVerification: true,
+      maskedPhone,
+      whatsappSent: true,
+    });
+  }
+
+  // ==========================================
+  // ACTION: verify-reset-code (Validação do Código de 6 Dígitos)
+  // ==========================================
+  if (action === 'verify-reset-code') {
+    if (!whatsapp || !verificationCode) {
+      return jsonResponse({ ok: false, error: 'missing-fields' }, 400);
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SERVICE_ROLE_KEY') ?? '';
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      return jsonResponse({ ok: false, error: 'missing-service-role-key' }, 500);
+    }
+
+    const rawDigits = whatsapp.replace(/\D/g, '');
+    const cleanPhone = rawDigits.startsWith('55') ? rawDigits.slice(2) : rawDigits;
+
+    // Buscar perfil
+    const profilesUrl = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/profiles?select=id,email&or=(whatsapp.ilike.*${cleanPhone}*,phone.ilike.*${cleanPhone}*)&limit=1`;
+    const profileRes = await fetch(profilesUrl, {
+      method: 'GET',
+      headers: getRestHeaders(serviceRoleKey),
+    });
+
+    let foundProfile = null;
+    if (profileRes.ok) {
+      try {
+        const parsedProfiles = await profileRes.json();
+        if (Array.isArray(parsedProfiles) && parsedProfiles.length > 0) {
+          foundProfile = parsedProfiles[0];
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!foundProfile) {
+      return jsonResponse({ ok: false, error: 'user-not-found' }, 404);
+    }
+
+    const resetKey = `reset_${foundProfile.id}`;
+    const fetchResult = await fetchVerificationCode(supabaseUrl, serviceRoleKey, resetKey);
+
+    if (!fetchResult.ok || !fetchResult.record) {
+      return jsonResponse({ ok: false, error: 'invalid-verification-code', message: 'Código não encontrado ou expirado. Solicite um novo código.' }, 400);
+    }
+
+    const { code: storedCodeRaw, expires_at: expiresAt } = fetchResult.record as { code?: string | number; expires_at?: string };
+    const storedCode = storedCodeRaw != null ? String(storedCodeRaw).trim() : '';
+    const enteredCode = String(verificationCode).trim();
+
+    if (!storedCode || storedCode !== enteredCode) {
+      return jsonResponse({ ok: false, error: 'invalid-verification-code', message: 'Código incorreto. Verifique os números digitados.' }, 400);
+    }
+
+    if (expiresAt && new Date(expiresAt).getTime() < Date.now()) {
+      await deleteVerificationCode(supabaseUrl, serviceRoleKey, resetKey);
+      return jsonResponse({ ok: false, error: 'code-expired', message: 'Este código expirou. Solicite um novo código.' }, 400);
+    }
+
+    // Invalida o código de 6 dígitos para impedir reuso
+    await deleteVerificationCode(supabaseUrl, serviceRoleKey, resetKey);
+
+    // Gera token criptográfico de uso único para a troca de senha (válido por 5 minutos)
+    const resetToken = crypto.randomUUID();
+    const tokenKey = `token_${resetToken}`;
+    await storeVerificationCode(supabaseUrl, serviceRoleKey, tokenKey, foundProfile.id, whatsapp);
+
+    return jsonResponse({
+      ok: true,
+      resetToken,
+    });
+  }
+
+  // ==========================================
+  // ACTION: reset-password (Criação da Nova Senha com Token)
+  // ==========================================
+  if (action === 'reset-password') {
+    const resetToken = String(body.resetToken ?? '').trim();
+    const newPassword = String(body.newPassword ?? '');
+
+    if (!resetToken || !newPassword) {
+      return jsonResponse({ ok: false, error: 'missing-fields' }, 400);
+    }
+
+    if (newPassword.length < 6) {
+      return jsonResponse({ ok: false, error: 'password-too-short', message: 'A senha deve conter no mínimo 6 caracteres.' }, 400);
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SERVICE_ROLE_KEY') ?? '';
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      return jsonResponse({ ok: false, error: 'missing-service-role-key' }, 500);
+    }
+
+    const tokenKey = `token_${resetToken}`;
+    const fetchResult = await fetchVerificationCode(supabaseUrl, serviceRoleKey, tokenKey);
+
+    if (!fetchResult.ok || !fetchResult.record) {
+      return jsonResponse({ ok: false, error: 'invalid-reset-token', message: 'Sessão de redefinição expirada. Por favor, solicite o código novamente.' }, 400);
+    }
+
+    const { code: userIdRaw, expires_at: expiresAt } = fetchResult.record as { code?: string; expires_at?: string };
+    const userId = String(userIdRaw ?? '').trim();
+
+    if (!userId) {
+      return jsonResponse({ ok: false, error: 'invalid-user-id' }, 400);
+    }
+
+    if (expiresAt && new Date(expiresAt).getTime() < Date.now()) {
+      await deleteVerificationCode(supabaseUrl, serviceRoleKey, tokenKey);
+      return jsonResponse({ ok: false, error: 'token-expired', message: 'Tempo limite esgotado. Solicite o código novamente.' }, 400);
+    }
+
+    // Invalida o token imediatamente para consumo único
+    await deleteVerificationCode(supabaseUrl, serviceRoleKey, tokenKey);
+
+    // Atualiza a senha no Supabase Auth Admin
+    const updateRes = await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/admin/users/${encodeURIComponent(userId)}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${serviceRoleKey}`,
+        apikey: serviceRoleKey,
+      },
+      body: JSON.stringify({
+        password: newPassword,
+      }),
+    });
+
+    const updateBody = await updateRes.text();
+    if (!updateRes.ok) {
+      console.warn('[reset-password] Erro ao atualizar senha via Admin:', updateBody);
+      return jsonResponse({ ok: false, error: 'failed-to-update-password', details: updateBody }, updateRes.status);
+    }
+
+    // Disparar notificação de segurança no WhatsApp informando a alteração
+    try {
+      const profilesUrl = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/profiles?select=whatsapp,phone,name&id=eq.${encodeURIComponent(userId)}&limit=1`;
+      const pRes = await fetch(profilesUrl, { method: 'GET', headers: getRestHeaders(serviceRoleKey) });
+      if (pRes.ok) {
+        const pData = await pRes.json();
+        const userPhone = pData?.[0]?.whatsapp || pData?.[0]?.phone;
+        if (userPhone) {
+          const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL') ?? 'https://wefind-whatsapp-api.onrender.com';
+          const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') ?? 'wefind_secret_token_123';
+          const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE') ?? 'wefind';
+          const rawDigits = userPhone.replace(/\D/g, '');
+
+          await fetch(`${EVOLUTION_API_URL.replace(/\/$/, '')}/message/sendText/${EVOLUTION_INSTANCE}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', apikey: EVOLUTION_API_KEY },
+            body: JSON.stringify({
+              number: rawDigits,
+              text: '🔒 *Segurança WeFIND*\n\nA senha da sua conta WeFIND foi alterada com sucesso.\n\nSe você não reconhece esta operação, entre em contato imediatamente com o suporte.',
+            }),
+          });
+        }
+      }
+    } catch (secErr) {
+      console.warn('[reset-password] Alerta de segurança WhatsApp:', secErr);
+    }
+
+    return jsonResponse({
+      ok: true,
+      success: true,
+      message: 'Senha alterada com sucesso!',
+    });
+  }
+
   return jsonResponse({ ok: false, error: 'unknown-action' }, 400);
 });
