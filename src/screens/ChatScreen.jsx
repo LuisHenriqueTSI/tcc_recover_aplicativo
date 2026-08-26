@@ -7,6 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { getMessages, sendMessage, markMessagesAsRead, uploadMessagePhoto } from '../services/messages';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { Feather } from '@expo/vector-icons';
@@ -21,6 +22,7 @@ const ChatScreen = (props) => {
   const initialMessage = conversation?.initialMessage || '';
   console.log('[ChatScreen] MONTADO', Date.now(), conversation, 'highlight:', highlightMessageId);
   const { user } = useAuth();
+  const { colors, isDark } = useTheme();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -113,10 +115,11 @@ const ChatScreen = (props) => {
 
 
   const handleSend = async () => {
-    if (!input.trim() && !selectedPhoto) return;
+    if ((!input.trim() && !selectedPhoto) || sending) return;
     setSending(true);
-    let photoUrl = null;
+    setError('');
     try {
+      let photoUrl = null;
       if (selectedPhoto) {
         photoUrl = await uploadMessagePhoto(Date.now(), selectedPhoto.uri);
       }
@@ -176,13 +179,25 @@ const ChatScreen = (props) => {
     const isHighlighted = highlightMessageId && item.id === highlightMessageId;
     return (
       <View style={[styles.messageRow, isMine ? styles.myMessage : styles.otherMessage]}>
-        <Card style={[styles.messageCard, isHighlighted && { backgroundColor: '#FFF9C4', borderWidth: 1, borderColor: '#FACC15' }] }>
+        <View style={[
+          styles.messageCard,
+          isMine
+            ? { backgroundColor: colors.primary, borderColor: colors.primaryDark }
+            : { backgroundColor: colors.card, borderColor: colors.cardBorder },
+          isHighlighted && { backgroundColor: isDark ? '#854D0E' : '#FFF9C4', borderWidth: 1, borderColor: '#FACC15' }
+        ]}>
           {item.photo_url && (
             <Image source={{ uri: item.photo_url }} style={styles.messageImage} resizeMode="cover" />
           )}
-          {item.content ? <Text style={styles.messageText}>{item.content}</Text> : null}
-          <Text style={styles.messageMeta}>{isMine ? 'Você' : conversation.otherName} • {new Date(item.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-        </Card>
+          {item.content ? (
+            <Text style={[styles.messageText, { color: isMine ? '#FFFFFF' : colors.text }]}>
+              {item.content}
+            </Text>
+          ) : null}
+          <Text style={[styles.messageMeta, { color: isMine ? 'rgba(255, 255, 255, 0.75)' : colors.textMuted }]}>
+            {isMine ? 'Você' : conversation.otherName} • {new Date(item.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Text>
+        </View>
       </View>
     );
   };
@@ -190,7 +205,7 @@ const ChatScreen = (props) => {
 
 
   // Não mostrar loading global. Apenas erro, se houver.
-  if (error) return <Text style={styles.error}>{error}</Text>;
+  if (error) return <Text style={[styles.error, { backgroundColor: colors.background }]}>{error}</Text>;
 
   return (
     <KeyboardAvoidingView
@@ -198,8 +213,8 @@ const ChatScreen = (props) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
     >
-      <View style={styles.container}>
-        <View style={styles.chatHeader}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.chatHeader, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}>
           <View style={styles.chatAvatar}>
             <Image
               source={conversation?.avatarUrl ? { uri: conversation.avatarUrl } : require('../assets/logo_wefind.png')}
@@ -207,10 +222,10 @@ const ChatScreen = (props) => {
             />
           </View>
           <View style={styles.chatHeaderContent}>
-            <Text style={styles.chatHeaderName} numberOfLines={1}>{conversation?.otherName || 'Usuário'}</Text>
-            {conversation?.itemTitle ? <Text style={styles.chatHeaderPet} numberOfLines={1}>{conversation.itemTitle}</Text> : null}
+            <Text style={[styles.chatHeaderName, { color: colors.headerText }]} numberOfLines={1}>{conversation?.otherName || 'Usuário'}</Text>
+            {conversation?.itemTitle ? <Text style={[styles.chatHeaderPet, { color: colors.headerSubText }]} numberOfLines={1}>{conversation.itemTitle}</Text> : null}
           </View>
-          <Feather name="message-circle" size={20} color="#BFDBFE" />
+          <Feather name="message-circle" size={20} color={isDark ? colors.primary : '#BFDBFE'} />
         </View>
         <FlatList
           ref={flatListRef}
@@ -225,23 +240,24 @@ const ChatScreen = (props) => {
           style={{ flex: 1 }}
         />
         {photoPreview && (
-          <View style={styles.previewRow}>
+          <View style={[styles.previewRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Image source={{ uri: photoPreview }} style={styles.previewImage} />
             <TouchableOpacity onPress={handleRemovePhoto} style={styles.removePhotoButton}>
               <Text style={{ color: '#EF4444', fontWeight: 'bold' }}>Remover</Text>
             </TouchableOpacity>
           </View>
         )}
-        <SafeAreaView edges={["bottom"]} style={{ backgroundColor: '#fff' }}>
-          <View style={styles.inputRow}>
-            <TouchableOpacity onPress={handlePickPhoto} style={styles.photoButton}>
-              <Text style={{ color: '#2563EB', fontWeight: 'bold' }}>Foto</Text>
+        <SafeAreaView edges={["bottom"]} style={{ backgroundColor: colors.surface }}>
+          <View style={[styles.inputRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <TouchableOpacity onPress={handlePickPhoto} style={[styles.photoButton, { backgroundColor: colors.primaryLight }]}>
+              <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Foto</Text>
             </TouchableOpacity>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
               value={input}
               onChangeText={setInput}
               placeholder="Digite sua mensagem..."
+              placeholderTextColor={colors.textMuted}
               editable={!sending}
               onSubmitEditing={handleSend}
               blurOnSubmit={false}
@@ -269,10 +285,10 @@ const styles = StyleSheet.create({
   messageCard: { maxWidth: '80%', padding: 12, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0' },
   messageText: { fontSize: 15, color: '#1F2937', marginBottom: 2 },
   messageImage: { width: 180, height: 180, borderRadius: 8, marginBottom: 6, backgroundColor: '#E5E7EB' },
-    photoButton: { marginRight: 6, paddingVertical: 8, paddingHorizontal: 10, backgroundColor: '#E5E7EB', borderRadius: 8 },
-    previewRow: { flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E5E7EB' },
-    previewImage: { width: 60, height: 60, borderRadius: 8, marginRight: 10 },
-    removePhotoButton: { padding: 8 },
+  photoButton: { marginRight: 6, paddingVertical: 8, paddingHorizontal: 10, backgroundColor: '#E5E7EB', borderRadius: 8 },
+  previewRow: { flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E5E7EB' },
+  previewImage: { width: 60, height: 60, borderRadius: 8, marginRight: 10 },
+  removePhotoButton: { padding: 8 },
   messageMeta: { fontSize: 11, color: '#6B7280', marginTop: 4 },
   inputRow: { flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E5E7EB', marginBottom: 32 },
   input: { flex: 1, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 12, fontSize: 16, backgroundColor: '#F9FAFB', marginRight: 8 },

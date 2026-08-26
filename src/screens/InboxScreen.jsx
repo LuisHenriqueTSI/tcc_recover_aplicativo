@@ -7,6 +7,7 @@ import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, 
 import { getConversations, hideConversation } from '../services/messages';
 import { getItemById } from '../services/items';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import Card from '../components/Card';
 import { Feather } from '@expo/vector-icons';
 // import ChatScreen from './ChatScreen';
@@ -15,6 +16,7 @@ const InboxScreen = () => {
   console.log('[InboxScreen] MONTADO', Date.now());
   const navigation = useNavigation();
   const { user } = useAuth();
+  const { colors, isDark } = useTheme();
   const [conversations, setConversations] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [searchResults, setSearchResults] = useState([]); // [{conversation, message}]
@@ -92,7 +94,7 @@ const InboxScreen = () => {
     }
     searchMessages();
     return () => { cancelled = true; };
-  }, [search, conversations, user.id]);
+  }, [search, conversations, user?.id]);
 
   const handleDeleteConversation = (conversation) => {
     Alert.alert(
@@ -132,15 +134,20 @@ const InboxScreen = () => {
         time = date.toLocaleDateString();
       }
     }
+    const isSelected = selectedConversationKey === `${item.otherId}_${item.itemId || ''}`;
     return (
-      <View style={[styles.convBtn, selectedConversationKey === `${item.otherId}_${item.itemId || ''}` && styles.convBtnSelected]}>
+      <View style={[
+        styles.convBtn,
+        { backgroundColor: colors.card, borderColor: colors.cardBorder },
+        isSelected && { borderColor: colors.primary, backgroundColor: colors.primaryLight },
+      ]}>
         <TouchableOpacity
           onPress={() => navigation.navigate('ChatScreen', { conversation: item })}
           onLongPress={() => setSelectedConversationKey(`${item.otherId}_${item.itemId || ''}`)}
           style={styles.convMainButton}
           activeOpacity={0.85}
         >
-        <View style={styles.avatarCircle}>
+        <View style={[styles.avatarCircle, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF' }]}>
           <Image
             source={item.avatarUrl ? { uri: item.avatarUrl } : require('../assets/logo_wefind.png')}
             style={styles.avatarImage}
@@ -148,27 +155,27 @@ const InboxScreen = () => {
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={styles.name} numberOfLines={1}>{item.otherName || 'Usuário'}</Text>
-            <Text style={styles.time}>{time}</Text>
+            <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>{item.otherName || 'Usuário'}</Text>
+            <Text style={[styles.time, { color: colors.textMuted }]}>{time}</Text>
           </View>
-          {item.itemTitle ? <Text style={styles.itemTitle} numberOfLines={1}>{item.itemTitle}</Text> : null}
+          {item.itemTitle ? <Text style={[styles.itemTitle, { color: colors.primary }]} numberOfLines={1}>{item.itemTitle}</Text> : null}
           {item.lastPhotoUrl ? (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Feather name="image" size={16} color="#2563EB" style={{ marginRight: 4 }} />
-              <Text style={styles.lastMessage} numberOfLines={1}>Imagem enviada</Text>
+              <Feather name="image" size={16} color={colors.primary} style={{ marginRight: 4 }} />
+              <Text style={[styles.lastMessage, { color: colors.textSecondary }]} numberOfLines={1}>Imagem enviada</Text>
             </View>
           ) : (
-            <Text style={styles.lastMessage} numberOfLines={1}>{item.lastMessage}</Text>
+            <Text style={[styles.lastMessage, { color: colors.textSecondary }]} numberOfLines={1}>{item.lastMessage}</Text>
           )}
         </View>
         {item.unread ? (
-          <View style={styles.unreadBadge}><Text style={styles.unreadBadgeText}>{item.unread}</Text></View>
+          <View style={[styles.unreadBadge, { backgroundColor: colors.primary }]}><Text style={styles.unreadBadgeText}>{item.unread}</Text></View>
         ) : null}
         </TouchableOpacity>
-        {selectedConversationKey === `${item.otherId}_${item.itemId || ''}` && (
+        {isSelected && (
           <TouchableOpacity
             onPress={() => handleDeleteConversation(item)}
-            style={styles.deleteConversationButton}
+            style={[styles.deleteConversationButton, { backgroundColor: isDark ? '#1E293B' : '#F9FAFB' }]}
             accessibilityLabel={`Apagar conversa com ${item.otherName || 'usuário'}`}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
@@ -179,19 +186,19 @@ const InboxScreen = () => {
     );
   };
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" color="#2563EB" />;
-  if (error) return <Text style={styles.error}>{error}</Text>;
+  if (loading) return <ActivityIndicator style={{ flex: 1, backgroundColor: colors.background }} size="large" color={colors.primary} />;
+  if (error) return <Text style={[styles.error, { backgroundColor: colors.background }]}>{error}</Text>;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.searchWrapper}>
-        <Feather name="search" size={18} color="#9CA3AF" style={styles.searchIcon} />
+        <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
           placeholder="Buscar conversas ou mensagens..."
           value={search}
           onChangeText={setSearch}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={colors.textMuted}
         />
         {search.length > 0 && (
           <TouchableOpacity
@@ -199,13 +206,13 @@ const InboxScreen = () => {
             style={{ position: 'absolute', right: 8, top: 8, zIndex: 3, padding: 4 }}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Feather name="x-circle" size={20} color="#9CA3AF" />
+            <Feather name="x-circle" size={20} color={colors.textMuted} />
           </TouchableOpacity>
         )}
       </View>
       {search.trim() ? (
         searching ? (
-          <ActivityIndicator style={{ flex: 1, marginTop: 32 }} size="large" color="#2563EB" />
+          <ActivityIndicator style={{ flex: 1, marginTop: 32 }} size="large" color={colors.primary} />
         ) : searchResults.length > 0 ? (
           <FlatList
             data={searchResults}
@@ -213,12 +220,12 @@ const InboxScreen = () => {
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() => navigation.navigate('ChatScreen', { conversation: item.conversation, highlightMessageId: item.message.id })}
-                style={[styles.convBtn, { flexDirection: 'column', alignItems: 'flex-start' }]}
+                style={[styles.convBtn, { backgroundColor: colors.card, borderColor: colors.cardBorder, flexDirection: 'column', alignItems: 'flex-start' }]}
                 activeOpacity={0.85}
               >
-                <Text style={{ fontWeight: 'bold', color: '#2563EB', marginBottom: 2 }}>{item.conversation.otherName} {item.conversation.itemTitle ? `• ${item.conversation.itemTitle}` : ''}</Text>
-                <Text style={{ color: '#1F2937', fontSize: 15, backgroundColor: '#FFF9C4', borderRadius: 6, padding: 4 }}>{item.message.content}</Text>
-                <Text style={{ color: '#6B7280', fontSize: 12, marginTop: 2 }}>{new Date(item.message.sent_at).toLocaleString()}</Text>
+                <Text style={{ fontWeight: 'bold', color: colors.primary, marginBottom: 2 }}>{item.conversation.otherName} {item.conversation.itemTitle ? `• ${item.conversation.itemTitle}` : ''}</Text>
+                <Text style={{ color: isDark ? '#F8FAFC' : '#1F2937', fontSize: 15, backgroundColor: isDark ? '#334155' : '#FFF9C4', borderRadius: 6, padding: 4 }}>{item.message.content}</Text>
+                <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>{new Date(item.message.sent_at).toLocaleString()}</Text>
               </TouchableOpacity>
             )}
             style={{ flex: 1 }}
@@ -226,11 +233,11 @@ const InboxScreen = () => {
           />
         ) : (
           <View style={styles.emptyState}>
-            <View style={styles.emptyIconCircle}>
-              <Feather name="search" size={40} color="#9CA3AF" />
+            <View style={[styles.emptyIconCircle, { backgroundColor: colors.surface }]}>
+              <Feather name="search" size={40} color={colors.textMuted} />
             </View>
-            <Text style={styles.emptyTitle}>Nenhuma mensagem encontrada</Text>
-            <Text style={styles.emptyMsg}>Nenhuma mensagem ou conversa contém o termo pesquisado.</Text>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhuma mensagem encontrada</Text>
+            <Text style={[styles.emptyMsg, { color: colors.textSecondary }]}>Nenhuma mensagem ou conversa contém o termo pesquisado.</Text>
           </View>
         )
       ) : filtered.length > 0 ? (
@@ -243,11 +250,11 @@ const InboxScreen = () => {
         />
       ) : (
         <View style={styles.emptyState}>
-          <View style={styles.emptyIconCircle}>
-            <Feather name="message-circle" size={40} color="#9CA3AF" />
+          <View style={[styles.emptyIconCircle, { backgroundColor: colors.surface }]}>
+            <Feather name="message-circle" size={40} color={colors.textMuted} />
           </View>
-          <Text style={styles.emptyTitle}>Nenhuma conversa ainda</Text>
-          <Text style={styles.emptyMsg}>Quando você entrar em contato sobre um item, suas conversas aparecerão aqui.</Text>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhuma conversa ainda</Text>
+          <Text style={[styles.emptyMsg, { color: colors.textSecondary }]}>Quando você entrar em contato sobre um item, suas conversas aparecerão aqui.</Text>
         </View>
       )}
     </View>

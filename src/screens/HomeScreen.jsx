@@ -20,6 +20,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import * as itemsService from '../services/items';
 import { supabase } from '../lib/supabase';
 import { getUser } from '../services/user';
@@ -131,6 +132,7 @@ const formatStreetNumberNeighborhood = (item) => {
 
 // ItemCard agora é um componente fora do HomeScreen
 const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress }) => {
+  const { colors, isDark } = useTheme();
   const [carouselIndex, setCarouselIndex] = React.useState(0);
   const [cardWidth, setCardWidth] = React.useState(0);
   // Cores para status e categoria
@@ -155,7 +157,20 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
     ? item.rewards.find(reward => reward?.status === 'active')
     : null;
   return (
-    <Card style={{ padding: 0, marginHorizontal: 12, marginVertical: 6, borderRadius: 16, overflow: 'hidden', backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 }}>
+    <Card style={{
+      padding: 0,
+      marginHorizontal: 12,
+      marginVertical: 6,
+      borderRadius: 16,
+      overflow: 'hidden',
+      backgroundColor: isDark ? '#161F30' : '#F8FAFC',
+      borderWidth: 1,
+      borderColor: isDark ? '#243248' : '#E2E8F0',
+      shadowColor: '#000',
+      shadowOpacity: isDark ? 0.25 : 0.04,
+      shadowRadius: 6,
+      elevation: 2,
+    }}>
       {/* Imagem / Carrossel de Fotos */}
       <View
         style={{ position: 'relative', width: '100%', height: IMAGE_HEIGHT }}
@@ -177,7 +192,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
                 <View key={photo.id || index} style={{ width: cardWidth, height: IMAGE_HEIGHT }}>
                   <OptimizedImage
                     uri={photo.url}
-                    style={{ width: cardWidth, height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
+                    style={{ width: cardWidth, height: IMAGE_HEIGHT, backgroundColor: isDark ? '#0F172A' : '#E2E8F0' }}
                     resizeMode="cover"
                     resizeMethod="resize"
                   />
@@ -187,14 +202,14 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
           ) : (
             <OptimizedImage
               uri={photos[0].url}
-              style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6' }}
+              style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: isDark ? '#0F172A' : '#E2E8F0' }}
               resizeMode="cover"
               resizeMethod="resize"
             />
           )
         ) : (
-          <View style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: '#9CA3AF', fontSize: 13 }}>Sem foto</Text>
+          <View style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: isDark ? '#0F172A' : '#F1F5F9', justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ color: colors.textMuted, fontSize: 13 }}>Sem foto</Text>
           </View>
         )}
 
@@ -275,13 +290,13 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
       {/* Conteúdo */}
       <View style={{ padding: 12, paddingBottom: 10 }}>
         {/* Título */}
-        <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: safeDescription?.trim() ? 4 : 6 }}>
+        <Text style={{ fontSize: 16, fontWeight: '700', color: isDark ? '#F8FAFC' : '#0F172A', marginBottom: safeDescription?.trim() ? 4 : 6 }}>
           {safeTitle}
         </Text>
 
         {/* Descrição (renderiza apenas se existir texto) */}
         {safeDescription?.trim() ? (
-          <Text style={{ fontSize: 13, color: '#4B5563', lineHeight: 18, marginBottom: 8 }} numberOfLines={2}>
+          <Text style={{ fontSize: 13, color: isDark ? '#94A3B8' : '#475569', lineHeight: 18, marginBottom: 8 }} numberOfLines={2}>
             {safeDescription}
           </Text>
         ) : null}
@@ -298,12 +313,12 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
 
         {/* Bloco de Localização e Data Moderno */}
         <View style={{
-          backgroundColor: '#F8FAFC',
+          backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
           borderRadius: 10,
           paddingVertical: 8,
           paddingHorizontal: 10,
           borderWidth: 1,
-          borderColor: '#E2E8F0',
+          borderColor: isDark ? '#243248' : '#E2E8F0',
           marginBottom: 8,
         }}>
           {/* Cabeçalho do bloco: Rótulo de Status à esquerda e Data à direita */}
@@ -326,8 +341,8 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             </View>
             {item.date ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                <MaterialIcons name="event" size={12} color="#94A3B8" />
-                <Text style={{ fontSize: 11.5, color: '#64748B', fontWeight: '500' }}>
+                <MaterialIcons name="event" size={12} color={colors.textMuted} />
+                <Text style={{ fontSize: 11.5, color: colors.textSecondary, fontWeight: '500' }}>
                   {formatItemDate(item.date)}
                 </Text>
               </View>
@@ -336,30 +351,30 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
 
           {/* Endereço: Cidade - Estado, Complemento e Distância */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 1 }}>
-            <Text style={{ fontSize: 14, fontWeight: '700', color: '#1E293B', lineHeight: 18, flex: 1 }} numberOfLines={1}>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: isDark ? '#F8FAFC' : '#1E293B', lineHeight: 18, flex: 1 }} numberOfLines={1}>
               {formatCityState(item)}
             </Text>
             {item._distanceKm != null ? (
               <View style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: '#EFF6FF',
+                backgroundColor: isDark ? 'rgba(59, 130, 246, 0.18)' : '#EFF6FF',
                 paddingHorizontal: 7,
                 paddingVertical: 2.5,
                 borderRadius: 6,
                 borderWidth: 1,
-                borderColor: '#DBEAFE',
+                borderColor: isDark ? 'rgba(59, 130, 246, 0.35)' : '#DBEAFE',
                 marginLeft: 6,
               }}>
-                <MaterialIcons name="near-me" size={11} color="#2563EB" style={{ marginRight: 3 }} />
-                <Text style={{ fontSize: 11, fontWeight: '800', color: '#1D4ED8' }}>
+                <MaterialIcons name="near-me" size={11} color={colors.primary} style={{ marginRight: 3 }} />
+                <Text style={{ fontSize: 11, fontWeight: '800', color: isDark ? '#93C5FD' : '#1D4ED8' }}>
                   {item._distanceKm < 1 ? '< 1 km' : `a ${item._distanceKm < 10 ? item._distanceKm.toFixed(1) : Math.round(item._distanceKm)} km`}
                 </Text>
               </View>
             ) : null}
           </View>
           {formatStreetNumberNeighborhood(item) ? (
-            <Text style={{ fontSize: 12, color: '#64748B', marginTop: 2, lineHeight: 16 }}>
+            <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2, lineHeight: 16 }}>
               {formatStreetNumberNeighborhood(item)}
             </Text>
           ) : null}
@@ -370,16 +385,16 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: '#F0FDF4',
+            backgroundColor: isDark ? 'rgba(22, 163, 74, 0.15)' : '#F0FDF4',
             borderRadius: 7,
             paddingHorizontal: 8,
             paddingVertical: 4,
             marginBottom: 8,
             borderWidth: 1,
-            borderColor: '#DCFCE7',
+            borderColor: isDark ? 'rgba(22, 163, 74, 0.3)' : '#DCFCE7',
           }}>
             <MaterialIcons name="person-pin" size={14} color="#16A34A" />
-            <Text style={{ fontSize: 11.5, color: '#166534', fontWeight: '700', marginLeft: 4 }}>
+            <Text style={{ fontSize: 11.5, color: isDark ? '#4ADE80' : '#166534', fontWeight: '700', marginLeft: 4 }}>
               {item.status === 'lost' ? 'Tutor:' : 'Responsável:'}{' '}
               <Text style={{ fontWeight: '600' }}>{item.extra_fields.third_party_owner.name}</Text>
               {item.extra_fields.third_party_owner.phone ? ` • 📞 ${item.extra_fields.third_party_owner.phone}` : ''}
@@ -390,8 +405,8 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
         {/* Rodapé: Dono e Ação */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1, marginRight: 8 }}>
-            <Text style={{ fontSize: 12, color: '#64748B' }}>Por </Text>
-            <Text style={{ fontSize: 12, color: '#1E293B', fontWeight: '600' }} numberOfLines={1}>
+            <Text style={{ fontSize: 12, color: colors.textMuted }}>Por </Text>
+            <Text style={{ fontSize: 12, color: isDark ? '#F8FAFC' : '#1E293B', fontWeight: '600' }} numberOfLines={1}>
               {safeOwnerName || 'Usuário'}
             </Text>
           </View>
@@ -400,15 +415,15 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: '#EFF6FF',
+              backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF',
               borderRadius: 16,
               paddingHorizontal: 12,
               paddingVertical: 5,
             }}
             activeOpacity={0.8}
           >
-            <MaterialIcons name="visibility" size={14} color="#2563EB" style={{ marginRight: 4 }} />
-            <Text style={{ color: '#2563EB', fontSize: 12, fontWeight: '700' }}>Ver detalhes</Text>
+            <MaterialIcons name="visibility" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>Ver detalhes</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -431,6 +446,7 @@ const HomeScreen = ({ navigation, route }) => {
       return unsubscribe;
     }, [navigation, userProfile]);
   const { user, userProfile, isAdmin, refreshProfile, setUserProfile, signOut } = useAuth();
+  const { colors, isDark } = useTheme();
   // Corrige erro: garantir estado do modal de perfil
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   // Localidade do perfil e sessão
@@ -952,7 +968,7 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Overlay para fechar o menu ao clicar fora */}
       {user && showProfileMenu && (
         <TouchableOpacity
@@ -965,7 +981,7 @@ const HomeScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       )}
       {/* App Bar ajustada: centralizado quando deslogado (Explorar), alinhado à esquerda quando logado */}
-      <View style={{ backgroundColor: '#2563EB', paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#2563EB' }}>
+      <View style={{ backgroundColor: colors.headerBg, paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: colors.border }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: user ? 'space-between' : 'center', minHeight: 48 }}>
           <View style={{ flexDirection: 'column', alignItems: user ? 'flex-start' : 'center' }}>
             <Text style={{ color: '#fff', fontWeight: '900', fontSize: 23, letterSpacing: 0.8, marginBottom: 2 }}>WeFIND</Text>
@@ -1018,8 +1034,8 @@ const HomeScreen = ({ navigation, route }) => {
             </View>
           )}
           {user && showProfileMenu && (
-            <View style={styles.profileMenu}>
-              <View style={styles.profileMenuHeader}>
+            <View style={[styles.profileMenu, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+              <View style={[styles.profileMenuHeader, { backgroundColor: colors.primaryLight, borderBottomColor: colors.border }]}>
                 <View style={styles.profileMenuAvatar}>
                   {userProfile?.avatar_url ? (
                     <Image source={{ uri: userProfile.avatar_url }} style={styles.profileMenuAvatarImage} />
@@ -1028,8 +1044,8 @@ const HomeScreen = ({ navigation, route }) => {
                   )}
                 </View>
                 <View style={styles.profileMenuIdentity}>
-                  <Text style={styles.profileMenuName} numberOfLines={1}>{userProfile?.name || 'Usuário'}</Text>
-                  <Text style={styles.profileMenuEmail} numberOfLines={1}>{user?.email || 'Conta WeFIND'}</Text>
+                  <Text style={[styles.profileMenuName, { color: colors.text }]} numberOfLines={1}>{userProfile?.name || 'Usuário'}</Text>
+                  <Text style={[styles.profileMenuEmail, { color: colors.textSecondary }]} numberOfLines={1}>{user?.email || 'Conta WeFIND'}</Text>
                 </View>
               </View>
               {isAdmin && (
@@ -1040,11 +1056,11 @@ const HomeScreen = ({ navigation, route }) => {
                   }}
                   style={styles.profileMenuItem}
                 >
-                  <View style={[styles.profileMenuIcon, styles.profileMenuAdminIcon]}>
-                    <MaterialIcons name="admin-panel-settings" size={18} color="#2563EB" />
+                  <View style={[styles.profileMenuIcon, styles.profileMenuAdminIcon, { backgroundColor: colors.primaryLight }]}>
+                    <MaterialIcons name="admin-panel-settings" size={18} color={colors.primary} />
                   </View>
-                  <Text style={styles.profileMenuItemText}>Administração</Text>
-                  <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
+                  <Text style={[styles.profileMenuItemText, { color: colors.text }]}>Administração</Text>
+                  <MaterialIcons name="chevron-right" size={20} color={colors.textMuted} />
                 </TouchableOpacity>
               )}
               <TouchableOpacity
@@ -1054,13 +1070,13 @@ const HomeScreen = ({ navigation, route }) => {
                 }}
                 style={styles.profileMenuItem}
               >
-                <View style={styles.profileMenuIcon}>
-                  <MaterialIcons name="person-outline" size={18} color="#2563EB" />
+                <View style={[styles.profileMenuIcon, { backgroundColor: colors.primaryLight }]}>
+                  <MaterialIcons name="person-outline" size={18} color={colors.primary} />
                 </View>
-                <Text style={styles.profileMenuItemText}>Perfil</Text>
-                <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
+                <Text style={[styles.profileMenuItemText, { color: colors.text }]}>Perfil</Text>
+                <MaterialIcons name="chevron-right" size={20} color={colors.textMuted} />
               </TouchableOpacity>
-              <View style={styles.profileMenuDivider} />
+              <View style={[styles.profileMenuDivider, { backgroundColor: colors.divider }]} />
               <TouchableOpacity
                 onPress={() => {
                   setShowProfileMenu(false);
@@ -1189,18 +1205,18 @@ const HomeScreen = ({ navigation, route }) => {
 
       {/* Busca de animais acima dos filtros */}
       <View style={{ marginTop: 12, marginHorizontal: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', borderRadius: 14, borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 14, height: 48 }}>
-          <MaterialIcons name="search" size={22} color="#64748B" style={{ marginRight: 8 }} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 14, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, height: 48 }}>
+          <MaterialIcons name="search" size={22} color={colors.textMuted} style={{ marginRight: 8 }} />
           <TextInput
             placeholder="Nome, raça, espécie ou cidade..."
             value={searchTerm}
             onChangeText={setSearchTerm}
-            style={{ flex: 1, backgroundColor: '#F1F5F9', fontSize: 15, color: '#0F172A', paddingVertical: 0, paddingHorizontal: 0 }}
-            placeholderTextColor="#64748B"
+            style={{ flex: 1, backgroundColor: colors.surface, fontSize: 15, color: colors.text, paddingVertical: 0, paddingHorizontal: 0 }}
+            placeholderTextColor={colors.textMuted}
           />
           {searchTerm ? (
             <TouchableOpacity onPress={() => setSearchTerm('')} style={{ padding: 4 }}>
-              <MaterialIcons name="close" size={18} color="#64748B" />
+              <MaterialIcons name="close" size={18} color={colors.textMuted} />
             </TouchableOpacity>
           ) : null}
         </View>
@@ -1213,27 +1229,28 @@ const HomeScreen = ({ navigation, route }) => {
         animationType="fade"
         onRequestClose={() => setEditLocationModal(false)}
       >
-        <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
-          <View style={{ backgroundColor:'#fff', borderRadius:12, paddingVertical:24, paddingHorizontal:16, minWidth:360, maxWidth: '95%' }}>
+        <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.5)', justifyContent:'center', alignItems:'center' }}>
+          <View style={{ backgroundColor: colors.surface, borderRadius: 12, paddingVertical: 24, paddingHorizontal: 16, minWidth: 360, maxWidth: '95%', borderWidth: 1, borderColor: colors.cardBorder }}>
             {user ? (
               <>
-                <Text style={{ fontWeight:'bold', fontSize:16, color:'#2563EB', marginBottom:8 }}>Filtrar por Bairro</Text>
-                <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione o bairro para filtrar. Cidade e estado são do seu perfil.</Text>
-                <Text style={{ marginBottom: 6 }}>Estado</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: '#F3F4F6' }}>
-                  <Text style={{ paddingLeft: 12, paddingTop: 16, fontSize: 16, color: '#6B7280' }}>{editState}</Text>
+                <Text style={{ fontWeight:'bold', fontSize:16, color: colors.primary, marginBottom:8 }}>Filtrar por Bairro</Text>
+                <Text style={{ color: colors.textSecondary, marginBottom:8 }}>Selecione o bairro para filtrar. Cidade e estado são do seu perfil.</Text>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Estado</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
+                  <Text style={{ paddingLeft: 12, paddingTop: 16, fontSize: 16, color: colors.textSecondary }}>{editState}</Text>
                 </View>
-                <Text style={{ marginBottom: 6 }}>Cidade</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: '#F3F4F6' }}>
-                  <Text style={{ paddingLeft: 12, paddingTop: 16, fontSize: 16, color: '#6B7280' }}>{editCity}</Text>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Cidade</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
+                  <Text style={{ paddingLeft: 12, paddingTop: 16, fontSize: 16, color: colors.textSecondary }}>{editCity}</Text>
                 </View>
-                <Text style={{ marginBottom: 6 }}>Bairro</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Bairro</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
                   <Picker
                     selectedValue={editNeighborhood}
                     onValueChange={setEditNeighborhood}
                     enabled={!!editCity}
-                    style={{ height: 56, minWidth: 320 }}
+                    style={{ height: 56, minWidth: 320, color: colors.text }}
+                    dropdownIconColor={colors.textSecondary}
                   >
                     <Picker.Item label="Selecione o bairro" value="" />
                     {(neighborhoodsByCity[editCity] || []).map(bairro => (
@@ -1244,10 +1261,10 @@ const HomeScreen = ({ navigation, route }) => {
               </>
             ) : (
               <>
-                <Text style={{ fontWeight:'bold', fontSize:16, color:'#2563EB', marginBottom:8 }}>Filtrar por Localidade</Text>
-                <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione estado, cidade e bairro para filtrar.</Text>
-                <Text style={{ marginBottom: 6 }}>Estado</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                <Text style={{ fontWeight:'bold', fontSize:16, color: colors.primary, marginBottom:8 }}>Filtrar por Localidade</Text>
+                <Text style={{ color: colors.textSecondary, marginBottom:8 }}>Selecione estado, cidade e bairro para filtrar.</Text>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Estado</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
                   <Picker
                     selectedValue={editState}
                     onValueChange={uf => {
@@ -1255,7 +1272,8 @@ const HomeScreen = ({ navigation, route }) => {
                       setEditCity('');
                       setEditNeighborhood('');
                     }}
-                    style={{ height: 56, minWidth: 320 }}
+                    style={{ height: 56, minWidth: 320, color: colors.text }}
+                    dropdownIconColor={colors.textSecondary}
                   >
                     <Picker.Item label="Selecione o estado" value="" />
                     {states.map(uf => (
@@ -1263,8 +1281,8 @@ const HomeScreen = ({ navigation, route }) => {
                     ))}
                   </Picker>
                 </View>
-                <Text style={{ marginBottom: 6 }}>Cidade</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Cidade</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
                   <Picker
                     selectedValue={editCity}
                     onValueChange={city => {
@@ -1272,7 +1290,8 @@ const HomeScreen = ({ navigation, route }) => {
                       setEditNeighborhood('');
                     }}
                     enabled={!!editState}
-                    style={{ height: 56, minWidth: 320 }}
+                    style={{ height: 56, minWidth: 320, color: colors.text }}
+                    dropdownIconColor={colors.textSecondary}
                   >
                     <Picker.Item label="Selecione a cidade" value="" />
                     {(citiesByState[editState] || []).map(city => (
@@ -1280,13 +1299,14 @@ const HomeScreen = ({ navigation, route }) => {
                     ))}
                   </Picker>
                 </View>
-                <Text style={{ marginBottom: 6 }}>Bairro</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Bairro</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
                   <Picker
                     selectedValue={editNeighborhood}
                     onValueChange={setEditNeighborhood}
                     enabled={!!editCity}
-                    style={{ height: 56, minWidth: 320 }}
+                    style={{ height: 56, minWidth: 320, color: colors.text }}
+                    dropdownIconColor={colors.textSecondary}
                   >
                     <Picker.Item label="Selecione o bairro" value="" />
                     {(neighborhoodsByCity[editCity] || []).map(bairro => (
@@ -1303,15 +1323,15 @@ const HomeScreen = ({ navigation, route }) => {
                   setEditCity(user ? editCity : '');
                   setEditNeighborhood('');
                 }}
-                style={{ paddingVertical: 10, paddingHorizontal: 12, backgroundColor: '#F3F4F6', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB' }}
+                style={{ paddingVertical: 10, paddingHorizontal: 12, backgroundColor: isDark ? '#1E293B' : '#F3F4F6', borderRadius: 8, borderWidth: 1, borderColor: colors.border }}
               >
-                <Text style={{ color: '#374151', fontWeight: 'bold', fontSize: 13 }}>Limpar Filtro</Text>
+                <Text style={{ color: colors.text, fontWeight: 'bold', fontSize: 13 }}>Limpar Filtro</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setEditLocationModal(false)}
-                style={{ paddingVertical: 10, paddingHorizontal: 14, backgroundColor: '#E5E7EB', borderRadius: 8 }}
+                style={{ paddingVertical: 10, paddingHorizontal: 14, backgroundColor: isDark ? '#1E293B' : '#E5E7EB', borderRadius: 8 }}
               >
-                <Text style={{ color: '#1F2937', fontWeight: 'bold', fontSize: 13 }}>Cancelar</Text>
+                <Text style={{ color: colors.text, fontWeight: 'bold', fontSize: 13 }}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={async () => {
@@ -1328,74 +1348,83 @@ const HomeScreen = ({ navigation, route }) => {
                   console.log('[HomeScreen] Erro ao atualizar localidade no perfil:', e.message);
                 }
               }} style={{ paddingVertical:8, paddingHorizontal:16 }}>
-                <Text style={{ color:'#2563EB', fontWeight:'bold' }}>Salvar</Text>
+                <Text style={{ color: colors.primary, fontWeight:'bold' }}>Salvar</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
       {/* Filtros rápidos */}
-      <View style={styles.filterToolbar}>
+      <View style={[styles.filterToolbar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterToolbarContent}>
           <TouchableOpacity
-            style={[styles.filterToggle, showAdvancedFilters && styles.filterToggleActive]}
+            style={[
+              styles.filterToggle,
+              { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: isDark ? '#334155' : '#BFDBFE' },
+              showAdvancedFilters && styles.filterToggleActive,
+            ]}
             onPress={() => setShowAdvancedFilters(v => !v)}
             accessibilityLabel="Abrir filtros avançados"
           >
-            <MaterialIcons name="tune" size={21} color={showAdvancedFilters ? '#fff' : '#1E3A8A'} />
+            <MaterialIcons name="tune" size={21} color={showAdvancedFilters ? '#fff' : (isDark ? '#60A5FA' : '#1E3A8A')} />
           </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.filterChip,
+              { backgroundColor: isDark ? '#1E293B' : '#E5E7EB', borderColor: isDark ? '#334155' : '#E5E7EB' },
               filters.status === 'all' && styles.filterChipActive,
             ]}
             onPress={() => setFilters({ ...filters, status: 'all' })}
             activeOpacity={0.85}
           >
-            <MaterialIcons name="grid-view" size={13.5} color={filters.status === 'all' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 4 }} />
-            <Text style={[styles.filterChipText, filters.status === 'all' && styles.filterChipTextActive]}>Todos</Text>
+            <MaterialIcons name="grid-view" size={13.5} color={filters.status === 'all' ? '#FFFFFF' : (isDark ? '#94A3B8' : '#4B5563')} style={{ marginRight: 4 }} />
+            <Text style={[styles.filterChipText, { color: isDark ? '#94A3B8' : '#1F2937' }, filters.status === 'all' && styles.filterChipTextActive]}>Todos</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.filterChip,
+              { backgroundColor: isDark ? '#1E293B' : '#E5E7EB', borderColor: isDark ? '#334155' : '#E5E7EB' },
               filters.status === 'lost' && styles.filterChipActive,
             ]}
             onPress={() => setFilters({ ...filters, status: 'lost' })}
             activeOpacity={0.85}
           >
-            <MaterialIcons name="priority-high" size={14} color={filters.status === 'lost' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 2 }} />
-            <Text style={[styles.filterChipText, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
+            <MaterialIcons name="priority-high" size={14} color={filters.status === 'lost' ? '#FFFFFF' : (isDark ? '#94A3B8' : '#4B5563')} style={{ marginRight: 2 }} />
+            <Text style={[styles.filterChipText, { color: isDark ? '#94A3B8' : '#1F2937' }, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.filterChip,
+              { backgroundColor: isDark ? '#1E293B' : '#E5E7EB', borderColor: isDark ? '#334155' : '#E5E7EB' },
               filters.status === 'found' && styles.filterChipActive,
             ]}
             onPress={() => setFilters({ ...filters, status: 'found' })}
             activeOpacity={0.85}
           >
-            <MaterialIcons name="search" size={15} color={filters.status === 'found' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 4 }} />
-            <Text style={[styles.filterChipText, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
+            <MaterialIcons name="search" size={15} color={filters.status === 'found' ? '#FFFFFF' : (isDark ? '#94A3B8' : '#4B5563')} style={{ marginRight: 4 }} />
+            <Text style={[styles.filterChipText, { color: isDark ? '#94A3B8' : '#1F2937' }, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.filterChip,
+              { backgroundColor: isDark ? '#1E293B' : '#E5E7EB', borderColor: isDark ? '#334155' : '#E5E7EB' },
               filters.status === 'adoption' && styles.filterChipActive,
             ]}
             onPress={() => setFilters({ ...filters, status: 'adoption' })}
             activeOpacity={0.85}
           >
-            <MaterialIcons name="favorite-border" size={13.5} color={filters.status === 'adoption' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 4 }} />
-            <Text style={[styles.filterChipText, filters.status === 'adoption' && styles.filterChipTextActive]}>Para Adoção</Text>
+            <MaterialIcons name="favorite-border" size={13.5} color={filters.status === 'adoption' ? '#FFFFFF' : (isDark ? '#94A3B8' : '#4B5563')} style={{ marginRight: 4 }} />
+            <Text style={[styles.filterChipText, { color: isDark ? '#94A3B8' : '#1F2937' }, filters.status === 'adoption' && styles.filterChipTextActive]}>Para Adoção</Text>
           </TouchableOpacity>
 
           {user && (
             <TouchableOpacity
               style={[
                 styles.filterChip,
+                { backgroundColor: isDark ? '#1E293B' : '#E5E7EB', borderColor: isDark ? '#334155' : '#E5E7EB' },
                 filters.showMyItems && styles.filterChipActive,
               ]}
               onPress={handleMyItemsToggle}
@@ -1405,12 +1434,13 @@ const HomeScreen = ({ navigation, route }) => {
               <MaterialIcons
                 name="person-outline"
                 size={15}
-                color={filters.showMyItems ? '#FFFFFF' : '#4B5563'}
+                color={filters.showMyItems ? '#FFFFFF' : (isDark ? '#94A3B8' : '#4B5563')}
                 style={{ marginRight: 4 }}
               />
               <Text
                 style={[
                   styles.filterChipText,
+                  { color: isDark ? '#94A3B8' : '#1F2937' },
                   filters.showMyItems && styles.filterChipTextActive,
                 ]}
               >
@@ -1423,17 +1453,18 @@ const HomeScreen = ({ navigation, route }) => {
 
       {/* Lista de pets */}
       {showAdvancedFilters && (
-        <View style={styles.advancedFiltersPanel}>
-          <Text style={styles.advancedFiltersTitle}>Mais filtros</Text>
-          <View style={styles.speciesPickerWrapper}>
-            <MaterialIcons name="pets" size={19} color="#1E3A8A" style={{ marginLeft: 12 }} />
+        <View style={[styles.advancedFiltersPanel, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.advancedFiltersTitle, { color: colors.text }]}>Mais filtros</Text>
+          <View style={[styles.speciesPickerWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+            <MaterialIcons name="pets" size={19} color={isDark ? '#60A5FA' : '#1E3A8A'} style={{ marginLeft: 12 }} />
             <Picker
               selectedValue={advancedFilters.animalType || 'all'}
               onValueChange={value => {
                 setAdvancedFilters(f => ({ ...f, animalType: value }));
                 setFilters(f => ({ ...f, animalType: value }));
               }}
-              style={styles.speciesPicker}
+              style={[styles.speciesPicker, { color: colors.text }]}
+              dropdownIconColor={colors.textSecondary}
             >
               <Picker.Item label="Todas" value="all" />
               <Picker.Item label="Cachorro" value="cachorro" />
@@ -1445,42 +1476,42 @@ const HomeScreen = ({ navigation, route }) => {
             </Picker>
           </View>
           <View style={styles.locationFilterRow}>
-            <TouchableOpacity onPress={() => setEditLocationModal(true)} style={styles.locationFilterButton}>
-              <MaterialIcons name="place" size={20} color="#1E3A8A" style={{ marginRight: 8 }} />
-              <Text style={styles.locationFilterText}>Filtrar por bairro</Text>
+            <TouchableOpacity onPress={() => setEditLocationModal(true)} style={[styles.locationFilterButton, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+              <MaterialIcons name="place" size={20} color={isDark ? '#60A5FA' : '#1E3A8A'} style={{ marginRight: 8 }} />
+              <Text style={[styles.locationFilterText, { color: colors.text }]}>Filtrar por bairro</Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
       {/* Banner Informativo do Raio de 60 km */}
       {Boolean(locationFilter) && (
-        <View style={styles.radiusBanner}>
+        <View style={[styles.radiusBanner, { backgroundColor: isDark ? '#161F30' : '#EFF6FF', borderColor: isDark ? '#243248' : '#BFDBFE' }]}>
           <View style={styles.radiusBannerLeft}>
-            <View style={styles.radarIconContainer}>
-              <MaterialIcons name="radar" size={18} color="#2563EB" />
+            <View style={[styles.radarIconContainer, { backgroundColor: isDark ? '#0F172A' : '#DBEAFE' }]}>
+              <MaterialIcons name="radar" size={18} color={colors.primary} />
             </View>
             <View style={{ flex: 1, marginLeft: 8 }}>
-              <Text style={styles.radiusBannerTitle}>
+              <Text style={[styles.radiusBannerTitle, { color: isDark ? '#93C5FD' : '#1E40AF' }]}>
                 Raio de 60 km ativo
               </Text>
-              <Text style={styles.radiusBannerSubtitle} numberOfLines={1}>
+              <Text style={[styles.radiusBannerSubtitle, { color: isDark ? '#60A5FA' : '#3B82F6' }]} numberOfLines={1}>
                 Exibindo pets próximos a {displayLocation}
               </Text>
             </View>
           </View>
           <TouchableOpacity
             onPress={handleResetToBrazil}
-            style={styles.radiusResetButton}
+            style={[styles.radiusResetButton, { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', borderColor: isDark ? '#243248' : '#93C5FD' }]}
             activeOpacity={0.8}
           >
-            <Text style={styles.radiusResetText}>Ver Brasil todo</Text>
+            <Text style={[styles.radiusResetText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>Ver Brasil todo</Text>
           </TouchableOpacity>
         </View>
       )}
 
       {/* Quantidade de animais encontrados */}
       <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
-        <Text style={{ color: '#6B7280', fontSize: 15 }}>
+        <Text style={{ color: colors.textSecondary, fontSize: 15 }}>
           {String(filteredItems.filter(item => {
             const matchesAnimalType = advancedFilters.animalType === 'all' || advancedFilters.animalType === undefined || !item.species
               ? true
@@ -1522,8 +1553,8 @@ const HomeScreen = ({ navigation, route }) => {
         }
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <MaterialIcons name="pets" size={46} color="#CBD5E1" style={{ marginBottom: 10 }} />
-            <Text style={styles.emptyText}>
+            <MaterialIcons name="pets" size={46} color={isDark ? '#334155' : '#CBD5E1'} style={{ marginBottom: 10 }} />
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
               {locationFilter
                 ? `Nenhum animal encontrado em um raio de 60 km de ${displayLocation}.`
                 : 'Nenhum animal encontrado'}
@@ -1533,18 +1564,16 @@ const HomeScreen = ({ navigation, route }) => {
                 onPress={handleResetToBrazil}
                 style={{
                   marginTop: 12,
-                  backgroundColor: '#EFF6FF',
+                  backgroundColor: isDark ? '#1E293B' : '#EFF6FF',
                   paddingVertical: 8,
                   paddingHorizontal: 16,
                   borderRadius: 20,
                   borderWidth: 1,
-                  borderColor: '#DBEAFE',
+                  borderColor: isDark ? '#334155' : '#DBEAFE',
                 }}
                 activeOpacity={0.8}
               >
-                <Text style={{ color: '#2563EB', fontWeight: '700', fontSize: 13 }}>
-                  🇧🇷 Ver animais de todo o Brasil
-                </Text>
+                <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>Ver todos do Brasil</Text>
               </TouchableOpacity>
             ) : null}
           </View>
