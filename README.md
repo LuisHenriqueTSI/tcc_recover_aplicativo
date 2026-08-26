@@ -57,10 +57,14 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - Recompensas opcionais e gamificação.
 
 ✅ **Modo Público e Mapa Interativo para Visitantes**
-- **Exploração Livre do Mapa:** Visitantes não autenticados podem navegar pelo mapa, consultar cards de animais, ver detalhes e ler comentários livremente com visualização limpa em tela cheia.
+- **Barra de Pesquisa de Animais no Mapa:** Busca em tempo real por nome, raça, espécie ou cidade diretamente no topo do mapa, com filtragem instantânea dos marcadores e recentralização automática.
+- **Exploração Livre do Mapa:** Visitantes não autenticados podem navegar pelo mapa, consultar cards de animais, ver detalhes e ler comentários livremente com visualização limpa e moderna.
 - **Mensagens Diretas sem Bloqueios:** Chat direto e instantâneo com o autor da publicação.
-- Visualização dos animais com fotos e moldura colorida indicando o status (Verde para Encontrado / Laranja para Perdido / Rosa para Adoção).
-- Centralização rápida na localização atual do usuário.
+- **Identificação Visual por Cores:**
+  - 🟠 **Laranja (`#F97316`):** Animal Perdido
+  - 🟢 **Verde (`#16A34A`):** Animal Encontrado
+  - 💖 **Rosa (`#DB2777`):** Animal Disponível para Adoção
+- Centralização rápida na localização atual do usuário via GPS.
 - Barra inferior com Safe Insets prevenindo sobreposição de botões de navegação do sistema Android.
 
 ---
