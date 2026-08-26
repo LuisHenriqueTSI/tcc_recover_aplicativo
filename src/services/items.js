@@ -1013,3 +1013,93 @@ export const getResolvedStatistics = async () => {
     throw error;
   }
 };
+
+export const listRecoveredPets = async (limit = 10) => {
+  try {
+    let query = supabase
+      .from('items')
+      .select('*, profiles!owner_id(name, email, whatsapp, phone)')
+      .eq('resolved', true)
+      .order('updated_at', { ascending: false })
+      .limit(limit);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const itemIds = (data || []).map((item) => item.id).filter(Boolean);
+    if (itemIds.length > 0) {
+      const { data: photoRows } = await supabase
+        .from('item_photos')
+        .select('id, item_id, url')
+        .in('item_id', itemIds);
+
+      if (photoRows) {
+        const photosByItemId = photoRows.reduce((groups, photo) => {
+          if (!groups[photo.item_id]) groups[photo.item_id] = [];
+          groups[photo.item_id].push({ id: photo.id, url: photo.url });
+          return groups;
+        }, {});
+
+        data.forEach((item) => {
+          const nestedPhotos = Array.isArray(item.item_photos)
+            ? item.item_photos
+            : item.item_photos ? [item.item_photos] : [];
+          item.item_photos = (nestedPhotos.length > 0
+            ? nestedPhotos
+            : photosByItemId[item.id] || [])
+            .filter((photo) => photo?.url);
+        });
+      }
+    }
+
+    return (data || []).map(item => ({
+      ...item,
+      owner_name: item.profiles?.name || item.profiles?.email || 'Tutor',
+      item_photos: item.item_photos || [],
+    }));
+  } catch (error) {
+    console.warn('[listRecoveredPets] Erro ao carregar pets recuperados:', error.message);
+    return [];
+  }
+};
+
+export const getCommunityImpactStats = async () => {
+  try {
+    const { count: totalResolved } = await supabase
+      .from('items')
+      .select('id', { count: 'exact', head: true })
+      .eq('resolved', true);
+
+    const { count: totalLost } = await supabase
+      .from('items')
+      .select('id', { count: 'exact', head: true })
+      .eq('resolved', false)
+      .eq('status', 'lost');
+
+    const { count: totalFound } = await supabase
+      .from('items')
+      .select('id', { count: 'exact', head: true })
+      .eq('resolved', false)
+      .eq('status', 'found');
+
+    const { count: totalSightings } = await supabase
+      .from('sightings')
+      .select('id', { count: 'exact', head: true });
+
+    return {
+      resolved_count: totalResolved || 0,
+      lost_count: totalLost || 0,
+      found_count: totalFound || 0,
+      sightings_count: totalSightings || 0,
+    };
+  } catch (error) {
+    console.warn('[getCommunityImpactStats] Erro ao buscar métricas comunitárias:', error.message);
+    return {
+      resolved_count: 0,
+      lost_count: 0,
+      found_count: 0,
+      sightings_count: 0,
+    };
+  }
+};
+
