@@ -394,26 +394,19 @@ const ItemDetailScreen = ({ route, navigation }) => {
     }
     if (!item) return;
 
-    if (item.status === 'found' && user.id !== item.owner_id && claimAccessState !== 'approved') {
-      Alert.alert('Chat bloqueado', 'O chat só será liberado após o tutor da publicação aprovar sua reivindicação.');
+    if (user.id === item.owner_id) {
+      Alert.alert('Aviso', 'Você é o autor desta publicação.');
       return;
     }
 
-    // Mensagem automática depende do papel do usuário
+    // Mensagem automática depende do status do pet
     let initialMessage = '';
     if (item.status === 'lost') {
-      if (user.id === item.owner_id) {
-        initialMessage = 'Oi, você achou meu pet?';
-      } else {
-        initialMessage = 'Oi, eu encontrei seu pet!';
-      }
+      initialMessage = 'Oi, eu encontrei seu pet!';
     } else if (item.status === 'found') {
-      if (user.id === item.owner_id) {
-        initialMessage = 'Oi, você encontrou meu pet?';
-      } else {
-        initialMessage = 'Oi, você achou meu pet?';
-      }
+      initialMessage = 'Oi, você achou meu pet?';
     }
+
     navigation.navigate('ChatScreen', {
       conversation: {
         otherId: item.owner_id,
@@ -948,17 +941,19 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 <TouchableOpacity
                   style={{
                     borderWidth: 1,
-                    borderColor: isMessageBlocked ? '#D1D5DB' : '#E5E7EB',
+                    borderColor: '#2563EB',
                     borderRadius: 8,
-                    paddingVertical: 10,
+                    paddingVertical: 11,
                     alignItems: 'center',
-                    backgroundColor: isMessageBlocked ? '#F3F4F6' : '#fff',
+                    backgroundColor: '#fff',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
                   }}
                   onPress={handleSendMessage}
-                  disabled={isMessageBlocked}
                 >
-                  <Text style={{ color: isMessageBlocked ? '#6B7280' : '#374151', fontWeight: 'bold', fontSize: 15 }}>
-                    {isMessageBlocked ? 'Aguardando aprovação' : 'Enviar Mensagem'}
+                  <MaterialIcons name="chat" size={18} color="#2563EB" style={{ marginRight: 6 }} />
+                  <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 15 }}>
+                    Enviar Mensagem
                   </Text>
                 </TouchableOpacity>
               </View>

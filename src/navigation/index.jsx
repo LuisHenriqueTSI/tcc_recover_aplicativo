@@ -49,7 +49,7 @@ const PublicHeaderRight = ({ navigation }) => (
   </TouchableOpacity>
 );
 
-// Public Stack (no auth required - shows only Home)
+// Public Stack (no auth required - shows Home, Map and Login)
 const PublicAppTabs = ({ navigation }) => {
   return (
     <Tab.Navigator
@@ -57,7 +57,9 @@ const PublicAppTabs = ({ navigation }) => {
         tabBarStyle: {
           backgroundColor: '#fff',
           borderTopColor: '#E5E7EB',
-          paddingTop: 0,
+          paddingTop: 4,
+          paddingBottom: 6,
+          height: 60,
         },
         headerShown: false,
       }}
@@ -67,11 +69,24 @@ const PublicAppTabs = ({ navigation }) => {
         component={HomeScreen}
         options={{
           title: 'Explorar',
-          tabBarLabel: () => (
-            <Text style={{ color: '#2563EB', fontSize: 13, marginBottom: 4, textAlign: 'center', fontWeight: 'bold' }}>Explorar</Text>
+          tabBarLabel: ({ focused }) => (
+            <Text style={{ color: focused ? '#2563EB' : '#6B7280', fontSize: 12, marginBottom: 2, textAlign: 'center', fontWeight: focused ? 'bold' : '500' }}>Explorar</Text>
           ),
-          tabBarIcon: () => (
-            <MaterialIcons name="home" size={22} color="#2563EB" />
+          tabBarIcon: ({ focused }) => (
+            <MaterialIcons name="home" size={24} color={focused ? '#2563EB' : '#6B7280'} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="MapTab"
+        component={MapScreen}
+        options={{
+          title: 'Mapa',
+          tabBarLabel: ({ focused }) => (
+            <Text style={{ color: focused ? '#2563EB' : '#6B7280', fontSize: 12, marginBottom: 2, textAlign: 'center', fontWeight: focused ? 'bold' : '500' }}>Mapa</Text>
+          ),
+          tabBarIcon: ({ focused }) => (
+            <MaterialIcons name="map" size={24} color={focused ? '#2563EB' : '#6B7280'} />
           ),
         }}
       />
@@ -80,29 +95,25 @@ const PublicAppTabs = ({ navigation }) => {
         component={LoginScreen}
         options={{
           title: 'Entrar',
-          tabBarLabel: ({ color }) => (
-            <Text style={{ color: '#fff', fontSize: 13, marginTop: 2 }}>Entrar</Text>
-          ),
-          tabBarIcon: () => (
-            <MaterialIcons name="login" size={22} color="#fff" />
-          ),
+          tabBarLabel: () => null,
+          tabBarIcon: () => null,
           tabBarButton: (props) => (
             <TouchableOpacity
               {...props}
               style={{
-                flex: 1,
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginHorizontal: 8,
-                marginVertical: 4,
+                marginVertical: 6,
                 backgroundColor: '#2563EB',
-                borderRadius: 24,
+                borderRadius: 20,
                 flexDirection: 'row',
-                minWidth: 80,
-                maxWidth: 120,
+                paddingHorizontal: 16,
+                paddingVertical: 6,
               }}
+              onPress={() => navigation.navigate('Login')}
             >
-              <MaterialIcons name="login" size={22} color="#fff" style={{ marginRight: 6 }} />
+              <MaterialIcons name="login" size={18} color="#fff" style={{ marginRight: 6 }} />
               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>Entrar</Text>
             </TouchableOpacity>
           ),
@@ -117,16 +128,6 @@ const PublicStack = () => {
   // Para teste: sempre mostrar a tela Sobre
   const showSobre = true;
   const checked = true;
-
-  // Código original comentado para referência:
-  // const [showSobre, setShowSobre] = React.useState(false);
-  // const [checked, setChecked] = React.useState(false);
-  // React.useEffect(() => {
-  //   AsyncStorage.getItem('accepted_terms').then((accepted) => {
-  //     setShowSobre(!accepted);
-  //     setChecked(true);
-  //   });
-  // }, []);
 
   if (!checked) return null;
 
@@ -157,6 +158,11 @@ const PublicStack = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="Map"
+        component={MapScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="Login"
         component={LoginScreen}
         options={{ headerShown: false }}
@@ -170,7 +176,7 @@ const PublicStack = () => {
       <Stack.Screen
         name="Register"
         component={RegisterScreen}
-          options={{ headerShown: false }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="ItemDetail"

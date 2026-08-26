@@ -677,32 +677,29 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   // Abre o chat com o dono do item
-  // Preenche mensagem automática ao abrir o chat
+  // Preenche mensagem automática ao abrir o chat diretamente
   const handleSendMessage = async (ownerId, itemId, itemStatus) => {
     if (!user) {
-      alert('Faça login para enviar mensagens');
-      navigation.navigate('Login', {
-        redirectAfterLogin: null,
-      });
+      Alert.alert(
+        'Login necessário',
+        'Entre ou crie uma conta para enviar mensagens ao tutor.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+        ]
+      );
       return;
     }
     if (ownerId === user.id) {
-      alert('Este é o seu próprio item.');
+      Alert.alert('Aviso', 'Você é o autor desta publicação.');
       return;
     }
-    if (itemStatus === 'found') {
-      const claim = await claimsService.getClaimForItemByUser(itemId, user.id);
-      if (claim?.status !== 'approved') {
-        Alert.alert('Chat bloqueado', 'O chat só será liberado após o tutor da publicação aprovar sua reivindicação.');
-        return;
-      }
-    }
-    // Define mensagem automática
+    // Define mensagem automática inicial
     let autoMessage = '';
     if (itemStatus === 'lost') {
-      autoMessage = 'Oi, eu encontrei seu pet';
+      autoMessage = 'Oi, eu encontrei seu pet!';
     } else {
-      autoMessage = 'Oi, você encontrou meu item?';
+      autoMessage = 'Oi, você encontrou meu pet?';
     }
     navigation.navigate('ChatScreen', {
       conversation: {
