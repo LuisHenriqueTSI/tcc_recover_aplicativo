@@ -87,140 +87,13 @@ const formatStreetNumberNeighborhood = (item) => {
   return '';
 };
 
-// Componente de Estatísticas / Placar da Comunidade WeFIND
-const CommunityImpactBanner = ({ stats }) => {
-  return (
-    <View style={styles.impactCard}>
-      <View style={styles.impactHeader}>
-        <View style={styles.impactHeaderIcon}>
-          <MaterialIcons name="insights" size={18} color="#2563EB" />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.impactTitle}>Placar Comunitário WeFIND</Text>
-          <Text style={styles.impactSubtitle}>Juntos transformando buscas em reencontros</Text>
-        </View>
-      </View>
-      
-      <View style={styles.impactStatsRow}>
-        <View style={[styles.impactStatBox, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
-          <MaterialIcons name="favorite" size={19} color="#059669" />
-          <Text style={[styles.impactStatNumber, { color: '#047857' }]}>{stats?.resolved_count || 0}</Text>
-          <Text style={[styles.impactStatLabel, { color: '#065F46' }]}>Reencontros</Text>
-        </View>
-
-        <View style={[styles.impactStatBox, { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }]}>
-          <MaterialIcons name="search" size={19} color="#D97706" />
-          <Text style={[styles.impactStatNumber, { color: '#B45309' }]}>{stats?.lost_count || 0}</Text>
-          <Text style={[styles.impactStatLabel, { color: '#92400E' }]}>Em busca</Text>
-        </View>
-
-        <View style={[styles.impactStatBox, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
-          <MaterialIcons name="location-on" size={19} color="#2563EB" />
-          <Text style={[styles.impactStatNumber, { color: '#1D4ED8' }]}>{stats?.sightings_count || 0}</Text>
-          <Text style={[styles.impactStatLabel, { color: '#1E40AF' }]}>Pistas & GPS</Text>
-        </View>
-      </View>
-    </View>
-  );
-};
-
-// Componente Carrossel de Finais Felizes & Animais Recuperados
-const HappyEndingsCarousel = ({ recoveredPets, navigation }) => {
-  return (
-    <View style={styles.happyEndingsSection}>
-      <View style={styles.happyEndingsHeader}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-          <View style={styles.happyEndingsBadgeIcon}>
-            <MaterialIcons name="celebration" size={20} color="#059669" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.happyEndingsTitle}>🎉 Finais Felizes & Reencontros</Text>
-            <Text style={styles.happyEndingsSubtitle}>Pets recuperados e devolvidos aos seus lares</Text>
-          </View>
-        </View>
-      </View>
-
-      {recoveredPets && recoveredPets.length > 0 ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.happyEndingsScrollContent}
-        >
-          {recoveredPets.map((pet) => {
-            const photoUrl = pet.item_photos && pet.item_photos.length > 0 ? pet.item_photos[0].url : null;
-            return (
-              <TouchableOpacity
-                key={String(pet.id)}
-                style={styles.happyEndingCard}
-                onPress={() => navigation.navigate('ItemDetail', { itemId: pet.id })}
-                activeOpacity={0.88}
-              >
-                <View style={styles.happyEndingImageWrapper}>
-                  {photoUrl ? (
-                    <OptimizedImage
-                      uri={photoUrl}
-                      style={styles.happyEndingImage}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View style={styles.happyEndingImagePlaceholder}>
-                      <MaterialIcons name="pets" size={32} color="#9CA3AF" />
-                    </View>
-                  )}
-                  <View style={styles.happyEndingTag}>
-                    <MaterialIcons name="check-circle" size={13} color="#FFFFFF" style={{ marginRight: 3 }} />
-                    <Text style={styles.happyEndingTagText}>Recuperado</Text>
-                  </View>
-                </View>
-
-                <View style={styles.happyEndingInfo}>
-                  <Text style={styles.happyEndingPetName} numberOfLines={1}>
-                    {pet.title || 'Pet Amado'}
-                  </Text>
-                  <Text style={styles.happyEndingSpecies} numberOfLines={1}>
-                    {pet.species ? String(pet.species).toUpperCase() : 'PET'}
-                  </Text>
-                  <View style={styles.happyEndingLocationRow}>
-                    <MaterialIcons name="place" size={13} color="#6B7280" />
-                    <Text style={styles.happyEndingLocationText} numberOfLines={1}>
-                      {[pet.city, pet.state].filter(Boolean).join(', ') || 'Brasil'}
-                    </Text>
-                  </View>
-                  {pet.owner_name ? (
-                    <Text style={styles.happyEndingTutorText} numberOfLines={1}>
-                      Tutor: {pet.owner_name}
-                    </Text>
-                  ) : null}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      ) : (
-        <View style={styles.happyEndingsEmptyCard}>
-          <View style={styles.happyEndingsEmptyIconBox}>
-            <MaterialIcons name="favorite-border" size={26} color="#059669" />
-          </View>
-          <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={styles.happyEndingsEmptyTitle}>Corrente do Bem WeFIND</Text>
-            <Text style={styles.happyEndingsEmptyText}>
-              Assim que um pet for marcado como recuperado pelo tutor, a história e a foto do reencontro serão celebradas aqui!
-            </Text>
-          </View>
-        </View>
-      )}
-    </View>
-  );
-};
-
 // ItemCard agora é um componente fora do HomeScreen
 const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress }) => {
   const [carouselIndex, setCarouselIndex] = React.useState(0);
   const [cardWidth, setCardWidth] = React.useState(0);
   // Cores para status e categoria
-  const isResolved = item.resolved === true || item.status === 'resolved';
-  const statusColor = isResolved ? '#10B981' : (item.status === 'lost' ? '#F87171' : '#34D399');
-  const statusLabel = isResolved ? '🎉 Recuperado' : (item.status === 'lost' ? 'Perdido' : 'Encontrado');
+  const statusColor = item.status === 'lost' ? '#F87171' : '#34D399';
+  const statusLabel = item.status === 'lost' ? 'Perdido' : 'Encontrado';
   const animalLabel = String(item.species || 'Animal').trim() || 'Animal';
   const categoryColors = {
     animal: { bg: '#DBEAFE', text: '#2563EB', label: animalLabel },
@@ -529,13 +402,6 @@ const HomeScreen = ({ navigation, route }) => {
 
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
-  const [recoveredPets, setRecoveredPets] = useState([]);
-  const [communityStats, setCommunityStats] = useState({
-    resolved_count: 0,
-    lost_count: 0,
-    found_count: 0,
-    sightings_count: 0,
-  });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({
@@ -611,16 +477,12 @@ const HomeScreen = ({ navigation, route }) => {
         );
       } else {
         const baseFilters = {};
-        if (filters.status === 'resolved') {
-          baseFilters.resolved = true;
-        } else if (filters.status !== 'all') {
-          baseFilters.status = filters.status;
-          baseFilters.resolved = false;
-        }
+        if (filters.status !== 'all') baseFilters.status = filters.status;
         if (filters.category !== 'all') baseFilters.category = filters.category;
         if (filters.animalType && filters.animalType !== 'all') baseFilters.species = filters.animalType;
         if (filters.showMyItems && user) baseFilters.owner_id = user.id;
-        
+        // A localização pode existir apenas como coordenadas escolhidas no mapa.
+        // O filtro textual é aplicado abaixo, depois que todos os itens são carregados.
         allItems = await itemsService.listItemsWithPhotosAndOwner(baseFilters);
         // Ajustar owner_name para compatibilidade
         allItems = (allItems || []).map(item => ({
@@ -629,19 +491,6 @@ const HomeScreen = ({ navigation, route }) => {
           item_photos: item.item_photos || [],
         }));
       }
-
-      // Carrega em paralelo os animais recuperados e métricas de impacto comunitário
-      try {
-        const [recoveredList, impactStats] = await Promise.all([
-          itemsService.listRecoveredPets(10),
-          itemsService.getCommunityImpactStats(),
-        ]);
-        setRecoveredPets(recoveredList || []);
-        if (impactStats) setCommunityStats(impactStats);
-      } catch (communityErr) {
-        console.warn('[HomeScreen] Erro ao carregar dados comunitários:', communityErr.message);
-      }
-
       if (user?.id) {
         await notificationsService.syncRenewalNotifications(user.id, allItems);
       }
@@ -655,8 +504,8 @@ const HomeScreen = ({ navigation, route }) => {
         }
       });
       setThumbnails(thumbsMap);
-    } catch (error) {
-      console.error('[HomeScreen] Erro ao carregar itens:', error);
+      } catch (error) {
+        console.error('[HomeScreen] Erro ao carregar itens:', error);
       setItems([]);
       setFilteredItems([]);
     } finally {
@@ -705,14 +554,9 @@ const HomeScreen = ({ navigation, route }) => {
   const applyFilters = (itemsToFilter) => {
     let filtered = itemsToFilter || [];
 
-    // Filtro por status (Perdido / Encontrado / Recuperado)
-    if (filters.status === 'resolved') {
-      filtered = filtered.filter(item => item.resolved === true || item.status === 'resolved');
-    } else if (filters.status && filters.status !== 'all') {
-      filtered = filtered.filter(item => item.status === filters.status && item.resolved !== true);
-    } else {
-      // filters.status === 'all'
-      filtered = filtered.filter(item => item.resolved !== true);
+    // Filtro por status (Perdido / Encontrado)
+    if (filters.status && filters.status !== 'all') {
+      filtered = filtered.filter(item => item.status === filters.status);
     }
 
     // Filtro por categoria (animal, objeto, etc)
@@ -1174,7 +1018,7 @@ const HomeScreen = ({ navigation, route }) => {
         />
       </View>
 
-      {/* Busca de pets */}
+      {/* Busca de pets acima dos filtros */}
       <View style={{ marginTop: 12, marginHorizontal: 16 }}>
         <Text style={{ color: '#1E1B4B', fontSize: 14, fontWeight: '800', marginBottom: 7 }}>
           Encontre um pet perdido ou encontrado
@@ -1191,12 +1035,6 @@ const HomeScreen = ({ navigation, route }) => {
           />
         </View>
       </View>
-
-      {/* Placar Comunitário de Estatísticas e Impacto */}
-      <CommunityImpactBanner stats={communityStats} />
-
-      {/* Carrossel de Finais Felizes & Casos de Sucesso */}
-      <HappyEndingsCarousel recoveredPets={recoveredPets} navigation={navigation} />
 
       {/* Modal de edição de localidade */}
       <Modal
@@ -1326,7 +1164,6 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
         </View>
       </Modal>
-
       {/* Filtros rápidos */}
       <View style={styles.filterToolbar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterToolbarContent}>
@@ -1338,62 +1175,51 @@ const HomeScreen = ({ navigation, route }) => {
             <MaterialIcons name="tune" size={21} color={showAdvancedFilters ? '#fff' : '#1E3A8A'} />
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.filterChip,
-              filters.status === 'all' && styles.filterChipActive,
-            ]}
-            onPress={() => setFilters({ ...filters, status: 'all' })}
-            activeOpacity={0.85}
-          >
-            <MaterialIcons name="layers" size={14} color={filters.status === 'all' ? '#fff' : '#1F2937'} style={{ marginRight: 4 }} />
-            <Text style={[styles.filterChipText, filters.status === 'all' && styles.filterChipTextActive]}>Todos</Text>
-          </TouchableOpacity>
+          style={[
+            styles.filterChip,
+            filters.status === 'all' && styles.filterChipActive,
+          ]}
+          onPress={() => setFilters({ ...filters, status: 'all' })}
+          activeOpacity={0.85}
+        >
+          <MaterialIcons name="layers" size={14} color={filters.status === 'all' ? '#fff' : '#1F2937'} style={{ marginRight: 4 }} />
+          <Text style={[styles.filterChipText, filters.status === 'all' && styles.filterChipTextActive]}>Todos</Text>
+        </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.filterChip,
-              filters.status === 'lost' && styles.filterChipActive,
-            ]}
-            onPress={() => setFilters({ ...filters, status: 'lost' })}
-            activeOpacity={0.85}
-          >
-            <Text style={[styles.filterChipText, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
-          </TouchableOpacity>
+          style={[
+            styles.filterChip,
+            filters.status === 'lost' && styles.filterChipActive,
+          ]}
+          onPress={() => setFilters({ ...filters, status: 'lost' })}
+          activeOpacity={0.85}
+        >
+          {/* Bolinha removida */}
+          <Text style={[styles.filterChipText, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
+        </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.filterChip,
-              filters.status === 'found' && styles.filterChipActive,
-            ]}
-            onPress={() => setFilters({ ...filters, status: 'found' })}
-            activeOpacity={0.85}
-          >
-            <Text style={[styles.filterChipText, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.filterChip,
-              filters.status === 'resolved' && styles.filterChipActive,
-              { backgroundColor: filters.status === 'resolved' ? '#059669' : '#ECFDF5', borderColor: filters.status === 'resolved' ? '#047857' : '#A7F3D0' }
-            ]}
-            onPress={() => setFilters({ ...filters, status: 'resolved' })}
-            activeOpacity={0.85}
-          >
-            <MaterialIcons name="celebration" size={14} color={filters.status === 'resolved' ? '#fff' : '#059669'} style={{ marginRight: 4 }} />
-            <Text style={[styles.filterChipText, { color: filters.status === 'resolved' ? '#fff' : '#065F46' }]}>Recuperados</Text>
-          </TouchableOpacity>
+          style={[
+            styles.filterChip,
+            filters.status === 'found' && styles.filterChipActive,
+          ]}
+          onPress={() => setFilters({ ...filters, status: 'found' })}
+          activeOpacity={0.85}
+        >
+          {/* Bolinha removida */}
+          <Text style={[styles.filterChipText, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
+        </TouchableOpacity>
 
           {user && (
             <TouchableOpacity
-              style={[
-                styles.filterChip,
-                filters.showMyItems && styles.filterChipActive,
-              ]}
-              onPress={handleMyItemsToggle}
-              activeOpacity={0.85}
-              accessibilityLabel="Minhas publicações"
-            >
+            style={[
+              styles.filterChip,
+              filters.showMyItems && styles.filterChipActive,
+            ]}
+            onPress={handleMyItemsToggle}
+            activeOpacity={0.85}
+            accessibilityLabel="Minhas publicações"
+          >
               <MaterialIcons name="person" size={16} color={filters.showMyItems ? '#fff' : '#1F2937'} />
             </TouchableOpacity>
           )}
@@ -1834,209 +1660,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-  },
-  // Impact Card Styles
-  impactCard: {
-    marginHorizontal: 16,
-    marginTop: 14,
-    marginBottom: 6,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  impactHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  impactHeaderIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#EFF6FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  impactTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#1E293B',
-  },
-  impactSubtitle: {
-    fontSize: 12,
-    color: '#64748B',
-  },
-  impactStatsRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  impactStatBox: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  impactStatNumber: {
-    fontSize: 18,
-    fontWeight: '900',
-    marginTop: 3,
-    marginBottom: 1,
-  },
-  impactStatLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-
-  // Happy Endings Section
-  happyEndingsSection: {
-    marginTop: 12,
-    marginBottom: 6,
-  },
-  happyEndingsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    marginBottom: 10,
-  },
-  happyEndingsBadgeIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#ECFDF5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  happyEndingsTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#065F46',
-  },
-  happyEndingsSubtitle: {
-    fontSize: 12,
-    color: '#64748B',
-  },
-  happyEndingsScrollContent: {
-    paddingHorizontal: 16,
-    gap: 12,
-    paddingBottom: 6,
-  },
-  happyEndingCard: {
-    width: 205,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#D1FAE5',
-    shadowColor: '#059669',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  happyEndingImageWrapper: {
-    width: '100%',
-    height: 130,
-    backgroundColor: '#F3F4F6',
-    position: 'relative',
-  },
-  happyEndingImage: {
-    width: '100%',
-    height: 130,
-  },
-  happyEndingImagePlaceholder: {
-    width: '100%',
-    height: 130,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E5E7EB',
-  },
-  happyEndingTag: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: '#059669',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  happyEndingTagText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 10.5,
-  },
-  happyEndingInfo: {
-    padding: 10,
-  },
-  happyEndingPetName: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#1E293B',
-    marginBottom: 2,
-  },
-  happyEndingSpecies: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#059669',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  happyEndingLocationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  happyEndingLocationText: {
-    fontSize: 11,
-    color: '#64748B',
-    marginLeft: 3,
-    fontWeight: '500',
-  },
-  happyEndingTutorText: {
-    fontSize: 11,
-    color: '#94A3B8',
-    marginTop: 2,
-  },
-  happyEndingsEmptyCard: {
-    marginHorizontal: 16,
-    backgroundColor: '#F0FDF4',
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  happyEndingsEmptyIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#DCFCE7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  happyEndingsEmptyTitle: {
-    fontSize: 13.5,
-    fontWeight: '800',
-    color: '#166534',
-    marginBottom: 2,
-  },
-  happyEndingsEmptyText: {
-    fontSize: 12,
-    color: '#15803D',
-    lineHeight: 17,
   },
 });
 

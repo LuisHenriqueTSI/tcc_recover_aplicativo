@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
 
 const secondaryLinks = [
+  { label: 'Finais Felizes & Comunidade', description: 'Pets recuperados e impacto', icon: 'heart', route: 'Sobre' },
   { label: 'Configurações', description: 'Preferências e segurança', icon: 'settings', route: 'Config' },
   { label: 'Ajuda e suporte', description: 'Perguntas e contato', icon: 'help-circle', route: 'AjudaSuporte' },
 ];
@@ -129,7 +130,25 @@ const ProfileScreen = ({ navigation }) => {
 
       <Text style={styles.sectionTitle}>Mais opções</Text>
       <View style={styles.links}>
-        {secondaryLinks.map((item, index) => <React.Fragment key={item.route}><TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate(item.route)} activeOpacity={0.75}><View style={styles.linkIcon}><Feather name={item.icon} size={19} color="#2563EB" /></View><View style={styles.linkCopy}><Text style={styles.linkTitle}>{item.label}</Text><Text style={styles.linkDescription}>{item.description}</Text></View><Feather name="chevron-right" size={19} color="#9CA3AF" /></TouchableOpacity>{index === 0 ? <View style={styles.linkDivider} /> : null}</React.Fragment>)}
+        {secondaryLinks.map((item, index) => (
+          <React.Fragment key={item.route}>
+            <TouchableOpacity
+              style={styles.linkRow}
+              onPress={() => navigation.navigate(item.route)}
+              activeOpacity={0.75}
+            >
+              <View style={styles.linkIcon}>
+                <Feather name={item.icon} size={19} color="#2563EB" />
+              </View>
+              <View style={styles.linkCopy}>
+                <Text style={styles.linkTitle}>{item.label}</Text>
+                <Text style={styles.linkDescription}>{item.description}</Text>
+              </View>
+              <Feather name="chevron-right" size={19} color="#9CA3AF" />
+            </TouchableOpacity>
+            {index < secondaryLinks.length - 1 ? <View style={styles.linkDivider} /> : null}
+          </React.Fragment>
+        ))}
       </View>
 
       <TouchableOpacity style={styles.logout} onPress={signOut} activeOpacity={0.8}><Feather name="log-out" size={17} color="#B91C1C" /><Text style={styles.logoutText}>Sair da conta</Text></TouchableOpacity>

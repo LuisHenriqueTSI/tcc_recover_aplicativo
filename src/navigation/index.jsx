@@ -574,6 +574,11 @@ const MainStack = () => {
         component={EditProfileScreen}
         options={{ title: 'Editar Perfil' }}
       />
+      <Stack.Screen
+        name="Sobre"
+        component={SobreScreen}
+        options={{ title: 'Finais Felizes & Impacto' }}
+      />
     </Stack.Navigator>
   );
 };
