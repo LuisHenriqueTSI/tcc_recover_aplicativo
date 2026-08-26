@@ -245,7 +245,7 @@ const PublicStack = () => {
       <Stack.Screen
         name="RecoveredPets"
         component={RecoveredPetsScreen}
-        options={{ title: 'Animais Encontrados' }}
+        options={{ title: 'Pets Reencontrados' }}
       />
       <Stack.Screen
         name="RegisterItem"
@@ -587,7 +587,7 @@ const MainStack = () => {
       <Stack.Screen
         name="RecoveredPets"
         component={RecoveredPetsScreen}
-        options={{ title: 'Animais Encontrados' }}
+        options={{ title: 'Pets Reencontrados' }}
       />
     </Stack.Navigator>
   );

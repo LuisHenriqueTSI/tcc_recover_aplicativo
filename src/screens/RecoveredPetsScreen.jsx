@@ -69,7 +69,7 @@ const SAMPLE_RECOVERED_PETS = [
 ];
 
 const formatResolutionDuration = (createdAt, resolvedAt) => {
-  if (!createdAt) return 'Encontrado com sucesso';
+  if (!createdAt) return 'Reencontrado com sucesso';
   const start = new Date(createdAt);
   const end = resolvedAt ? new Date(resolvedAt) : new Date();
   const diffMs = Math.max(0, end - start);
@@ -79,14 +79,14 @@ const formatResolutionDuration = (createdAt, resolvedAt) => {
 
   if (diffDays > 0) {
     if (remainingHours > 0) {
-      return `Encontrado após ${diffDays}d ${remainingHours}h`;
+      return `Reencontrado após ${diffDays}d ${remainingHours}h`;
     }
-    return `Encontrado após ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`;
+    return `Reencontrado após ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`;
   }
   if (diffHours > 0) {
-    return `Encontrado após ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`;
+    return `Reencontrado após ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`;
   }
-  return 'Encontrado no mesmo dia';
+  return 'Reencontrado no mesmo dia';
 };
 
 const formatRelativeTime = (dateString) => {
@@ -171,10 +171,10 @@ const RecoveredPetsScreen = ({ navigation }) => {
           }
         }}
       >
-        {/* Faixa Superior Verde: Encontrado(a) */}
+        {/* Faixa Superior Verde: Reencontrado */}
         <View style={styles.topStatusBanner}>
           <MaterialIcons name="check-circle" size={15} color="#FFFFFF" style={{ marginRight: 5 }} />
-          <Text style={styles.topStatusText}>Encontrado</Text>
+          <Text style={styles.topStatusText}>Reencontrado</Text>
         </View>
 
         {/* Imagem do Pet */}
@@ -220,16 +220,16 @@ const RecoveredPetsScreen = ({ navigation }) => {
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
       {/* Header com Busca e Filtros */}
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Animais Encontrados 🎉</Text>
+        <Text style={styles.headerTitle}>Pets Reencontrados 🎉</Text>
         <Text style={styles.headerSubtitle}>
-          Histórias de sucesso e pets que já voltaram para casa
+          Animais que voltaram para os seus lares e famílias
         </Text>
 
         {/* Barra de Pesquisa */}
         <View style={styles.searchBar}>
           <MaterialIcons name="search" size={20} color="#64748B" style={{ marginRight: 8 }} />
           <TextInput
-            placeholder="Buscar por nome, bairro ou cidade..."
+            placeholder="Buscar pet reencontrado por nome, bairro..."
             placeholderTextColor="#64748B"
             value={searchTerm}
             onChangeText={setSearchTerm}
@@ -276,7 +276,7 @@ const RecoveredPetsScreen = ({ navigation }) => {
       {loading && !refreshing ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color="#059669" />
-          <Text style={styles.loadingText}>Carregando animais encontrados...</Text>
+          <Text style={styles.loadingText}>Carregando pets reencontrados...</Text>
         </View>
       ) : (
         <FlatList
@@ -291,7 +291,7 @@ const RecoveredPetsScreen = ({ navigation }) => {
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
               <MaterialIcons name="sentiment-dissatisfied" size={48} color="#94A3B8" />
-              <Text style={styles.emptyTitle}>Nenhum pet encontrado</Text>
+              <Text style={styles.emptyTitle}>Nenhum pet reencontrado no momento</Text>
               <Text style={styles.emptySubtitle}>
                 Tente ajustar os termos da sua pesquisa ou filtros.
               </Text>

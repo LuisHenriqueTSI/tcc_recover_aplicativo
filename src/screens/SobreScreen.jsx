@@ -311,7 +311,7 @@ const SobreScreen = ({ navigation }) => {
         {/* Placar Comunitário WeFIND - Estilo Hero Card */}
         <View style={styles.placarHeroCard}>
           {/* Header Category em Roxo/Índigo */}
-          <Text style={styles.placarHeroCategory}>PETS ENCONTRADOS</Text>
+          <Text style={styles.placarHeroCategory}>PETS REENCONTRADOS</Text>
 
           {/* Linha com Ícone Fofo + Badge de Check + Contador */}
           <View style={styles.placarHeroRow}>
@@ -322,7 +322,7 @@ const SobreScreen = ({ navigation }) => {
               </View>
             </View>
             <Text style={styles.placarHeroBigNumber}>
-              {statistics.resolved_count > 0 ? `${statistics.resolved_count}` : '14'} hoje
+              {statistics.resolved_count > 0 ? `${statistics.resolved_count}` : '14'} reencontros hoje
             </Text>
           </View>
 
@@ -553,7 +553,7 @@ const SobreScreen = ({ navigation }) => {
               Converse diretamente com os tutores pelo chat e celebre os pets que já voltaram para casa!
             </Text>
             <View style={[styles.actionStepButtonBadge, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
-              <Text style={[styles.actionStepButtonText, { color: '#047857' }]}>Ver Animais Encontrados</Text>
+              <Text style={[styles.actionStepButtonText, { color: '#047857' }]}>Ver Pets Reencontrados</Text>
               <MaterialIcons name="arrow-forward" size={15} color="#047857" />
             </View>
           </TouchableOpacity>
