@@ -813,17 +813,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
           name: `${Date.now()}_${asset.fileName || 'pet.jpg'}`,
         };
 
-        if (itemType === 'pet') {
-          const validation = await validatePetPhoto({ imageUri: photo.uri });
-          if (!validation.isPet) {
-            Alert.alert(
-              'Foto não permitida',
-              'Não foi possível validar essa imagem. Tente enviar uma foto mais nítida, bem iluminada e com o animal visível, como um cão, gato, bovino ou outro animal.'
-            );
-            return;
-          }
-        }
-
         setPhotos((previousPhotos) => [...previousPhotos, photo]);
         Alert.alert('Sucesso', 'Foto adicionada e recortada com sucesso!');
       }
@@ -860,17 +849,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
           type: 'image/jpeg',
           name: `${Date.now()}_${asset.fileName || 'pet_cropped.jpg'}`,
         };
-
-        if (itemType === 'pet') {
-          const validation = await validatePetPhoto({ imageUri: newPhoto.uri });
-          if (!validation.isPet) {
-            Alert.alert(
-              'Foto não permitida',
-              'Não foi possível validar essa imagem. Tente enviar uma foto mais nítida, bem iluminada e com o animal visível.'
-            );
-            return;
-          }
-        }
 
         const updated = [...photos];
         updated[index] = newPhoto;
@@ -918,15 +896,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
             type: 'image/jpeg',
             name: `${Date.now()}_${asset.fileName || 'pet.jpg'}`,
           };
-
-          const validation = await validatePetPhoto({ imageUri: photo.uri });
-          if (!validation.isPet) {
-            Alert.alert(
-              'Foto não permitida',
-              'Não foi possível validar essa imagem. Tente enviar uma foto mais nítida, bem iluminada e com o animal visível, como um cão, gato, bovino ou outro animal.'
-            );
-            return;
-          }
 
           newPhotos.push(photo);
         }
@@ -1059,19 +1028,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
     if (!validateFields()) {
       console.log('[RegisterItem] Falha na validação dos campos.');
       return;
-    }
-
-    if (photos.length > 0) {
-      console.log('[RegisterItem] Validando foto do pet...');
-      const validation = await validatePetPhoto({ imageUri: photos[0].uri });
-      if (!validation.isPet) {
-        setError('A imagem precisa ser de um animal visível.');
-        Alert.alert(
-          'Foto não permitida',
-          'Não foi possível validar essa imagem. Tente enviar uma foto mais nítida, com o animal bem visível e em boa iluminação.'
-        );
-        return;
-      }
     }
 
     setLoading(true);
