@@ -23,6 +23,7 @@ export const listSuccessStories = async () => {
           rating: Number(item.rating) || 5,
           createdAt: item.created_at,
           itemId: item.item_id || null,
+          userId: item.user_id || null,
         }));
       }
     } catch (e) {
@@ -104,6 +105,36 @@ export const submitSuccessStory = async ({
     return newStory;
   } catch (error) {
     console.error('[stories] Erro ao submeter história:', error.message);
+    throw error;
+  }
+};
+
+export const deleteSuccessStory = async (storyId) => {
+  try {
+    if (!storyId) return false;
+
+    // 1. Tenta excluir do Supabase caso seja remoto
+    try {
+      await supabase.from('success_stories').delete().eq('id', storyId);
+    } catch (e) {
+      console.log('[stories] Aviso ao excluir do Supabase:', e.message);
+    }
+
+    // 2. Remove do armazenamento local
+    try {
+      const raw = await AsyncStorage.getItem(LOCAL_STORIES_KEY);
+      if (raw) {
+        const existing = JSON.parse(raw);
+        const filtered = existing.filter((s) => String(s.id) !== String(storyId));
+        await AsyncStorage.setItem(LOCAL_STORIES_KEY, JSON.stringify(filtered));
+      }
+    } catch (e) {
+      console.log('[stories] Erro ao excluir do AsyncStorage:', e.message);
+    }
+
+    return true;
+  } catch (error) {
+    console.error('[stories] Erro ao excluir história:', error.message);
     throw error;
   }
 };

@@ -61,7 +61,7 @@ const FALLBACK_REUNITED_AVATARS = [
 ];
 
 const SobreScreen = ({ navigation }) => {
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, isAdmin } = useAuth();
   const [userStories, setUserStories] = useState([]);
   const [recoveredPets, setRecoveredPets] = useState([]);
   const [statistics, setStatistics] = useState({
@@ -84,6 +84,29 @@ const SobreScreen = ({ navigation }) => {
   const [ratingInput, setRatingInput] = useState(5);
   const [photoUriInput, setPhotoUriInput] = useState(null);
   const [submittingStory, setSubmittingStory] = useState(false);
+
+  const handleDeleteStory = (story) => {
+    Alert.alert(
+      'Excluir História',
+      `Tem certeza de que deseja excluir permanentemente a história de reencontro de "${story.petName}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await storiesService.deleteSuccessStory(story.id);
+              Alert.alert('Sucesso', 'História excluída com sucesso.');
+              loadData();
+            } catch (error) {
+              Alert.alert('Erro', 'Não foi possível excluir a história.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const loadData = useCallback(async () => {
     try {
@@ -367,6 +390,17 @@ const SobreScreen = ({ navigation }) => {
                       {story.petName}
                     </Text>
                   </View>
+                  {(isAdmin || (user && story.userId && story.userId === user.id)) && (
+                    <TouchableOpacity
+                      style={styles.adminDeleteStoryButton}
+                      onPress={() => handleDeleteStory(story)}
+                      activeOpacity={0.7}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      accessibilityLabel="Excluir história como administrador"
+                    >
+                      <MaterialIcons name="delete-outline" size={20} color="#DC2626" />
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 {/* Corpo do Card com Autor, Estrelas, Local e Depoimento */}
@@ -934,6 +968,15 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#0F172A',
     fontWeight: '800',
+  },
+  adminDeleteStoryButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 6,
   },
   storyBodyBox: {
     padding: 14,
