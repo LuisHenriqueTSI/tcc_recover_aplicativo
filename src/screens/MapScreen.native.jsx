@@ -377,29 +377,27 @@ const styles = StyleSheet.create({
   locationNoticeText: { color: '#374151', lineHeight: 19 },
   retryButton: { alignSelf: 'flex-start', marginTop: 8 },
   retryText: { color: '#2563EB', fontWeight: '700' },
-  markerContainer: {
-    width: 52,
-    height: 52,
-    borderRadius: 6,
-    padding: 3.5,
+  markerRing: {
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
+    backgroundColor: '#FFFFFF',
+    // Sombra suave colorida (cor definida inline via statusColor)
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowOpacity: 0.55,
+    shadowRadius: 6,
+    elevation: 8,
   },
-  markerContainerSelected: {
+  markerRingSelected: {
     transform: [{ scale: 1.15 }],
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 12,
   },
-  markerPhoto: {
-    width: 45,
-    height: 45,
-    borderRadius: 3,
+  markerInner: {
+    overflow: 'hidden',
     backgroundColor: '#E5E7EB',
   },
-  markerFallback: { fontSize: 24 },
+  markerFallback: { fontSize: 22 },
   infoCard: {
     position: 'absolute',
     left: 16,
@@ -460,33 +458,74 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#F97316');
   const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
 
+  // Tamanhos do circulo: maior quando selecionado
+  const size = isSelected ? 68 : 54;
+  const borderWidth = isSelected ? 4 : 3.5;
+  const innerSize = size - borderWidth * 2;
+
   return (
     <Marker
       coordinate={coordinate}
       onPress={onPress}
       onCalloutPress={onCalloutPress}
       tracksViewChanges={tracksViewChanges}
+      anchor={{ x: 0.5, y: 0.5 }}
     >
+      {/* Anel colorido externo com sombra para indicar status */}
       <View
         style={[
-          styles.markerContainer,
-          { backgroundColor: statusColor },
-          isSelected && styles.markerContainerSelected,
+          styles.markerRing,
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            borderWidth: borderWidth,
+            borderColor: statusColor,
+            shadowColor: statusColor,
+          },
+          isSelected && styles.markerRingSelected,
         ]}
         collapsable={false}
       >
-        {photoUrl ? (
-          <Image
-            source={{ uri: photoUrl }}
-            style={styles.markerPhoto}
-            resizeMode="cover"
-            onLoadEnd={() => {
-              setTimeout(() => setTracksViewChanges(false), 500);
-            }}
-          />
-        ) : (
-          <Text style={styles.markerFallback}>🐾</Text>
-        )}
+        {/* Circulo interno (foto ou fallback) */}
+        <View
+          style={[
+            styles.markerInner,
+            {
+              width: innerSize,
+              height: innerSize,
+              borderRadius: innerSize / 2,
+            },
+          ]}
+        >
+          {photoUrl ? (
+            <Image
+              source={{ uri: photoUrl }}
+              style={{
+                width: innerSize,
+                height: innerSize,
+                borderRadius: innerSize / 2,
+              }}
+              resizeMode="cover"
+              onLoadEnd={() => {
+                setTimeout(() => setTracksViewChanges(false), 500);
+              }}
+            />
+          ) : (
+            <View
+              style={{
+                width: innerSize,
+                height: innerSize,
+                borderRadius: innerSize / 2,
+                backgroundColor: statusColor + '22',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={styles.markerFallback}>🐾</Text>
+            </View>
+          )}
+        </View>
       </View>
       <Callout>
         <View style={styles.callout}>
