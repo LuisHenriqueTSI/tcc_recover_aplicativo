@@ -1475,12 +1475,6 @@ const HomeScreen = ({ navigation, route }) => {
               <Picker.Item label="Outro" value="outro" />
             </Picker>
           </View>
-          <View style={styles.locationFilterRow}>
-            <TouchableOpacity onPress={() => setEditLocationModal(true)} style={[styles.locationFilterButton, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-              <MaterialIcons name="place" size={20} color={isDark ? '#60A5FA' : '#1E3A8A'} style={{ marginRight: 8 }} />
-              <Text style={[styles.locationFilterText, { color: colors.text }]}>Filtrar por bairro</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       )}
       {/* Banner Informativo do Raio de 60 km */}
