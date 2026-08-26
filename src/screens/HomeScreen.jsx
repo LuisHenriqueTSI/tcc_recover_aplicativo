@@ -433,19 +433,32 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
 });
 
 const HomeScreen = ({ navigation, route }) => {
-    // Limpa filtros ao sair da HomeScreen
+    // Limpa filtros ao sair da HomeScreen (para visitante, reseta localidade para Todo o Brasil)
     useEffect(() => {
       const unsubscribe = navigation.addListener('blur', () => {
         setFilters({ status: 'all', category: 'all', showMyItems: false });
         setSearchTerm('');
-        setLocationFilter('');
-        setLocationFilterTouched(false);
-        setEditState(userProfile?.state || '');
-        setEditCity(userProfile?.city || '');
         setEditNeighborhood('');
+        if (!user) {
+          // Usuário deslogado: volta para "Todo o Brasil" ao sair da tela/fazer outra ação
+          setSessionCity('');
+          setSessionState('');
+          setSessionDistrict('');
+          setSessionStreet('');
+          setSessionAddressText('');
+          setProfileEditCity('');
+          setProfileEditState('');
+          setProfileEditDistrict('');
+          setProfileEditStreet('');
+          setProfileEditAddressText('');
+          setProfileEditCoords(null);
+          setUserCoords(null);
+          setLocationFilter('');
+          setLocationFilterTouched(false);
+        }
       });
       return unsubscribe;
-    }, [navigation, userProfile]);
+    }, [navigation, user, userProfile]);
   const { user, userProfile, isAdmin, refreshProfile, setUserProfile, signOut } = useAuth();
   const { colors, isDark } = useTheme();
   // Corrige erro: garantir estado do modal de perfil
@@ -472,7 +485,26 @@ const HomeScreen = ({ navigation, route }) => {
   useEffect(() => {
     const loadInitialLocation = async () => {
       try {
-        // Carrega o raio salvo se existir
+        if (!user) {
+          // Usuário deslogado: Sempre "Todo o Brasil" por padrão
+          setSessionCity('');
+          setSessionState('');
+          setSessionDistrict('');
+          setSessionStreet('');
+          setSessionAddressText('');
+          setProfileEditCity('');
+          setProfileEditState('');
+          setProfileEditDistrict('');
+          setProfileEditStreet('');
+          setProfileEditAddressText('');
+          setProfileEditCoords(null);
+          setUserCoords(null);
+          setLocationFilter('');
+          setLocationFilterTouched(false);
+          return;
+        }
+
+        // Usuário autenticado: Carrega o raio e a localização salva
         const storedRadius = await AsyncStorage.getItem('@wefind/search_radius');
         if (storedRadius) {
           const r = Number(storedRadius);
@@ -482,7 +514,6 @@ const HomeScreen = ({ navigation, route }) => {
           }
         }
 
-        // Tenta carregar endereço completo do AsyncStorage
         const storedLoc = await AsyncStorage.getItem('@wefind/saved_location');
         let parsed = null;
         if (storedLoc) {
@@ -527,7 +558,6 @@ const HomeScreen = ({ navigation, route }) => {
           return;
         }
 
-        // Se não tiver no userProfile ou for visitante, usa dados do AsyncStorage
         if (parsed?.city && parsed?.state) {
           setSessionCity(parsed.city);
           setSessionState(parsed.state);
@@ -559,7 +589,7 @@ const HomeScreen = ({ navigation, route }) => {
     };
 
     loadInitialLocation();
-  }, [userProfile]);
+  }, [user, userProfile]);
 
   // Localidade ativa para exibição no cabeçalho (compacto: Nome da rua, Cidade, Estado)
   const activeCity = sessionCity;
@@ -598,28 +628,27 @@ const HomeScreen = ({ navigation, route }) => {
     }
     setUserCoords(coords || null);
 
-    // Salva no AsyncStorage para persistência entre sessões
-    try {
-      await AsyncStorage.setItem(
-        '@wefind/saved_location',
-        JSON.stringify({
-          addressText: fullText,
-          street: profileEditStreet,
-          district: profileEditDistrict,
-          neighborhood: profileEditDistrict,
-          city: profileEditCity,
-          state: profileEditState,
-          coords: coords || null,
-          radiusKm: chosenRadius,
-        })
-      );
-      await AsyncStorage.setItem('@wefind/search_radius', String(chosenRadius));
-    } catch (e) {
-      console.warn('[HomeScreen] Falha ao salvar localização no AsyncStorage:', e.message);
-    }
-
-    // Se o usuário estiver autenticado, salva permanentemente no Supabase
+    // Salva no AsyncStorage apenas se o usuário estiver autenticado
     if (user?.id) {
+      try {
+        await AsyncStorage.setItem(
+          '@wefind/saved_location',
+          JSON.stringify({
+            addressText: fullText,
+            street: profileEditStreet,
+            district: profileEditDistrict,
+            neighborhood: profileEditDistrict,
+            city: profileEditCity,
+            state: profileEditState,
+            coords: coords || null,
+            radiusKm: chosenRadius,
+          })
+        );
+        await AsyncStorage.setItem('@wefind/search_radius', String(chosenRadius));
+      } catch (e) {
+        console.warn('[HomeScreen] Falha ao salvar localização no AsyncStorage:', e.message);
+      }
+
       try {
         await userService.updateProfile(user.id, {
           state: profileEditState,
