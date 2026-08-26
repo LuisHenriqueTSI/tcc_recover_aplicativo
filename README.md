@@ -28,44 +28,31 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - Perfis de usuário com foto de avatar e edição de localidade opcional.
 - Confirmação de email e recuperação de senha.
 
-✅ **Pets Perdidos e Encontrados**
-- Cadastro de pets em 4 etapas com integração de mapa e endereço.
+✅ **Pets Perdidos e Pets Reencontrados**
+- Cadastro de pets em etapas intuitivas com integração de mapa e endereço.
 - Seleção completa de espécie, sexo/gênero (Macho/Fêmea), raça, porte, cor, idade e coleira.
 - Adição de até 6 fotos com enquadramento/corte nativo e botão "✂️ Ajustar" por miniatura para reenquadrar antes de publicar.
 - Carrossel interativo de fotos nos cards do feed (`HomeScreen`) com pontos de paginação e contador de fotos (`1/3`).
 - Carrossel de fotos de alta resolução nos detalhes do pet (`ItemDetailScreen`) com navegação paginada e modal de ampliação em tela cheia.
+- **Placar Comunitário WeFIND:** Hero Card na tela inicial com contador dinâmico de pets reencontrados hoje, total acumulado desde o início e avatares sobrepostos dos reencontros mais recentes.
+- **Histórias de Reencontro em Destaque:** Carrossel de relatos enviados por tutores com foto, avaliação por estrelas, depoimentos e moderação/exclusão pelo administrador.
+- **Tela Dedicada de Pets Reencontrados (`RecoveredPetsScreen.jsx`):** Mural de animais que voltaram para casa com cálculo do tempo até o reencontro (ex: "Reencontrado após 1d 4h"), busca e filtros por espécie.
+- **Seção "Como Funciona" Interativa:** Atalhos diretos para cadastro de publicação, mapa interativo e mural de reencontros.
 - **Compartilhamento de Informações e Comentários com Mapa Interativo:** Modal de novas informações com seleção de localização por GPS/Mapa interativo em tela cheia, geocodificação reversa de endereço, pré-visualização de foto, contatos opcionais e envio automático de notificação no WhatsApp do tutor com link traçado do Google Maps.
 - Filtros rápidos por status, espécie, sexo e localização.
 - Seletor de localização no cabeçalho com botão destacado e ícone de edição interativo.
 - Geocodificação reversa com edição completa de endereço (rua, número da casa, bairro, cidade, estado).
 - Publicação em nome de terceiros (amigo, parente, vizinho, ONG) com campos dedicados para nome e telefone direto do tutor/responsável.
 - Recompensas opcionais e gamificação.
-- Reivindicação e histórico de informações da comunidade.
 
-✅ **Compartilhamento Visual para Redes Sociais**
-- Geração automática de cartaz visual (flyer) em alta resolução do pet com faixa de alerta colorida (Perdido/Encontrado), foto principal, características, localização contextual, data do ocorrido, recompensa e telefone/WhatsApp de contato direto (com suporte a tutor terceiro).
-- Compartilhamento de imagem nativo direto para WhatsApp, Instagram Stories/Feed, Facebook, Telegram e outras redes sem sair do app.
-- Modal interativo de pré-visualização do cartaz antes do envio com botão direto de compartilhamento de imagem.
-
-✅ **Chat e Mensagens**
-- Mensagens em tempo real entre usuários.
-- Notificações de novas mensagens e propostas.
-- Histórico de conversas por pet.
-
-✅ **Informações e Pistas da Comunidade**
-- Compartilhar informações sobre pets com fotos e coordenadas GPS.
-- Notificações automáticas ao tutor via WhatsApp.
-
-✅ **Perfil e Painel**
-- Editar informações pessoais (nome, telefone, cidade, estado).
-- Gerenciar minhas publicações com renovação e finalização.
-- Histórico de itens e reivindicações.
-
-✅ **Mapa Interativo**
+✅ **Modo Público e Mapa Interativo para Visitantes**
+- **Exploração Livre do Mapa:** Visitantes não autenticados podem navegar pelo mapa, consultar cards de pets, ver detalhes e ler comentários livremente.
+- **Mensagens Diretas sem Bloqueios:** Chat direto e instantâneo com o autor da publicação (sem burocracia de aprovação prévia de reivindicação).
 - Visualização dos pets com fotos e moldura colorida indicando o status (Verde para Encontrado / Laranja para Perdido).
 - Busca de localidades via OpenStreetMap e catálogo nacional.
 - Centralização rápida na localização atual do usuário.
 - Cards e balões informativos interativos para abrir os detalhes do pet.
+- Barra inferior com Safe Insets prevenindo sobreposição de botões de navegação do sistema Android.
 
 ---
 
