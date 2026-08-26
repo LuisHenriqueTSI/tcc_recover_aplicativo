@@ -23,7 +23,6 @@ import Input from '../components/Input';
 import MapLocationPicker from '../components/MapLocationPicker';
 import { states } from '../lib/br-locations';
 import Card from '../components/Card';
-import { analyzeItemWithVision, validatePetPhoto } from '../services/aiItemSuggestions';
 
 const PET_SPECIES_OPTIONS = [
   { label: 'Selecione a espécie', value: '' },
@@ -324,7 +323,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Reward
@@ -937,61 +935,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     setPhotos(photos.filter((_, i) => i !== index));
   };
 
-  const handleGenerateWithAI = async () => {
-    if (!photos.length) {
-      console.warn('[RegisterItem] Tentativa de gerar com IA sem foto.');
-      Alert.alert('Foto necessária', 'Adicione uma foto antes de gerar as informações com IA.');
-      return;
-    }
 
-    try {
-      console.log('[RegisterItem] Iniciando geração com IA', { itemType, status, photoCount: photos.length });
-      setAiLoading(true);
-      setError('');
-      const primaryPhoto = photos[0];
-      const petValidation = await validatePetPhoto({ imageUri: primaryPhoto.uri });
-      if (!petValidation.isPet) {
-        Alert.alert(
-          'Foto não permitida',
-          'Não foi possível validar essa imagem. Envie uma foto mais nítida e com o animal bem visível, em boa iluminação, para continuar.'
-        );
-        return;
-      }
-      const suggestions = await analyzeItemWithVision({
-        imageUri: primaryPhoto.uri,
-        itemType,
-        status,
-      });
-
-      console.log('[RegisterItem] Sugestões recebidas da IA:', suggestions);
-
-      if (itemType === 'animal') {
-        if (suggestions.species) setAnimalSpecies(normalizeSpeciesValue(suggestions.species));
-        if (suggestions.gender) setAnimalGender(normalizeOptionValue(suggestions.gender, PET_GENDER_OPTIONS));
-        if (suggestions.breed) setAnimalBreed(suggestions.breed);
-        if (suggestions.size) setAnimalSize(normalizeOptionValue(suggestions.size, PET_SIZE_OPTIONS));
-        if (suggestions.age) setAnimalAge(normalizeOptionValue(suggestions.age, PET_AGE_OPTIONS));
-        if (suggestions.collar) setAnimalCollar(suggestions.collar);
-      }
-
-      if (suggestions.title) setTitle(suggestions.title);
-      if (suggestions.description) setDescription(suggestions.description);
-      if (suggestions.brand) setBrand(suggestions.brand);
-      if (suggestions.color) setColor(normalizeColorValue(suggestions.color));
-      if (suggestions.serial_number) setSerialNumber(suggestions.serial_number);
-
-      const message = suggestions.source === 'gemini'
-        ? 'Informações sugeridas pela IA foram preenchidas. Revise antes de publicar.'
-        : 'O app preencheu um rascunho básico para você revisar, porque a IA não estava disponível no momento.';
-
-      Alert.alert('Sugestão pronta', message);
-    } catch (err) {
-      console.error('[RegisterItem] Falha ao gerar com IA:', err);
-      Alert.alert('Erro ao gerar com IA', err.message || 'Não foi possível gerar as informações.');
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   const validateFields = () => {
     setError('');
@@ -1527,19 +1471,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 </View>
               )}
               {photos.length > 0 && (
-                <TouchableOpacity
-                  style={styles.aiButton}
-                  onPress={handleGenerateWithAI}
-                  disabled={aiLoading}
-                >
-                  {aiLoading ? (
-                    <ActivityIndicator color="#FFFFFF" />
-                  ) : (
-                    <Text style={styles.aiButtonText}>Gerar com a IA</Text>
-                  )}
-                </TouchableOpacity>
-              )}
-              {photos.length > 0 && (
                 <View style={styles.photosContainer}>
                   <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length}/{MAX_PHOTOS})</Text>
                   <View style={styles.photoGrid}>
@@ -1700,20 +1631,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   <View style={[styles.uploadButton, { borderColor: '#E5E7EB', backgroundColor: '#F3F4F6', paddingVertical: 14 }]}>
                     <Text style={[styles.uploadButtonText, { color: '#9CA3AF', fontSize: 14 }]}>Limite de {MAX_PHOTOS} fotos atingido</Text>
                   </View>
-                )}
-
-                {photos.length > 0 && (
-                  <TouchableOpacity
-                    style={styles.aiButton}
-                    onPress={handleGenerateWithAI}
-                    disabled={aiLoading}
-                  >
-                    {aiLoading ? (
-                      <ActivityIndicator color="#FFFFFF" />
-                    ) : (
-                      <Text style={styles.aiButtonText}>Gerar com a IA</Text>
-                    )}
-                  </TouchableOpacity>
                 )}
 
                 {photos.length > 0 && (
