@@ -22,7 +22,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
   if (!item) return null;
 
   const getShareTextMessage = () => {
-    const status = item.status === 'found' ? '✅ ENCONTRADO' : '🚨 PERDIDO';
+    const status = item.status === 'found' ? '🔍 ENCONTRADO' : (item.extra_fields?.is_direct_adoption ? '🤍 PARA ADOÇÃO' : '❗ PERDIDO');
     const location = [item.street, item.neighborhood, item.city, item.state].filter(Boolean).join(' - ') || 'Não especificado';
     const rawDate = String(item.date || '');
     const date = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? new Date(`${rawDate}T12:00:00`) : new Date(rawDate);
@@ -30,7 +30,18 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
     const phone = item.profiles?.whatsapp || item.profiles?.phone || item.contact_phone || '';
     const phoneInfo = phone ? `\n📞 Contato: ${phone}` : '';
     
-    return `🐾 *WeFIND - AJUDE A ENCONTRAR*\n\n${status}: *${item.title || 'Animal'}*\n\n📍 Local: ${location}\n📅 Data: ${formattedDate}${phoneInfo}\n\n"${item.description || ''}"\n\nPor favor, compartilhe!`;
+    const details = [
+      item.species || item.extra_fields?.species ? `🐾 ${item.species || item.extra_fields?.species}` : '',
+      item.breed || item.extra_fields?.breed ? `🏷️ ${item.breed || item.extra_fields?.breed}` : '',
+      item.gender || item.extra_fields?.gender ? `⚧ ${item.gender || item.extra_fields?.gender}` : '',
+      item.age || item.extra_fields?.age ? `🎂 ${item.age || item.extra_fields?.age}` : '',
+      item.size || item.extra_fields?.size ? `📏 ${item.size || item.extra_fields?.size}` : '',
+      item.color || item.extra_fields?.color ? `🎨 ${item.color || item.extra_fields?.color}` : '',
+    ].filter(Boolean).join(' | ');
+
+    const detailsLine = details ? `\n${details}\n` : '';
+
+    return `🐾 *WeFIND - AJUDE A ENCONTRAR*\n\n${status}: *${item.title || 'Animal'}*${detailsLine}\n📍 Local: ${location}\n📅 Data: ${formattedDate}${phoneInfo}\n\n"${item.description || ''}"\n\nPor favor, compartilhe!`;
   };
 
   const handleShareImage = async () => {

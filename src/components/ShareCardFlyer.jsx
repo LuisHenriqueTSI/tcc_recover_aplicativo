@@ -137,6 +137,46 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
             {item.title || 'Animal sem identificação'}
           </Text>
 
+          {/* Badges minimalistas das características do pet com emojis */}
+          <View style={styles.attributesRow}>
+            {(item.species || item.extra_fields?.species) && (
+              <View style={styles.attributeBadge}>
+                <Text style={styles.attributeEmoji}>🐾</Text>
+                <Text style={styles.attributeText}>{item.species || item.extra_fields?.species}</Text>
+              </View>
+            )}
+            {(item.breed || item.extra_fields?.breed) && (
+              <View style={styles.attributeBadge}>
+                <Text style={styles.attributeEmoji}>🏷️</Text>
+                <Text style={styles.attributeText}>{item.breed || item.extra_fields?.breed}</Text>
+              </View>
+            )}
+            {(item.gender || item.extra_fields?.gender) && (item.gender || item.extra_fields?.gender) !== 'Não informado' && (
+              <View style={styles.attributeBadge}>
+                <Text style={styles.attributeEmoji}>⚧</Text>
+                <Text style={styles.attributeText}>{item.gender || item.extra_fields?.gender}</Text>
+              </View>
+            )}
+            {(item.age || item.extra_fields?.age) && (item.age || item.extra_fields?.age) !== 'Não informado' && (
+              <View style={styles.attributeBadge}>
+                <Text style={styles.attributeEmoji}>🎂</Text>
+                <Text style={styles.attributeText}>{item.age || item.extra_fields?.age}</Text>
+              </View>
+            )}
+            {(item.size || item.extra_fields?.size) && (item.size || item.extra_fields?.size) !== 'Não informado' && (
+              <View style={styles.attributeBadge}>
+                <Text style={styles.attributeEmoji}>📏</Text>
+                <Text style={styles.attributeText}>{item.size || item.extra_fields?.size}</Text>
+              </View>
+            )}
+            {(item.color || item.extra_fields?.color) && (
+              <View style={styles.attributeBadge}>
+                <Text style={styles.attributeEmoji}>🎨</Text>
+                <Text style={styles.attributeText}>{item.color || item.extra_fields?.color}</Text>
+              </View>
+            )}
+          </View>
+
           {/* Bloco de Localização Centralizado */}
           <View style={styles.locationContainer}>
             <View style={styles.locationHeaderRow}>
@@ -279,8 +319,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: '#0F172A',
-    marginBottom: 6,
+    marginBottom: 4,
     textAlign: 'center',
+  },
+  attributesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 6,
+    paddingHorizontal: 4,
+  },
+  attributeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 6,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    gap: 3,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  attributeEmoji: {
+    fontSize: 10,
+  },
+  attributeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#334155',
   },
   rewardContainer: {
     width: '100%',
