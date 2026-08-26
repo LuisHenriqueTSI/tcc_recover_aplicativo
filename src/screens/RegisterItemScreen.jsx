@@ -313,6 +313,14 @@ const RegisterItemScreen = ({ navigation, route }) => {
     editItem?.extra_fields?.third_party_owner?.phone || ''
   );
 
+  // Custódia e Adoção (quando status === 'found')
+  const [foundCustody, setFoundCustody] = useState(
+    editItem?.extra_fields?.found_custody || 'with_me' // 'with_me' | 'spotted'
+  );
+  const [availableForAdoption, setAvailableForAdoption] = useState(
+    Boolean(editItem?.extra_fields?.available_for_adoption)
+  );
+
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -1137,6 +1145,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
           size: toNull(animalSize),
           age: toNull(animalAge),
           collar: toNull(animalCollar),
+          found_custody: status === 'found' ? foundCustody : null,
+          available_for_adoption: status === 'found' && foundCustody === 'with_me' ? Boolean(availableForAdoption) : false,
           location_details: exactLocationDetails,
           third_party_owner: isThirdPartyOwner && (thirdPartyName.trim() || thirdPartyPhone.trim()) ? {
             active: true,
@@ -1412,6 +1422,96 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   </TouchableOpacity>
                 </View>
               </View>
+
+              {/* Opções de Custódia e Adoção para Pet Encontrado */}
+              {status === 'found' && (
+                <View style={styles.custodySection}>
+                  <Text style={styles.label}>Onde o animal está agora? *</Text>
+                  <View style={styles.custodyOptionsRow}>
+                    <TouchableOpacity
+                      style={[
+                        styles.custodyOptionCard,
+                        foundCustody === 'with_me' && styles.custodyOptionCardActive,
+                      ]}
+                      onPress={() => setFoundCustody('with_me')}
+                      activeOpacity={0.85}
+                    >
+                      <View style={[styles.custodyIconCircle, foundCustody === 'with_me' && styles.custodyIconCircleActive]}>
+                        <MaterialIcons
+                          name="home"
+                          size={20}
+                          color={foundCustody === 'with_me' ? '#FFFFFF' : '#2563EB'}
+                        />
+                      </View>
+                      <Text style={[styles.custodyOptionTitle, foundCustody === 'with_me' && styles.custodyOptionTitleActive]}>
+                        Estou com ele
+                      </Text>
+                      <Text style={styles.custodyOptionSub}>
+                        Acolhido em lar temporário / minha casa
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.custodyOptionCard,
+                        foundCustody === 'spotted' && styles.custodyOptionCardActive,
+                      ]}
+                      onPress={() => {
+                        setFoundCustody('spotted');
+                        setAvailableForAdoption(false);
+                      }}
+                      activeOpacity={0.85}
+                    >
+                      <View style={[styles.custodyIconCircle, foundCustody === 'spotted' && styles.custodyIconCircleActive]}>
+                        <MaterialIcons
+                          name="visibility"
+                          size={20}
+                          color={foundCustody === 'spotted' ? '#FFFFFF' : '#D97706'}
+                        />
+                      </View>
+                      <Text style={[styles.custodyOptionTitle, foundCustody === 'spotted' && styles.custodyOptionTitleActive]}>
+                        Apenas vi o pet
+                      </Text>
+                      <Text style={styles.custodyOptionSub}>
+                        Avistado na rua / sem recolhimento
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Opção de Adoção Responsável (apenas se estiver com o animal) */}
+                  {foundCustody === 'with_me' && (
+                    <TouchableOpacity
+                      style={[
+                        styles.adoptionToggleCard,
+                        availableForAdoption && styles.adoptionToggleCardActive,
+                      ]}
+                      onPress={() => setAvailableForAdoption((prev) => !prev)}
+                      activeOpacity={0.85}
+                    >
+                      <View style={styles.adoptionToggleLeft}>
+                        <View style={[styles.adoptionIconBadge, availableForAdoption && styles.adoptionIconBadgeActive]}>
+                          <MaterialIcons
+                            name="favorite"
+                            size={18}
+                            color={availableForAdoption ? '#FFFFFF' : '#E11D48'}
+                          />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.adoptionToggleTitle}>
+                            Disponibilizar para Adoção Responsável
+                          </Text>
+                          <Text style={styles.adoptionToggleSubtitle}>
+                            Caso o tutor não apareça após as buscas, permitir que pessoas interessadas se candidatem para adotar.
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={[styles.customCheckbox, availableForAdoption && styles.customCheckboxChecked]}>
+                        {availableForAdoption && <MaterialIcons name="check" size={14} color="#FFFFFF" />}
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
 
               {photos.length < MAX_PHOTOS ? (
                 <TouchableOpacity
@@ -1920,6 +2020,121 @@ const styles = StyleSheet.create({
   statusButtonActive: {
     backgroundColor: '#2563EB',
     borderColor: '#2563EB',
+  },
+  // Estilos de Custódia e Adoção
+  custodySection: {
+    marginBottom: 20,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  custodyOptionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 10,
+  },
+  custodyOptionCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+  },
+  custodyOptionCardActive: {
+    borderColor: '#2563EB',
+    backgroundColor: '#EFF6FF',
+  },
+  custodyIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  custodyIconCircleActive: {
+    backgroundColor: '#2563EB',
+  },
+  custodyOptionTitle: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: '#1E293B',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  custodyOptionTitleActive: {
+    color: '#1D4ED8',
+    fontWeight: '800',
+  },
+  custodyOptionSub: {
+    fontSize: 11,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 14,
+  },
+  adoptionToggleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF1F2',
+    borderWidth: 1.5,
+    borderColor: '#FECDD3',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 6,
+  },
+  adoptionToggleCardActive: {
+    backgroundColor: '#FDF2F8',
+    borderColor: '#DB2777',
+  },
+  adoptionToggleLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    flex: 1,
+    marginRight: 10,
+  },
+  adoptionIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFE4E6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    marginTop: 2,
+  },
+  adoptionIconBadgeActive: {
+    backgroundColor: '#DB2777',
+  },
+  adoptionToggleTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#9F1239',
+    marginBottom: 2,
+  },
+  adoptionToggleSubtitle: {
+    fontSize: 11.5,
+    color: '#BE123C',
+    lineHeight: 15,
+  },
+  customCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#FDA4AF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  customCheckboxChecked: {
+    backgroundColor: '#DB2777',
+    borderColor: '#DB2777',
   },
   statusText: {
     fontSize: 14,

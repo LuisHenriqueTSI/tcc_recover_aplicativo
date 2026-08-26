@@ -1103,3 +1103,23 @@ export const getCommunityImpactStats = async () => {
   }
 };
 
+export const toggleItemAdoption = async (itemId, currentExtraFields = {}, availableForAdoption = true) => {
+  try {
+    const updatedExtraFields = {
+      ...(currentExtraFields || {}),
+      available_for_adoption: Boolean(availableForAdoption),
+    };
+    const { data, error } = await supabase
+      .from('items')
+      .update({ extra_fields: updatedExtraFields })
+      .eq('id', itemId)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('[toggleItemAdoption] Erro ao alterar status de adoção:', error);
+    throw error;
+  }
+};
+

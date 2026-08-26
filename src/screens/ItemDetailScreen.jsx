@@ -91,6 +91,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [editCommentPhotoUrl, setEditCommentPhotoUrl] = useState('');
   const [editUploading, setEditUploading] = useState(false);
   const [renewing, setRenewing] = useState(false);
+  const [togglingAdoption, setTogglingAdoption] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reportDetails, setReportDetails] = useState('');
@@ -394,6 +395,49 @@ const ItemDetailScreen = ({ route, navigation }) => {
     setSightingModalVisible(true);
   };
 
+  const handleToggleAdoption = async () => {
+    const isCurrentlyAdoption = Boolean(item?.extra_fields?.available_for_adoption);
+    Alert.alert(
+      isCurrentlyAdoption ? 'Pausar Adoção' : 'Disponibilizar para Adoção',
+      isCurrentlyAdoption
+        ? 'Deseja remover este pet da listagem de adoção?'
+        : 'Ao disponibilizar para adoção responsável, outros membros da comunidade poderão entrar em contato para adotar o pet caso o dono original não apareça. Deseja continuar?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: isCurrentlyAdoption ? 'Remover' : 'Disponibilizar',
+          onPress: async () => {
+            setTogglingAdoption(true);
+            try {
+              await itemsService.toggleItemAdoption(
+                item.id,
+                item.extra_fields,
+                !isCurrentlyAdoption
+              );
+              setItem((prev) => ({
+                ...prev,
+                extra_fields: {
+                  ...(prev?.extra_fields || {}),
+                  available_for_adoption: !isCurrentlyAdoption,
+                },
+              }));
+              Alert.alert(
+                'Sucesso',
+                !isCurrentlyAdoption
+                  ? 'Pet disponibilizado para adoção responsável com sucesso!'
+                  : 'Pet removido da listagem de adoção.'
+              );
+            } catch (error) {
+              Alert.alert('Erro', 'Não foi possível atualizar o status de adoção.');
+            } finally {
+              setTogglingAdoption(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleOpenReport = () => {
     if (!user) {
       Alert.alert(
@@ -655,6 +699,76 @@ const ItemDetailScreen = ({ route, navigation }) => {
           )}
         </View>
 
+        {/* Card de Custódia / Lar Temporário ou Avistamento na Rua */}
+        {item.status === 'found' && (
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginTop: 10,
+              padding: 14,
+              borderRadius: 12,
+              borderWidth: 1,
+              backgroundColor: item.extra_fields?.found_custody === 'spotted' ? '#FFFBEB' : '#ECFDF5',
+              borderColor: item.extra_fields?.found_custody === 'spotted' ? '#FDE68A' : '#A7F3D0',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
+              <MaterialIcons
+                name={item.extra_fields?.found_custody === 'spotted' ? 'visibility' : 'home'}
+                size={18}
+                color={item.extra_fields?.found_custody === 'spotted' ? '#D97706' : '#059669'}
+              />
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: '800',
+                  color: item.extra_fields?.found_custody === 'spotted' ? '#B45309' : '#047857',
+                }}
+              >
+                {item.extra_fields?.found_custody === 'spotted'
+                  ? 'Animal Avistado na Rua'
+                  : 'Animal sob Cuidados / Lar Temporário'}
+              </Text>
+            </View>
+            <Text
+              style={{
+                fontSize: 12.5,
+                lineHeight: 18,
+                color: item.extra_fields?.found_custody === 'spotted' ? '#92400E' : '#065F46',
+              }}
+            >
+              {item.extra_fields?.found_custody === 'spotted'
+                ? 'Quem publicou apenas viu o pet no local informado e tirou a foto, mas não está com o animal. Se for ao local, compartilhe pistas nos comentários.'
+                : 'Quem encontrou acolheu o animal em sua casa ou espaço seguro enquanto o tutor é procurado pela comunidade.'}
+            </Text>
+          </View>
+        )}
+
+        {/* Card de Adoção Responsável */}
+        {item.extra_fields?.available_for_adoption && (
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginTop: 10,
+              padding: 14,
+              borderRadius: 12,
+              borderWidth: 1.5,
+              backgroundColor: '#FDF2F8',
+              borderColor: '#F472B6',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
+              <MaterialIcons name="favorite" size={18} color="#DB2777" />
+              <Text style={{ fontSize: 14, fontWeight: '800', color: '#9D174D' }}>
+                Disponível para Adoção Responsável
+              </Text>
+            </View>
+            <Text style={{ fontSize: 12.5, lineHeight: 18, color: '#BE185D' }}>
+              Caso o tutor original não apareça, este pet pode ser adotado com muito carinho. Entre em contato com o protetor para conhecer o animal!
+            </Text>
+          </View>
+        )}
+
         {/* Bairro e Data */}
         <View style={styles.locationGrid}>
           <View style={styles.locationCard}>
@@ -851,6 +965,43 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   >
                     <MaterialIcons name="edit" size={18} color="#2563EB" />
                     <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Editar</Text>
+                  </TouchableOpacity>
+                )}
+                {isOwner && item.status === 'found' && item.extra_fields?.found_custody !== 'spotted' && (
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: item.extra_fields?.available_for_adoption ? '#FDF2F8' : '#ECFDF5',
+                      borderWidth: 1,
+                      borderColor: item.extra_fields?.available_for_adoption ? '#F472B6' : '#A7F3D0',
+                      borderRadius: 6,
+                      paddingVertical: 6,
+                      paddingHorizontal: 10,
+                      marginRight: 4,
+                    }}
+                    onPress={handleToggleAdoption}
+                    disabled={togglingAdoption}
+                  >
+                    <MaterialIcons
+                      name="favorite"
+                      size={16}
+                      color={item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669'}
+                    />
+                    <Text
+                      style={{
+                        color: item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669',
+                        fontWeight: 'bold',
+                        fontSize: 12.5,
+                        marginLeft: 4,
+                      }}
+                    >
+                      {togglingAdoption
+                        ? 'Atualizando...'
+                        : item.extra_fields?.available_for_adoption
+                        ? 'Pausar Adoção'
+                        : 'Colocar p/ Adoção'}
+                    </Text>
                   </TouchableOpacity>
                 )}
                 {isOwner && renewalInfo.canRenew && (
