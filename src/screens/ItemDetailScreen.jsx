@@ -692,15 +692,59 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
         {/* Título, descrição e recompensa */}
         <View style={styles.introSection}>
-          <View style={[styles.statusPill, item.extra_fields?.is_direct_adoption ? { backgroundColor: '#FCE7F3' } : (item.status === 'found' ? styles.foundPill : styles.lostPill)]}>
-            <MaterialIcons
-              name={item.extra_fields?.is_direct_adoption ? 'favorite' : (item.status === 'found' ? 'check-circle' : 'search')}
-              size={15}
-              color={item.extra_fields?.is_direct_adoption ? '#BE185D' : (item.status === 'found' ? '#047857' : '#C2410C')}
-            />
-            <Text style={[styles.statusPillText, { color: item.extra_fields?.is_direct_adoption ? '#BE185D' : (item.status === 'found' ? '#047857' : '#C2410C') }]}>
-              {item.extra_fields?.is_direct_adoption ? 'Para Adoção' : (item.status === 'found' ? 'Encontrado' : 'Perdido')}
-            </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <View style={[styles.statusPill, item.extra_fields?.is_direct_adoption ? { backgroundColor: '#FCE7F3', marginBottom: 0 } : (item.status === 'found' ? [styles.foundPill, { marginBottom: 0 }] : [styles.lostPill, { marginBottom: 0 }])]}>
+              <MaterialIcons
+                name={item.extra_fields?.is_direct_adoption ? 'favorite' : (item.status === 'found' ? 'check-circle' : 'search')}
+                size={14}
+                color={item.extra_fields?.is_direct_adoption ? '#BE185D' : (item.status === 'found' ? '#047857' : '#C2410C')}
+              />
+              <Text style={[styles.statusPillText, { color: item.extra_fields?.is_direct_adoption ? '#BE185D' : (item.status === 'found' ? '#047857' : '#C2410C') }]}>
+                {item.extra_fields?.is_direct_adoption ? 'Para Adoção' : (item.status === 'found' ? 'Encontrado' : 'Perdido')}
+              </Text>
+            </View>
+
+            {/* Badges minimalistas dos atributos do pet ao lado do status */}
+            {item.category === 'animal' && (
+              <>
+                {(item.species || item.extra_fields?.species) && (
+                  <View style={styles.miniTag}>
+                    <MaterialIcons name="pets" size={13} color="#475569" />
+                    <Text style={styles.miniTagText}>{item.species || item.extra_fields?.species}</Text>
+                  </View>
+                )}
+                {(item.gender || item.extra_fields?.gender) && (item.gender || item.extra_fields?.gender) !== 'Não informado' && (
+                  <View style={styles.miniTag}>
+                    <MaterialIcons name="wc" size={13} color="#475569" />
+                    <Text style={styles.miniTagText}>{item.gender || item.extra_fields?.gender}</Text>
+                  </View>
+                )}
+                {(item.age || item.extra_fields?.age) && (item.age || item.extra_fields?.age) !== 'Não informado' && (
+                  <View style={styles.miniTag}>
+                    <MaterialIcons name="cake" size={13} color="#475569" />
+                    <Text style={styles.miniTagText}>{item.age || item.extra_fields?.age}</Text>
+                  </View>
+                )}
+                {(item.size || item.extra_fields?.size) && (item.size || item.extra_fields?.size) !== 'Não informado' && (
+                  <View style={styles.miniTag}>
+                    <MaterialIcons name="straighten" size={13} color="#475569" />
+                    <Text style={styles.miniTagText}>{item.size || item.extra_fields?.size}</Text>
+                  </View>
+                )}
+                {(item.color || item.extra_fields?.color) && (
+                  <View style={styles.miniTag}>
+                    <MaterialIcons name="palette" size={13} color="#475569" />
+                    <Text style={styles.miniTagText}>{item.color || item.extra_fields?.color}</Text>
+                  </View>
+                )}
+                {(item.breed || item.extra_fields?.breed) && (item.breed || item.extra_fields?.breed) !== 'Sem raça definida' && (
+                  <View style={styles.miniTag}>
+                    <MaterialIcons name="label-outline" size={13} color="#475569" />
+                    <Text style={styles.miniTagText}>{item.breed || item.extra_fields?.breed}</Text>
+                  </View>
+                )}
+              </>
+            )}
           </View>
           <Text style={styles.detailTitle}>{item.title}</Text>
           {item.description ? <Text style={styles.detailDescription}>{item.description}</Text> : null}
@@ -866,43 +910,34 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
         {/* Informações detalhadas do item, baseadas no tipo */}
         {item.category === 'animal' ? (
-          <View style={styles.infoSection}>
-            <Text style={styles.sectionTitle}>Informações do Animal</Text>
-            <AnimalInfoRow
-              icon={<MaterialIcons name="pets" size={18} color="#6B7280" />}
-              label="Espécie"
-              value={item.species}
-            />
-            <Separator />
-            <AnimalInfoRow
-              icon={<MaterialIcons name="wc" size={18} color="#6B7280" />}
-              label="Sexo / Gênero"
-              value={item.gender || item.extra_fields?.gender}
-            />
-            <Separator />
-            <AnimalInfoRow
-              icon={<MaterialIcons name="label" size={18} color="#6B7280" />}
-              label="Raça"
-              value={item.breed}
-            />
-            <Separator />
-            <AnimalInfoRow
-              icon={<MaterialIcons name="palette" size={18} color="#6B7280" />}
-              label="Cor"
-              value={item.color}
-            />
-            <Separator />
-            <AnimalInfoRow
-              icon={<MaterialIcons name="straighten" size={18} color="#6B7280" />}
-              label="Porte"
-              value={item.size}
-            />
-            <Separator />
-            <AnimalInfoRow
-              icon={<MaterialIcons name="event" size={18} color="#6B7280" />}
-              label="Idade"
-              value={item.age}
-            />
+          <View style={{ backgroundColor: '#fff', borderRadius: 14, marginHorizontal: 16, marginTop: 12, padding: 16, borderWidth: 1, borderColor: '#F3F4F6' }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: '#1F2937', marginBottom: 12 }}>Informações do Animal</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              <View style={styles.minimalAttrCard}>
+                <Text style={styles.minimalAttrLabel}>Espécie</Text>
+                <Text style={styles.minimalAttrValue}>{item.species || item.extra_fields?.species || 'Animal'}</Text>
+              </View>
+              <View style={styles.minimalAttrCard}>
+                <Text style={styles.minimalAttrLabel}>Sexo / Gênero</Text>
+                <Text style={styles.minimalAttrValue}>{item.gender || item.extra_fields?.gender || 'Não informado'}</Text>
+              </View>
+              <View style={styles.minimalAttrCard}>
+                <Text style={styles.minimalAttrLabel}>Idade</Text>
+                <Text style={styles.minimalAttrValue}>{item.age || item.extra_fields?.age || 'Não informada'}</Text>
+              </View>
+              <View style={styles.minimalAttrCard}>
+                <Text style={styles.minimalAttrLabel}>Porte</Text>
+                <Text style={styles.minimalAttrValue}>{item.size || item.extra_fields?.size || 'Não informado'}</Text>
+              </View>
+              <View style={styles.minimalAttrCard}>
+                <Text style={styles.minimalAttrLabel}>Cor</Text>
+                <Text style={styles.minimalAttrValue}>{item.color || item.extra_fields?.color || 'Não informada'}</Text>
+              </View>
+              <View style={styles.minimalAttrCard}>
+                <Text style={styles.minimalAttrLabel}>Raça</Text>
+                <Text style={styles.minimalAttrValue}>{item.breed || item.extra_fields?.breed || 'Sem raça definida'}</Text>
+              </View>
+            </View>
           </View>
         ) : item.category === 'document' ? (
           <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 8, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
@@ -1563,6 +1598,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     marginBottom: 10,
+  },
+  miniTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  miniTagText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  minimalAttrCard: {
+    flex: 1,
+    minWidth: '28%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  minimalAttrLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+    marginBottom: 2,
+    textTransform: 'uppercase',
+  },
+  minimalAttrValue: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: '#1E293B',
   },
   foundPill: { backgroundColor: '#DCFCE7' },
   lostPill: { backgroundColor: '#FFEDD5' },
