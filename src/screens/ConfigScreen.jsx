@@ -138,6 +138,8 @@ const ConfigScreen = ({ navigation }) => {
 
       <Text style={styles.sectionLabel}>Informações</Text>
       <View style={styles.panel}>
+        <SettingRow icon="info" title="Sobre o WeFIND" description="Conheça o aplicativo e nossa missão" onPress={() => navigation.navigate('Sobre', { forceFullView: true })} />
+        <View style={styles.divider} />
         <SettingRow icon="help-circle" title="Ajuda e suporte" onPress={() => navigation.navigate('AjudaSuporte')} />
         <View style={styles.divider} />
         <SettingRow icon="file-text" title="Termos de uso" onPress={() => Linking.openURL('https://wefind.app/termos')} />

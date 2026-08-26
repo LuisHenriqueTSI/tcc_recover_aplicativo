@@ -60,8 +60,9 @@ const FALLBACK_REUNITED_AVATARS = [
   'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=200&auto=format&fit=crop&q=80',
 ];
 
-const SobreScreen = ({ navigation }) => {
+const SobreScreen = ({ navigation, route }) => {
   const { user, userProfile, isAdmin } = useAuth();
+  const isFullView = !user || Boolean(route?.params?.forceFullView);
   const [userStories, setUserStories] = useState([]);
   const [recoveredPets, setRecoveredPets] = useState([]);
   const [statistics, setStatistics] = useState({
@@ -133,9 +134,9 @@ const SobreScreen = ({ navigation }) => {
 
   useEffect(() => {
     navigation.setOptions({
-      title: user ? 'Finais Felizes & Impacto' : 'Sobre o WeFIND',
+      title: isFullView ? 'Sobre o WeFIND' : 'Finais Felizes & Impacto',
     });
-  }, [navigation, user]);
+  }, [navigation, isFullView]);
 
   useEffect(() => {
     if (userProfile) {
@@ -243,14 +244,14 @@ const SobreScreen = ({ navigation }) => {
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, user && { paddingTop: 16 }]}
+        contentContainerStyle={[styles.scrollContent, (!isFullView && user) && { paddingTop: 16 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2563EB']} />
         }
       >
-        {/* Cabeçalho de Boas-vindas para usuários NÃO logados */}
-        {!user && (
+        {/* Cabeçalho de Boas-vindas para tela Sobre completa */}
+        {isFullView && (
           <>
             {/* Logo Circular em Destaque */}
             <View style={styles.logoSection}>
@@ -273,36 +274,49 @@ const SobreScreen = ({ navigation }) => {
               </Text>
             </View>
 
-            {/* Botões de Ação no Topo para Acesso Imediato */}
+            {/* Botões de Ação no Topo */}
             <View style={styles.actionSectionTop}>
-              <TouchableOpacity
-                style={styles.primaryButton}
-                onPress={handleStart}
-                activeOpacity={0.88}
-              >
-                <Text style={styles.primaryButtonText}>Começar a Explorar</Text>
-                <MaterialIcons name="arrow-forward" size={20} color="#FFFFFF" />
-              </TouchableOpacity>
-
-              <View style={styles.authButtonsRow}>
+              {user ? (
                 <TouchableOpacity
-                  style={styles.secondaryButton}
-                  onPress={handleLoginDirect}
-                  activeOpacity={0.8}
+                  style={styles.primaryButton}
+                  onPress={() => navigation.goBack()}
+                  activeOpacity={0.88}
                 >
-                  <MaterialIcons name="login" size={17} color="#2563EB" style={{ marginRight: 5 }} />
-                  <Text style={styles.secondaryButtonText}>Entrar</Text>
+                  <MaterialIcons name="arrow-back" size={20} color="#FFFFFF" />
+                  <Text style={styles.primaryButtonText}>Voltar ao Aplicativo</Text>
                 </TouchableOpacity>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={styles.primaryButton}
+                    onPress={handleStart}
+                    activeOpacity={0.88}
+                  >
+                    <Text style={styles.primaryButtonText}>Começar a Explorar</Text>
+                    <MaterialIcons name="arrow-forward" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.secondaryButton}
-                  onPress={handleRegisterDirect}
-                  activeOpacity={0.8}
-                >
-                  <MaterialIcons name="person-add" size={17} color="#2563EB" style={{ marginRight: 5 }} />
-                  <Text style={styles.secondaryButtonText}>Cadastrar</Text>
-                </TouchableOpacity>
-              </View>
+                  <View style={styles.authButtonsRow}>
+                    <TouchableOpacity
+                      style={styles.secondaryButton}
+                      onPress={handleLoginDirect}
+                      activeOpacity={0.8}
+                    >
+                      <MaterialIcons name="login" size={17} color="#2563EB" style={{ marginRight: 5 }} />
+                      <Text style={styles.secondaryButtonText}>Entrar</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.secondaryButton}
+                      onPress={handleRegisterDirect}
+                      activeOpacity={0.8}
+                    >
+                      <MaterialIcons name="person-add" size={17} color="#2563EB" style={{ marginRight: 5 }} />
+                      <Text style={styles.secondaryButtonText}>Cadastrar</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
             </View>
           </>
         )}
@@ -478,8 +492,8 @@ const SobreScreen = ({ navigation }) => {
           </ScrollView>
         </View>
 
-        {/* Seções informativas exclusivas para usuários NÃO logados (Onboarding / Sobre) */}
-        {!user && (
+        {/* Seções informativas exclusivas da tela Sobre completa */}
+        {isFullView && (
           <>
             {/* Como Funciona - Com Botões Diretos para Outras Telas */}
             <View style={styles.howItWorksSection}>

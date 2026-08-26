@@ -7,6 +7,7 @@ import * as itemsService from '../services/items';
 
 const secondaryLinks = [
   { label: 'Finais Felizes & Impacto', description: 'Animais recuperados e relatos', icon: 'heart', route: 'Sobre' },
+  { label: 'Sobre o WeFIND', description: 'Conheça o aplicativo e nossa missão', icon: 'info', route: 'Sobre', params: { forceFullView: true } },
   { label: 'Configurações', description: 'Preferências e segurança', icon: 'settings', route: 'Config' },
   { label: 'Ajuda e suporte', description: 'Perguntas e contato', icon: 'help-circle', route: 'AjudaSuporte' },
 ];
@@ -131,10 +132,10 @@ const ProfileScreen = ({ navigation }) => {
       <Text style={styles.sectionTitle}>Mais opções</Text>
       <View style={styles.links}>
         {secondaryLinks.map((item, index) => (
-          <React.Fragment key={item.route}>
+          <React.Fragment key={item.label || item.route}>
             <TouchableOpacity
               style={styles.linkRow}
-              onPress={() => navigation.navigate(item.route)}
+              onPress={() => navigation.navigate(item.route, item.params)}
               activeOpacity={0.75}
             >
               <View style={styles.linkIcon}>
