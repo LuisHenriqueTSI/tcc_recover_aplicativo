@@ -450,12 +450,19 @@ const HomeScreen = ({ navigation, route }) => {
   const { colors, isDark } = useTheme();
   // Corrige erro: garantir estado do modal de perfil
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  // Localidade do perfil e sessão
+  // Localidade do perfil e sessão com endereço completo
   const [showProfileLocationModal, setShowProfileLocationModal] = useState(false);
   const [sessionCity, setSessionCity] = useState('');
   const [sessionState, setSessionState] = useState('');
+  const [sessionDistrict, setSessionDistrict] = useState('');
+  const [sessionStreet, setSessionStreet] = useState('');
+  const [sessionAddressText, setSessionAddressText] = useState('');
+
   const [profileEditState, setProfileEditState] = useState('');
   const [profileEditCity, setProfileEditCity] = useState('');
+  const [profileEditDistrict, setProfileEditDistrict] = useState('');
+  const [profileEditStreet, setProfileEditStreet] = useState('');
+  const [profileEditAddressText, setProfileEditAddressText] = useState('');
   const [profileEditCoords, setProfileEditCoords] = useState(null);
   const [profileMapVisible, setProfileMapVisible] = useState(false);
   const [userCoords, setUserCoords] = useState(null);
@@ -475,17 +482,41 @@ const HomeScreen = ({ navigation, route }) => {
           }
         }
 
+        // Tenta carregar endereço completo do AsyncStorage
+        const storedLoc = await AsyncStorage.getItem('@wefind/saved_location');
+        let parsed = null;
+        if (storedLoc) {
+          try {
+            parsed = JSON.parse(storedLoc);
+          } catch (e) {}
+        }
+
+        if (parsed?.addressText) setSessionAddressText(parsed.addressText);
+        if (parsed?.street) setSessionStreet(parsed.street);
+        if (parsed?.district || parsed?.neighborhood) setSessionDistrict(parsed.district || parsed.neighborhood);
+        if (parsed?.radiusKm) {
+          setSearchRadiusKm(Number(parsed.radiusKm));
+          setProfileEditRadiusKm(Number(parsed.radiusKm));
+        }
+
         if (userProfile?.state && userProfile?.city) {
           setSessionCity(userProfile.city);
           setSessionState(userProfile.state);
+          if (userProfile.neighborhood) setSessionDistrict(userProfile.neighborhood);
           setProfileEditState(userProfile.state);
           setProfileEditCity(userProfile.city);
+          setProfileEditDistrict(userProfile.neighborhood || parsed?.district || '');
+          setProfileEditStreet(parsed?.street || '');
+          setProfileEditAddressText(parsed?.addressText || '');
           setLocationFilter(`${userProfile.city}, ${userProfile.state}`);
 
           if (userProfile.latitude && userProfile.longitude) {
             const coords = { latitude: Number(userProfile.latitude), longitude: Number(userProfile.longitude) };
             setProfileEditCoords(coords);
             setUserCoords(coords);
+          } else if (parsed?.coords) {
+            setProfileEditCoords(parsed.coords);
+            setUserCoords(parsed.coords);
           } else {
             const coords = await geocodeCityState(userProfile.city, userProfile.state);
             if (coords) {
@@ -496,31 +527,29 @@ const HomeScreen = ({ navigation, route }) => {
           return;
         }
 
-        // Se não tiver no userProfile ou for visitante, tenta carregar do AsyncStorage
-        const storedLoc = await AsyncStorage.getItem('@wefind/saved_location');
-        if (storedLoc) {
-          const parsed = JSON.parse(storedLoc);
-          if (parsed?.city && parsed?.state) {
-            setSessionCity(parsed.city);
-            setSessionState(parsed.state);
-            setProfileEditState(parsed.state);
-            setProfileEditCity(parsed.city);
-            setLocationFilter(`${parsed.city}, ${parsed.state}`);
+        // Se não tiver no userProfile ou for visitante, usa dados do AsyncStorage
+        if (parsed?.city && parsed?.state) {
+          setSessionCity(parsed.city);
+          setSessionState(parsed.state);
+          setSessionDistrict(parsed.district || parsed.neighborhood || '');
+          setSessionStreet(parsed.street || '');
+          setSessionAddressText(parsed.addressText || '');
 
-            if (parsed?.radiusKm) {
-              setSearchRadiusKm(Number(parsed.radiusKm));
-              setProfileEditRadiusKm(Number(parsed.radiusKm));
-            }
+          setProfileEditState(parsed.state);
+          setProfileEditCity(parsed.city);
+          setProfileEditDistrict(parsed.district || parsed.neighborhood || '');
+          setProfileEditStreet(parsed.street || '');
+          setProfileEditAddressText(parsed.addressText || '');
+          setLocationFilter(`${parsed.city}, ${parsed.state}`);
 
-            if (parsed.coords) {
-              setProfileEditCoords(parsed.coords);
-              setUserCoords(parsed.coords);
-            } else {
-              const coords = await geocodeCityState(parsed.city, parsed.state);
-              if (coords) {
-                setProfileEditCoords(coords);
-                setUserCoords(coords);
-              }
+          if (parsed.coords) {
+            setProfileEditCoords(parsed.coords);
+            setUserCoords(parsed.coords);
+          } else {
+            const coords = await geocodeCityState(parsed.city, parsed.state);
+            if (coords) {
+              setProfileEditCoords(coords);
+              setUserCoords(coords);
             }
           }
         }
@@ -532,20 +561,33 @@ const HomeScreen = ({ navigation, route }) => {
     loadInitialLocation();
   }, [userProfile]);
 
-  // Localidade ativa para exibição no cabeçalho (padrão Todo o Brasil)
+  // Localidade ativa para exibição no cabeçalho
   const activeCity = sessionCity;
   const activeState = sessionState;
-  const displayLocation = (activeCity && activeState)
-    ? `${activeCity}, ${activeState}`
-    : (activeCity || activeState || 'Todo o Brasil');
+  const displayLocation = sessionAddressText
+    ? sessionAddressText
+    : (sessionDistrict && sessionCity && sessionState)
+    ? `${sessionDistrict}, ${sessionCity} - ${sessionState}`
+    : (sessionCity && sessionState)
+    ? `${sessionCity}, ${sessionState}`
+    : (sessionCity || sessionState || 'Todo o Brasil');
 
   // Salvar localidade (perfil e armazenamento local)
   const handleSaveProfileLocation = async () => {
     if (!profileEditState || !profileEditCity) return;
     
     const chosenRadius = profileEditRadiusKm || 60;
+    const fullText = profileEditAddressText || [
+      profileEditStreet,
+      profileEditDistrict,
+      [profileEditCity, profileEditState].filter(Boolean).join(' - '),
+    ].filter(Boolean).join(', ') || `${profileEditCity}, ${profileEditState}`;
+
     setSessionCity(profileEditCity);
     setSessionState(profileEditState);
+    setSessionDistrict(profileEditDistrict);
+    setSessionStreet(profileEditStreet);
+    setSessionAddressText(fullText);
     setSearchRadiusKm(chosenRadius);
     setLocationFilter(`${profileEditCity}, ${profileEditState}`);
     setLocationFilterTouched(true);
@@ -561,6 +603,10 @@ const HomeScreen = ({ navigation, route }) => {
       await AsyncStorage.setItem(
         '@wefind/saved_location',
         JSON.stringify({
+          addressText: fullText,
+          street: profileEditStreet,
+          district: profileEditDistrict,
+          neighborhood: profileEditDistrict,
           city: profileEditCity,
           state: profileEditState,
           coords: coords || null,
@@ -578,14 +624,14 @@ const HomeScreen = ({ navigation, route }) => {
         await userService.updateProfile(user.id, {
           state: profileEditState,
           city: profileEditCity,
+          neighborhood: profileEditDistrict,
         });
         if (typeof setUserProfile === 'function') {
           setUserProfile((prev) => ({
             ...prev,
             state: profileEditState,
             city: profileEditCity,
-            latitude: coords?.latitude ?? null,
-            longitude: coords?.longitude ?? null,
+            neighborhood: profileEditDistrict,
           }));
         }
         if (typeof refreshProfile === 'function') refreshProfile();
@@ -1077,14 +1123,18 @@ const HomeScreen = ({ navigation, route }) => {
                 backgroundColor: 'rgba(255, 255, 255, 0.16)',
                 borderRadius: 20,
                 paddingHorizontal: 10,
-                paddingVertical: 4,
+                paddingVertical: 5,
                 marginTop: 2,
+                maxWidth: '92%',
                 borderWidth: 1,
                 borderColor: 'rgba(255, 255, 255, 0.28)',
               }}
               onPress={() => {
                 setProfileEditCity(activeCity);
                 setProfileEditState(activeState);
+                setProfileEditDistrict(sessionDistrict);
+                setProfileEditStreet(sessionStreet);
+                setProfileEditAddressText(sessionAddressText);
                 setProfileEditRadiusKm(searchRadiusKm);
                 setShowProfileLocationModal(true);
               }}
@@ -1092,8 +1142,14 @@ const HomeScreen = ({ navigation, route }) => {
               activeOpacity={0.75}
             >
               <MaterialIcons name="place" size={14} color="#FEA937" style={{ marginRight: 4 }} />
-              <Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '600', marginRight: 6 }}>
-                {activeCity && activeState ? `${activeCity}, ${activeState} • ${searchRadiusKm} km` : displayLocation}
+              <Text
+                style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600', marginRight: 6, flexShrink: 1 }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {activeCity && activeState
+                  ? `${displayLocation} • ${searchRadiusKm} km`
+                  : displayLocation}
               </Text>
               <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 10, padding: 2 }}>
                 <MaterialIcons name="edit" size={11} color="#FFFFFF" />
@@ -1263,12 +1319,19 @@ const HomeScreen = ({ navigation, route }) => {
                 <MaterialIcons name="map" size={19} color={colors.primary} />
                 <Text style={{ color: colors.primary, fontWeight: '700', marginLeft: 8 }}>Escolher no mapa</Text>
               </TouchableOpacity>
-              {(profileEditCity || profileEditState) ? (
-                <View style={{ backgroundColor: isDark ? colors.card : '#F8FAFC', padding: 10, borderRadius: 8, marginBottom: 14, alignItems: 'center', borderWidth: 1, borderColor: colors.cardBorder }}>
-                  <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '500' }}>Localização selecionada:</Text>
-                  <Text style={{ color: colors.primary, fontSize: 15, fontWeight: '800', marginTop: 2 }}>
-                    {[profileEditCity, profileEditState].filter(Boolean).join(', ')}
+              {(profileEditAddressText || profileEditCity || profileEditState) ? (
+                <View style={{ backgroundColor: isDark ? colors.card : '#F8FAFC', padding: 12, borderRadius: 10, marginBottom: 14, borderWidth: 1, borderColor: colors.cardBorder }}>
+                  <Text style={{ color: colors.textSecondary, fontSize: 11.5, fontWeight: '700', marginBottom: 3 }}>
+                    ENDEREÇO SELECIONADO:
                   </Text>
+                  <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '800', lineHeight: 19 }}>
+                    {profileEditAddressText || [profileEditStreet, profileEditDistrict, [profileEditCity, profileEditState].filter(Boolean).join(' - ')].filter(Boolean).join(', ') || [profileEditCity, profileEditState].filter(Boolean).join(', ')}
+                  </Text>
+                  {profileEditDistrict ? (
+                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 4 }}>
+                      Bairro: <Text style={{ fontWeight: '700', color: colors.text }}>{profileEditDistrict}</Text>
+                    </Text>
+                  ) : null}
                 </View>
               ) : null}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 4 }}>
@@ -1302,17 +1365,30 @@ const HomeScreen = ({ navigation, route }) => {
         <MapLocationPicker
           visible={profileMapVisible}
           mode="profile"
+          initialLocation={profileEditCoords || userCoords}
+          radiusKm={profileEditRadiusKm || searchRadiusKm}
+          showRadius={true}
+          onRadiusChange={(r) => setProfileEditRadiusKm(r)}
           onClose={() => setProfileMapVisible(false)}
-          onConfirm={({ address, addressDetails, coordinate }) => {
-            const region = String(addressDetails?.state || address?.region || '').trim();
+          onConfirm={({ address, addressDetails, addressText, street, houseNumber, district, neighborhood, city, state, coordinate, radiusKm }) => {
+            const region = String(addressDetails?.state || address?.region || state || '').trim();
             const stateValue = states.includes(region.toUpperCase())
               ? region.toUpperCase()
               : (normalizedRegionToUf[normalizeRegionName(region)] || region);
-            const cityValue = addressDetails?.city || address?.city || address?.subregion || address?.district || '';
+            const cityValue =
+              addressDetails?.city || address?.city || city || '';
+            const distValue = addressDetails?.district || district || neighborhood || '';
+            const stValue = addressDetails?.street || street || '';
+
             setProfileEditState(stateValue);
             setProfileEditCity(cityValue);
+            setProfileEditDistrict(distValue);
+            setProfileEditStreet(stValue);
+            setProfileEditAddressText(addressText || '');
+            if (radiusKm) setProfileEditRadiusKm(radiusKm);
             if (coordinate && coordinate.latitude && coordinate.longitude) {
               setProfileEditCoords(coordinate);
+              setUserCoords(coordinate);
             }
             setProfileMapVisible(false);
             setShowProfileLocationModal(true);

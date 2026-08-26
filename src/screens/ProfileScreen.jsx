@@ -99,7 +99,9 @@ const ProfileScreen = ({ navigation }) => {
   const initial = userProfile?.name?.[0]?.toUpperCase() || 'U';
   const phoneNumber = userProfile?.whatsapp || userProfile?.phone || user?.phone || null;
   const formattedPhone = phoneNumber ? formatDisplayPhone(phoneNumber) : null;
-  const locationText = [userProfile?.city, userProfile?.state].filter(Boolean).join(', ');
+  const locationText = (userProfile?.neighborhood && userProfile?.city && userProfile?.state)
+    ? `${userProfile.neighborhood}, ${userProfile.city} - ${userProfile.state}`
+    : [userProfile?.city, userProfile?.state].filter(Boolean).join(', ');
 
   const communityLinks = [
     {

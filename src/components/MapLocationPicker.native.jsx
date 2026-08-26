@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { MaterialIcons } from '@expo/vector-icons';
 import { states } from '../lib/br-locations';
@@ -31,11 +31,30 @@ const regionToUf = {
   Sergipe: 'SE', Tocantins: 'TO',
 };
 
-const normalizeRegionName = (value) => String(value || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-const normalizedRegionToUf = Object.fromEntries(Object.entries(regionToUf).map(([name, uf]) => [normalizeRegionName(name), uf]));
+const normalizeRegionName = (value) =>
+  String(value || '')
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
 
-const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm, onSelectLocation }) => {
+const normalizedRegionToUf = Object.fromEntries(
+  Object.entries(regionToUf).map(([name, uf]) => [normalizeRegionName(name), uf])
+);
+
+const MapLocationPicker = ({
+  visible,
+  initialLocation,
+  mode,
+  radiusKm = 60,
+  showRadius = true,
+  onClose,
+  onConfirm,
+  onSelectLocation,
+  onRadiusChange,
+}) => {
   const [coordinate, setCoordinate] = useState(initialLocation || null);
+  const [currentRadiusKm, setCurrentRadiusKm] = useState(radiusKm || 60);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
 
@@ -47,6 +66,12 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
   const [stateUf, setStateUf] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [fullAddressText, setFullAddressText] = useState('');
+
+  useEffect(() => {
+    if (radiusKm) {
+      setCurrentRadiusKm(radiusKm);
+    }
+  }, [radiusKm]);
 
   // Sincroniza o texto completo quando os campos individuais mudam
   const updateAddressFields = (newFields) => {
@@ -66,15 +91,16 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
     if (newFields.stateUf !== undefined) setStateUf(newFields.stateUf);
     if (newFields.postalCode !== undefined) setPostalCode(newFields.postalCode);
 
-    const formatted = [
-      updated.street,
-      updated.houseNumber,
-      updated.district,
-      updated.city,
-      updated.stateUf,
-    ].filter(Boolean).join(', ');
+    const parts = [];
+    if (updated.street) {
+      parts.push(updated.houseNumber ? `${updated.street}, ${updated.houseNumber}` : updated.street);
+    }
+    if (updated.district) parts.push(updated.district);
+    if (updated.city && updated.stateUf) parts.push(`${updated.city} - ${updated.stateUf}`);
+    else if (updated.city) parts.push(updated.city);
+    else if (updated.stateUf) parts.push(updated.stateUf);
 
-    setFullAddressText(formatted);
+    setFullAddressText(parts.join(' - ') || [updated.street, updated.district, updated.city, updated.stateUf].filter(Boolean).join(', '));
   };
 
   const reverseGeocodeCoordinate = async (coord) => {
@@ -105,8 +131,16 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
         setStateUf(resolvedUf);
         setPostalCode(cep);
 
-        const formatted = [st, num, dist, ct, resolvedUf].filter(Boolean).join(', ');
-        setFullAddressText(formatted);
+        const parts = [];
+        if (st) {
+          parts.push(num ? `${st}, ${num}` : st);
+        }
+        if (dist) parts.push(dist);
+        if (ct && resolvedUf) parts.push(`${ct} - ${resolvedUf}`);
+        else if (ct) parts.push(ct);
+        else if (resolvedUf) parts.push(resolvedUf);
+
+        setFullAddressText(parts.join(' - ') || [st, num, dist, ct, resolvedUf].filter(Boolean).join(', '));
       }
     } catch (error) {
       console.warn('[MapLocationPicker] Não foi possível identificar o endereço reverso:', error.message);
@@ -153,6 +187,8 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
   const handleConfirm = () => {
     if (!coordinate) return;
 
+    const formatted = fullAddressText.trim() || [street, houseNumber, district, city, stateUf].filter(Boolean).join(', ');
+
     const addressDetails = {
       street: street.trim(),
       number: houseNumber.trim(),
@@ -160,7 +196,7 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
       city: city.trim(),
       state: stateUf.trim(),
       postalCode: postalCode.trim(),
-      text: fullAddressText.trim() || [street, houseNumber, district, city, stateUf].filter(Boolean).join(', '),
+      text: formatted,
     };
 
     const address = {
@@ -179,9 +215,15 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
         coordinate,
         address,
         addressDetails,
-        addressText: addressDetails.text,
+        addressText: formatted,
+        street: street.trim(),
+        houseNumber: houseNumber.trim(),
+        district: district.trim(),
+        neighborhood: district.trim(),
         city: city.trim(),
         state: stateUf.trim(),
+        postalCode: postalCode.trim(),
+        radiusKm: currentRadiusKm,
       });
     }
   };
@@ -197,7 +239,7 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
             </Text>
             <Text style={styles.subtitle} numberOfLines={2}>
               {mode === 'profile'
-                ? 'Toque no mapa e ajuste o endereço abaixo.'
+                ? 'Toque no mapa para marcar o ponto exato e ver o raio de alcance.'
                 : 'Toque no ponto no mapa e edite o endereço se necessário.'}
             </Text>
           </View>
@@ -206,16 +248,29 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
           </TouchableOpacity>
         </View>
 
-        {/* Mapa */}
+        {/* Mapa com Marcador e Círculo de Raio */}
         <View style={styles.mapContainer}>
           <MapView
             style={styles.map}
-            initialRegion={coordinate ? { ...coordinate, latitudeDelta: 0.03, longitudeDelta: 0.03 } : BRAZIL_REGION}
+            initialRegion={coordinate ? { ...coordinate, latitudeDelta: 0.15, longitudeDelta: 0.15 } : BRAZIL_REGION}
             onPress={handleMapPress}
             showsUserLocation
             showsMyLocationButton
           >
-            {coordinate && <Marker coordinate={coordinate} />}
+            {coordinate && (
+              <>
+                <Marker coordinate={coordinate} />
+                {showRadius && (
+                  <Circle
+                    center={coordinate}
+                    radius={currentRadiusKm * 1000}
+                    fillColor="rgba(37, 99, 235, 0.16)"
+                    strokeColor="#2563EB"
+                    strokeWidth={2}
+                  />
+                )}
+              </>
+            )}
           </MapView>
 
           {(loadingLocation || geocoding) && (
@@ -239,6 +294,38 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
               <MaterialIcons name="edit-location-alt" size={20} color="#2563EB" />
               <Text style={styles.cardTitle}>Endereço selecionado (editável)</Text>
             </View>
+
+            {/* Seletor Visual de Raio no Mapa */}
+            {showRadius && coordinate ? (
+              <View style={styles.radiusSelectorBox}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                  <MaterialIcons name="radar" size={17} color="#2563EB" style={{ marginRight: 6 }} />
+                  <Text style={styles.radiusLabel}>
+                    Raio visível no mapa: <Text style={{ fontWeight: '800', color: '#2563EB' }}>{currentRadiusKm} km</Text>
+                  </Text>
+                </View>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                  {[15, 30, 60, 100, 150, 250].map((r) => {
+                    const isSel = currentRadiusKm === r;
+                    return (
+                      <TouchableOpacity
+                        key={r}
+                        onPress={() => {
+                          setCurrentRadiusKm(r);
+                          if (onRadiusChange) onRadiusChange(r);
+                        }}
+                        style={[styles.radiusChip, isSel && styles.radiusChipActive]}
+                        activeOpacity={0.75}
+                      >
+                        <Text style={[styles.radiusChipText, isSel && styles.radiusChipTextActive]}>
+                          {r} km
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
 
             {coordinate ? (
               <>
@@ -286,7 +373,7 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
                       style={styles.inputField}
                       value={city}
                       onChangeText={(t) => updateAddressFields({ city: t })}
-                      placeholder="Ex: Pelotas"
+                      placeholder="Ex: Curitiba"
                       placeholderTextColor="#9CA3AF"
                     />
                   </View>
@@ -296,7 +383,7 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
                       style={styles.inputField}
                       value={stateUf}
                       onChangeText={(t) => updateAddressFields({ stateUf: t.toUpperCase() })}
-                      placeholder="Ex: RS"
+                      placeholder="Ex: PR"
                       maxLength={2}
                       autoCapitalize="characters"
                       placeholderTextColor="#9CA3AF"
@@ -306,12 +393,12 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
 
                 {/* Endereço completo formatado */}
                 <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Endereço Completo</Text>
+                  <Text style={styles.inputLabel}>Endereço Completo Formatado</Text>
                   <TextInput
                     style={[styles.inputField, styles.multilineInput]}
                     value={fullAddressText}
                     onChangeText={setFullAddressText}
-                    placeholder="Edite o endereço completo formatado"
+                    placeholder="Edite o endereço completo"
                     placeholderTextColor="#9CA3AF"
                     multiline
                     textAlignVertical="top"
@@ -322,7 +409,7 @@ const MapLocationPicker = ({ visible, initialLocation, mode, onClose, onConfirm,
               <View style={styles.emptyPromptBox}>
                 <MaterialIcons name="touch-app" size={24} color="#2563EB" />
                 <Text style={styles.emptyPromptText}>
-                  Toque em qualquer ponto do mapa acima para selecionar e preencher o endereço automaticamente.
+                  Toque em qualquer ponto do mapa acima para marcar seu local e preencher o endereço completo.
                 </Text>
               </View>
             )}
@@ -381,7 +468,7 @@ const styles = StyleSheet.create({
   },
   loadingText: { color: '#374151', fontSize: 13, fontWeight: '600' },
   bottomCard: {
-    maxHeight: '48%',
+    maxHeight: '52%',
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
@@ -398,12 +485,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   cardTitle: {
     fontSize: 15,
     fontWeight: '700',
     color: '#0F172A',
+  },
+  radiusSelectorBox: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+  },
+  radiusLabel: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#1E40AF',
+  },
+  radiusChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    backgroundColor: '#FFFFFF',
+  },
+  radiusChipActive: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
+  radiusChipText: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: '#1E40AF',
+  },
+  radiusChipTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '800',
   },
   inputRow: {
     flexDirection: 'row',

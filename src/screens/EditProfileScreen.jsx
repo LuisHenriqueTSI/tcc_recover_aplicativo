@@ -81,6 +81,9 @@ const EditProfileScreen = ({ navigation }) => {
   const [whatsapp, setWhatsapp] = useState('');
   const [profileState, setProfileState] = useState('');
   const [profileCity, setProfileCity] = useState('');
+  const [profileDistrict, setProfileDistrict] = useState('');
+  const [profileStreet, setProfileStreet] = useState('');
+  const [profileAddressText, setProfileAddressText] = useState('');
   const [profileCoords, setProfileCoords] = useState(null);
   const [searchRadiusKm, setSearchRadiusKm] = useState(60);
   const [mapVisible, setMapVisible] = useState(false);
@@ -104,18 +107,28 @@ const EditProfileScreen = ({ navigation }) => {
   }, [phoneCooldown]);
 
   useEffect(() => {
-    const loadSavedRadius = async () => {
+    const loadSavedLocation = async () => {
       try {
         const storedRadius = await AsyncStorage.getItem('@wefind/search_radius');
         if (storedRadius) {
           const r = Number(storedRadius);
           if (r > 0) setSearchRadiusKm(r);
         }
+
+        const storedLoc = await AsyncStorage.getItem('@wefind/saved_location');
+        if (storedLoc) {
+          const parsed = JSON.parse(storedLoc);
+          if (parsed?.addressText) setProfileAddressText(parsed.addressText);
+          if (parsed?.street) setProfileStreet(parsed.street);
+          if (parsed?.district || parsed?.neighborhood) setProfileDistrict(parsed.district || parsed.neighborhood);
+          if (parsed?.radiusKm) setSearchRadiusKm(Number(parsed.radiusKm));
+          if (parsed?.coords) setProfileCoords(parsed.coords);
+        }
       } catch (e) {
-        console.warn('[EditProfileScreen] Erro ao carregar raio:', e.message);
+        console.warn('[EditProfileScreen] Erro ao carregar localização:', e.message);
       }
     };
-    loadSavedRadius();
+    loadSavedLocation();
   }, []);
 
   useEffect(() => {
@@ -126,6 +139,7 @@ const EditProfileScreen = ({ navigation }) => {
       setWhatsapp(userProfile.whatsapp || userProfile.phone || '');
       setProfileState(userProfile.state || '');
       setProfileCity(userProfile.city || '');
+      if (userProfile.neighborhood) setProfileDistrict(userProfile.neighborhood);
       if (userProfile.latitude && userProfile.longitude) {
         setProfileCoords({
           latitude: Number(userProfile.latitude),
@@ -172,6 +186,12 @@ const EditProfileScreen = ({ navigation }) => {
   const performSaveProfile = async (targetWhatsapp) => {
     try {
       setSaving(true);
+      const fullText = profileAddressText || [
+        profileStreet,
+        profileDistrict,
+        [profileCity, profileState].filter(Boolean).join(' - '),
+      ].filter(Boolean).join(', ') || `${profileCity}, ${profileState}`;
+
       await userService.updateProfile(user.id, {
         name: name.trim(),
         instagram: instagram.trim(),
@@ -180,6 +200,7 @@ const EditProfileScreen = ({ navigation }) => {
         phone: targetWhatsapp,
         state: profileState,
         city: profileCity,
+        neighborhood: profileDistrict,
       });
 
       // Atualiza no AsyncStorage para sincronia com a HomeScreen
@@ -187,6 +208,10 @@ const EditProfileScreen = ({ navigation }) => {
         await AsyncStorage.setItem(
           '@wefind/saved_location',
           JSON.stringify({
+            addressText: fullText,
+            street: profileStreet,
+            district: profileDistrict,
+            neighborhood: profileDistrict,
             city: profileCity,
             state: profileState,
             coords: profileCoords || null,
@@ -208,8 +233,7 @@ const EditProfileScreen = ({ navigation }) => {
           phone: targetWhatsapp,
           state: profileState,
           city: profileCity,
-          latitude: profileCoords?.latitude ?? null,
-          longitude: profileCoords?.longitude ?? null,
+          neighborhood: profileDistrict,
         }));
       }
 
@@ -339,7 +363,11 @@ const EditProfileScreen = ({ navigation }) => {
   };
 
   const hasLocation = Boolean(profileCity && profileState);
-  const locationDisplayText = hasLocation ? `${profileCity}, ${profileState}` : null;
+  const locationDisplayText = profileAddressText || [
+    profileStreet,
+    profileDistrict,
+    [profileCity, profileState].filter(Boolean).join(' - '),
+  ].filter(Boolean).join(', ') || (hasLocation ? `${profileCity}, ${profileState}` : null);
 
   return (
     <ScrollView
@@ -696,21 +724,31 @@ const EditProfileScreen = ({ navigation }) => {
         </View>
       </Modal>
 
-      {/* Componente Modal de Mapa */}
+      {/* Componente Modal de Mapa com Raio */}
       <MapLocationPicker
         visible={mapVisible}
         mode="profile"
+        initialLocation={profileCoords}
+        radiusKm={searchRadiusKm}
+        showRadius={true}
+        onRadiusChange={(r) => setSearchRadiusKm(r)}
         onClose={() => setMapVisible(false)}
-        onConfirm={({ address, addressDetails, coordinate }) => {
-          const region = String(addressDetails?.state || address?.region || '').trim();
+        onConfirm={({ address, addressDetails, addressText, street, houseNumber, district, neighborhood, city, state, coordinate, radiusKm }) => {
+          const region = String(addressDetails?.state || address?.region || state || '').trim();
           const stateValue = states.includes(region.toUpperCase())
             ? region.toUpperCase()
             : (normalizedRegionToUf[normalizeRegionName(region)] || region);
           const cityValue =
-            addressDetails?.city || address?.city || address?.subregion || address?.district || '';
+            addressDetails?.city || address?.city || city || '';
+          const distValue = addressDetails?.district || district || neighborhood || '';
+          const stValue = addressDetails?.street || street || '';
 
           setProfileState(stateValue);
           setProfileCity(cityValue);
+          setProfileDistrict(distValue);
+          setProfileStreet(stValue);
+          setProfileAddressText(addressText || '');
+          if (radiusKm) setSearchRadiusKm(radiusKm);
           if (coordinate && coordinate.latitude && coordinate.longitude) {
             setProfileCoords(coordinate);
           }
