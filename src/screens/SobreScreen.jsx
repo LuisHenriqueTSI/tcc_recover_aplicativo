@@ -131,6 +131,12 @@ const SobreScreen = ({ navigation }) => {
   }, [loadData]);
 
   useEffect(() => {
+    navigation.setOptions({
+      title: user ? 'Finais Felizes & Impacto' : 'Sobre o WeFIND',
+    });
+  }, [navigation, user]);
+
+  useEffect(() => {
     if (userProfile) {
       if (userProfile.name && !authorInput) setAuthorInput(userProfile.name);
       if (userProfile.city && userProfile.state && !locationInput) {
@@ -236,46 +242,38 @@ const SobreScreen = ({ navigation }) => {
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, user && { paddingTop: 16 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2563EB']} />
         }
       >
-        {/* Logo Circular em Destaque */}
-        <View style={styles.logoSection}>
-          <View style={styles.circularLogoContainer}>
-            <Image
-              source={require('../assets/logo_wefind.png')}
-              style={styles.circularLogo}
-              resizeMode="contain"
-            />
-          </View>
-        </View>
+        {/* Cabeçalho de Boas-vindas para usuários NÃO logados */}
+        {!user && (
+          <>
+            {/* Logo Circular em Destaque */}
+            <View style={styles.logoSection}>
+              <View style={styles.circularLogoContainer}>
+                <Image
+                  source={require('../assets/logo_wefind.png')}
+                  style={styles.circularLogo}
+                  resizeMode="contain"
+                />
+              </View>
+            </View>
 
-        {/* Mensagem de Boas-Vindas */}
-        <View style={styles.textSection}>
-          <Text style={styles.headline}>
-            Cada animal tem uma história e uma família esperando por ele.
-          </Text>
-          <Text style={styles.subheadline}>
-            Conectamos quem perdeu e quem encontrou um animal, de forma simples, rápida e acolhedora.
-          </Text>
-        </View>
+            {/* Mensagem de Boas-Vindas */}
+            <View style={styles.textSection}>
+              <Text style={styles.headline}>
+                Cada animal tem uma história e uma família esperando por ele.
+              </Text>
+              <Text style={styles.subheadline}>
+                Conectamos quem perdeu e quem encontrou um animal, de forma simples, rápida e acolhedora.
+              </Text>
+            </View>
 
-        {/* Botões de Ação no Topo para Acesso Imediato */}
-        <View style={styles.actionSectionTop}>
-          {user ? (
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={() => navigation.goBack()}
-              activeOpacity={0.88}
-            >
-              <MaterialIcons name="arrow-back" size={20} color="#FFFFFF" />
-              <Text style={styles.primaryButtonText}>Voltar ao Aplicativo</Text>
-            </TouchableOpacity>
-          ) : (
-            <>
+            {/* Botões de Ação no Topo para Acesso Imediato */}
+            <View style={styles.actionSectionTop}>
               <TouchableOpacity
                 style={styles.primaryButton}
                 onPress={handleStart}
@@ -304,9 +302,9 @@ const SobreScreen = ({ navigation }) => {
                   <Text style={styles.secondaryButtonText}>Cadastrar</Text>
                 </TouchableOpacity>
               </View>
-            </>
-          )}
-        </View>
+            </View>
+          </>
+        )}
 
         {/* Placar Comunitário WeFIND - Estilo Hero Card */}
         <View style={styles.placarHeroCard}>
@@ -479,106 +477,111 @@ const SobreScreen = ({ navigation }) => {
           </ScrollView>
         </View>
 
-        {/* Como Funciona - Com Botões Diretos para Outras Telas */}
-        <View style={styles.howItWorksSection}>
-          <View style={styles.howItWorksHeaderRow}>
-            <Text style={styles.sectionTitle}>Como Funciona</Text>
-            <Text style={styles.sectionSubtitle}>Recursos e atalhos rápidos para você começar</Text>
-          </View>
+        {/* Seções informativas exclusivas para usuários NÃO logados (Onboarding / Sobre) */}
+        {!user && (
+          <>
+            {/* Como Funciona - Com Botões Diretos para Outras Telas */}
+            <View style={styles.howItWorksSection}>
+              <View style={styles.howItWorksHeaderRow}>
+                <Text style={styles.sectionTitle}>Como Funciona</Text>
+                <Text style={styles.sectionSubtitle}>Recursos e atalhos rápidos para você começar</Text>
+              </View>
 
-          {/* Passo 1: Cadastrar Animal */}
-          <TouchableOpacity
-            style={styles.actionStepCard}
-            onPress={() => navigation.navigate('RegisterItem')}
-            activeOpacity={0.88}
-          >
-            <View style={styles.actionStepTopRow}>
-              <View style={[styles.actionStepIconBadge, { backgroundColor: '#EFF6FF' }]}>
-                <MaterialIcons name="add-photo-alternate" size={22} color="#2563EB" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.actionStepNumber}>PASSO 1</Text>
-                <Text style={styles.actionStepTitle}>Registre um Animal</Text>
-              </View>
-            </View>
-            <Text style={styles.actionStepDescription}>
-              Cadastre fotos, características e a localização onde o animal foi visto ou sumiu.
-            </Text>
-            <View style={[styles.actionStepButtonBadge, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
-              <Text style={[styles.actionStepButtonText, { color: '#1D4ED8' }]}>Publicar Anúncio de Animal</Text>
-              <MaterialIcons name="arrow-forward" size={15} color="#1D4ED8" />
-            </View>
-          </TouchableOpacity>
+              {/* Passo 1: Cadastrar Animal */}
+              <TouchableOpacity
+                style={styles.actionStepCard}
+                onPress={() => navigation.navigate('RegisterItem')}
+                activeOpacity={0.88}
+              >
+                <View style={styles.actionStepTopRow}>
+                  <View style={[styles.actionStepIconBadge, { backgroundColor: '#EFF6FF' }]}>
+                    <MaterialIcons name="add-photo-alternate" size={22} color="#2563EB" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.actionStepNumber}>PASSO 1</Text>
+                    <Text style={styles.actionStepTitle}>Registre um Animal</Text>
+                  </View>
+                </View>
+                <Text style={styles.actionStepDescription}>
+                  Cadastre fotos, características e a localização onde o animal foi visto ou sumiu.
+                </Text>
+                <View style={[styles.actionStepButtonBadge, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
+                  <Text style={[styles.actionStepButtonText, { color: '#1D4ED8' }]}>Publicar Anúncio de Animal</Text>
+                  <MaterialIcons name="arrow-forward" size={15} color="#1D4ED8" />
+                </View>
+              </TouchableOpacity>
 
-          {/* Passo 2: Mapa Interativo & GPS */}
-          <TouchableOpacity
-            style={styles.actionStepCard}
-            onPress={() => navigation.navigate('Map')}
-            activeOpacity={0.88}
-          >
-            <View style={styles.actionStepTopRow}>
-              <View style={[styles.actionStepIconBadge, { backgroundColor: '#FFFBEB' }]}>
-                <MaterialIcons name="map" size={22} color="#D97706" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.actionStepNumber, { color: '#D97706' }]}>PASSO 2</Text>
-                <Text style={styles.actionStepTitle}>Mobilize no Mapa & Pistas</Text>
-              </View>
-            </View>
-            <Text style={styles.actionStepDescription}>
-              Acompanhe o mapa interativo, veja alertas próximos e registre avistamentos com GPS.
-            </Text>
-            <View style={[styles.actionStepButtonBadge, { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }]}>
-              <Text style={[styles.actionStepButtonText, { color: '#B45309' }]}>Explorar Mapa Interativo</Text>
-              <MaterialIcons name="arrow-forward" size={15} color="#B45309" />
-            </View>
-          </TouchableOpacity>
+              {/* Passo 2: Mapa Interativo & GPS */}
+              <TouchableOpacity
+                style={styles.actionStepCard}
+                onPress={() => navigation.navigate('Map')}
+                activeOpacity={0.88}
+              >
+                <View style={styles.actionStepTopRow}>
+                  <View style={[styles.actionStepIconBadge, { backgroundColor: '#FFFBEB' }]}>
+                    <MaterialIcons name="map" size={22} color="#D97706" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.actionStepNumber, { color: '#D97706' }]}>PASSO 2</Text>
+                    <Text style={styles.actionStepTitle}>Mobilize no Mapa & Pistas</Text>
+                  </View>
+                </View>
+                <Text style={styles.actionStepDescription}>
+                  Acompanhe o mapa interativo, veja alertas próximos e registre avistamentos com GPS.
+                </Text>
+                <View style={[styles.actionStepButtonBadge, { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }]}>
+                  <Text style={[styles.actionStepButtonText, { color: '#B45309' }]}>Explorar Mapa Interativo</Text>
+                  <MaterialIcons name="arrow-forward" size={15} color="#B45309" />
+                </View>
+              </TouchableOpacity>
 
-          {/* Passo 3: Finais Felizes & Casos de Sucesso */}
-          <TouchableOpacity
-            style={styles.actionStepCard}
-            onPress={() => navigation.navigate('RecoveredPets')}
-            activeOpacity={0.88}
-          >
-            <View style={styles.actionStepTopRow}>
-              <View style={[styles.actionStepIconBadge, { backgroundColor: '#ECFDF5' }]}>
-                <MaterialIcons name="celebration" size={22} color="#059669" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.actionStepNumber, { color: '#059669' }]}>PASSO 3</Text>
-                <Text style={styles.actionStepTitle}>Reencontros & Finais Felizes</Text>
-              </View>
+              {/* Passo 3: Finais Felizes & Casos de Sucesso */}
+              <TouchableOpacity
+                style={styles.actionStepCard}
+                onPress={() => navigation.navigate('RecoveredPets')}
+                activeOpacity={0.88}
+              >
+                <View style={styles.actionStepTopRow}>
+                  <View style={[styles.actionStepIconBadge, { backgroundColor: '#ECFDF5' }]}>
+                    <MaterialIcons name="celebration" size={22} color="#059669" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.actionStepNumber, { color: '#059669' }]}>PASSO 3</Text>
+                    <Text style={styles.actionStepTitle}>Reencontros & Finais Felizes</Text>
+                  </View>
+                </View>
+                <Text style={styles.actionStepDescription}>
+                  Converse diretamente com os tutores pelo chat e celebre os animais que já voltaram para casa!
+                </Text>
+                <View style={[styles.actionStepButtonBadge, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+                  <Text style={[styles.actionStepButtonText, { color: '#047857' }]}>Ver Animais Reencontrados</Text>
+                  <MaterialIcons name="arrow-forward" size={15} color="#047857" />
+                </View>
+              </TouchableOpacity>
             </View>
-            <Text style={styles.actionStepDescription}>
-              Converse diretamente com os tutores pelo chat e celebre os animais que já voltaram para casa!
-            </Text>
-            <View style={[styles.actionStepButtonBadge, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
-              <Text style={[styles.actionStepButtonText, { color: '#047857' }]}>Ver Animais Reencontrados</Text>
-              <MaterialIcons name="arrow-forward" size={15} color="#047857" />
-            </View>
-          </TouchableOpacity>
-        </View>
 
-        {/* Rodapé com Termos e Privacidade */}
-        <View style={styles.footerSection}>
-          <Text style={styles.termsText}>
-            Ao continuar, você concorda com nossos{' '}
-            <Text
-              style={styles.link}
-              onPress={() => Linking.openURL('https://wefind.app/termos')}
-            >
-              Termos de Uso
-            </Text>
-            {' '}e{' '}
-            <Text
-              style={styles.link}
-              onPress={() => Linking.openURL('https://wefind.app/privacidade')}
-            >
-              Privacidade
-            </Text>
-            .
-          </Text>
-        </View>
+            {/* Rodapé com Termos e Privacidade */}
+            <View style={styles.footerSection}>
+              <Text style={styles.termsText}>
+                Ao continuar, você concorda com nossos{' '}
+                <Text
+                  style={styles.link}
+                  onPress={() => Linking.openURL('https://wefind.app/termos')}
+                >
+                  Termos de Uso
+                </Text>
+                {' '}e{' '}
+                <Text
+                  style={styles.link}
+                  onPress={() => Linking.openURL('https://wefind.app/privacidade')}
+                >
+                  Privacidade
+                </Text>
+                .
+              </Text>
+            </View>
+          </>
+        )}
       </ScrollView>
 
       {/* Modal: Enviar História de Reencontro */}

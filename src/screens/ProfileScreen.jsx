@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
 
 const secondaryLinks = [
-  { label: 'Finais Felizes & Comunidade', description: 'Pets recuperados e impacto', icon: 'heart', route: 'Sobre' },
+  { label: 'Finais Felizes & Impacto', description: 'Animais recuperados e relatos', icon: 'heart', route: 'Sobre' },
   { label: 'Configurações', description: 'Preferências e segurança', icon: 'settings', route: 'Config' },
   { label: 'Ajuda e suporte', description: 'Perguntas e contato', icon: 'help-circle', route: 'AjudaSuporte' },
 ];
