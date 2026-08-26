@@ -154,8 +154,6 @@ skinparam actorStyle awesome
 actor "Visitante" as Visitor
 actor "Usuário Autenticado" as User
 actor "Administrador" as Admin
-actor "Evolution API\n(WhatsApp)" as WhatsApp <<Service>>
-actor "Serviço de Mapas\n(GPS / Geocoding)" as Maps <<Service>>
 
 User --|> Visitor
 
@@ -163,20 +161,18 @@ rectangle "Aplicativo WeFIND" {
   usecase "Criar Conta" as UC1
   usecase "Verificar Conta por WhatsApp" as UC2
   usecase "Efetuar Login" as UC3
-  usecase "Gerenciar Perfil" as UC4
-  usecase "Explorar e Filtrar Pets" as UC5
-  usecase "Visualizar Detalhes" as UC6
-  usecase "Publicar Pet" as UC7
+  usecase "Manter Perfil de Usuário" as UC4
+  usecase "Consultar Pets no Feed" as UC5
+  usecase "Visualizar Detalhes do Pet" as UC6
+  usecase "Manter Publicações de Pets" as UC7
   usecase "Ajustar e Cortar Fotos" as UC8
-  usecase "Publicar para Terceiro" as UC9
+  usecase "Informar Tutor Terceiro" as UC9
   usecase "Gerar e Compartilhar Flyer" as UC10
-  usecase "Gerenciar Meus Anúncios" as UC11
-  usecase "Compartilhar Informações do Pet" as UC12
+  usecase "Manter Informações do Pet" as UC12
   usecase "Selecionar Ponto no Mapa" as UC13
   usecase "Notificar Tutor no WhatsApp" as UC14
-  usecase "Conversar via Chat" as UC15
-  usecase "Moderar Publicações" as UC16
-  usecase "Analisar Denúncias" as UC17
+  usecase "Manter Conversas via Chat" as UC15
+  usecase "Manter Moderação e Denúncias" as UC16
 }
 
 Visitor --> UC1
@@ -188,24 +184,17 @@ Visitor --> UC10
 User --> UC7
 User --> UC12
 User --> UC15
-User --> UC11
 User --> UC4
 
 Admin --> UC16
-Admin --> UC17
 
 UC1 ..> UC2 : <<include>>
-UC7 ..> UC8 : <<include>>
 UC7 ..> UC13 : <<include>>
 UC12 ..> UC13 : <<include>>
 
+UC8 ..> UC7 : <<extend>>
 UC9 ..> UC7 : <<extend>>
 UC14 ..> UC12 : <<extend>>
-UC10 ..> UC6 : <<extend>>
-
-UC2 -- WhatsApp
-UC14 -- WhatsApp
-UC13 -- Maps
 @enduml
 ```
 

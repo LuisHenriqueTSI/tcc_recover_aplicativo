@@ -12,39 +12,42 @@ Use os recursos abaixo para gerar o Diagrama de Casos de Uso diretamente no **Lu
 Crie um Diagrama de Casos de Uso UML formal e bem estruturado para o aplicativo mobile "WeFIND" (sistema de localização e recuperação de pets perdidos/encontrados).
 
 Organize o diagrama com:
-1. Atores Humanos (à esquerda e direita da fronteira):
+1. Atores Humanos:
    - "Visitante" (ator não autenticado)
    - "Usuário Autenticado" (especializa/herda de Visitante)
    - "Administrador" (responsável pela moderação)
 
-2. Atores de Sistemas Externos:
-   - "Evolution API (WhatsApp)" (serviço externo de mensageria 2FA e notificações)
-   - "Serviço de Mapas e GPS" (serviço externo de geocodificação e rotas)
+2. Fronteira do Sistema: "Aplicativo WeFIND" contendo os seguintes casos de uso em elipses:
+   - "Criar Conta"
+   - "Verificar Conta por WhatsApp"
+   - "Efetuar Login"
+   - "Manter Perfil de Usuário"
+   - "Consultar Pets no Feed"
+   - "Visualizar Detalhes do Pet"
+   - "Manter Publicações de Pets"
+   - "Ajustar e Cortar Fotos"
+   - "Informar Tutor Terceiro"
+   - "Gerar e Compartilhar Flyer"
+   - "Manter Informações do Pet"
+   - "Selecionar Ponto no Mapa"
+   - "Notificar Tutor no WhatsApp"
+   - "Manter Conversas via Chat"
+   - "Manter Moderação e Denúncias"
 
-3. Fronteira do Sistema: "Aplicativo WeFIND" contendo os seguintes casos de uso em elipses:
-   - Módulo Autenticação: "Criar Conta", "Verificar Conta por WhatsApp", "Efetuar Login", "Gerenciar Perfil e Notificações"
-   - Módulo Pets: "Explorar e Filtrar Pets", "Visualizar Detalhes do Pet", "Publicar Pet Perdido/Encontrado", "Ajustar e Cortar Fotos", "Publicar para Tutor Terceiro", "Gerar e Compartilhar Flyer", "Gerenciar Meus Anúncios"
-   - Módulo Interação: "Compartilhar Informações do Pet", "Selecionar Ponto no Mapa", "Notificar Tutor no WhatsApp", "Conversar via Chat em Tempo Real"
-   - Módulo Moderação: "Moderar Publicações", "Analisar Denúncias"
+3. Relacionamentos e Associações:
+   - Visitante conecta em: "Criar Conta", "Efetuar Login", "Consultar Pets no Feed", "Visualizar Detalhes do Pet", "Gerar e Compartilhar Flyer"
+   - Usuário Autenticado conecta em: "Manter Publicações de Pets", "Manter Informações do Pet", "Manter Conversas via Chat", "Manter Perfil de Usuário"
+   - Administrador conecta em: "Manter Moderação e Denúncias"
 
-4. Relacionamentos e Associações:
-   - Visitante conecta em: "Criar Conta", "Efetuar Login", "Explorar e Filtrar Pets", "Visualizar Detalhes do Pet", "Gerar e Compartilhar Flyer"
-   - Usuário Autenticado conecta em: "Publicar Pet Perdido/Encontrado", "Compartilhar Informações do Pet", "Conversar via Chat em Tempo Real", "Gerenciar Meus Anúncios", "Gerenciar Perfil e Notificações"
-   - Administrador conecta em: "Moderar Publicações", "Analisar Denúncias"
-
-5. Relacionamentos de Inclusão e Extensão:
+4. Relacionamentos de Inclusão (<<include>>):
    - "Criar Conta" tem <<include>> para "Verificar Conta por WhatsApp"
-   - "Publicar Pet Perdido/Encontrado" tem <<include>> para "Ajustar e Cortar Fotos"
-   - "Publicar Pet Perdido/Encontrado" tem <<include>> para "Selecionar Ponto no Mapa"
-   - "Compartilhar Informações do Pet" tem <<include>> para "Selecionar Ponto no Mapa"
-   - "Publicar para Tutor Terceiro" tem <<extend>> para "Publicar Pet Perdido/Encontrado"
-   - "Notificar Tutor no WhatsApp" tem <<extend>> para "Compartilhar Informações do Pet"
-   - "Gerar e Compartilhar Flyer" tem <<extend>> para "Visualizar Detalhes do Pet"
+   - "Manter Publicações de Pets" tem <<include>> para "Selecionar Ponto no Mapa"
+   - "Manter Informações do Pet" tem <<include>> para "Selecionar Ponto no Mapa"
 
-6. Integrações com Sistemas Externos:
-   - "Verificar Conta por WhatsApp" comunica com "Evolution API (WhatsApp)"
-   - "Notificar Tutor no WhatsApp" comunica com "Evolution API (WhatsApp)"
-   - "Selecionar Ponto no Mapa" comunica com "Serviço de Mapas e GPS"
+5. Relacionamentos de Extensão (<<extend>>):
+   - "Ajustar e Cortar Fotos" tem <<extend>> para "Manter Publicações de Pets"
+   - "Informar Tutor Terceiro" tem <<extend>> para "Manter Publicações de Pets"
+   - "Notificar Tutor no WhatsApp" tem <<extend>> para "Manter Informações do Pet"
 
 Gere com visual limpo, atores bem posicionados e setas pontilhadas para <<include>> e <<extend>>.
 ```
@@ -68,8 +71,6 @@ skinparam actorStyle awesome
 actor "Visitante" as Visitor
 actor "Usuário Autenticado" as User
 actor "Administrador" as Admin
-actor "Evolution API\n(WhatsApp)" as WhatsApp <<Service>>
-actor "Serviço de Mapas\n(GPS / Geocoding)" as Maps <<Service>>
 
 User --|> Visitor
 
@@ -77,20 +78,18 @@ rectangle "Aplicativo WeFIND" {
   usecase "Criar Conta" as UC1
   usecase "Verificar Conta por WhatsApp" as UC2
   usecase "Efetuar Login" as UC3
-  usecase "Gerenciar Perfil e Notificações" as UC4
-  usecase "Explorar e Filtrar Pets" as UC5
+  usecase "Manter Perfil de Usuário" as UC4
+  usecase "Consultar Pets no Feed" as UC5
   usecase "Visualizar Detalhes do Pet" as UC6
-  usecase "Publicar Pet Perdido/Encontrado" as UC7
+  usecase "Manter Publicações de Pets" as UC7
   usecase "Ajustar e Cortar Fotos" as UC8
-  usecase "Publicar para Tutor Terceiro" as UC9
+  usecase "Informar Tutor Terceiro" as UC9
   usecase "Gerar e Compartilhar Flyer" as UC10
-  usecase "Gerenciar Meus Anúncios" as UC11
-  usecase "Compartilhar Informações do Pet" as UC12
+  usecase "Manter Informações do Pet" as UC12
   usecase "Selecionar Ponto no Mapa" as UC13
   usecase "Notificar Tutor no WhatsApp" as UC14
-  usecase "Conversar via Chat em Tempo Real" as UC15
-  usecase "Moderar Publicações" as UC16
-  usecase "Analisar Denúncias" as UC17
+  usecase "Manter Conversas via Chat" as UC15
+  usecase "Manter Moderação e Denúncias" as UC16
 }
 
 Visitor --> UC1
@@ -102,23 +101,17 @@ Visitor --> UC10
 User --> UC7
 User --> UC12
 User --> UC15
-User --> UC11
 User --> UC4
 
 Admin --> UC16
-Admin --> UC17
 
 UC1 ..> UC2 : <<include>>
-UC7 ..> UC8 : <<include>>
 UC7 ..> UC13 : <<include>>
 UC12 ..> UC13 : <<include>>
 
+UC8 ..> UC7 : <<extend>>
 UC9 ..> UC7 : <<extend>>
 UC14 ..> UC12 : <<extend>>
-UC10 ..> UC6 : <<extend>>
-
-UC2 -- WhatsApp
-UC14 -- WhatsApp
-UC13 -- Maps
 @enduml
 ```
+
