@@ -82,6 +82,7 @@ const EditProfileScreen = ({ navigation }) => {
   const [profileState, setProfileState] = useState('');
   const [profileCity, setProfileCity] = useState('');
   const [profileCoords, setProfileCoords] = useState(null);
+  const [searchRadiusKm, setSearchRadiusKm] = useState(60);
   const [mapVisible, setMapVisible] = useState(false);
 
   const [saving, setSaving] = useState(false);
@@ -101,6 +102,21 @@ const EditProfileScreen = ({ navigation }) => {
     }, 1000);
     return () => clearInterval(timer);
   }, [phoneCooldown]);
+
+  useEffect(() => {
+    const loadSavedRadius = async () => {
+      try {
+        const storedRadius = await AsyncStorage.getItem('@wefind/search_radius');
+        if (storedRadius) {
+          const r = Number(storedRadius);
+          if (r > 0) setSearchRadiusKm(r);
+        }
+      } catch (e) {
+        console.warn('[EditProfileScreen] Erro ao carregar raio:', e.message);
+      }
+    };
+    loadSavedRadius();
+  }, []);
 
   useEffect(() => {
     if (userProfile) {
@@ -174,8 +190,10 @@ const EditProfileScreen = ({ navigation }) => {
             city: profileCity,
             state: profileState,
             coords: profileCoords || null,
+            radiusKm: searchRadiusKm || 60,
           })
         );
+        await AsyncStorage.setItem('@wefind/search_radius', String(searchRadiusKm || 60));
       } catch (e) {
         console.warn('[EditProfileScreen] Falha ao sincronizar AsyncStorage:', e.message);
       }
@@ -446,6 +464,54 @@ const EditProfileScreen = ({ navigation }) => {
             {hasLocation ? 'Alterar localização no mapa' : 'Escolher no mapa'}
           </Text>
         </TouchableOpacity>
+
+        {/* Seletor de Raio Padrão */}
+        <View style={{
+          backgroundColor: isDark ? colors.innerCard : colors.primaryLight,
+          padding: 12,
+          borderRadius: 12,
+          marginTop: 14,
+          borderWidth: 1,
+          borderColor: isDark ? colors.cardBorder : '#DBEAFE',
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+            <MaterialIcons name="radar" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+            <Text style={{ color: isDark ? '#93C5FD' : '#1E40AF', fontSize: 13, fontWeight: '700' }}>
+              Raio de Busca: <Text style={{ fontWeight: '900', color: colors.primary }}>{searchRadiusKm} km</Text>
+            </Text>
+          </View>
+          <Text style={{ color: isDark ? colors.textSecondary : '#475569', fontSize: 11.5, marginBottom: 10 }}>
+            Distância máxima padrão para notificações e feed de animais próximos:
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            {[15, 30, 60, 100, 150, 250].map((r) => {
+              const isSelected = searchRadiusKm === r;
+              return (
+                <TouchableOpacity
+                  key={r}
+                  onPress={() => setSearchRadiusKm(r)}
+                  activeOpacity={0.75}
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: isSelected ? colors.primary : colors.border,
+                    backgroundColor: isSelected ? colors.primary : (isDark ? colors.surface : '#FFFFFF'),
+                  }}
+                >
+                  <Text style={{
+                    fontSize: 12,
+                    fontWeight: isSelected ? '800' : '600',
+                    color: isSelected ? '#FFFFFF' : colors.text,
+                  }}>
+                    {r} km
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
       </View>
 
       {/* Seção 3: Contatos e Redes Sociais */}

@@ -459,10 +459,22 @@ const HomeScreen = ({ navigation, route }) => {
   const [profileEditCoords, setProfileEditCoords] = useState(null);
   const [profileMapVisible, setProfileMapVisible] = useState(false);
   const [userCoords, setUserCoords] = useState(null);
+  const [searchRadiusKm, setSearchRadiusKm] = useState(60);
+  const [profileEditRadiusKm, setProfileEditRadiusKm] = useState(60);
 
   useEffect(() => {
     const loadInitialLocation = async () => {
       try {
+        // Carrega o raio salvo se existir
+        const storedRadius = await AsyncStorage.getItem('@wefind/search_radius');
+        if (storedRadius) {
+          const r = Number(storedRadius);
+          if (r > 0) {
+            setSearchRadiusKm(r);
+            setProfileEditRadiusKm(r);
+          }
+        }
+
         if (userProfile?.state && userProfile?.city) {
           setSessionCity(userProfile.city);
           setSessionState(userProfile.state);
@@ -495,6 +507,11 @@ const HomeScreen = ({ navigation, route }) => {
             setProfileEditCity(parsed.city);
             setLocationFilter(`${parsed.city}, ${parsed.state}`);
 
+            if (parsed?.radiusKm) {
+              setSearchRadiusKm(Number(parsed.radiusKm));
+              setProfileEditRadiusKm(Number(parsed.radiusKm));
+            }
+
             if (parsed.coords) {
               setProfileEditCoords(parsed.coords);
               setUserCoords(parsed.coords);
@@ -526,8 +543,10 @@ const HomeScreen = ({ navigation, route }) => {
   const handleSaveProfileLocation = async () => {
     if (!profileEditState || !profileEditCity) return;
     
+    const chosenRadius = profileEditRadiusKm || 60;
     setSessionCity(profileEditCity);
     setSessionState(profileEditState);
+    setSearchRadiusKm(chosenRadius);
     setLocationFilter(`${profileEditCity}, ${profileEditState}`);
     setLocationFilterTouched(true);
 
@@ -545,8 +564,10 @@ const HomeScreen = ({ navigation, route }) => {
           city: profileEditCity,
           state: profileEditState,
           coords: coords || null,
+          radiusKm: chosenRadius,
         })
       );
+      await AsyncStorage.setItem('@wefind/search_radius', String(chosenRadius));
     } catch (e) {
       console.warn('[HomeScreen] Falha ao salvar localização no AsyncStorage:', e.message);
     }
@@ -811,9 +832,9 @@ const HomeScreen = ({ navigation, route }) => {
           };
         })
         .filter(item => {
-          // 1. Se possuir coordenadas do usuário e do pet: filtra rigorosamente pelo raio de 60 km
+          // 1. Se possuir coordenadas do usuário e do pet: filtra rigorosamente pelo raio selecionado
           if (item._distanceKm != null) {
-            return item._distanceKm <= 60;
+            return item._distanceKm <= (searchRadiusKm || 60);
           }
 
           // 2. Se o pet não possuir coordenadas gravadas: fallback textual para a mesma cidade/estado
@@ -1064,6 +1085,7 @@ const HomeScreen = ({ navigation, route }) => {
               onPress={() => {
                 setProfileEditCity(activeCity);
                 setProfileEditState(activeState);
+                setProfileEditRadiusKm(searchRadiusKm);
                 setShowProfileLocationModal(true);
               }}
               accessibilityLabel={`Localidade: ${displayLocation}`}
@@ -1071,7 +1093,7 @@ const HomeScreen = ({ navigation, route }) => {
             >
               <MaterialIcons name="place" size={14} color="#FEA937" style={{ marginRight: 4 }} />
               <Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '600', marginRight: 6 }}>
-                {displayLocation}
+                {activeCity && activeState ? `${activeCity}, ${activeState} • ${searchRadiusKm} km` : displayLocation}
               </Text>
               <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 10, padding: 2 }}>
                 <MaterialIcons name="edit" size={11} color="#FFFFFF" />
@@ -1183,21 +1205,52 @@ const HomeScreen = ({ navigation, route }) => {
                   ? 'Escolha sua cidade e estado para personalizar o feed e seu perfil:'
                   : 'Escolha uma cidade e estado para visualizar publicações dessa região:'}
               </Text>
-              {/* Aviso Informativo de Raio de 60 km */}
+              {/* Seletor Interativo de Raio de Busca */}
               <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: colors.primaryLight,
-                padding: 10,
-                borderRadius: 10,
+                backgroundColor: isDark ? colors.card : colors.primaryLight,
+                padding: 12,
+                borderRadius: 12,
                 marginBottom: 14,
                 borderWidth: 1,
                 borderColor: isDark ? colors.cardBorder : '#DBEAFE',
               }}>
-                <MaterialIcons name="radar" size={20} color={colors.primary} style={{ marginRight: 8 }} />
-                <Text style={{ color: isDark ? '#93C5FD' : '#1E40AF', fontSize: 12, lineHeight: 16, flex: 1 }}>
-                  Ao definir sua localização, o aplicativo filtrará automaticamente os animais em um raio de <Text style={{ fontWeight: '800' }}>60 km</Text> de você.
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                  <MaterialIcons name="radar" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+                  <Text style={{ color: isDark ? '#93C5FD' : '#1E40AF', fontSize: 13, fontWeight: '700' }}>
+                    Raio de Busca: <Text style={{ fontWeight: '900', color: colors.primary }}>{profileEditRadiusKm} km</Text>
+                  </Text>
+                </View>
+                <Text style={{ color: isDark ? colors.textSecondary : '#475569', fontSize: 11.5, marginBottom: 10 }}>
+                  Selecione a distância máxima para filtrar publicações ao redor de você:
                 </Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                  {[15, 30, 60, 100, 150, 250].map((r) => {
+                    const isSelected = profileEditRadiusKm === r;
+                    return (
+                      <TouchableOpacity
+                        key={r}
+                        onPress={() => setProfileEditRadiusKm(r)}
+                        activeOpacity={0.75}
+                        style={{
+                          paddingHorizontal: 10,
+                          paddingVertical: 6,
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: isSelected ? colors.primary : colors.border,
+                          backgroundColor: isSelected ? colors.primary : (isDark ? colors.surface : '#FFFFFF'),
+                        }}
+                      >
+                        <Text style={{
+                          fontSize: 12,
+                          fontWeight: isSelected ? '800' : '600',
+                          color: isSelected ? '#FFFFFF' : colors.text,
+                        }}>
+                          {r} km
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </View>
 
               <TouchableOpacity
