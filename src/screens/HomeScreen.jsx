@@ -102,7 +102,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
   };
   const cat = categoryColors[item.category] || categoryColors.other;
   const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
-  const IMAGE_HEIGHT = 290;
+  const IMAGE_HEIGHT = 195;
   // Defensive string conversion for all text props
   const safeTitle = item.title != null ? String(item.title) : '';
   const safeDescription = item.description != null ? String(item.description) : '';
@@ -114,7 +114,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
     ? item.rewards.find(reward => reward?.status === 'active')
     : null;
   return (
-    <Card style={{ padding: 0, marginHorizontal: 8, marginVertical: 10, borderRadius: 18, overflow: 'hidden', backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
+    <Card style={{ padding: 0, marginHorizontal: 12, marginVertical: 6, borderRadius: 16, overflow: 'hidden', backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 }}>
       {/* Imagem / Carrossel de Fotos */}
       <View
         style={{ position: 'relative', width: '100%', height: IMAGE_HEIGHT }}
@@ -153,50 +153,50 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
           )
         ) : (
           <View style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: '#9CA3AF' }}>Sem foto</Text>
+            <Text style={{ color: '#9CA3AF', fontSize: 13 }}>Sem foto</Text>
           </View>
         )}
 
         {/* Badges */}
-        <View style={{ position: 'absolute', top: 12, left: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 6, zIndex: 10, maxWidth: cardWidth > 0 ? cardWidth - 70 : 250 }}>
-          <View style={{ backgroundColor: statusColor, borderRadius: 8, paddingHorizontal: 9, paddingVertical: 2 }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12.5 }}>
+        <View style={{ position: 'absolute', top: 10, left: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 5, zIndex: 10, maxWidth: cardWidth > 0 ? cardWidth - 65 : 240 }}>
+          <View style={{ backgroundColor: statusColor, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 11.5 }}>
               {item.extra_fields?.is_direct_adoption ? 'Para Adoção' : statusLabel}
             </Text>
           </View>
           {item.status === 'found' && !item.extra_fields?.is_direct_adoption && (
             item.extra_fields?.found_custody === 'spotted' ? (
-              <View style={{ backgroundColor: '#FEF3C7', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 }}>
-                <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 11.5 }}>👀 Visto na Rua</Text>
+              <View style={{ backgroundColor: '#FEF3C7', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
+                <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 11 }}>👀 Visto na Rua</Text>
               </View>
             ) : (
-              <View style={{ backgroundColor: '#DCFCE7', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 }}>
-                <Text style={{ color: '#15803D', fontWeight: 'bold', fontSize: 11.5 }}>🏠 Em Lar Temp.</Text>
+              <View style={{ backgroundColor: '#DCFCE7', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
+                <Text style={{ color: '#15803D', fontWeight: 'bold', fontSize: 11 }}>🏠 Em Lar Temp.</Text>
               </View>
             )
           )}
           {itemsService.isPetAvailableForAdoption(item) ? (
-            <View style={{ backgroundColor: '#FCE7F3', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 }}>
-              <Text style={{ color: '#BE185D', fontWeight: 'bold', fontSize: 11.5 }}>🐾 Para Adoção</Text>
+            <View style={{ backgroundColor: '#FCE7F3', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
+              <Text style={{ color: '#BE185D', fontWeight: 'bold', fontSize: 11 }}>🐾 Para Adoção</Text>
             </View>
           ) : (
             item.status === 'found' && item.extra_fields?.adoption_intent && itemsService.getAdoptionWaitingDays(item) > 0 ? (
-              <View style={{ backgroundColor: '#FEF3C7', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 }}>
-                <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 11.5 }}>
+              <View style={{ backgroundColor: '#FEF3C7', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
+                <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 11 }}>
                   ⏳ Busca ({itemsService.getAdoptionWaitingDays(item)}d)
                 </Text>
               </View>
             ) : null
           )}
-          <View style={{ backgroundColor: cat.bg, borderRadius: 8, paddingHorizontal: 9, paddingVertical: 2 }}>
-            <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 12.5 }}>{cat.label}</Text>
+          <View style={{ backgroundColor: cat.bg, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
+            <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 11.5 }}>{cat.label}</Text>
           </View>
         </View>
 
         {/* Contador de fotos (se houver mais de 1 foto) */}
         {photos.length > 1 && (
-          <View style={{ position: 'absolute', top: 12, right: 54, backgroundColor: 'rgba(0, 0, 0, 0.65)', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3, zIndex: 10 }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '700' }}>
+          <View style={{ position: 'absolute', top: 10, right: 48, backgroundColor: 'rgba(0, 0, 0, 0.65)', borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2, zIndex: 10 }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 10.5, fontWeight: '700' }}>
               {carouselIndex + 1}/{photos.length}
             </Text>
           </View>
@@ -204,14 +204,14 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
 
         {/* Pontos de Paginação na parte inferior da foto */}
         {photos.length > 1 && (
-          <View style={{ position: 'absolute', bottom: 10, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, zIndex: 10 }}>
+          <View style={{ position: 'absolute', bottom: 8, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4, zIndex: 10 }}>
             {photos.map((_, dotIndex) => (
               <View
                 key={dotIndex}
                 style={{
-                  width: carouselIndex === dotIndex ? 16 : 6,
-                  height: 6,
-                  borderRadius: 3,
+                  width: carouselIndex === dotIndex ? 14 : 5,
+                  height: 5,
+                  borderRadius: 2.5,
                   backgroundColor: carouselIndex === dotIndex ? '#FFFFFF' : 'rgba(255, 255, 255, 0.5)',
                 }}
               />
@@ -220,34 +220,34 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
         )}
 
         {item.owner_id === user?.id && item.renewalInfo?.needsRenewal && Number.isFinite(item.renewalInfo?.daysRemaining) && (
-          <View style={{ position: 'absolute', bottom: 12, left: 12, right: 12, backgroundColor: 'rgba(245, 158, 11, 0.95)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, zIndex: 10 }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>
+          <View style={{ position: 'absolute', bottom: 8, left: 8, right: 8, backgroundColor: 'rgba(245, 158, 11, 0.95)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6, zIndex: 10 }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>
               Renove esta publicação em {item.renewalInfo.daysRemaining} dia{item.renewalInfo.daysRemaining === 1 ? '' : 's'}
             </Text>
           </View>
         )}
         {/* Botão de Compartilhar no canto superior direito */}
-        <View style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>
+        <View style={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}>
           <ShareButton item={item} imageUrl={photos[0]?.url} />
         </View>
       </View>
       {/* Conteúdo */}
-      <View style={{ padding: 16, paddingBottom: 12 }}>
+      <View style={{ padding: 12, paddingBottom: 10 }}>
         {/* Título */}
-        <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: safeDescription?.trim() ? 6 : 10 }}>
+        <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: safeDescription?.trim() ? 4 : 6 }}>
           {safeTitle}
         </Text>
 
         {/* Descrição (renderiza apenas se existir texto) */}
         {safeDescription?.trim() ? (
-          <Text style={{ fontSize: 14, color: '#4B5563', lineHeight: 20, marginBottom: 12 }} numberOfLines={2}>
+          <Text style={{ fontSize: 13, color: '#4B5563', lineHeight: 18, marginBottom: 8 }} numberOfLines={2}>
             {safeDescription}
           </Text>
         ) : null}
 
         {/* Recompensa (se houver) */}
         {activeReward && (
-          <View style={[styles.rewardBadge, { marginBottom: 12 }]}>
+          <View style={[styles.rewardBadge, { marginBottom: 8, paddingVertical: 4, paddingHorizontal: 8 }]}>
             <Text style={styles.rewardBadgeText}>
               {activeReward.amount ? `Recompensa: R$ ${parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Recompensa oferecida'}
               {activeReward.description ? ` • ${activeReward.description}` : ''}
@@ -258,34 +258,35 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
         {/* Bloco de Localização e Data Moderno */}
         <View style={{
           backgroundColor: '#F8FAFC',
-          borderRadius: 12,
-          padding: 12,
+          borderRadius: 10,
+          paddingVertical: 8,
+          paddingHorizontal: 10,
           borderWidth: 1,
           borderColor: '#E2E8F0',
-          marginBottom: 12,
+          marginBottom: 8,
         }}>
           {/* Cabeçalho do bloco: Rótulo de Status à esquerda e Data à direita */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
               <MaterialIcons
                 name="place"
-                size={16}
+                size={14}
                 color={item.status === 'lost' ? '#D97706' : '#16A34A'}
               />
               <Text style={{
-                fontSize: 11,
+                fontSize: 10.5,
                 fontWeight: '700',
                 color: item.status === 'lost' ? '#D97706' : '#16A34A',
                 textTransform: 'uppercase',
-                letterSpacing: 0.5,
+                letterSpacing: 0.4,
               }}>
                 {item.status === 'lost' ? 'Última vez visto' : 'Local onde foi encontrado'}
               </Text>
             </View>
             {item.date ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                <MaterialIcons name="event" size={13} color="#94A3B8" />
-                <Text style={{ fontSize: 12, color: '#64748B', fontWeight: '500' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                <MaterialIcons name="event" size={12} color="#94A3B8" />
+                <Text style={{ fontSize: 11.5, color: '#64748B', fontWeight: '500' }}>
                   {formatItemDate(item.date)}
                 </Text>
               </View>
@@ -293,11 +294,11 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
           </View>
 
           {/* Endereço: Cidade - Estado e Complemento */}
-          <Text style={{ fontSize: 15, fontWeight: '700', color: '#1E293B', lineHeight: 20, marginTop: 2 }}>
+          <Text style={{ fontSize: 14, fontWeight: '700', color: '#1E293B', lineHeight: 18, marginTop: 1 }}>
             {formatCityState(item)}
           </Text>
           {formatStreetNumberNeighborhood(item) ? (
-            <Text style={{ fontSize: 13, color: '#64748B', marginTop: 2, lineHeight: 18 }}>
+            <Text style={{ fontSize: 12, color: '#64748B', marginTop: 1, lineHeight: 16 }}>
               {formatStreetNumberNeighborhood(item)}
             </Text>
           ) : null}
@@ -309,15 +310,15 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: '#F0FDF4',
-            borderRadius: 8,
-            paddingHorizontal: 10,
-            paddingVertical: 5,
-            marginBottom: 10,
+            borderRadius: 7,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            marginBottom: 8,
             borderWidth: 1,
             borderColor: '#DCFCE7',
           }}>
-            <MaterialIcons name="person-pin" size={15} color="#16A34A" />
-            <Text style={{ fontSize: 12, color: '#166534', fontWeight: '700', marginLeft: 4 }}>
+            <MaterialIcons name="person-pin" size={14} color="#16A34A" />
+            <Text style={{ fontSize: 11.5, color: '#166534', fontWeight: '700', marginLeft: 4 }}>
               {item.status === 'lost' ? 'Tutor:' : 'Responsável:'}{' '}
               <Text style={{ fontWeight: '600' }}>{item.extra_fields.third_party_owner.name}</Text>
               {item.extra_fields.third_party_owner.phone ? ` • 📞 ${item.extra_fields.third_party_owner.phone}` : ''}
@@ -327,9 +328,9 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
 
         {/* Rodapé: Dono e Ação */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ fontSize: 13, color: '#64748B' }}>Por </Text>
-            <Text style={{ fontSize: 13, color: '#1E293B', fontWeight: '600' }} numberOfLines={1}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1, marginRight: 8 }}>
+            <Text style={{ fontSize: 12, color: '#64748B' }}>Por </Text>
+            <Text style={{ fontSize: 12, color: '#1E293B', fontWeight: '600' }} numberOfLines={1}>
               {safeOwnerName || 'Usuário'}
             </Text>
           </View>
@@ -339,14 +340,14 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
               flexDirection: 'row',
               alignItems: 'center',
               backgroundColor: '#EFF6FF',
-              borderRadius: 20,
-              paddingHorizontal: 14,
-              paddingVertical: 7,
+              borderRadius: 16,
+              paddingHorizontal: 12,
+              paddingVertical: 5,
             }}
             activeOpacity={0.8}
           >
-            <MaterialIcons name="visibility" size={16} color="#2563EB" style={{ marginRight: 5 }} />
-            <Text style={{ color: '#2563EB', fontSize: 13, fontWeight: '700' }}>Ver detalhes</Text>
+            <MaterialIcons name="visibility" size={14} color="#2563EB" style={{ marginRight: 4 }} />
+            <Text style={{ color: '#2563EB', fontSize: 12, fontWeight: '700' }}>Ver detalhes</Text>
           </TouchableOpacity>
         </View>
       </View>
