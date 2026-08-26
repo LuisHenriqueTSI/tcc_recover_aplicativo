@@ -66,6 +66,7 @@ const SobreScreen = ({ navigation }) => {
   const [recoveredPets, setRecoveredPets] = useState([]);
   const [statistics, setStatistics] = useState({
     resolved_count: 0,
+    resolved_today_count: 0,
     lost_count: 0,
     found_count: 0,
     sightings_count: 0,
@@ -320,7 +321,7 @@ const SobreScreen = ({ navigation }) => {
               </View>
             </View>
             <Text style={styles.placarHeroBigNumber}>
-              {statistics.resolved_count > 0 ? `${statistics.resolved_count}` : '14'} reencontros hoje
+              {`${statistics.resolved_today_count || 0} ${(statistics.resolved_today_count === 1) ? 'reencontro hoje' : 'reencontros hoje'}`}
             </Text>
           </View>
 
@@ -329,9 +330,9 @@ const SobreScreen = ({ navigation }) => {
             <View style={styles.placarGreenPill}>
               <Text style={styles.placarGreenPillText}>
                 <Text style={styles.placarGreenPillBold}>
-                  {statistics.resolved_count > 0 ? statistics.resolved_count : '10.655'}
+                  {statistics.resolved_count || 0}
                 </Text>{' '}
-                reencontros desde o início
+                {(statistics.resolved_count === 1) ? 'animal reencontrado desde o início' : 'animais reencontrados desde o início'}
               </Text>
             </View>
           </View>
