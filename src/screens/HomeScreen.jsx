@@ -848,10 +848,10 @@ const HomeScreen = ({ navigation, route }) => {
           <View />
         </TouchableOpacity>
       )}
-      {/* App Bar ajustada: filtro de localidade ao lado da busca */}
-      <View style={{ backgroundColor: '#2563EB', paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#2563EB' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+      {/* App Bar ajustada: nome do app e localização centralizados */}
+      <View style={{ backgroundColor: '#2563EB', paddingTop: 40, paddingBottom: 10, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#2563EB' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', minHeight: 48, position: 'relative' }}>
+          <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <Text style={{ color: '#fff', fontWeight: '900', fontSize: 23, letterSpacing: 0.8, marginBottom: 2 }}>WeFIND</Text>
             <TouchableOpacity
               style={{
@@ -860,8 +860,8 @@ const HomeScreen = ({ navigation, route }) => {
                 backgroundColor: 'rgba(255, 255, 255, 0.16)',
                 borderRadius: 20,
                 paddingHorizontal: 10,
-                paddingVertical: 5,
-                marginTop: 4,
+                paddingVertical: 4,
+                marginTop: 2,
                 borderWidth: 1,
                 borderColor: 'rgba(255, 255, 255, 0.28)',
               }}
@@ -873,18 +873,18 @@ const HomeScreen = ({ navigation, route }) => {
               accessibilityLabel={`Localidade: ${displayLocation}`}
               activeOpacity={0.75}
             >
-              <MaterialIcons name="place" size={15} color="#FEA937" style={{ marginRight: 4 }} />
-              <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '600', marginRight: 6 }}>
+              <MaterialIcons name="place" size={14} color="#FEA937" style={{ marginRight: 4 }} />
+              <Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '600', marginRight: 6 }}>
                 {displayLocation}
               </Text>
               <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 10, padding: 2 }}>
-                <MaterialIcons name="edit" size={12} color="#FFFFFF" />
+                <MaterialIcons name="edit" size={11} color="#FFFFFF" />
               </View>
             </TouchableOpacity>
           </View>
 
           {user && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12 }}>
+            <View style={{ position: 'absolute', right: 0, flexDirection: 'row', alignItems: 'center' }}>
               <NotificationBell />
               <TouchableOpacity
                 onPress={() => setShowProfileMenu((prev) => !prev)}
