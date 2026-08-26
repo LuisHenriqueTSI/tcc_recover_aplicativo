@@ -279,15 +279,31 @@ export default function EsqueciSenhaScreen({ navigation }) {
           {/* ======================================================== */}
           {step === 2 && (
             <View style={styles.card}>
-              <View style={[styles.iconCircle, { backgroundColor: '#DCFCE7' }]}>
-                <MaterialIcons name="mark-email-read" size={32} color="#16A34A" />
+              {/* Cabeçalho Compacto do Passo 2 para economizar espaço vertical */}
+              <View style={styles.step2Header}>
+                <View style={[styles.miniIconCircle, { backgroundColor: '#DCFCE7' }]}>
+                  <MaterialIcons name="mark-email-read" size={20} color="#16A34A" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={styles.compactCardTitle}>Código de Confirmação</Text>
+                  <Text style={styles.compactCardSubtitle}>Enviado para {maskedPhone}</Text>
+                </View>
               </View>
 
-              <Text style={styles.cardTitle}>Código de Confirmação</Text>
-              <Text style={styles.cardSubtitle}>
-                Enviamos um código de 6 dígitos no WhatsApp para:
-              </Text>
-              <Text style={styles.highlightPhone}>{maskedPhone}</Text>
+              {/* Campo do Código colocado BEM NO TOPO para NUNCA ser coberto pelo teclado */}
+              <View style={styles.codeInputContainer}>
+                <Text style={styles.codeInputLabel}>Digite o código de 6 dígitos:</Text>
+                <TextInput
+                  style={styles.codeInput}
+                  placeholder="000000"
+                  placeholderTextColor="#CBD5E1"
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  value={code}
+                  onChangeText={(t) => setCode(t.replace(/\D/g, ''))}
+                  autoFocus
+                />
+              </View>
 
               {/* Seletor de Contas caso mais de uma conta use o mesmo WhatsApp */}
               {accounts.length > 1 && (
@@ -325,20 +341,6 @@ export default function EsqueciSenhaScreen({ navigation }) {
                   })}
                 </View>
               )}
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Código de 6 dígitos</Text>
-                <TextInput
-                  style={styles.codeInput}
-                  placeholder="000000"
-                  placeholderTextColor="#CBD5E1"
-                  keyboardType="number-pad"
-                  maxLength={6}
-                  value={code}
-                  onChangeText={(t) => setCode(t.replace(/\D/g, ''))}
-                  autoFocus
-                />
-              </View>
 
               <TouchableOpacity
                 style={[styles.primaryButton, loading && styles.buttonDisabled]}
@@ -581,13 +583,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 20,
+    paddingBottom: 160,
     backgroundColor: '#F8FAFC',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
   },
   stepperContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
     marginTop: 4,
   },
   stepTrack: {
@@ -637,7 +640,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 24,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -645,6 +648,44 @@ const styles = StyleSheet.create({
     elevation: 4,
     borderWidth: 1,
     borderColor: '#F1F5F9',
+  },
+  step2Header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 6,
+  },
+  miniIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  compactCardTitle: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  compactCardSubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  codeInputContainer: {
+    marginTop: 14,
+    marginBottom: 16,
+  },
+  codeInputLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#334155',
+    textAlign: 'center',
+    marginBottom: 8,
   },
   iconCircle: {
     width: 64,
