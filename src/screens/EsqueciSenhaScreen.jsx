@@ -35,6 +35,10 @@ export default function EsqueciSenhaScreen({ navigation }) {
   // Token temporário de uso único
   const [resetToken, setResetToken] = useState('');
 
+  // Contas associadas ao WhatsApp (para quando um mesmo número tiver múltiplos cadastros)
+  const [accounts, setAccounts] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+
   // Estados de controle
   const [loading, setLoading] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
@@ -79,8 +83,12 @@ export default function EsqueciSenhaScreen({ navigation }) {
 
     setLoading(true);
     try {
-      const result = await requestPasswordResetByWhatsApp(rawDigits);
+      const result = await requestPasswordResetByWhatsApp(rawDigits, selectedAccount?.id);
       setMaskedPhone(result.maskedPhone || whatsapp);
+      setAccounts(result.accounts || []);
+      if (result.accounts && result.accounts.length > 0) {
+        setSelectedAccount(result.accounts[0]);
+      }
       setCooldownSeconds(60);
       setStep(2);
     } catch (error) {
@@ -101,7 +109,7 @@ export default function EsqueciSenhaScreen({ navigation }) {
     setLoading(true);
     try {
       const rawDigits = whatsapp.replace(/\D/g, '');
-      const result = await verifyPasswordResetCode(rawDigits, cleanCode);
+      const result = await verifyPasswordResetCode(rawDigits, cleanCode, selectedAccount?.id);
       if (result.resetToken) {
         setResetToken(result.resetToken);
         setStep(3);
@@ -280,6 +288,43 @@ export default function EsqueciSenhaScreen({ navigation }) {
                 Enviamos um código de 6 dígitos no WhatsApp para:
               </Text>
               <Text style={styles.highlightPhone}>{maskedPhone}</Text>
+
+              {/* Seletor de Contas caso mais de uma conta use o mesmo WhatsApp */}
+              {accounts.length > 1 && (
+                <View style={styles.multiAccountBox}>
+                  <Text style={styles.multiAccountTitle}>Selecione a conta que deseja redefinir:</Text>
+                  {accounts.map((acc) => {
+                    const isSelected = selectedAccount?.id === acc.id;
+                    return (
+                      <TouchableOpacity
+                        key={acc.id}
+                        onPress={() => setSelectedAccount(acc)}
+                        style={[styles.accountOption, isSelected && styles.accountOptionSelected]}
+                        activeOpacity={0.8}
+                      >
+                        <View style={[styles.accountAvatar, isSelected && styles.accountAvatarSelected]}>
+                          <Text style={[styles.accountAvatarText, isSelected && styles.accountAvatarTextSelected]}>
+                            {acc.name ? acc.name[0].toUpperCase() : 'U'}
+                          </Text>
+                        </View>
+                        <View style={{ flex: 1, marginLeft: 10 }}>
+                          <Text style={[styles.accountName, isSelected && styles.accountNameSelected]} numberOfLines={1}>
+                            {acc.name || 'Usuário'}
+                          </Text>
+                          <Text style={styles.accountEmail} numberOfLines={1}>
+                            {acc.maskedEmail || acc.email}
+                          </Text>
+                        </View>
+                        <MaterialIcons
+                          name={isSelected ? 'radio-button-checked' : 'radio-button-unchecked'}
+                          size={20}
+                          color={isSelected ? '#2563EB' : '#94A3B8'}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
 
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Código de 6 dígitos</Text>
@@ -630,12 +675,72 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#2563EB',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
     backgroundColor: '#EFF6FF',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 10,
     alignSelf: 'center',
+  },
+  multiAccountBox: {
+    marginBottom: 20,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  multiAccountTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#475569',
+    marginBottom: 10,
+  },
+  accountOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    marginBottom: 8,
+  },
+  accountOptionSelected: {
+    borderColor: '#2563EB',
+    backgroundColor: '#EFF6FF',
+  },
+  accountAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  accountAvatarSelected: {
+    backgroundColor: '#2563EB',
+  },
+  accountAvatarText: {
+    color: '#475569',
+    fontWeight: '800',
+    fontSize: 15,
+  },
+  accountAvatarTextSelected: {
+    color: '#FFFFFF',
+  },
+  accountName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  accountNameSelected: {
+    color: '#2563EB',
+  },
+  accountEmail: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
   },
   inputGroup: {
     marginBottom: 16,

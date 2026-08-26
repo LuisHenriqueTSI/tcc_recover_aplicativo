@@ -266,9 +266,9 @@ export const sendPasswordReset = async (email) => {
 /**
  * Solicita código de 6 dígitos no WhatsApp para redefinir senha
  */
-export const requestPasswordResetByWhatsApp = async (whatsapp) => {
+export const requestPasswordResetByWhatsApp = async (whatsapp, userId = null) => {
   try {
-    console.log('[requestPasswordResetByWhatsApp] Solicitando código para:', whatsapp);
+    console.log('[requestPasswordResetByWhatsApp] Solicitando código para:', whatsapp, 'userId:', userId);
     const payloadWhatsapp = normalizeWhatsapp(whatsapp);
     if (!payloadWhatsapp) {
       throw new Error('Informe um número de WhatsApp válido com DDD.');
@@ -284,6 +284,7 @@ export const requestPasswordResetByWhatsApp = async (whatsapp) => {
       body: JSON.stringify({
         action: 'send-reset-code',
         whatsapp: payloadWhatsapp,
+        userId: userId || undefined,
       }),
     });
 
@@ -297,6 +298,8 @@ export const requestPasswordResetByWhatsApp = async (whatsapp) => {
       pendingVerification: true,
       maskedPhone: data.maskedPhone || `(XX) *****-${payloadWhatsapp.slice(-4)}`,
       whatsapp: payloadWhatsapp,
+      accounts: data.accounts || [],
+      hasMultipleAccounts: Boolean(data.hasMultipleAccounts),
     };
   } catch (error) {
     console.warn('[requestPasswordResetByWhatsApp] Erro:', error.message);
@@ -307,9 +310,9 @@ export const requestPasswordResetByWhatsApp = async (whatsapp) => {
 /**
  * Valida o código de 6 dígitos do WhatsApp e obtém o reset_token temporário
  */
-export const verifyPasswordResetCode = async (whatsapp, code) => {
+export const verifyPasswordResetCode = async (whatsapp, code, userId = null) => {
   try {
-    console.log('[verifyPasswordResetCode] Validando código...');
+    console.log('[verifyPasswordResetCode] Validando código...', { userId });
     const payloadWhatsapp = normalizeWhatsapp(whatsapp);
     const trimmedCode = String(code || '').trim();
 
@@ -328,6 +331,7 @@ export const verifyPasswordResetCode = async (whatsapp, code) => {
         action: 'verify-reset-code',
         whatsapp: payloadWhatsapp,
         verificationCode: trimmedCode,
+        userId: userId || undefined,
       }),
     });
 
@@ -339,6 +343,7 @@ export const verifyPasswordResetCode = async (whatsapp, code) => {
     return {
       success: true,
       resetToken: data.resetToken,
+      user: data.user,
     };
   } catch (error) {
     console.warn('[verifyPasswordResetCode] Erro:', error.message);

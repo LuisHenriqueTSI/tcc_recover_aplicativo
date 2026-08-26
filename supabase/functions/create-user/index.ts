@@ -339,7 +339,14 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-async function findUserProfileByPhone(supabaseUrl: string, serviceRoleKey: string, phone: string) {
+function maskEmail(email: string | undefined | null) {
+  if (!email || !email.includes('@')) return email || '';
+  const [user, domain] = email.split('@');
+  if (user.length <= 2) return `${user}***@${domain}`;
+  return `${user.slice(0, 2)}***${user.slice(-1)}@${domain}`;
+}
+
+async function findUserProfilesByPhone(supabaseUrl: string, serviceRoleKey: string, phone: string) {
   const digits = String(phone || '').replace(/\D/g, '');
   const cleanPhone = digits.startsWith('55') ? digits.slice(2) : digits;
   const last8 = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : cleanPhone;
@@ -355,15 +362,11 @@ async function findUserProfileByPhone(supabaseUrl: string, serviceRoleKey: strin
   if (ddd) {
     const var10 = cleanPhone.length === 11 && cleanPhone[2] === '9' ? `${ddd}${cleanPhone.slice(3)}` : null;
     const var11 = cleanPhone.length === 10 ? `${ddd}9${cleanPhone.slice(2)}` : null;
-    if (var10) {
-      conditions.push(`whatsapp.ilike.*${var10}*`, `phone.ilike.*${var10}*`);
-    }
-    if (var11) {
-      conditions.push(`whatsapp.ilike.*${var11}*`, `phone.ilike.*${var11}*`);
-    }
+    if (var10) conditions.push(`whatsapp.ilike.*${var10}*`, `phone.ilike.*${var10}*`);
+    if (var11) conditions.push(`whatsapp.ilike.*${var11}*`, `phone.ilike.*${var11}*`);
   }
 
-  const profilesUrl = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/profiles?select=id,name,email,whatsapp,phone&or=(${conditions.join(',')})&limit=5`;
+  const profilesUrl = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/profiles?select=id,name,email,whatsapp,phone,created_at&or=(${conditions.join(',')})&order=created_at.desc&limit=10`;
   const profileRes = await fetch(profilesUrl, {
     method: 'GET',
     headers: getRestHeaders(serviceRoleKey),
@@ -374,20 +377,20 @@ async function findUserProfileByPhone(supabaseUrl: string, serviceRoleKey: strin
       const list = await profileRes.json();
       if (Array.isArray(list) && list.length > 0) {
         if (ddd) {
-          const match = list.find((p: Record<string, unknown>) => {
+          const filtered = list.filter((p: Record<string, unknown>) => {
             const pDigits = String(p.whatsapp || p.phone || '').replace(/\D/g, '');
             return pDigits.includes(ddd) && pDigits.includes(last8);
           });
-          if (match) return match;
+          if (filtered.length > 0) return filtered;
         }
-        return list[0];
+        return list;
       }
     } catch {
       // ignore
     }
   }
 
-  return null;
+  return [];
 }
 
   // ==========================================
@@ -408,10 +411,10 @@ async function findUserProfileByPhone(supabaseUrl: string, serviceRoleKey: strin
     const rawDigits = whatsapp.replace(/\D/g, '');
     const cleanPhone = rawDigits.startsWith('55') ? rawDigits.slice(2) : rawDigits;
 
-    // Buscar perfil do usuário com correspondência inteligente de DDD e 9 dígitos
-    const foundProfile = await findUserProfileByPhone(supabaseUrl, serviceRoleKey, whatsapp);
+    // Buscar perfis associados a este número
+    const foundProfiles = await findUserProfilesByPhone(supabaseUrl, serviceRoleKey, whatsapp);
 
-    if (!foundProfile) {
+    if (!foundProfiles || foundProfiles.length === 0) {
       return jsonResponse({
         ok: false,
         error: 'user-not-found',
@@ -419,19 +422,28 @@ async function findUserProfileByPhone(supabaseUrl: string, serviceRoleKey: strin
       }, 404);
     }
 
-    const code = createSixDigitCode();
-    const resetKey = `reset_${foundProfile.id}`;
+    const selectedUserId = String(body.userId ?? '').trim();
+    let targetProfile = foundProfiles[0];
+    if (selectedUserId) {
+      const found = foundProfiles.find((p: Record<string, unknown>) => p.id === selectedUserId);
+      if (found) targetProfile = found;
+    }
 
-    // Grava código temporário na tabela de verificações (expira em 10 min)
-    await storeVerificationCode(supabaseUrl, serviceRoleKey, resetKey, code, whatsapp);
+    const code = createSixDigitCode();
+
+    // Grava código para o perfil alvo e também para os perfis vinculados
+    for (const p of foundProfiles) {
+      const resetKey = `reset_${p.id}`;
+      await storeVerificationCode(supabaseUrl, serviceRoleKey, resetKey, code, whatsapp);
+    }
 
     // Dispara WhatsApp com mensagem formatada
     const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL') ?? 'https://wefind-whatsapp-api.onrender.com';
     const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') ?? 'wefind_secret_token_123';
     const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE') ?? 'wefind';
 
-    const userName = foundProfile.name ? String(foundProfile.name).split(' ')[0] : 'Usuário';
-    const messageText = `🐾 *Código de Redefinição de Senha - WeFIND*\n\nOlá, ${userName}! Você solicitou a redefinição de sua senha de acesso ao WeFIND.\n\nSeu código de segurança é:\n👉 *${code}*\n\nEste código é válido por 10 minutos. Se não foi você quem solicitou, por favor desconsidere esta mensagem.`;
+    const userName = targetProfile.name ? String(targetProfile.name).split(' ')[0] : 'Usuário';
+    const messageText = `🐾 *Código de Redefinição de Senha - WeFIND*\n\nOlá, ${userName}! Você solicitou a redefinição de senha para sua conta no WeFIND.\n\nSeu código de segurança é:\n👉 *${code}*\n\nEste código é válido por 10 minutos. Se não foi você quem solicitou, por favor desconsidere esta mensagem.`;
 
     try {
       const evoUrl = `${EVOLUTION_API_URL.replace(/\/$/, '')}/message/sendText/${EVOLUTION_INSTANCE}`;
@@ -450,15 +462,23 @@ async function findUserProfileByPhone(supabaseUrl: string, serviceRoleKey: strin
       console.warn('[send-reset-code] Erro ao enviar Evolution API:', err);
     }
 
-    // Mascarar telefone para exibição segura: ex (11) 9****-1234
     const ddd = cleanPhone.slice(0, 2);
     const lastDigits = cleanPhone.slice(-4);
     const maskedPhone = `(${ddd}) *****-${lastDigits}`;
+
+    const accountsSummary = foundProfiles.map((p: Record<string, unknown>) => ({
+      id: p.id,
+      name: p.name || 'Usuário',
+      email: p.email || '',
+      maskedEmail: maskEmail(String(p.email ?? '')),
+    }));
 
     return jsonResponse({
       ok: true,
       pendingVerification: true,
       maskedPhone,
+      accounts: accountsSummary,
+      hasMultipleAccounts: accountsSummary.length > 1,
       whatsappSent: true,
     });
   }
@@ -478,13 +498,20 @@ async function findUserProfileByPhone(supabaseUrl: string, serviceRoleKey: strin
       return jsonResponse({ ok: false, error: 'missing-service-role-key' }, 500);
     }
 
-    const foundProfile = await findUserProfileByPhone(supabaseUrl, serviceRoleKey, whatsapp);
+    const foundProfiles = await findUserProfilesByPhone(supabaseUrl, serviceRoleKey, whatsapp);
 
-    if (!foundProfile) {
+    if (!foundProfiles || foundProfiles.length === 0) {
       return jsonResponse({ ok: false, error: 'user-not-found' }, 404);
     }
 
-    const resetKey = `reset_${foundProfile.id}`;
+    const selectedUserId = String(body.userId ?? '').trim();
+    let targetProfile = foundProfiles[0];
+    if (selectedUserId) {
+      const found = foundProfiles.find((p: Record<string, unknown>) => p.id === selectedUserId);
+      if (found) targetProfile = found;
+    }
+
+    const resetKey = `reset_${targetProfile.id}`;
     const fetchResult = await fetchVerificationCode(supabaseUrl, serviceRoleKey, resetKey);
 
     if (!fetchResult.ok || !fetchResult.record) {
@@ -504,17 +531,25 @@ async function findUserProfileByPhone(supabaseUrl: string, serviceRoleKey: strin
       return jsonResponse({ ok: false, error: 'code-expired', message: 'Este código expirou. Solicite um novo código.' }, 400);
     }
 
-    // Invalida o código de 6 dígitos para impedir reuso
-    await deleteVerificationCode(supabaseUrl, serviceRoleKey, resetKey);
+    // Invalida o código de 6 dígitos para todos os perfis vinculados
+    for (const p of foundProfiles) {
+      await deleteVerificationCode(supabaseUrl, serviceRoleKey, `reset_${p.id}`);
+    }
 
     // Gera token criptográfico de uso único para a troca de senha (válido por 5 minutos)
     const resetToken = crypto.randomUUID();
     const tokenKey = `token_${resetToken}`;
-    await storeVerificationCode(supabaseUrl, serviceRoleKey, tokenKey, foundProfile.id, whatsapp);
+    await storeVerificationCode(supabaseUrl, serviceRoleKey, tokenKey, targetProfile.id, whatsapp);
 
     return jsonResponse({
       ok: true,
       resetToken,
+      user: {
+        id: targetProfile.id,
+        name: targetProfile.name,
+        email: targetProfile.email,
+        maskedEmail: maskEmail(String(targetProfile.email ?? '')),
+      },
     });
   }
 
