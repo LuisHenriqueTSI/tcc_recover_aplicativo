@@ -16,6 +16,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Calendar } from 'react-native-calendars';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import * as itemsService from '../services/items';
 import * as rewardsService from '../services/rewards';
 import Button from '../components/Button';
@@ -85,29 +86,49 @@ const getSelectedColorOptions = (value) => {
   return PET_COLOR_OPTIONS.filter((option) => (PET_COLOR_ALIASES[option] || [option]).some((alias) => normalized.includes(alias)));
 };
 
-const SelectionChips = ({ label, options, value, onChange, multiSelect = false }) => (
-  <View style={styles.selectionGroup}>
-    <Text style={styles.label}>{label}</Text>
-    <View style={styles.selectionChips}>
-      {options.map((option) => {
-        const selected = multiSelect
-          ? getSelectedColorOptions(value).includes(option)
-          : String(value || '').toLowerCase() === option.toLowerCase();
-        return (
-          <TouchableOpacity
-            key={option}
-            style={[styles.selectionChip, selected && styles.selectionChipSelected]}
-            onPress={() => onChange(option)}
-            accessibilityRole={multiSelect ? 'checkbox' : 'radio'}
-            accessibilityState={{ selected }}
-          >
-            <Text style={[styles.selectionChipText, selected && styles.selectionChipTextSelected]}>{option}</Text>
-          </TouchableOpacity>
-        );
-      })}
+const SelectionChips = ({ label, options, value, onChange, multiSelect = false }) => {
+  const { colors, isDark } = useTheme();
+  return (
+    <View style={styles.selectionGroup}>
+      <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
+      <View style={styles.selectionChips}>
+        {options.map((option) => {
+          const selected = multiSelect
+            ? getSelectedColorOptions(value).includes(option)
+            : String(value || '').toLowerCase() === option.toLowerCase();
+          return (
+            <TouchableOpacity
+              key={option}
+              style={[
+                styles.selectionChip,
+                {
+                  backgroundColor: selected
+                    ? (isDark ? 'rgba(37, 99, 235, 0.25)' : '#EFF6FF')
+                    : colors.card,
+                  borderColor: selected ? colors.primary : colors.cardBorder,
+                },
+                selected && styles.selectionChipSelected,
+              ]}
+              onPress={() => onChange(option)}
+              accessibilityRole={multiSelect ? 'checkbox' : 'radio'}
+              accessibilityState={{ selected }}
+            >
+              <Text
+                style={[
+                  styles.selectionChipText,
+                  { color: selected ? (isDark ? '#93C5FD' : '#1D4ED8') : colors.textSecondary },
+                  selected && styles.selectionChipTextSelected,
+                ]}
+              >
+                {option}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const normalizeSpeciesValue = (value) => {
   if (value === null || value === undefined) return '';
@@ -258,6 +279,7 @@ const BRAZIL_REGION_TO_UF = {
 
 const RegisterItemScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
+  const { colors, isDark } = useTheme();
   const editItem = route?.params?.editItem || null;
 
   // Debug: verifique se editItem está chegando corretamente
@@ -355,19 +377,19 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
   const renderLocationAndRewardSection = () => (
     <View>
-      <Text style={styles.label}>Localização</Text>
-      <Text style={styles.locationHint}>
+      <Text style={[styles.label, { color: colors.text }]}>Localização</Text>
+      <Text style={[styles.locationHint, { color: colors.textSecondary }]}>
         Escolha no mapa onde o animal foi {status === 'lost' ? 'perdido' : 'encontrado'}.
       </Text>
       {renderMapLocationButton()}
 
       <View style={styles.datePickerContainer}>
-        <Text style={styles.label}>Data do Evento *</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Data do Evento *</Text>
         <TouchableOpacity
-          style={styles.datePickerButton}
+          style={[styles.datePickerButton, { backgroundColor: isDark ? '#161F30' : '#F9FAFB', borderColor: colors.border }]}
           onPress={() => setShowDatePicker(true)}
         >
-          <Text style={styles.datePickerButtonText}>
+          <Text style={[styles.datePickerButtonText, { color: colors.text }]}>
             {formatDateDisplay(date)}
           </Text>
         </TouchableOpacity>
@@ -375,16 +397,16 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
       <Modal
         visible={showDatePicker}
-        transparent
+        transparent={true}
         animationType="slide"
         onRequestClose={() => setShowDatePicker(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.calendarWrapper}>
-            <View style={styles.calendarHeader}>
-              <Text style={styles.calendarTitle}>Selecione a Data</Text>
+          <View style={[styles.calendarWrapper, { backgroundColor: colors.surface }]}>
+            <View style={[styles.calendarHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.calendarTitle, { color: colors.text }]}>Selecione a Data</Text>
               <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                <Text style={styles.closeButton}>✕</Text>
+                <Text style={[styles.closeButton, { color: colors.textSecondary }]}>✕</Text>
               </TouchableOpacity>
             </View>
             <Calendar
@@ -392,17 +414,17 @@ const RegisterItemScreen = ({ navigation, route }) => {
               minDate="2020-01-01"
               maxDate={new Date().toISOString().split('T')[0]}
               onDayPress={handleDateSelect}
-              markedDates={{ [date]: { selected: true, selectedColor: '#2563EB', selectedTextColor: '#FFFFFF' } }}
+              markedDates={{ [date]: { selected: true, selectedColor: colors.primary, selectedTextColor: '#FFFFFF' } }}
               theme={{
-                backgroundColor: '#FFFFFF',
-                calendarBackground: '#FFFFFF',
-                textSectionTitleColor: '#374151',
-                selectedDayBackgroundColor: '#2563EB',
+                backgroundColor: colors.surface,
+                calendarBackground: colors.surface,
+                textSectionTitleColor: colors.textSecondary,
+                selectedDayBackgroundColor: colors.primary,
                 selectedDayTextColor: '#FFFFFF',
-                todayTextColor: '#2563EB',
-                dayTextColor: '#374151',
-                arrowColor: '#2563EB',
-                monthTextColor: '#1F2937',
+                todayTextColor: colors.primary,
+                dayTextColor: colors.text,
+                arrowColor: colors.primary,
+                monthTextColor: colors.text,
               }}
             />
             <Button title="Confirmar data" onPress={() => setShowDatePicker(false)} style={styles.modalButton} />
@@ -411,15 +433,15 @@ const RegisterItemScreen = ({ navigation, route }) => {
       </Modal>
 
       {status === 'lost' && (
-        <View style={styles.rewardSection}>
+        <View style={[styles.rewardSection, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FFFAED', borderColor: isDark ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A' }]}>
           <TouchableOpacity
             style={styles.checkboxContainer}
             onPress={() => setOfferReward(!offerReward)}
           >
-            <View style={[styles.checkbox, offerReward && styles.checkboxChecked]}>
+            <View style={[styles.checkbox, { borderColor: colors.border }, offerReward && styles.checkboxChecked]}>
               {offerReward && <Text style={styles.checkmark}>✓</Text>}
             </View>
-            <Text style={styles.checkboxLabel}>Oferecer Recompensa</Text>
+            <Text style={[styles.checkboxLabel, { color: colors.text }]}>Oferecer Recompensa</Text>
           </TouchableOpacity>
 
           {offerReward && (
@@ -438,23 +460,23 @@ const RegisterItemScreen = ({ navigation, route }) => {
       )}
 
       {/* Seção de Publicação em nome de terceiro */}
-      <View style={styles.thirdPartySection}>
+      <View style={[styles.thirdPartySection, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
         <TouchableOpacity
           style={styles.checkboxContainer}
           onPress={() => setIsThirdPartyOwner(!isThirdPartyOwner)}
           activeOpacity={0.8}
         >
-          <View style={[styles.checkbox, isThirdPartyOwner && styles.checkboxChecked]}>
+          <View style={[styles.checkbox, { borderColor: colors.border }, isThirdPartyOwner && styles.checkboxChecked]}>
             {isThirdPartyOwner && <Text style={styles.checkmark}>✓</Text>}
           </View>
-          <Text style={styles.checkboxLabel}>
+          <Text style={[styles.checkboxLabel, { color: colors.text }]}>
             Estou publicando em nome de outra pessoa
           </Text>
         </TouchableOpacity>
 
         {isThirdPartyOwner && (
-          <View style={styles.thirdPartyInputsBox}>
-            <Text style={styles.thirdPartyHint}>
+          <View style={[styles.thirdPartyInputsBox, { borderTopColor: colors.border }]}>
+            <Text style={[styles.thirdPartyHint, { color: colors.textSecondary }]}>
               Informe o nome e telefone do tutor/dono real para contato direto:
             </Text>
             <Input
@@ -488,27 +510,27 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const renderMapLocationButton = () => (
     <>
       <TouchableOpacity
-        style={styles.mapButton}
+        style={[styles.mapButton, { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' }]}
         onPress={() => setMapModalVisible(true)}
       >
-        <Text style={styles.mapButtonText}>
+        <Text style={[styles.mapButtonText, { color: colors.primary }]}>
           {mapLocation ? '📍 Alterar localização no mapa' : '🗺️ Escolher localização no mapa'}
         </Text>
       </TouchableOpacity>
       {mapLocation && (
-        <Text style={styles.mapSelectedText}>
+        <Text style={[styles.mapSelectedText, { color: colors.textSecondary }]}>
           Ponto selecionado: {mapLocation.latitude.toFixed(5)}, {mapLocation.longitude.toFixed(5)}
         </Text>
       )}
       {mapLocation && (
-        <View style={styles.addressFieldsContainer}>
-          <Text style={[styles.label, { marginBottom: 8 }]}>Endereço no local (editável)</Text>
+        <View style={[styles.addressFieldsContainer, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <Text style={[styles.label, { marginBottom: 8, color: colors.text }]}>Endereço no local (editável)</Text>
           
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
             <View style={{ flex: 2.2 }}>
-              <Text style={styles.smallInputLabel}>Rua / Logradouro</Text>
+              <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Rua / Logradouro</Text>
               <TextInput
-                style={styles.singleLineInput}
+                style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
                 value={mapLocationDetails?.street || ''}
                 onChangeText={(t) => {
                   const updated = { ...(mapLocationDetails || {}), street: t };
@@ -517,12 +539,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   setMapAddressText(formatted);
                 }}
                 placeholder="Ex: Rua das Flores"
+                placeholderTextColor={colors.textMuted}
               />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.smallInputLabel}>Nº da Casa</Text>
+              <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Nº da Casa</Text>
               <TextInput
-                style={styles.singleLineInput}
+                style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
                 value={mapLocationDetails?.number || ''}
                 onChangeText={(t) => {
                   const updated = { ...(mapLocationDetails || {}), number: t };
@@ -531,15 +554,16 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   setMapAddressText(formatted);
                 }}
                 placeholder="Ex: 123"
+                placeholderTextColor={colors.textMuted}
               />
             </View>
           </View>
 
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
             <View style={{ flex: 1.5 }}>
-              <Text style={styles.smallInputLabel}>Bairro</Text>
+              <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Bairro</Text>
               <TextInput
-                style={styles.singleLineInput}
+                style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
                 value={mapLocationDetails?.district || neighborhood || ''}
                 onChangeText={(t) => {
                   setNeighborhood(t);
@@ -549,12 +573,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   setMapAddressText(formatted);
                 }}
                 placeholder="Ex: Centro"
+                placeholderTextColor={colors.textMuted}
               />
             </View>
             <View style={{ flex: 1.5 }}>
-              <Text style={styles.smallInputLabel}>Cidade</Text>
+              <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Cidade</Text>
               <TextInput
-                style={styles.singleLineInput}
+                style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
                 value={city}
                 onChangeText={(t) => {
                   setCity(t);
@@ -564,12 +589,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   setMapAddressText(formatted);
                 }}
                 placeholder="Ex: Pelotas"
+                placeholderTextColor={colors.textMuted}
               />
             </View>
             <View style={{ flex: 0.8 }}>
-              <Text style={styles.smallInputLabel}>Estado</Text>
+              <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Estado</Text>
               <TextInput
-                style={styles.singleLineInput}
+                style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
                 value={state}
                 onChangeText={(t) => {
                   const upper = t.toUpperCase();
@@ -582,17 +608,19 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 placeholder="Ex: RS"
                 maxLength={2}
                 autoCapitalize="characters"
+                placeholderTextColor={colors.textMuted}
               />
             </View>
           </View>
 
           <View style={styles.addressEditorContainer}>
-            <Text style={styles.smallInputLabel}>Endereço Completo</Text>
+            <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Endereço Completo</Text>
             <TextInput
-              style={styles.addressInput}
+              style={[styles.addressInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
               value={mapAddressText}
               onChangeText={setMapAddressText}
               placeholder="Edite o endereço gerado pelo mapa"
+              placeholderTextColor={colors.textMuted}
               multiline
               textAlignVertical="top"
             />
@@ -1222,10 +1250,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
       animationType="fade"
       onRequestClose={() => setFoundModalVisible(false)}
     >
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
-        <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 28, width: '85%', alignItems: 'center' }}>
-          <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>{foundModalTitle}</Text>
-          <Text style={{ fontSize: 16, color: '#374151', marginBottom: 24, textAlign: 'center' }}>{foundModalMessage}</Text>
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1, borderRadius: 16, padding: 28, width: '85%', alignItems: 'center' }}>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 12, color: colors.text }}>{foundModalTitle}</Text>
+          <Text style={{ fontSize: 16, color: colors.textSecondary, marginBottom: 24, textAlign: 'center' }}>{foundModalMessage}</Text>
           <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between' }}>
             <Button
               title="Ainda não"
@@ -1253,11 +1281,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
     if (editItem && editItem.category) {
       const normalized = normalizeCategory(editItem.category);
       return (
-        <ScrollView style={styles.container}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Editar Animal</Text>
-            <Text style={styles.subtitle}>Tipo: {ITEM_TYPES[normalized]?.label || normalized || editItem.category}</Text>
-            <Text style={{ color: '#4B5563', marginTop: 16, fontWeight: 'bold' }}>
+        <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+          <View style={[styles.header, { backgroundColor: colors.card, borderColor: colors.cardBorder, borderWidth: 1, borderRadius: 12, padding: 16 }]}>
+            <Text style={[styles.title, { color: colors.text }]}>Editar Animal</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Tipo: {ITEM_TYPES[normalized]?.label || normalized || editItem.category}</Text>
+            <Text style={{ color: colors.textSecondary, marginTop: 16, fontWeight: 'bold' }}>
               Você pode ajustar detalhes do animal antes de salvar.
             </Text>
           </View>
@@ -1279,28 +1307,28 @@ const RegisterItemScreen = ({ navigation, route }) => {
       }
     ];
     return (
-      <ScrollView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={{ alignItems: 'center', marginTop: 32, marginBottom: 12 }}>
-          <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 }}>Registrar</Text>
-          <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 16 }}>Seu animal perdido ou encontrado</Text>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: colors.text, marginBottom: 4 }}>Registrar</Text>
+          <Text style={{ fontSize: 16, color: colors.textSecondary, marginBottom: 16 }}>Seu animal perdido ou encontrado</Text>
         </View>
         <View style={{ gap: 18, marginHorizontal: 12, marginBottom: 32 }}>
           {typeOptions.map((opt) => (
             <TouchableOpacity
               key={opt.key}
               onPress={() => handleSelectType(opt.key)}
-              style={{ borderRadius: 18, backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}
+              style={{ borderRadius: 18, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}
               activeOpacity={0.85}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', padding: 18 }}>
-                <View style={{ backgroundColor: opt.color, borderRadius: 12, width: 48, height: 48, alignItems: 'center', justifyContent: 'center', marginRight: 18 }}>
+                <View style={{ backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : opt.color, borderRadius: 12, width: 48, height: 48, alignItems: 'center', justifyContent: 'center', marginRight: 18 }}>
                   <Text style={{ fontSize: 26 }}>{opt.icon}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#1F2937' }}>{opt.label}</Text>
-                  <Text style={{ color: '#6B7280', fontSize: 15, marginTop: 2 }}>{opt.desc}</Text>
+                  <Text style={{ fontWeight: 'bold', fontSize: 18, color: colors.text }}>{opt.label}</Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 15, marginTop: 2 }}>{opt.desc}</Text>
                 </View>
-                <Text style={{ fontSize: 22, color: '#D1D5DB', marginLeft: 8 }}>→</Text>
+                <Text style={{ fontSize: 22, color: colors.textMuted, marginLeft: 8 }}>→</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -1334,7 +1362,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     // Animal: formulário detalhado
     if (itemType === 'animal') {
       return (
-        <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
           <ScrollView
             style={{ flex: 1, padding: 16 }}
             contentContainerStyle={{ paddingBottom: 180 }}
@@ -1342,17 +1370,19 @@ const RegisterItemScreen = ({ navigation, route }) => {
           >
             <View>
               <View style={styles.statusContainer}>
-                <Text style={styles.label}>Qual é o objetivo desta publicação? *</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Qual é o objetivo desta publicação? *</Text>
                 <View style={styles.statusOptions}>
                   <TouchableOpacity
                     style={[
                       styles.statusButton,
+                      { backgroundColor: isDark ? '#1E293B' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' },
                       status === 'lost' && styles.statusButtonActive,
                     ]}
                     onPress={() => setStatus('lost')}
                   >
                     <Text style={[
                       styles.statusText,
+                      { color: colors.textSecondary },
                       status === 'lost' && styles.statusTextActive,
                     ]}>
                       Perdi
@@ -1361,6 +1391,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   <TouchableOpacity
                     style={[
                       styles.statusButton,
+                      { backgroundColor: isDark ? '#1E293B' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' },
                       status === 'found' && styles.statusButtonActive,
                     ]}
                     onPress={() => {
@@ -1371,6 +1402,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   >
                     <Text style={[
                       styles.statusText,
+                      { color: colors.textSecondary },
                       status === 'found' && styles.statusTextActive,
                     ]}>
                       Encontrei
@@ -1379,6 +1411,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   <TouchableOpacity
                     style={[
                       styles.statusButton,
+                      { backgroundColor: isDark ? '#1E293B' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' },
                       status === 'adoption' && [styles.statusButtonActive, { backgroundColor: '#DB2777', borderColor: '#DB2777' }],
                     ]}
                     onPress={() => {
@@ -1389,6 +1422,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   >
                     <Text style={[
                       styles.statusText,
+                      { color: colors.textSecondary },
                       status === 'adoption' && styles.statusTextActive,
                     ]}>
                       Para Adoção
@@ -1399,14 +1433,14 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
               {/* Informação sobre Publicação Direta para Adoção */}
               {status === 'adoption' && (
-                <View style={{ backgroundColor: '#FDF2F8', borderWidth: 1.5, borderColor: '#F472B6', borderRadius: 12, padding: 14, marginBottom: 20 }}>
+                <View style={{ backgroundColor: isDark ? 'rgba(219, 39, 119, 0.15)' : '#FDF2F8', borderWidth: 1.5, borderColor: isDark ? 'rgba(219, 39, 119, 0.4)' : '#F472B6', borderRadius: 12, padding: 14, marginBottom: 20 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
                     <MaterialIcons name="favorite" size={18} color="#DB2777" />
-                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#9D174D' }}>
+                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: isDark ? '#F472B6' : '#9D174D' }}>
                       Adoção Imediata (Pet sem Tutor Conhecido)
                     </Text>
                   </View>
-                  <Text style={{ fontSize: 12, lineHeight: 16, color: '#BE185D' }}>
+                  <Text style={{ fontSize: 12, lineHeight: 16, color: isDark ? '#FDA4AF' : '#BE185D' }}>
                     Utilize esta opção para doar ou cadastrar animais resgatados, ninhadas ou pets de abrigo que não possuem dono prévio. O anúncio entrará diretamente no feed de adoção.
                   </Text>
                 </View>
@@ -1414,28 +1448,29 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
               {/* Opções de Custódia e Adoção Futura para Pet Encontrado */}
               {status === 'found' && (
-                <View style={styles.custodySection}>
-                  <Text style={styles.label}>Onde o animal está agora? *</Text>
+                <View style={[styles.custodySection, { backgroundColor: isDark ? '#161F30' : '#F8FAFC', borderColor: isDark ? '#243248' : '#E2E8F0' }]}>
+                  <Text style={[styles.label, { color: colors.text }]}>Onde o animal está agora? *</Text>
                   <View style={styles.custodyOptionsRow}>
                     <TouchableOpacity
                       style={[
                         styles.custodyOptionCard,
-                        foundCustody === 'with_me' && styles.custodyOptionCardActive,
+                        { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', borderColor: isDark ? '#243248' : '#E2E8F0' },
+                        foundCustody === 'with_me' && [styles.custodyOptionCardActive, { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(37, 99, 235, 0.18)' : '#EFF6FF' }],
                       ]}
                       onPress={() => setFoundCustody('with_me')}
                       activeOpacity={0.85}
                     >
-                      <View style={[styles.custodyIconCircle, foundCustody === 'with_me' && styles.custodyIconCircleActive]}>
+                      <View style={[styles.custodyIconCircle, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF' }, foundCustody === 'with_me' && styles.custodyIconCircleActive]}>
                         <MaterialIcons
                           name="home"
                           size={20}
-                          color={foundCustody === 'with_me' ? '#FFFFFF' : '#2563EB'}
+                          color={foundCustody === 'with_me' ? '#FFFFFF' : colors.primary}
                         />
                       </View>
-                      <Text style={[styles.custodyOptionTitle, foundCustody === 'with_me' && styles.custodyOptionTitleActive]}>
+                      <Text style={[styles.custodyOptionTitle, { color: colors.text }, foundCustody === 'with_me' && [styles.custodyOptionTitleActive, { color: isDark ? '#93C5FD' : '#1D4ED8' }]]}>
                         Estou com ele
                       </Text>
-                      <Text style={styles.custodyOptionSub}>
+                      <Text style={[styles.custodyOptionSub, { color: colors.textSecondary }]}>
                         Acolhido em lar temporário / minha casa
                       </Text>
                     </TouchableOpacity>
@@ -1443,7 +1478,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     <TouchableOpacity
                       style={[
                         styles.custodyOptionCard,
-                        foundCustody === 'spotted' && styles.custodyOptionCardActive,
+                        { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', borderColor: isDark ? '#243248' : '#E2E8F0' },
+                        foundCustody === 'spotted' && [styles.custodyOptionCardActive, { borderColor: '#D97706', backgroundColor: isDark ? 'rgba(217, 119, 6, 0.18)' : '#FEF3C7' }],
                       ]}
                       onPress={() => {
                         setFoundCustody('spotted');
@@ -1451,17 +1487,17 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       }}
                       activeOpacity={0.85}
                     >
-                      <View style={[styles.custodyIconCircle, foundCustody === 'spotted' && styles.custodyIconCircleActive]}>
+                      <View style={[styles.custodyIconCircle, { backgroundColor: isDark ? 'rgba(217, 119, 6, 0.2)' : '#FEF3C7' }, foundCustody === 'spotted' && { backgroundColor: '#D97706' }]}>
                         <MaterialIcons
                           name="visibility"
                           size={20}
                           color={foundCustody === 'spotted' ? '#FFFFFF' : '#D97706'}
                         />
                       </View>
-                      <Text style={[styles.custodyOptionTitle, foundCustody === 'spotted' && styles.custodyOptionTitleActive]}>
+                      <Text style={[styles.custodyOptionTitle, { color: colors.text }, foundCustody === 'spotted' && [styles.custodyOptionTitleActive, { color: isDark ? '#FBBF24' : '#B45309' }]]}>
                         Apenas vi o animal
                       </Text>
-                      <Text style={styles.custodyOptionSub}>
+                      <Text style={[styles.custodyOptionSub, { color: colors.textSecondary }]}>
                         Avistado na rua / sem recolhimento
                       </Text>
                     </TouchableOpacity>
@@ -1472,13 +1508,14 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     <TouchableOpacity
                       style={[
                         styles.adoptionToggleCard,
-                        adoptionIntent && styles.adoptionToggleCardActive,
+                        { backgroundColor: isDark ? 'rgba(219, 39, 119, 0.12)' : '#FFF1F2', borderColor: isDark ? 'rgba(219, 39, 119, 0.3)' : '#FECDD3' },
+                        adoptionIntent && [styles.adoptionToggleCardActive, { backgroundColor: isDark ? 'rgba(219, 39, 119, 0.22)' : '#FDF2F8', borderColor: '#DB2777' }],
                       ]}
                       onPress={() => setAdoptionIntent((prev) => !prev)}
                       activeOpacity={0.85}
                     >
                       <View style={styles.adoptionToggleLeft}>
-                        <View style={[styles.adoptionIconBadge, adoptionIntent && styles.adoptionIconBadgeActive]}>
+                        <View style={[styles.adoptionIconBadge, { backgroundColor: isDark ? 'rgba(219, 39, 119, 0.25)' : '#FFE4E6' }, adoptionIntent && styles.adoptionIconBadgeActive]}>
                           <MaterialIcons
                             name="favorite"
                             size={18}
@@ -1486,15 +1523,15 @@ const RegisterItemScreen = ({ navigation, route }) => {
                           />
                         </View>
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.adoptionToggleTitle}>
+                          <Text style={[styles.adoptionToggleTitle, { color: isDark ? '#F472B6' : '#9F1239' }]}>
                             Disponibilizar para adoção caso o dono não apareça
                           </Text>
-                          <Text style={styles.adoptionToggleSubtitle}>
+                          <Text style={[styles.adoptionToggleSubtitle, { color: isDark ? '#FDA4AF' : '#BE123C' }]}>
                             ⏳ Janela obrigatória de 7 dias: O animal ficará listado como "Encontrado" durante a primeira semana de buscas. Se o tutor não for localizado após 1 semana, a adoção responsável será liberada.
                           </Text>
                         </View>
                       </View>
-                      <View style={[styles.customCheckbox, adoptionIntent && styles.customCheckboxChecked]}>
+                      <View style={[styles.customCheckbox, { borderColor: isDark ? '#9F1239' : '#FDA4AF', backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }, adoptionIntent && styles.customCheckboxChecked]}>
                         {adoptionIntent && <MaterialIcons name="check" size={14} color="#FFFFFF" />}
                       </View>
                     </TouchableOpacity>
@@ -1504,19 +1541,19 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
               {photos.length < MAX_PHOTOS ? (
                 <TouchableOpacity
-                  style={[styles.uploadButton, { marginTop: 8 }]}
+                  style={[styles.uploadButton, { backgroundColor: isDark ? '#161F30' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB', marginTop: 8 }]}
                   onPress={pickAndCropImage}
                 >
-                  <Text style={styles.uploadButtonText}>+ Adicionar Foto * ({photos.length}/{MAX_PHOTOS})</Text>
+                  <Text style={[styles.uploadButtonText, { color: colors.primary }]}>+ Adicionar Foto * ({photos.length}/{MAX_PHOTOS})</Text>
                 </TouchableOpacity>
               ) : (
-                <View style={[styles.uploadButton, { borderColor: '#E5E7EB', backgroundColor: '#F3F4F6', paddingVertical: 14 }]}>
-                  <Text style={[styles.uploadButtonText, { color: '#9CA3AF', fontSize: 14 }]}>Limite de {MAX_PHOTOS} fotos atingido</Text>
+                <View style={[styles.uploadButton, { borderColor: colors.border, backgroundColor: colors.inputBg, paddingVertical: 14 }]}>
+                  <Text style={[styles.uploadButtonText, { color: colors.textMuted, fontSize: 14 }]}>Limite de {MAX_PHOTOS} fotos atingido</Text>
                 </View>
               )}
               {photos.length > 0 && (
                 <View style={styles.photosContainer}>
-                  <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length}/{MAX_PHOTOS})</Text>
+                  <Text style={[styles.photosTitle, { color: colors.text }]}>Fotos Selecionadas ({photos.length}/{MAX_PHOTOS})</Text>
                   <View style={styles.photoGrid}>
                     {photos.map((photo, index) => (
                       <View key={`${photo.uri}-${index}`} style={styles.photoItem}>
@@ -1600,7 +1637,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           </ScrollView>
           {renderMapLocationPicker()}
           {renderFoundModal()}
-          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB', zIndex: 100, elevation: 10 }}>
+          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: colors.border, zIndex: 100, elevation: 10 }}>
             <Button
               title={loading ? 'Publicando...' : 'Publicar'}
               onPress={handlePublish}
@@ -1613,21 +1650,23 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
     // Outros tipos: formulário dinâmico
     return (
-      <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
         <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ paddingBottom: 180 }}>
           <View>
             <View style={styles.statusContainer}>
-              <Text style={styles.label}>Você perdeu ou encontrou? *</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Você perdeu ou encontrou? *</Text>
               <View style={styles.statusOptions}>
                 <TouchableOpacity
                   style={[
                     styles.statusButton,
+                    { backgroundColor: isDark ? '#1E293B' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' },
                     status === 'lost' && styles.statusButtonActive,
                   ]}
                   onPress={() => setStatus('lost')}
                 >
                   <Text style={[
                     styles.statusText,
+                    { color: colors.textSecondary },
                     status === 'lost' && styles.statusTextActive,
                   ]}>
                     Perdi
@@ -1636,6 +1675,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 <TouchableOpacity
                   style={[
                     styles.statusButton,
+                    { backgroundColor: isDark ? '#1E293B' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' },
                     status === 'found' && styles.statusButtonActive,
                   ]}
                   onPress={() => {
@@ -1646,6 +1686,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 >
                   <Text style={[
                     styles.statusText,
+                    { color: colors.textSecondary },
                     status === 'found' && styles.statusTextActive,
                   ]}>
                     Encontrei
@@ -1666,20 +1707,20 @@ const RegisterItemScreen = ({ navigation, route }) => {
               <>
                 {photos.length < MAX_PHOTOS ? (
                   <TouchableOpacity
-                    style={styles.uploadButton}
+                    style={[styles.uploadButton, { backgroundColor: isDark ? '#161F30' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' }]}
                     onPress={pickAndCropImage}
                   >
-                    <Text style={styles.uploadButtonText}>+ Adicionar Foto ({photos.length}/{MAX_PHOTOS})</Text>
+                    <Text style={[styles.uploadButtonText, { color: colors.primary }]}>+ Adicionar Foto ({photos.length}/{MAX_PHOTOS})</Text>
                   </TouchableOpacity>
                 ) : (
-                  <View style={[styles.uploadButton, { borderColor: '#E5E7EB', backgroundColor: '#F3F4F6', paddingVertical: 14 }]}>
-                    <Text style={[styles.uploadButtonText, { color: '#9CA3AF', fontSize: 14 }]}>Limite de {MAX_PHOTOS} fotos atingido</Text>
+                  <View style={[styles.uploadButton, { borderColor: colors.border, backgroundColor: colors.inputBg, paddingVertical: 14 }]}>
+                    <Text style={[styles.uploadButtonText, { color: colors.textMuted, fontSize: 14 }]}>Limite de {MAX_PHOTOS} fotos atingido</Text>
                   </View>
                 )}
 
                 {photos.length > 0 && (
                   <View style={styles.photosContainer}>
-                    <Text style={styles.photosTitle}>Fotos Selecionadas ({photos.length}/{MAX_PHOTOS})</Text>
+                    <Text style={[styles.photosTitle, { color: colors.text }]}>Fotos Selecionadas ({photos.length}/{MAX_PHOTOS})</Text>
                     <View style={styles.photoGrid}>
                       {photos.map((photo, index) => (
                         <View key={`${photo.uri}-${index}`} style={styles.photoItem}>
@@ -1773,7 +1814,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </ScrollView>
         {renderMapLocationPicker()}
         {renderFoundModal()}
-        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
+        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: colors.border }}>
           <Button
             title={loading ? 'Publicando...' : 'Publicar'}
             onPress={handlePublish}
@@ -1787,21 +1828,21 @@ const RegisterItemScreen = ({ navigation, route }) => {
   // Step 4: Localização e Recompensa
   if (step === 4) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 0 }} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>Localização e Recompensa</Text>
-          <Text style={styles.locationHint}>
+          <Text style={[styles.title, { color: colors.text }]}>Localização e Recompensa</Text>
+          <Text style={[styles.locationHint, { color: colors.textSecondary }]}>
             Escolha no mapa onde o animal foi {status === 'lost' ? 'visto pela última vez' : 'encontrado'}.
           </Text>
           {renderMapLocationButton()}
 
           <View style={styles.datePickerContainer}>
-            <Text style={styles.label}>Data do Evento *</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Data do Evento *</Text>
             <TouchableOpacity
-              style={styles.datePickerButton}
+              style={[styles.datePickerButton, { backgroundColor: isDark ? '#161F30' : '#F9FAFB', borderColor: colors.border }]}
               onPress={() => setShowDatePicker(true)}
             >
-              <Text style={styles.datePickerButtonText}>
+              <Text style={[styles.datePickerButtonText, { color: colors.text }]}>
                 {formatDateDisplay(date)}
               </Text>
             </TouchableOpacity>
@@ -1814,11 +1855,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
             onRequestClose={() => setShowDatePicker(false)}
           >
             <View style={styles.modalContainer}>
-              <View style={styles.calendarWrapper}>
-                <View style={styles.calendarHeader}>
-                  <Text style={styles.calendarTitle}>Selecione a Data</Text>
+              <View style={[styles.calendarWrapper, { backgroundColor: colors.surface }]}>
+                <View style={[styles.calendarHeader, { borderBottomColor: colors.border }]}>
+                  <Text style={[styles.calendarTitle, { color: colors.text }]}>Selecione a Data</Text>
                   <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                    <Text style={styles.closeButton}>✕</Text>
+                    <Text style={[styles.closeButton, { color: colors.textSecondary }]}>✕</Text>
                   </TouchableOpacity>
                 </View>
                 <Calendar
@@ -1829,20 +1870,20 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   markedDates={{
                     [date]: {
                       selected: true,
-                      selectedColor: '#2563EB',
+                      selectedColor: colors.primary,
                       selectedTextColor: '#FFFFFF',
                     },
                   }}
                   theme={{
-                    backgroundColor: '#FFFFFF',
-                    calendarBackground: '#FFFFFF',
-                    textSectionTitleColor: '#374151',
-                    selectedDayBackgroundColor: '#2563EB',
+                    backgroundColor: colors.surface,
+                    calendarBackground: colors.surface,
+                    textSectionTitleColor: colors.textSecondary,
+                    selectedDayBackgroundColor: colors.primary,
                     selectedDayTextColor: '#FFFFFF',
-                    todayTextColor: '#2563EB',
-                    dayTextColor: '#374151',
-                    arrowColor: '#2563EB',
-                    monthTextColor: '#1F2937',
+                    todayTextColor: colors.primary,
+                    dayTextColor: colors.text,
+                    arrowColor: colors.primary,
+                    monthTextColor: colors.text,
                   }}
                 />
                 <Button
@@ -1855,15 +1896,15 @@ const RegisterItemScreen = ({ navigation, route }) => {
           </Modal>
 
           {status === 'lost' && (
-            <View style={styles.rewardSection}>
+            <View style={[styles.rewardSection, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FFFAED', borderColor: isDark ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A' }]}>
               <TouchableOpacity
                 style={styles.checkboxContainer}
                 onPress={() => setOfferReward(!offerReward)}
               >
-                <View style={[styles.checkbox, offerReward && styles.checkboxChecked]}>
+                <View style={[styles.checkbox, { borderColor: colors.border }, offerReward && styles.checkboxChecked]}>
                   {offerReward && <Text style={styles.checkmark}>✓</Text>}
                 </View>
-                <Text style={styles.checkboxLabel}>Oferecer Recompensa</Text>
+                <Text style={[styles.checkboxLabel, { color: colors.text }]}>Oferecer Recompensa</Text>
               </TouchableOpacity>
 
               {offerReward && (
@@ -1889,7 +1930,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </ScrollView>
         {renderMapLocationPicker()}
         {renderFoundModal()}
-        <View style={[styles.navigation, { position: 'absolute', left: 0, right: 0, bottom: 44, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E5E7EB', padding: 16, zIndex: 10 }]}> 
+        <View style={[styles.navigation, { position: 'absolute', left: 0, right: 0, bottom: 44, backgroundColor: colors.surface, borderTopWidth: 1, borderColor: colors.border, padding: 16, zIndex: 10 }]}> 
           <Button
             title="Voltar"
             variant="secondary"
@@ -1904,7 +1945,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           />
         </View>
         {loading && (
-          <ActivityIndicator size="large" color="#2563EB" style={{ marginTop: 20 }} />
+          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
         )}
       </View>
     );

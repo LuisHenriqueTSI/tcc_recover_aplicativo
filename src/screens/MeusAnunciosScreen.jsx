@@ -2,19 +2,37 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { listItems, renewItem } from '../services/items';
 import { getRenewalInfo } from '../services/itemExpiration';
 
-const statusConfig = {
-  ativos: { title: 'Ativas', color: '#16A34A', background: '#DCFCE7', icon: 'check-circle' },
-  renovar: { title: 'Precisam de atenção', color: '#D97706', background: '#FEF3C7', icon: 'clock' },
-  inativos: { title: 'Inativas', color: '#71717A', background: '#F4F4F5', icon: 'pause-circle' },
-};
+const getStatusConfig = (isDark) => ({
+  ativos: {
+    title: 'Ativas',
+    color: isDark ? '#4ADE80' : '#16A34A',
+    background: isDark ? 'rgba(34, 197, 94, 0.18)' : '#DCFCE7',
+    icon: 'check-circle',
+  },
+  renovar: {
+    title: 'Precisam de atenção',
+    color: isDark ? '#FBBF24' : '#D97706',
+    background: isDark ? 'rgba(245, 158, 11, 0.18)' : '#FEF3C7',
+    icon: 'clock',
+  },
+  inativos: {
+    title: 'Inativas',
+    color: isDark ? '#94A3B8' : '#71717A',
+    background: isDark ? '#1E293B' : '#F4F4F5',
+    icon: 'pause-circle',
+  },
+});
 
 const getCategoryIcon = (item) => item.category === 'animal' ? 'heart' : 'map-pin';
 
 const MeusAnunciosScreen = ({ navigation }) => {
   const { user } = useAuth();
+  const { colors, isDark } = useTheme();
+  const statusConfig = getStatusConfig(isDark);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -57,15 +75,20 @@ const MeusAnunciosScreen = ({ navigation }) => {
     const config = statusConfig[item.renewalInfo.inactive ? 'inativos' : item.renewalInfo.needsRenewal ? 'renovar' : 'ativos'];
     const location = [item.city, item.state].filter(Boolean).join(', ');
     return (
-      <TouchableOpacity key={item.id} style={styles.itemCard} onPress={() => navigation.navigate('ItemDetail', { itemId: item.id })} activeOpacity={0.82}>
+      <TouchableOpacity
+        key={item.id}
+        style={[styles.itemCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+        onPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
+        activeOpacity={0.82}
+      >
         <View style={[styles.itemIcon, { backgroundColor: config.background }]}>
           <Feather name={getCategoryIcon(item)} size={22} color={config.color} />
         </View>
         <View style={styles.itemContent}>
-          <Text style={styles.itemTitle} numberOfLines={1}>{item.title || 'Sem título'}</Text>
+          <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={1}>{item.title || 'Sem título'}</Text>
           <View style={styles.metaLine}>
-            <Feather name="map-pin" size={12} color="#A1A1AA" />
-            <Text style={styles.itemMeta} numberOfLines={1}>{location || 'Localização não informada'}</Text>
+            <Feather name="map-pin" size={12} color={colors.textMuted} />
+            <Text style={[styles.itemMeta, { color: colors.textSecondary }]} numberOfLines={1}>{location || 'Localização não informada'}</Text>
           </View>
           <View style={[styles.statusPill, { backgroundColor: config.background }]}>
             <View style={[styles.statusDot, { backgroundColor: config.color }]} />
@@ -73,10 +96,10 @@ const MeusAnunciosScreen = ({ navigation }) => {
           </View>
         </View>
         {item.renewalInfo.inactive && item.renewalInfo.canRenew ? (
-          <TouchableOpacity style={styles.renewButton} onPress={() => handleRenew(item.id)} disabled={renewingId === item.id}>
+          <TouchableOpacity style={[styles.renewButton, { backgroundColor: colors.primary }]} onPress={() => handleRenew(item.id)} disabled={renewingId === item.id}>
             {renewingId === item.id ? <ActivityIndicator size="small" color="#fff" /> : <><Feather name="rotate-cw" size={14} color="#fff" /><Text style={styles.renewText}>Renovar</Text></>}
           </TouchableOpacity>
-        ) : <Feather name="chevron-right" size={20} color="#A1A1AA" />}
+        ) : <Feather name="chevron-right" size={20} color={colors.textMuted} />}
       </TouchableOpacity>
     );
   };
@@ -88,8 +111,8 @@ const MeusAnunciosScreen = ({ navigation }) => {
     return (
       <View style={styles.section} key={key}>
         <View style={styles.sectionHeader}>
-          <View style={styles.sectionTitleRow}><Feather name={config.icon} size={17} color={config.color} /><Text style={styles.sectionTitle}>{config.title}</Text></View>
-          <Text style={styles.count}>{list.length}</Text>
+          <View style={styles.sectionTitleRow}><Feather name={config.icon} size={17} color={config.color} /><Text style={[styles.sectionTitle, { color: colors.text }]}>{config.title}</Text></View>
+          <Text style={[styles.count, { color: colors.textSecondary, backgroundColor: colors.inputBg }]}>{list.length}</Text>
         </View>
         {list.map(renderItem)}
       </View>
@@ -100,22 +123,26 @@ const MeusAnunciosScreen = ({ navigation }) => {
   const attentionCount = (grouped.renovar || []).length + (grouped.inativos || []).length;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadItems(true)} tintColor="#2563EB" colors={['#2563EB']} />}>
-      <View style={styles.summaryBar}>
-        <View style={styles.summaryItem}><Text style={styles.summaryValue}>{items.length}</Text><Text style={styles.summaryLabel}>pets</Text></View>
-        <View style={styles.summaryDivider} />
-        <View style={styles.summaryItem}><Text style={[styles.summaryValue, { color: '#15803D' }]}>{activeCount}</Text><Text style={styles.summaryLabel}>ativas</Text></View>
-        <View style={styles.summaryDivider} />
-        <View style={styles.summaryItem}><Text style={[styles.summaryValue, { color: '#B45309' }]}>{attentionCount}</Text><Text style={styles.summaryLabel}>atenção</Text></View>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadItems(true)} tintColor={colors.primary} colors={[colors.primary]} />}
+    >
+      <View style={[styles.summaryBar, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+        <View style={styles.summaryItem}><Text style={[styles.summaryValue, { color: colors.text }]}>{items.length}</Text><Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>pets</Text></View>
+        <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
+        <View style={styles.summaryItem}><Text style={[styles.summaryValue, { color: isDark ? '#4ADE80' : '#15803D' }]}>{activeCount}</Text><Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>ativas</Text></View>
+        <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
+        <View style={styles.summaryItem}><Text style={[styles.summaryValue, { color: isDark ? '#FBBF24' : '#B45309' }]}>{attentionCount}</Text><Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>atenção</Text></View>
       </View>
 
-      {loading ? <ActivityIndicator size="large" color="#2563EB" style={styles.loader} /> : null}
+      {loading ? <ActivityIndicator size="large" color={colors.primary} style={styles.loader} /> : null}
       {!loading && !items.length ? (
-        <View style={styles.empty}>
-          <View style={styles.emptyIcon}><Feather name="inbox" size={28} color="#2563EB" /></View>
-          <Text style={styles.emptyTitle}>Nada publicado ainda</Text>
-          <Text style={styles.emptyText}>Quando você publicar um pet perdido ou encontrado, ele aparecerá aqui.</Text>
-          <TouchableOpacity style={styles.publishButton} onPress={() => navigation.navigate('RegisterItem')}><Feather name="plus" size={17} color="#fff" /><Text style={styles.publishText}>Criar publicação</Text></TouchableOpacity>
+        <View style={[styles.empty, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <View style={[styles.emptyIcon, { backgroundColor: colors.primaryLight }]}><Feather name="inbox" size={28} color={colors.primary} /></View>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>Nada publicado ainda</Text>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Quando você publicar um pet perdido ou encontrado, ele aparecerá aqui.</Text>
+          <TouchableOpacity style={[styles.publishButton, { backgroundColor: colors.primary }]} onPress={() => navigation.navigate('RegisterItem')}><Feather name="plus" size={17} color="#fff" /><Text style={styles.publishText}>Criar publicação</Text></TouchableOpacity>
         </View>
       ) : null}
       {!loading && renderSection('ativos')}

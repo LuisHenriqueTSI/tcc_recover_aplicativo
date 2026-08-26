@@ -15,8 +15,10 @@ import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import * as itemsService from '../services/items';
 import ShareCardFlyer from './ShareCardFlyer';
+import { useTheme } from '../contexts/ThemeContext';
 
 const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
+  const { colors, isDark } = useTheme();
   const flyerRef = useRef(null);
   const [capturing, setCapturing] = useState(false);
 
@@ -87,7 +89,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
       // Abre a folha nativa de compartilhamento
       await Sharing.shareAsync(uri, {
         mimeType: 'image/png',
-        dialogTitle: `Compartilhar ${item.title || 'Animal'}`,
+        dialogTitle: `Compartilhar Cartaz - ${item.title || 'Animal'}`,
         UTI: 'public.png',
       });
     } catch (error) {
@@ -110,15 +112,15 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
           {/* Cabeçalho do Modal */}
-          <View style={styles.modalHeader}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <MaterialIcons name="share" size={22} color="#2563EB" />
-              <Text style={styles.modalHeaderTitle}>Compartilhar Animal</Text>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <MaterialIcons name="share" size={22} color={colors.primary} />
+              <Text style={[styles.modalHeaderTitle, { color: colors.text }]}>Compartilhar Cartaz</Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={22} color="#6B7280" />
+            <TouchableOpacity onPress={onClose} style={[styles.closeButton, { backgroundColor: isDark ? '#1E293B' : '#F3F4F6' }]}>
+              <MaterialIcons name="close" size={22} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -128,7 +130,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
             contentContainerStyle={styles.previewScrollContent}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.previewNotice}>
+            <Text style={[styles.previewNotice, { color: colors.textSecondary }]}>
               Prévia do cartaz que será gerado e enviado:
             </Text>
             <View style={styles.flyerWrapper}>
@@ -137,9 +139,9 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
           </ScrollView>
 
           {/* Botão de Ação Inferior */}
-          <View style={styles.actionsContainer}>
+          <View style={[styles.actionsContainer, { borderTopColor: colors.border }]}>
             <TouchableOpacity
-              style={[styles.primaryShareBtn, capturing && styles.btnDisabled]}
+              style={[styles.primaryShareBtn, { backgroundColor: colors.primary }, capturing && styles.btnDisabled]}
               onPress={handleShareImage}
               disabled={capturing}
               activeOpacity={0.85}
@@ -152,7 +154,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
               ) : (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <MaterialIcons name="share" size={20} color="#FFFFFF" />
-                  <Text style={styles.primaryShareBtnText}>Compartilhar</Text>
+                  <Text style={styles.primaryShareBtnText}>Compartilhar Cartaz</Text>
                 </View>
               )}
             </TouchableOpacity>
