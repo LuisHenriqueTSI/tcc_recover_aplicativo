@@ -104,7 +104,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     navigation.setOptions({
-      title: 'Detalhes do Pet',
+      title: 'Detalhes do Animal',
       headerStyle: {
         backgroundColor: '#2563EB',
       },
@@ -604,7 +604,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
   if (!item) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>Pet não encontrado</Text>
+        <Text style={styles.errorText}>Animal não encontrado</Text>
       </View>
     );
   }
@@ -944,13 +944,42 @@ const ItemDetailScreen = ({ route, navigation }) => {
           <View style={{ backgroundColor: '#fff', borderRadius: 14, marginHorizontal: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
             <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937', marginBottom: 10 }}>Publicado por</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-              {owner.avatar_url ? (
-                <Image source={{ uri: owner.avatar_url }} style={{ width: 44, height: 44, borderRadius: 22, marginRight: 12 }} />
-              ) : (
-                <View style={{ width: 44, height: 44, borderRadius: 22, marginRight: 12, backgroundColor: '#E5E7EB' }} />
-              )}
+              {(() => {
+                const ownerAvatar = (isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || owner.avatar_url || owner.avatarUrl || null;
+                const ownerDisplayName = (isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário');
+                const ownerInitial = ownerDisplayName.trim()[0]?.toUpperCase() || 'U';
+
+                if (ownerAvatar) {
+                  return (
+                    <Image
+                      source={{ uri: ownerAvatar }}
+                      style={{ width: 44, height: 44, borderRadius: 22, marginRight: 12, backgroundColor: '#EFF6FF' }}
+                    />
+                  );
+                }
+
+                return (
+                  <View
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      marginRight: 12,
+                      backgroundColor: '#2563EB',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '800' }}>
+                      {ownerInitial}
+                    </Text>
+                  </View>
+                );
+              })()}
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937' }}>{owner.name}</Text>
+                <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937' }}>
+                  {(isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário')}
+                </Text>
                 {owner.created_at && formatarDataMembro(owner.created_at) && formatarDataMembro(owner.created_at) !== 'não informado' && (
                   <Text style={{ fontSize: 13, color: '#6B7280' }}>Membro desde {formatarDataMembro(owner.created_at)}</Text>
                 )}
@@ -1203,11 +1232,38 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 <React.Fragment key={s.id || idx}>
                   <View style={{ backgroundColor: '#F9FAFB', borderRadius: 10, padding: 12, marginBottom: 12 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                      {s.profiles?.avatar_url ? (
-                        <Image source={{ uri: s.profiles.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8, backgroundColor: '#E5E7EB' }} />
-                      ) : (
-                        <View style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8, backgroundColor: '#E5E7EB' }} />
-                      )}
+                      {(() => {
+                        const sAvatar = s.profiles?.avatar_url || s.profiles?.avatarUrl || null;
+                        const sName = s.profiles?.name || 'Usuário';
+                        const sInitial = sName.trim()[0]?.toUpperCase() || 'U';
+
+                        if (sAvatar) {
+                          return (
+                            <Image
+                              source={{ uri: sAvatar }}
+                              style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8, backgroundColor: '#E5E7EB' }}
+                            />
+                          );
+                        }
+
+                        return (
+                          <View
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: 16,
+                              marginRight: 8,
+                              backgroundColor: '#2563EB',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '800' }}>
+                              {sInitial}
+                            </Text>
+                          </View>
+                        );
+                      })()}
                       <View style={{ flex: 1 }}>
                         <Text style={{ fontWeight: 'bold', color: '#1F2937', fontSize: 14 }}>{s.profiles?.name || 'Usuário'}</Text>
                         <Text style={{ color: '#6B7280', fontSize: 11 }}>{new Date(s.created_at).toLocaleString('pt-BR')}</Text>
