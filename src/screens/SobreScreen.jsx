@@ -434,45 +434,84 @@ const SobreScreen = ({ navigation }) => {
           </ScrollView>
         </View>
 
-        {/* Como Funciona */}
+        {/* Como Funciona - Com Botões Diretos para Outras Telas */}
         <View style={styles.howItWorksSection}>
-          <Text style={styles.sectionTitle}>Como Funciona</Text>
-
-          <View style={styles.stepCard}>
-            <View style={styles.stepNumberBadge}>
-              <Text style={styles.stepNumberText}>1</Text>
-            </View>
-            <View style={styles.stepContent}>
-              <Text style={styles.stepTitle}>Registre um Pet</Text>
-              <Text style={styles.stepDescription}>
-                Cadastre fotos, características e o local onde o pet foi visto ou encontrado.
-              </Text>
-            </View>
+          <View style={styles.howItWorksHeaderRow}>
+            <Text style={styles.sectionTitle}>Como Funciona</Text>
+            <Text style={styles.sectionSubtitle}>Recursos e atalhos rápidos para você começar</Text>
           </View>
 
-          <View style={styles.stepCard}>
-            <View style={[styles.stepNumberBadge, { backgroundColor: '#F59E0B' }]}>
-              <Text style={styles.stepNumberText}>2</Text>
+          {/* Passo 1: Cadastrar Pet */}
+          <TouchableOpacity
+            style={styles.actionStepCard}
+            onPress={() => navigation.navigate('RegisterItem')}
+            activeOpacity={0.88}
+          >
+            <View style={styles.actionStepTopRow}>
+              <View style={[styles.actionStepIconBadge, { backgroundColor: '#EFF6FF' }]}>
+                <MaterialIcons name="add-photo-alternate" size={22} color="#2563EB" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.actionStepNumber}>PASSO 1</Text>
+                <Text style={styles.actionStepTitle}>Registre um Pet</Text>
+              </View>
             </View>
-            <View style={styles.stepContent}>
-              <Text style={styles.stepTitle}>Mobilize no Mapa & WhatsApp</Text>
-              <Text style={styles.stepDescription}>
-                Compartilhe o cartaz visual e acompanhe pistas e avistamentos no mapa interativo.
-              </Text>
+            <Text style={styles.actionStepDescription}>
+              Cadastre fotos, características e a localização onde o pet foi visto ou sumiu.
+            </Text>
+            <View style={[styles.actionStepButtonBadge, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
+              <Text style={[styles.actionStepButtonText, { color: '#1D4ED8' }]}>Publicar Anúncio de Pet</Text>
+              <MaterialIcons name="arrow-forward" size={15} color="#1D4ED8" />
             </View>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.stepCard}>
-            <View style={[styles.stepNumberBadge, { backgroundColor: '#10B981' }]}>
-              <Text style={styles.stepNumberText}>3</Text>
+          {/* Passo 2: Mapa Interativo & GPS */}
+          <TouchableOpacity
+            style={styles.actionStepCard}
+            onPress={() => navigation.navigate('Map')}
+            activeOpacity={0.88}
+          >
+            <View style={styles.actionStepTopRow}>
+              <View style={[styles.actionStepIconBadge, { backgroundColor: '#FFFBEB' }]}>
+                <MaterialIcons name="map" size={22} color="#D97706" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.actionStepNumber, { color: '#D97706' }]}>PASSO 2</Text>
+                <Text style={styles.actionStepTitle}>Mobilize no Mapa & Pistas</Text>
+              </View>
             </View>
-            <View style={styles.stepContent}>
-              <Text style={styles.stepTitle}>Reencontro Seguro</Text>
-              <Text style={styles.stepDescription}>
-                Converse diretamente com o tutor em tempo real e comemore o final feliz!
-              </Text>
+            <Text style={styles.actionStepDescription}>
+              Acompanhe o mapa interativo, veja alertas próximos e registre avistamentos com GPS.
+            </Text>
+            <View style={[styles.actionStepButtonBadge, { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }]}>
+              <Text style={[styles.actionStepButtonText, { color: '#B45309' }]}>Explorar Mapa Interativo</Text>
+              <MaterialIcons name="arrow-forward" size={15} color="#B45309" />
             </View>
-          </View>
+          </TouchableOpacity>
+
+          {/* Passo 3: Finais Felizes & Casos de Sucesso */}
+          <TouchableOpacity
+            style={styles.actionStepCard}
+            onPress={() => navigation.navigate('RecoveredPets')}
+            activeOpacity={0.88}
+          >
+            <View style={styles.actionStepTopRow}>
+              <View style={[styles.actionStepIconBadge, { backgroundColor: '#ECFDF5' }]}>
+                <MaterialIcons name="celebration" size={22} color="#059669" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.actionStepNumber, { color: '#059669' }]}>PASSO 3</Text>
+                <Text style={styles.actionStepTitle}>Reencontros & Finais Felizes</Text>
+              </View>
+            </View>
+            <Text style={styles.actionStepDescription}>
+              Converse diretamente com os tutores pelo chat e celebre os pets que já voltaram para casa!
+            </Text>
+            <View style={[styles.actionStepButtonBadge, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+              <Text style={[styles.actionStepButtonText, { color: '#047857' }]}>Ver Animais Encontrados</Text>
+              <MaterialIcons name="arrow-forward" size={15} color="#047857" />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Botões de Ação */}
@@ -1011,51 +1050,77 @@ const styles = StyleSheet.create({
 
   // Como Funciona
   howItWorksSection: {
-    marginBottom: 22,
+    marginBottom: 24,
+  },
+  howItWorksHeaderRow: {
+    marginBottom: 14,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
     color: '#0F172A',
-    marginBottom: 12,
+    marginBottom: 2,
   },
-  stepCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  sectionSubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  actionStepCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 12,
-    marginBottom: 10,
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  stepNumberBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#2563EB',
+  actionStepTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  actionStepIconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  stepNumberText: {
-    color: '#FFFFFF',
+  actionStepNumber: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#2563EB',
+    letterSpacing: 0.5,
+    marginBottom: 1,
+  },
+  actionStepTitle: {
     fontSize: 15,
     fontWeight: '800',
+    color: '#0F172A',
   },
-  stepContent: {
-    flex: 1,
-  },
-  stepTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1E293B',
-    marginBottom: 2,
-  },
-  stepDescription: {
-    fontSize: 12.5,
+  actionStepDescription: {
+    fontSize: 13,
     color: '#64748B',
     lineHeight: 18,
+    marginBottom: 12,
+  },
+  actionStepButtonBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  actionStepButtonText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
 
   // Ações

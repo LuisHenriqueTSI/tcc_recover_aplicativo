@@ -248,6 +248,11 @@ const PublicStack = () => {
         component={RecoveredPetsScreen}
         options={{ title: 'Animais Encontrados' }}
       />
+      <Stack.Screen
+        name="RegisterItem"
+        component={RegisterItemScreen}
+        options={{ title: 'Cadastrar Pet' }}
+      />
     </Stack.Navigator>
   );
 };
