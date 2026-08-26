@@ -410,7 +410,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </View>
       </Modal>
 
-      {(itemType !== 'animal' || status !== 'found') && (
+      {status === 'lost' && (
         <View style={styles.rewardSection}>
           <TouchableOpacity
             style={styles.checkboxContainer}
@@ -1174,7 +1174,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
       } else {
         resultItem = await itemsService.registerItem(itemData, photos);
 
-        if (offerReward && (rewardAmount || rewardDescription)) {
+        if (status === 'lost' && offerReward && (rewardAmount || rewardDescription)) {
           console.log('[RegisterItem] Criando recompensa para item_id:', resultItem.id, 'valor:', rewardAmount, 'desc:', rewardDescription);
           await rewardsService.createReward({
             item_id: resultItem.id,
@@ -1849,7 +1849,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
             </View>
           </Modal>
 
-          {(itemType !== 'animal' || status !== 'found') && (
+          {status === 'lost' && (
             <View style={styles.rewardSection}>
               <TouchableOpacity
                 style={styles.checkboxContainer}
