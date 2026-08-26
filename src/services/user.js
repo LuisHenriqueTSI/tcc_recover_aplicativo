@@ -114,6 +114,12 @@ export const updateProfile = async (userId, updates) => {
 
     const sanitizedUpdates = { ...updates };
 
+    // Remove campos que não pertencem à tabela 'profiles' no Supabase
+    delete sanitizedUpdates.latitude;
+    delete sanitizedUpdates.longitude;
+    delete sanitizedUpdates.coords;
+    delete sanitizedUpdates.userCoords;
+
     if (Object.prototype.hasOwnProperty.call(sanitizedUpdates, 'whatsapp')) {
       sanitizedUpdates.whatsapp = normalizeWhatsappForStorage(sanitizedUpdates.whatsapp);
     }

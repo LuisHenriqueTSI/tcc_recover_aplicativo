@@ -164,8 +164,6 @@ const EditProfileScreen = ({ navigation }) => {
         phone: targetWhatsapp,
         state: profileState,
         city: profileCity,
-        latitude: profileCoords?.latitude ?? null,
-        longitude: profileCoords?.longitude ?? null,
       });
 
       // Atualiza no AsyncStorage para sincronia com a HomeScreen

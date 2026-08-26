@@ -557,8 +557,6 @@ const HomeScreen = ({ navigation, route }) => {
         await userService.updateProfile(user.id, {
           state: profileEditState,
           city: profileEditCity,
-          latitude: coords?.latitude ?? null,
-          longitude: coords?.longitude ?? null,
         });
         if (typeof setUserProfile === 'function') {
           setUserProfile((prev) => ({
