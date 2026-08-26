@@ -5,6 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 
@@ -51,6 +52,7 @@ const PublicHeaderRight = ({ navigation }) => (
 
 // Public Stack (no auth required - shows Home, Map and Login with safe insets & modern styling)
 const PublicAppTabs = ({ navigation }) => {
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const bottomPadding = insets.bottom > 0 ? insets.bottom + 4 : (Platform.OS === 'android' ? 14 : 8);
   const tabHeight = 64 + (insets.bottom > 0 ? insets.bottom : (Platform.OS === 'android' ? 14 : 0));
@@ -59,8 +61,8 @@ const PublicAppTabs = ({ navigation }) => {
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E2E8F0',
+          backgroundColor: colors.tabBarBg,
+          borderTopColor: colors.tabBarBorder,
           borderTopWidth: 1,
           paddingTop: 8,
           paddingBottom: bottomPadding,
@@ -82,7 +84,7 @@ const PublicAppTabs = ({ navigation }) => {
           tabBarLabel: ({ focused }) => (
             <Text
               style={{
-                color: focused ? '#2563EB' : '#64748B',
+                color: focused ? colors.primary : colors.textSecondary,
                 fontSize: 12,
                 marginTop: 2,
                 textAlign: 'center',
@@ -100,10 +102,10 @@ const PublicAppTabs = ({ navigation }) => {
                 width: 42,
                 height: 28,
                 borderRadius: 14,
-                backgroundColor: focused ? '#EFF6FF' : 'transparent',
+                backgroundColor: focused ? colors.primaryLight : 'transparent',
               }}
             >
-              <MaterialIcons name="grid-view" size={23} color={focused ? '#2563EB' : '#64748B'} />
+              <MaterialIcons name="grid-view" size={23} color={focused ? colors.primary : colors.textSecondary} />
             </View>
           ),
         }}
@@ -116,7 +118,7 @@ const PublicAppTabs = ({ navigation }) => {
           tabBarLabel: ({ focused }) => (
             <Text
               style={{
-                color: focused ? '#2563EB' : '#64748B',
+                color: focused ? colors.primary : colors.textSecondary,
                 fontSize: 12,
                 marginTop: 2,
                 textAlign: 'center',
@@ -134,10 +136,10 @@ const PublicAppTabs = ({ navigation }) => {
                 width: 42,
                 height: 28,
                 borderRadius: 14,
-                backgroundColor: focused ? '#EFF6FF' : 'transparent',
+                backgroundColor: focused ? colors.primaryLight : 'transparent',
               }}
             >
-              <MaterialIcons name="map" size={23} color={focused ? '#2563EB' : '#64748B'} />
+              <MaterialIcons name="map" size={23} color={focused ? colors.primary : colors.textSecondary} />
             </View>
           ),
         }}
@@ -156,13 +158,13 @@ const PublicAppTabs = ({ navigation }) => {
                 style={{
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: '#2563EB',
+                  backgroundColor: colors.primary,
                   borderRadius: 22,
                   flexDirection: 'row',
                   paddingHorizontal: 18,
                   paddingVertical: 9,
                   minWidth: 105,
-                  shadowColor: '#2563EB',
+                  shadowColor: colors.primary,
                   shadowOffset: { width: 0, height: 3 },
                   shadowOpacity: 0.28,
                   shadowRadius: 5,
@@ -184,12 +186,14 @@ const PublicAppTabs = ({ navigation }) => {
 
 // Public Stack for unauthenticated users
 const PublicStack = () => {
+  const { colors } = useTheme();
+
   return (
     <Stack.Navigator
       initialRouteName="PublicApp"
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#2563EB',
+          backgroundColor: colors.headerBg,
           paddingTop: 38,
           paddingBottom: 18,
         },
@@ -259,6 +263,7 @@ import { getUserNotifications } from '../services/notifications';
 
 const MainAppTabs = ({ navigation }) => {
   const { isAdmin, user } = useAuth();
+  const { colors } = useTheme();
   const [unreadCount, setUnreadCount] = useState(0);
   const [systemAlertCount, setSystemAlertCount] = useState(0);
   const [renewalAlertCount, setRenewalAlertCount] = useState(0);
@@ -298,16 +303,16 @@ const MainAppTabs = ({ navigation }) => {
 
     const cleanupRealtimeChannels = () => {
       if (notificationChannelRef.current) {
-        supabase.removeChannel(notificationChannelRef.current);
+        notificationChannelRef.current.unsubscribe();
         notificationChannelRef.current = null;
       }
       if (messageChannelRef.current) {
-        supabase.removeChannel(messageChannelRef.current);
+        messageChannelRef.current.unsubscribe();
         messageChannelRef.current = null;
       }
     };
 
-    fetchUnread();
+    cleanupRealtimeChannels();
 
     const handleNotificationEvent = (payload) => {
       console.log('[MainAppTabs] realtime notification event', payload);
@@ -318,8 +323,6 @@ const MainAppTabs = ({ navigation }) => {
       console.log('[MainAppTabs] realtime message event', payload);
       fetchUnread();
     };
-
-    cleanupRealtimeChannels();
 
     console.log('[MainAppTabs] subscribing realtime for user', user.id);
 
@@ -390,11 +393,11 @@ const MainAppTabs = ({ navigation }) => {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: '#2563EB',
-        tabBarInactiveTintColor: '#64748B',
+        tabBarActiveTintColor: colors.tabBarActive,
+        tabBarInactiveTintColor: colors.tabBarInactive,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E2E8F0',
+          backgroundColor: colors.tabBarBg,
+          borderTopColor: colors.tabBarBorder,
           borderTopWidth: 1,
           paddingBottom: bottomPadding,
           paddingTop: 6,
@@ -455,7 +458,7 @@ const MainAppTabs = ({ navigation }) => {
           title: 'Mensagens',
           tabBarLabel: 'Mensagens',
           headerTitle: 'Mensagens',
-          headerStyle: { backgroundColor: '#2563EB' },
+          headerStyle: { backgroundColor: colors.headerBg },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
           tabBarIcon: ({ color, size }) => (
@@ -477,7 +480,7 @@ const MainAppTabs = ({ navigation }) => {
           title: 'Perfil',
           tabBarLabel: 'Perfil',
           headerTitle: 'Perfil',
-          headerStyle: { backgroundColor: '#2563EB' },
+          headerStyle: { backgroundColor: colors.headerBg },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
           tabBarIcon: ({ color, size }) => (
@@ -490,12 +493,13 @@ const MainAppTabs = ({ navigation }) => {
 };
 
 const MainStackHeader = ({ navigation, route, options, back }) => {
+  const { colors } = useTheme();
   const title = route.name === 'RegisterItem'
     ? (route.params?.editItem ? 'Editar Pet' : 'Registrar')
     : options.headerTitle || options.title || '';
 
   return (
-    <SafeAreaView edges={['top']} style={{ backgroundColor: '#2563EB' }}>
+    <SafeAreaView edges={['top']} style={{ backgroundColor: colors.headerBg }}>
       <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
         {back && (
           <TouchableOpacity

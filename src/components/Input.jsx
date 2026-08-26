@@ -6,6 +6,7 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Input = ({
   label,
@@ -25,25 +26,31 @@ const Input = ({
   onBlur,
   ...rest
 }) => {
+  const { colors, isDark } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = secureTextEntry;
 
   return (
     <View style={style}>
       {label && (
-        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
       )}
       <View style={{ position: 'relative', justifyContent: 'center' }}>
         <TextInput
           style={[
             styles.input,
+            {
+              backgroundColor: colors.inputBg,
+              borderColor: error ? '#EF4444' : colors.inputBorder,
+              color: colors.text,
+            },
             inputStyle,
             multiline && styles.multilineInput,
-            error && styles.inputError,
+            error && (isDark ? { borderColor: '#EF4444', backgroundColor: '#2D1515' } : styles.inputError),
             isPassword && { paddingRight: 44 },
           ]}
           placeholder={placeholder}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={colors.textMuted}
           value={value}
           editable={editable}
           onChangeText={onChangeText}
@@ -60,7 +67,7 @@ const Input = ({
           <Feather
             name={showPassword ? 'eye-off' : 'eye'}
             size={20}
-            color="#64748B"
+            color={colors.textSecondary}
             onPress={() => setShowPassword((v) => !v)}
             style={{
               position: 'absolute',

@@ -3,17 +3,19 @@ import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, Touchabl
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import * as itemsService from '../services/items';
 
 const secondaryLinks = [
   { label: 'Finais Felizes & Impacto', description: 'Animais recuperados e relatos', icon: 'heart', route: 'Sobre' },
   { label: 'Sobre o WeFIND', description: 'Conheça o aplicativo e nossa missão', icon: 'info', route: 'Sobre', params: { forceFullView: true } },
-  { label: 'Configurações', description: 'Preferências e segurança', icon: 'settings', route: 'Config' },
+  { label: 'Configurações', description: 'Aparência, preferências e segurança', icon: 'settings', route: 'Config' },
   { label: 'Ajuda e suporte', description: 'Perguntas e contato', icon: 'help-circle', route: 'AjudaSuporte' },
 ];
 
 const ProfileScreen = ({ navigation }) => {
   const { userProfile, user, signOut, refreshProfile } = useAuth();
+  const { colors, isDark } = useTheme();
   const [userItems, setUserItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -66,7 +68,12 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   if (loading) {
-    return <View style={styles.loading}><ActivityIndicator size="large" color="#2563EB" /><Text style={styles.loadingText}>Abrindo seu perfil...</Text></View>;
+    return (
+      <View style={[styles.loading, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Abrindo seu perfil...</Text>
+      </View>
+    );
   }
 
   const formatDisplayPhone = (value) => {
@@ -94,43 +101,76 @@ const ProfileScreen = ({ navigation }) => {
   const activeCount = userItems.filter(item => !item.resolved).length;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.profileHeader}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+    >
+      <View style={[styles.profileHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={handlePickAvatar} disabled={uploading} activeOpacity={0.85} style={styles.avatarButton}>
-          {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatarImage} /> : <View style={styles.avatarFallback}><Text style={styles.avatarInitial}>{initial}</Text></View>}
-          <View style={styles.camera}><Feather name={uploading ? 'loader' : 'camera'} size={13} color="#fff" /></View>
+          {avatarUrl ? (
+            <Image source={{ uri: avatarUrl }} style={[styles.avatarImage, { borderColor: colors.surface }]} />
+          ) : (
+            <View style={[styles.avatarFallback, { backgroundColor: colors.primary, borderColor: colors.surface }]}>
+              <Text style={styles.avatarInitial}>{initial}</Text>
+            </View>
+          )}
+          <View style={[styles.camera, { backgroundColor: colors.primary, borderColor: colors.surface }]}>
+            <Feather name={uploading ? 'loader' : 'camera'} size={13} color="#fff" />
+          </View>
         </TouchableOpacity>
 
         <View style={styles.nameRow}>
-          <Text style={styles.name}>{userProfile?.name || 'Usuário'}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('EditProfile')} style={styles.avatarEditButton} accessibilityLabel="Editar perfil">
-            <Feather name="edit-2" size={14} color="#4B5563" />
+          <Text style={[styles.name, { color: colors.text }]}>{userProfile?.name || 'Usuário'}</Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('EditProfile')}
+            style={[styles.avatarEditButton, { backgroundColor: colors.primaryLight, borderColor: colors.cardBorder }]}
+            accessibilityLabel="Editar perfil"
+          >
+            <Feather name="edit-2" size={14} color={colors.primary} />
           </TouchableOpacity>
         </View>
 
         {formattedPhone ? (
-          <Text style={styles.phone}>{formattedPhone}</Text>
+          <Text style={[styles.phone, { color: colors.textSecondary }]}>{formattedPhone}</Text>
         ) : (
-          <Text style={styles.phonePlaceholder}>Adicionar telefone</Text>
+          <Text style={[styles.phonePlaceholder, { color: colors.textMuted }]}>Adicionar telefone</Text>
         )}
       </View>
 
-      <View style={styles.stats}>
-        <View style={styles.stat}><Text style={styles.statValue}>{publishedCount}</Text><Text style={styles.statLabel}>publicações</Text></View>
-        <View style={styles.statDivider} />
-        <View style={styles.stat}><Text style={[styles.statValue, styles.indigoValue]}>{activeCount}</Text><Text style={styles.statLabel}>ativas</Text></View>
-        <View style={styles.statDivider} />
-        <View style={styles.stat}><Text style={[styles.statValue, styles.indigoValue]}>{returnedCount}</Text><Text style={styles.statLabel}>devolvidos</Text></View>
+      <View style={[styles.stats, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+        <View style={styles.stat}>
+          <Text style={[styles.statValue, { color: colors.text }]}>{publishedCount}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>publicações</Text>
+        </View>
+        <View style={[styles.statDivider, { backgroundColor: colors.divider }]} />
+        <View style={styles.stat}>
+          <Text style={[styles.statValue, { color: colors.primary }]}>{activeCount}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>ativas</Text>
+        </View>
+        <View style={[styles.statDivider, { backgroundColor: colors.divider }]} />
+        <View style={styles.stat}>
+          <Text style={[styles.statValue, { color: colors.success }]}>{returnedCount}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>devolvidos</Text>
+        </View>
       </View>
 
-      <TouchableOpacity style={styles.publicationsButton} onPress={() => navigation.navigate('MeusAnuncios')} activeOpacity={0.82}>
-        <View style={styles.publicationsIcon}><Feather name="bookmark" size={20} color="#fff" /></View>
-        <View style={styles.publicationsCopy}><Text style={styles.publicationsTitle}>Minhas publicações</Text><Text style={styles.publicationsText}>Veja seus pets e acompanhe os anúncios</Text></View>
+      <TouchableOpacity
+        style={[styles.publicationsButton, { backgroundColor: colors.primary }]}
+        onPress={() => navigation.navigate('MeusAnuncios')}
+        activeOpacity={0.82}
+      >
+        <View style={[styles.publicationsIcon, { backgroundColor: colors.primaryDark }]}>
+          <Feather name="bookmark" size={20} color="#fff" />
+        </View>
+        <View style={styles.publicationsCopy}>
+          <Text style={styles.publicationsTitle}>Minhas publicações</Text>
+          <Text style={styles.publicationsText}>Veja seus pets e acompanhe os anúncios</Text>
+        </View>
         <Feather name="arrow-up-right" size={21} color="#fff" />
       </TouchableOpacity>
 
-      <Text style={styles.sectionTitle}>Mais opções</Text>
-      <View style={styles.links}>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>Mais opções</Text>
+      <View style={[styles.links, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
         {secondaryLinks.map((item, index) => (
           <React.Fragment key={item.label || item.route}>
             <TouchableOpacity
@@ -138,21 +178,36 @@ const ProfileScreen = ({ navigation }) => {
               onPress={() => navigation.navigate(item.route, item.params)}
               activeOpacity={0.75}
             >
-              <View style={styles.linkIcon}>
-                <Feather name={item.icon} size={19} color="#2563EB" />
+              <View style={[styles.linkIcon, { backgroundColor: colors.primaryLight }]}>
+                <Feather name={item.icon} size={19} color={colors.primary} />
               </View>
               <View style={styles.linkCopy}>
-                <Text style={styles.linkTitle}>{item.label}</Text>
-                <Text style={styles.linkDescription}>{item.description}</Text>
+                <Text style={[styles.linkTitle, { color: colors.text }]}>{item.label}</Text>
+                <Text style={[styles.linkDescription, { color: colors.textSecondary }]}>{item.description}</Text>
               </View>
-              <Feather name="chevron-right" size={19} color="#9CA3AF" />
+              <Feather name="chevron-right" size={19} color={colors.textMuted} />
             </TouchableOpacity>
-            {index < secondaryLinks.length - 1 ? <View style={styles.linkDivider} /> : null}
+            {index < secondaryLinks.length - 1 ? (
+              <View style={[styles.linkDivider, { backgroundColor: colors.divider }]} />
+            ) : null}
           </React.Fragment>
         ))}
       </View>
 
-      <TouchableOpacity style={styles.logout} onPress={signOut} activeOpacity={0.8}><Feather name="log-out" size={17} color="#B91C1C" /><Text style={styles.logoutText}>Sair da conta</Text></TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          styles.logout,
+          {
+            backgroundColor: isDark ? '#2D1515' : '#FEF2F2',
+            borderColor: isDark ? '#7F1D1D' : '#FECACA',
+          },
+        ]}
+        onPress={signOut}
+        activeOpacity={0.8}
+      >
+        <Feather name="log-out" size={17} color="#DC2626" />
+        <Text style={styles.logoutText}>Sair da conta</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -193,7 +248,7 @@ const styles = StyleSheet.create({
   linkDescription: { color: '#64748B', fontSize: 11, marginTop: 3 },
   linkDivider: { height: 1, backgroundColor: '#F1F5F9', marginLeft: 50 },
   logout: { height: 48, borderWidth: 1, borderColor: '#FECACA', backgroundColor: '#FEF2F2', borderRadius: 13, marginHorizontal: 20, marginTop: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  logoutText: { color: '#B91C1C', fontSize: 13, fontWeight: '800' },
+  logoutText: { color: '#DC2626', fontSize: 13, fontWeight: '800' },
 });
 
 export default ProfileScreen;

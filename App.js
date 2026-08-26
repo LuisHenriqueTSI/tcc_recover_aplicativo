@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
 import { AuthProvider } from './src/contexts/AuthContext';
+import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import RootNavigator from './src/navigation';
 import { cleanupExpiredItems } from './src/services/items';
 
@@ -27,6 +29,29 @@ const linking = {
   },
 };
 
+function MainAppContainer() {
+  const { isDark, colors } = useTheme();
+
+  const navigationTheme = {
+    ...(isDark ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(isDark ? DarkTheme.colors : DefaultTheme.colors),
+      background: colors.background,
+      card: colors.card,
+      text: colors.text,
+      border: colors.border,
+      primary: colors.primary,
+    },
+  };
+
+  return (
+    <NavigationContainer linking={linking} theme={navigationTheme}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <RootNavigator />
+    </NavigationContainer>
+  );
+}
+
 export default function App() {
   useEffect(() => {
     cleanupExpiredItems().catch((error) => {
@@ -35,10 +60,10 @@ export default function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <NavigationContainer linking={linking}>
-        <RootNavigator />
-      </NavigationContainer>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <MainAppContainer />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

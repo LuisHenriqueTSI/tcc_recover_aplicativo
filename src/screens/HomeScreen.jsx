@@ -20,6 +20,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import * as itemsService from '../services/items';
 import { supabase } from '../lib/supabase';
 import { getUser } from '../services/user';
@@ -431,6 +432,7 @@ const HomeScreen = ({ navigation, route }) => {
       return unsubscribe;
     }, [navigation, userProfile]);
   const { user, userProfile, isAdmin, refreshProfile, setUserProfile, signOut } = useAuth();
+  const { colors, isDark } = useTheme();
   // Corrige erro: garantir estado do modal de perfil
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   // Localidade do perfil e sessão
@@ -952,7 +954,7 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Overlay para fechar o menu ao clicar fora */}
       {user && showProfileMenu && (
         <TouchableOpacity
@@ -965,7 +967,7 @@ const HomeScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       )}
       {/* App Bar ajustada: centralizado quando deslogado (Explorar), alinhado à esquerda quando logado */}
-      <View style={{ backgroundColor: '#2563EB', paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#2563EB' }}>
+      <View style={{ backgroundColor: colors.headerBg, paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: colors.headerBg }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: user ? 'space-between' : 'center', minHeight: 48 }}>
           <View style={{ flexDirection: 'column', alignItems: user ? 'flex-start' : 'center' }}>
             <Text style={{ color: '#fff', fontWeight: '900', fontSize: 23, letterSpacing: 0.8, marginBottom: 2 }}>WeFIND</Text>
@@ -1018,8 +1020,8 @@ const HomeScreen = ({ navigation, route }) => {
             </View>
           )}
           {user && showProfileMenu && (
-            <View style={styles.profileMenu}>
-              <View style={styles.profileMenuHeader}>
+            <View style={[styles.profileMenu, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+              <View style={[styles.profileMenuHeader, { backgroundColor: colors.primaryLight, borderBottomColor: colors.border }]}>
                 <View style={styles.profileMenuAvatar}>
                   {userProfile?.avatar_url ? (
                     <Image source={{ uri: userProfile.avatar_url }} style={styles.profileMenuAvatarImage} />
@@ -1028,8 +1030,8 @@ const HomeScreen = ({ navigation, route }) => {
                   )}
                 </View>
                 <View style={styles.profileMenuIdentity}>
-                  <Text style={styles.profileMenuName} numberOfLines={1}>{userProfile?.name || 'Usuário'}</Text>
-                  <Text style={styles.profileMenuEmail} numberOfLines={1}>{user?.email || 'Conta WeFIND'}</Text>
+                  <Text style={[styles.profileMenuName, { color: colors.text }]} numberOfLines={1}>{userProfile?.name || 'Usuário'}</Text>
+                  <Text style={[styles.profileMenuEmail, { color: colors.textSecondary }]} numberOfLines={1}>{user?.email || 'Conta WeFIND'}</Text>
                 </View>
               </View>
               {isAdmin && (
@@ -1040,11 +1042,11 @@ const HomeScreen = ({ navigation, route }) => {
                   }}
                   style={styles.profileMenuItem}
                 >
-                  <View style={[styles.profileMenuIcon, styles.profileMenuAdminIcon]}>
-                    <MaterialIcons name="admin-panel-settings" size={18} color="#2563EB" />
+                  <View style={[styles.profileMenuIcon, styles.profileMenuAdminIcon, { backgroundColor: colors.primaryLight }]}>
+                    <MaterialIcons name="admin-panel-settings" size={18} color={colors.primary} />
                   </View>
-                  <Text style={styles.profileMenuItemText}>Administração</Text>
-                  <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
+                  <Text style={[styles.profileMenuItemText, { color: colors.text }]}>Administração</Text>
+                  <MaterialIcons name="chevron-right" size={20} color={colors.textMuted} />
                 </TouchableOpacity>
               )}
               <TouchableOpacity
@@ -1054,13 +1056,13 @@ const HomeScreen = ({ navigation, route }) => {
                 }}
                 style={styles.profileMenuItem}
               >
-                <View style={styles.profileMenuIcon}>
-                  <MaterialIcons name="person-outline" size={18} color="#2563EB" />
+                <View style={[styles.profileMenuIcon, { backgroundColor: colors.primaryLight }]}>
+                  <MaterialIcons name="person-outline" size={18} color={colors.primary} />
                 </View>
-                <Text style={styles.profileMenuItemText}>Perfil</Text>
-                <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
+                <Text style={[styles.profileMenuItemText, { color: colors.text }]}>Perfil</Text>
+                <MaterialIcons name="chevron-right" size={20} color={colors.textMuted} />
               </TouchableOpacity>
-              <View style={styles.profileMenuDivider} />
+              <View style={[styles.profileMenuDivider, { backgroundColor: colors.divider }]} />
               <TouchableOpacity
                 onPress={() => {
                   setShowProfileMenu(false);
@@ -1080,9 +1082,9 @@ const HomeScreen = ({ navigation, route }) => {
         {isAdmin && (
           <TouchableOpacity
             onPress={handleSendTestNotification}
-            style={{ marginTop: 12, backgroundColor: '#fff', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14, alignItems: 'center', borderWidth: 1, borderColor: '#BFDBFE' }}
+            style={{ marginTop: 12, backgroundColor: colors.surface, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14, alignItems: 'center', borderWidth: 1, borderColor: colors.primary }}
           >
-            <Text style={{ color: '#2563EB', fontWeight: '700', fontSize: 14 }}>Testar WhatsApp</Text>
+            <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 14 }}>Testar WhatsApp</Text>
           </TouchableOpacity>
         )}
 
@@ -1189,18 +1191,18 @@ const HomeScreen = ({ navigation, route }) => {
 
       {/* Busca de animais acima dos filtros */}
       <View style={{ marginTop: 12, marginHorizontal: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', borderRadius: 14, borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 14, height: 48 }}>
-          <MaterialIcons name="search" size={22} color="#64748B" style={{ marginRight: 8 }} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.inputBg, borderRadius: 14, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, height: 48 }}>
+          <MaterialIcons name="search" size={22} color={colors.textSecondary} style={{ marginRight: 8 }} />
           <TextInput
             placeholder="Nome, raça, espécie ou cidade..."
             value={searchTerm}
             onChangeText={setSearchTerm}
-            style={{ flex: 1, backgroundColor: '#F1F5F9', fontSize: 15, color: '#0F172A', paddingVertical: 0, paddingHorizontal: 0 }}
-            placeholderTextColor="#64748B"
+            style={{ flex: 1, backgroundColor: colors.inputBg, fontSize: 15, color: colors.text, paddingVertical: 0, paddingHorizontal: 0 }}
+            placeholderTextColor={colors.textMuted}
           />
           {searchTerm ? (
             <TouchableOpacity onPress={() => setSearchTerm('')} style={{ padding: 4 }}>
-              <MaterialIcons name="close" size={18} color="#64748B" />
+              <MaterialIcons name="close" size={18} color={colors.textSecondary} />
             </TouchableOpacity>
           ) : null}
         </View>
@@ -1213,27 +1215,28 @@ const HomeScreen = ({ navigation, route }) => {
         animationType="fade"
         onRequestClose={() => setEditLocationModal(false)}
       >
-        <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.3)', justifyContent:'center', alignItems:'center' }}>
-          <View style={{ backgroundColor:'#fff', borderRadius:12, paddingVertical:24, paddingHorizontal:16, minWidth:360, maxWidth: '95%' }}>
+        <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.5)', justifyContent:'center', alignItems:'center' }}>
+          <View style={{ backgroundColor: colors.surface, borderRadius:12, paddingVertical:24, paddingHorizontal:16, minWidth:360, maxWidth: '95%', borderWidth: 1, borderColor: colors.cardBorder }}>
             {user ? (
               <>
-                <Text style={{ fontWeight:'bold', fontSize:16, color:'#2563EB', marginBottom:8 }}>Filtrar por Bairro</Text>
-                <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione o bairro para filtrar. Cidade e estado são do seu perfil.</Text>
-                <Text style={{ marginBottom: 6 }}>Estado</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: '#F3F4F6' }}>
-                  <Text style={{ paddingLeft: 12, paddingTop: 16, fontSize: 16, color: '#6B7280' }}>{editState}</Text>
+                <Text style={{ fontWeight:'bold', fontSize:16, color: colors.primary, marginBottom:8 }}>Filtrar por Bairro</Text>
+                <Text style={{ color: colors.textSecondary, marginBottom:8 }}>Selecione o bairro para filtrar. Cidade e estado são do seu perfil.</Text>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Estado</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
+                  <Text style={{ paddingLeft: 12, paddingTop: 16, fontSize: 16, color: colors.textSecondary }}>{editState}</Text>
                 </View>
-                <Text style={{ marginBottom: 6 }}>Cidade</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: '#F3F4F6' }}>
-                  <Text style={{ paddingLeft: 12, paddingTop: 16, fontSize: 16, color: '#6B7280' }}>{editCity}</Text>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Cidade</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
+                  <Text style={{ paddingLeft: 12, paddingTop: 16, fontSize: 16, color: colors.textSecondary }}>{editCity}</Text>
                 </View>
-                <Text style={{ marginBottom: 6 }}>Bairro</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Bairro</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
                   <Picker
                     selectedValue={editNeighborhood}
                     onValueChange={setEditNeighborhood}
                     enabled={!!editCity}
-                    style={{ height: 56, minWidth: 320 }}
+                    style={{ height: 56, minWidth: 320, color: colors.text }}
+                    dropdownIconColor={colors.textSecondary}
                   >
                     <Picker.Item label="Selecione o bairro" value="" />
                     {(neighborhoodsByCity[editCity] || []).map(bairro => (
@@ -1244,18 +1247,19 @@ const HomeScreen = ({ navigation, route }) => {
               </>
             ) : (
               <>
-                <Text style={{ fontWeight:'bold', fontSize:16, color:'#2563EB', marginBottom:8 }}>Filtrar por Localidade</Text>
-                <Text style={{ color:'#6B7280', marginBottom:8 }}>Selecione estado, cidade e bairro para filtrar.</Text>
-                <Text style={{ marginBottom: 6 }}>Estado</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                <Text style={{ fontWeight:'bold', fontSize:16, color: colors.primary, marginBottom:8 }}>Filtrar por Localidade</Text>
+                <Text style={{ color: colors.textSecondary, marginBottom:8 }}>Selecione estado, cidade e bairro para filtrar.</Text>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Estado</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
                   <Picker
                     selectedValue={editState}
-                    onValueChange={uf => {
-                      setEditState(uf);
+                    onValueChange={state => {
+                      setEditState(state);
                       setEditCity('');
                       setEditNeighborhood('');
                     }}
-                    style={{ height: 56, minWidth: 320 }}
+                    style={{ height: 56, minWidth: 320, color: colors.text }}
+                    dropdownIconColor={colors.textSecondary}
                   >
                     <Picker.Item label="Selecione o estado" value="" />
                     {states.map(uf => (
@@ -1263,8 +1267,8 @@ const HomeScreen = ({ navigation, route }) => {
                     ))}
                   </Picker>
                 </View>
-                <Text style={{ marginBottom: 6 }}>Cidade</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Cidade</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 12, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
                   <Picker
                     selectedValue={editCity}
                     onValueChange={city => {
@@ -1272,21 +1276,23 @@ const HomeScreen = ({ navigation, route }) => {
                       setEditNeighborhood('');
                     }}
                     enabled={!!editState}
-                    style={{ height: 56, minWidth: 320 }}
+                    style={{ height: 56, minWidth: 320, color: colors.text }}
+                    dropdownIconColor={colors.textSecondary}
                   >
                     <Picker.Item label="Selecione a cidade" value="" />
-                    {(citiesByState[editState] || []).map(city => (
-                      <Picker.Item key={city} label={city} value={city} />
+                    {(citiesByState[editState] || []).map(cidade => (
+                      <Picker.Item key={cidade} label={cidade} value={cidade} />
                     ))}
                   </Picker>
                 </View>
-                <Text style={{ marginBottom: 6 }}>Bairro</Text>
-                <View style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center' }}>
+                <Text style={{ marginBottom: 6, color: colors.text }}>Bairro</Text>
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 16, minWidth: 320, maxWidth: '100%', width: '100%', height: 56, justifyContent: 'center', backgroundColor: colors.inputBg }}>
                   <Picker
                     selectedValue={editNeighborhood}
                     onValueChange={setEditNeighborhood}
                     enabled={!!editCity}
-                    style={{ height: 56, minWidth: 320 }}
+                    style={{ height: 56, minWidth: 320, color: colors.text }}
+                    dropdownIconColor={colors.textSecondary}
                   >
                     <Picker.Item label="Selecione o bairro" value="" />
                     {(neighborhoodsByCity[editCity] || []).map(bairro => (
@@ -1296,106 +1302,89 @@ const HomeScreen = ({ navigation, route }) => {
                 </View>
               </>
             )}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 8 }}>
-              <TouchableOpacity
-                onPress={() => {
-                  setEditState(user ? editState : '');
-                  setEditCity(user ? editCity : '');
-                  setEditNeighborhood('');
-                }}
-                style={{ paddingVertical: 10, paddingHorizontal: 12, backgroundColor: '#F3F4F6', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB' }}
-              >
-                <Text style={{ color: '#374151', fontWeight: 'bold', fontSize: 13 }}>Limpar Filtro</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+              <Button
+                title="Cancelar"
+                variant="secondary"
                 onPress={() => setEditLocationModal(false)}
-                style={{ paddingVertical: 10, paddingHorizontal: 14, backgroundColor: '#E5E7EB', borderRadius: 8 }}
-              >
-                <Text style={{ color: '#1F2937', fontWeight: 'bold', fontSize: 13 }}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={async () => {
-                  setLocationFilterTouched(true);
-                  setEditLocationModal(false);
-                  setLocationFilter(`${editCity}, ${editState}${editNeighborhood ? ', ' + editNeighborhood : ''}`);
-                  loadItems(); // Carrega imediatamente após salvar
-                  // Atualiza localidade no perfil do usuário
-                  try {
-                    if (user && user.id) {
-                    await userService.updateProfile(user.id, { neighborhood: editNeighborhood });
-                  }
-                } catch (e) {
-                  console.log('[HomeScreen] Erro ao atualizar localidade no perfil:', e.message);
-                }
-              }} style={{ paddingVertical:8, paddingHorizontal:16 }}>
-                <Text style={{ color:'#2563EB', fontWeight:'bold' }}>Salvar</Text>
-              </TouchableOpacity>
+                style={{ flex: 1 }}
+              />
+              <Button
+                title="Aplicar"
+                variant="primary"
+                onPress={handleApplyLocation}
+                disabled={user ? !editNeighborhood : (!editState || !editCity)}
+                style={{ flex: 1 }}
+              />
             </View>
           </View>
         </View>
       </Modal>
-      {/* Filtros rápidos */}
-      <View style={styles.filterToolbar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterToolbarContent}>
-          <TouchableOpacity
-            style={[styles.filterToggle, showAdvancedFilters && styles.filterToggleActive]}
-            onPress={() => setShowAdvancedFilters(v => !v)}
-            accessibilityLabel="Abrir filtros avançados"
-          >
-            <MaterialIcons name="tune" size={21} color={showAdvancedFilters ? '#fff' : '#1E3A8A'} />
-          </TouchableOpacity>
+
+      {/* Categorias / Chips de Filtro */}
+      <View style={{ marginTop: 12, marginBottom: 10 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScrollView}
+        >
           <TouchableOpacity
             style={[
               styles.filterChip,
+              { backgroundColor: isDark ? '#1E293B' : '#E5E7EB', borderColor: isDark ? '#334155' : '#E5E7EB' },
               filters.status === 'all' && styles.filterChipActive,
             ]}
             onPress={() => setFilters({ ...filters, status: 'all' })}
             activeOpacity={0.85}
           >
-            <MaterialIcons name="grid-view" size={13.5} color={filters.status === 'all' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 4 }} />
-            <Text style={[styles.filterChipText, filters.status === 'all' && styles.filterChipTextActive]}>Todos</Text>
+            <MaterialIcons name="grid-view" size={13.5} color={filters.status === 'all' ? '#FFFFFF' : (isDark ? '#94A3B8' : '#4B5563')} style={{ marginRight: 4 }} />
+            <Text style={[styles.filterChipText, { color: isDark ? '#94A3B8' : '#4B5563' }, filters.status === 'all' && styles.filterChipTextActive]}>Todos</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.filterChip,
+              { backgroundColor: isDark ? '#1E293B' : '#E5E7EB', borderColor: isDark ? '#334155' : '#E5E7EB' },
               filters.status === 'lost' && styles.filterChipActive,
             ]}
             onPress={() => setFilters({ ...filters, status: 'lost' })}
             activeOpacity={0.85}
           >
-            <MaterialIcons name="priority-high" size={14} color={filters.status === 'lost' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 2 }} />
-            <Text style={[styles.filterChipText, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
+            <MaterialIcons name="priority-high" size={14} color={filters.status === 'lost' ? '#FFFFFF' : (isDark ? '#94A3B8' : '#4B5563')} style={{ marginRight: 2 }} />
+            <Text style={[styles.filterChipText, { color: isDark ? '#94A3B8' : '#4B5563' }, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.filterChip,
+              { backgroundColor: isDark ? '#1E293B' : '#E5E7EB', borderColor: isDark ? '#334155' : '#E5E7EB' },
               filters.status === 'found' && styles.filterChipActive,
             ]}
             onPress={() => setFilters({ ...filters, status: 'found' })}
             activeOpacity={0.85}
           >
-            <MaterialIcons name="search" size={15} color={filters.status === 'found' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 4 }} />
-            <Text style={[styles.filterChipText, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
+            <MaterialIcons name="search" size={15} color={filters.status === 'found' ? '#FFFFFF' : (isDark ? '#94A3B8' : '#4B5563')} style={{ marginRight: 4 }} />
+            <Text style={[styles.filterChipText, { color: isDark ? '#94A3B8' : '#4B5563' }, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.filterChip,
+              { backgroundColor: isDark ? '#1E293B' : '#E5E7EB', borderColor: isDark ? '#334155' : '#E5E7EB' },
               filters.status === 'adoption' && styles.filterChipActive,
             ]}
             onPress={() => setFilters({ ...filters, status: 'adoption' })}
             activeOpacity={0.85}
           >
-            <MaterialIcons name="favorite-border" size={13.5} color={filters.status === 'adoption' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 4 }} />
-            <Text style={[styles.filterChipText, filters.status === 'adoption' && styles.filterChipTextActive]}>Para Adoção</Text>
+            <MaterialIcons name="favorite-border" size={13.5} color={filters.status === 'adoption' ? '#FFFFFF' : (isDark ? '#94A3B8' : '#4B5563')} style={{ marginRight: 4 }} />
+            <Text style={[styles.filterChipText, { color: isDark ? '#94A3B8' : '#4B5563' }, filters.status === 'adoption' && styles.filterChipTextActive]}>Para Adoção</Text>
           </TouchableOpacity>
 
           {user && (
             <TouchableOpacity
               style={[
                 styles.filterChip,
+                { backgroundColor: isDark ? '#1E293B' : '#E5E7EB', borderColor: isDark ? '#334155' : '#E5E7EB' },
                 filters.showMyItems && styles.filterChipActive,
               ]}
               onPress={handleMyItemsToggle}
@@ -1405,12 +1394,13 @@ const HomeScreen = ({ navigation, route }) => {
               <MaterialIcons
                 name="person-outline"
                 size={15}
-                color={filters.showMyItems ? '#FFFFFF' : '#4B5563'}
+                color={filters.showMyItems ? '#FFFFFF' : (isDark ? '#94A3B8' : '#4B5563')}
                 style={{ marginRight: 4 }}
               />
               <Text
                 style={[
                   styles.filterChipText,
+                  { color: isDark ? '#94A3B8' : '#4B5563' },
                   filters.showMyItems && styles.filterChipTextActive,
                 ]}
               >

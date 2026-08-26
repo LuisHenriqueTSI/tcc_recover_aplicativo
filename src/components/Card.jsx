@@ -3,10 +3,23 @@ import {
   View,
   StyleSheet,
 } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Card = ({ children, style }) => {
+  const { colors, isDark } = useTheme();
+
   return (
-    <View style={[styles.card, style]}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.cardBorder,
+          borderWidth: isDark ? 1 : 0,
+        },
+        style,
+      ]}
+    >
       {children}
     </View>
   );
