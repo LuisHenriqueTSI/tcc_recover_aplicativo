@@ -1,83 +1,65 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Platform, View } from 'react-native';
-import * as ImageManipulator from 'expo-image-manipulator';
-import * as FileSystem from 'expo-file-system/legacy';
-
-let imageProcessingQueue = Promise.resolve();
-
-const enqueueImageProcessing = (task) => {
-  const result = imageProcessingQueue.then(task, task);
-  imageProcessingQueue = result.catch(() => undefined);
-  return result;
-};
+import React, { useState } from 'react';
+import { Image, View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 
 const OptimizedImage = ({ uri, style, resizeMode = 'cover', onLoad, onError, ...props }) => {
-  const [optimizedUri, setOptimizedUri] = useState(Platform.OS === 'web' ? uri : null);
+  const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    setFailed(false);
-    setOptimizedUri(Platform.OS === 'web' || !uri || uri.startsWith('file://') ? uri : null);
-
-    if (!uri || Platform.OS === 'web' || uri.startsWith('file://')) {
-      setOptimizedUri(uri);
-      return () => {
-        active = false;
-      };
-    }
-
-    const prepareImage = async () => {
-      try {
-        const safeName = Array.from(uri).reduce(
-          (hash, character) => ((hash * 31) + character.charCodeAt(0)) >>> 0,
-          7
-        ).toString(16);
-        const localPath = `${FileSystem.cacheDirectory}recover-photo-${safeName}.jpg`;
-        const optimizedPath = `${FileSystem.cacheDirectory}recover-photo-optimized-${safeName}.jpg`;
-        await enqueueImageProcessing(async () => {
-          const optimizedFile = await FileSystem.getInfoAsync(optimizedPath);
-          if (optimizedFile.exists) {
-            if (active) setOptimizedUri(optimizedPath);
-            return;
-          }
-
-          const cachedFile = await FileSystem.getInfoAsync(localPath);
-          const download = cachedFile.exists
-            ? { uri: localPath }
-            : await FileSystem.downloadAsync(uri, localPath);
-          const manipulated = await ImageManipulator.manipulateAsync(
-            download.uri,
-            [{ resize: { width: 600 } }],
-            { compress: 0.55, format: ImageManipulator.SaveFormat.JPEG }
-          );
-          await FileSystem.copyAsync({ from: manipulated.uri, to: optimizedPath });
-          if (active) setOptimizedUri(optimizedPath);
-        });
-      } catch (error) {
-        console.warn('[OptimizedImage] Falha ao preparar imagem:', error.message);
-        if (active) {
-          setFailed(true);
-          onError?.({ nativeEvent: { error: error.message } });
-        }
-      }
-    };
-
-    prepareImage();
-    return () => {
-      active = false;
-    };
-  }, [uri]);
-
-  if (!optimizedUri || failed) {
+  if (!uri || failed) {
     return (
-      <View style={[style, { alignItems: 'center', justifyContent: 'center', backgroundColor: '#F3F4F6' }]}>
-        {!failed && <ActivityIndicator color="#9CA3AF" />}
+      <View style={[style, styles.fallbackContainer]}>
+        <View style={styles.fallbackBox} />
       </View>
     );
   }
 
-  return <Image {...props} source={{ uri: optimizedUri }} style={style} resizeMode={resizeMode} onLoad={onLoad} onError={onError} />;
+  return (
+    <View style={[style, styles.container]}>
+      <Image
+        {...props}
+        source={{
+          uri,
+          cache: Platform.OS === 'ios' ? 'default' : 'force-cache',
+        }}
+        style={[StyleSheet.absoluteFill, style]}
+        resizeMode={resizeMode}
+        onLoadEnd={() => setLoading(false)}
+        onLoad={onLoad}
+        onError={(e) => {
+          setLoading(false);
+          setFailed(true);
+          onError?.(e);
+        }}
+      />
+      {loading && (
+        <View style={[StyleSheet.absoluteFill, styles.loadingContainer]}>
+          <ActivityIndicator size="small" color="#94A3B8" />
+        </View>
+      )}
+    </View>
+  );
 };
 
-export default OptimizedImage;
+const styles = StyleSheet.create({
+  container: {
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  fallbackContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F1F5F9',
+  },
+  fallbackBox: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#E2E8F0',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(241, 245, 249, 0.4)',
+  },
+});
+
+export default React.memo(OptimizedImage);

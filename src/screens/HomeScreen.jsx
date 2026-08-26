@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { Modal } from 'react-native';
+import { Modal, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
@@ -132,7 +132,7 @@ const formatStreetNumberNeighborhood = (item) => {
 };
 
 // ItemCard agora é um componente fora do HomeScreen
-const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress }) => {
+const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress }) => {
   const { colors, isDark } = useTheme();
   const [carouselIndex, setCarouselIndex] = React.useState(0);
   const [cardWidth, setCardWidth] = React.useState(0);
@@ -430,7 +430,7 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
       </View>
     </Card>
   );
-};
+});
 
 const HomeScreen = ({ navigation, route }) => {
     // Limpa filtros ao sair da HomeScreen
@@ -681,13 +681,32 @@ const HomeScreen = ({ navigation, route }) => {
   const [editCity, setEditCity] = useState(userProfile?.city || '');
   const [editNeighborhood, setEditNeighborhood] = useState('');
 
-  // Sempre recarrega os itens ao focar na HomeTab
+  // Sempre recarrega os itens silenciosamente ao focar na HomeTab
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      loadItems();
+      loadItems(true);
     });
     return unsubscribe;
   }, [navigation]);
+
+  // Carregamento instantâneo de cache na inicialização
+  useEffect(() => {
+    const loadCachedFeed = async () => {
+      try {
+        const cached = await AsyncStorage.getItem('@wefind/cached_feed_items');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setItems(parsed);
+            applyFilters(parsed);
+            setLoading(false);
+          }
+        }
+      } catch (e) {}
+    };
+    loadCachedFeed();
+    loadItems();
+  }, []);
 
   // Ao focar na tela, sincroniza seletor interno caso o perfil possua cidade
   useFocusEffect(
@@ -709,67 +728,52 @@ const HomeScreen = ({ navigation, route }) => {
     animalType: 'all',
   });
 
-  const loadItems = async () => {
+  const loadItems = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent && items.length === 0) {
+        setLoading(true);
+      }
       let allItems = [];
       if (searchTerm && searchTerm.trim().length > 0) {
-        // Busca otimizada ainda não implementada para search, usar antiga
         allItems = await itemsService.searchItems(searchTerm.trim());
-        // Buscar fotos e owner manualmente para search
-        allItems = await Promise.all(
-          (allItems || []).map(async (item) => {
-            const { data: photos } = await supabase
-              .from('item_photos')
-              .select('id, url')
-              .eq('item_id', item.id);
-            let owner_name = 'Usuário';
-            if (item.owner_id) {
-              const owner = await getUser(item.owner_id);
-              owner_name = owner?.name || owner?.email || 'Usuário';
-            }
-            return {
-              ...item,
-              owner_name,
-              item_photos: photos || [],
-            };
-          })
-        );
       } else {
         const baseFilters = {};
         if (filters.status !== 'all') baseFilters.status = filters.status;
         if (filters.category !== 'all') baseFilters.category = filters.category;
         if (filters.animalType && filters.animalType !== 'all') baseFilters.species = filters.animalType;
         if (filters.showMyItems && user) baseFilters.owner_id = user.id;
-        // A localização pode existir apenas como coordenadas escolhidas no mapa.
-        // O filtro textual é aplicado abaixo, depois que todos os itens são carregados.
+
         allItems = await itemsService.listItemsWithPhotosAndOwner(baseFilters);
-        // Ajustar owner_name para compatibilidade
         allItems = (allItems || []).map(item => ({
           ...item,
-          owner_name: item.profiles?.name || item.profiles?.email || 'Usuário',
+          owner_name: item.profiles?.name || item.profiles?.email || item.owner_name || 'Usuário',
           item_photos: item.item_photos || [],
         }));
       }
-      if (user?.id) {
-        await notificationsService.syncRenewalNotifications(user.id, allItems);
-      }
+
       setItems(allItems);
       applyFilters(allItems);
-      // Thumbnails: usar a primeira foto de cada item
-      const thumbsMap = {};
-      (allItems || []).forEach(item => {
-        if (item.item_photos && item.item_photos.length > 0) {
-          thumbsMap[item.id] = item.item_photos[0].url;
-        }
-      });
-      setThumbnails(thumbsMap);
-      } catch (error) {
-        console.error('[HomeScreen] Erro ao carregar itens:', error);
-      setItems([]);
-      setFilteredItems([]);
+
+      // Salva no cache local para abertura instantânea (0ms) subsequente
+      if (!searchTerm && filters.status === 'all' && (!filters.animalType || filters.animalType === 'all') && !filters.showMyItems) {
+        try {
+          AsyncStorage.setItem('@wefind/cached_feed_items', JSON.stringify(allItems.slice(0, 40))).catch(() => {});
+        } catch (e) {}
+      }
+
+      // Sincronização em background sem travar a interface
+      if (user?.id) {
+        notificationsService.syncRenewalNotifications(user.id, allItems).catch(() => {});
+      }
+    } catch (error) {
+      console.error('[HomeScreen] Erro ao carregar itens:', error);
+      if (items.length === 0) {
+        setItems([]);
+        setFilteredItems([]);
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -1097,6 +1101,15 @@ const HomeScreen = ({ navigation, route }) => {
       Alert.alert('Erro', error?.message || 'Não foi possível enviar a notificação de teste.');
     }
   };
+
+  const finalDisplayItems = useMemo(() => {
+    return filteredItems.filter(item => {
+      const matchesAnimalType = advancedFilters.animalType === 'all' || advancedFilters.animalType === undefined || !item.species
+        ? true
+        : String(item.species || '').toLowerCase().includes(String(advancedFilters.animalType).toLowerCase());
+      return (advancedFilters.category === 'all' || item.category === advancedFilters.category) && matchesAnimalType;
+    });
+  }, [filteredItems, advancedFilters.animalType, advancedFilters.category]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -1696,24 +1709,14 @@ const HomeScreen = ({ navigation, route }) => {
         </View>
       )}
 
-      {/* Quantidade de animais encontrados */}
+      {/* Quantidade de animais encontrados e Lista de Itens com Virtualização de Alta Performance */}
       <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
         <Text style={{ color: colors.textSecondary, fontSize: 15 }}>
-          {String(filteredItems.filter(item => {
-            const matchesAnimalType = advancedFilters.animalType === 'all' || advancedFilters.animalType === undefined || !item.species
-              ? true
-              : String(item.species || '').toLowerCase().includes(String(advancedFilters.animalType).toLowerCase());
-            return (advancedFilters.category === 'all' || item.category === advancedFilters.category) && matchesAnimalType;
-          }).length) + ' animais encontrados'}
+          {`${finalDisplayItems.length} animais encontrados`}
         </Text>
       </View>
       <FlatList
-        data={filteredItems.filter(item => {
-          const matchesAnimalType = advancedFilters.animalType === 'all' || advancedFilters.animalType === undefined || !item.species
-            ? true
-            : String(item.species || '').toLowerCase().includes(String(advancedFilters.animalType).toLowerCase());
-          return (advancedFilters.category === 'all' || item.category === advancedFilters.category) && matchesAnimalType;
-        })}
+        data={finalDisplayItems}
         renderItem={({ item }) => (
           <ItemCard
             item={item}
@@ -1728,13 +1731,16 @@ const HomeScreen = ({ navigation, route }) => {
           />
         )}
         keyExtractor={item => {
-          // Defensive: always return a string, never undefined/null
           if (item && item.id !== undefined && item.id !== null) {
             return String(item.id);
           }
-          // Fallback: use a random string (should not happen in production)
-          return `unknown-${Math.random().toString(36).substr(2, 9)}`;
+          return `item-${Math.random().toString(36).slice(2, 9)}`;
         }}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={Platform.OS === 'android'}
+        updateCellsBatchingPeriod={50}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -1760,7 +1766,9 @@ const HomeScreen = ({ navigation, route }) => {
                 }}
                 activeOpacity={0.8}
               >
-                <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>Ver todos do Brasil</Text>
+                <Text style={{ color: isDark ? '#60A5FA' : '#2563EB', fontWeight: 'bold', fontSize: 13 }}>
+                  Ver animais de todo o Brasil
+                </Text>
               </TouchableOpacity>
             ) : null}
           </View>

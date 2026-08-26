@@ -44,14 +44,16 @@ const ensureCleanupExpiredItems = async () => {
   }
 };
 
-// Busca itens já com fotos e nome do dono em uma única query (para Home)
+// Busca itens já com fotos, dono e recompensas em uma ÚNICA query otimizada (para Home)
 export const listItemsWithPhotosAndOwner = async (filters = {}) => {
   try {
-    await ensureCleanupExpiredItems();
+    // Executa limpeza em background sem travar o carregamento do feed
+    ensureCleanupExpiredItems().catch(() => {});
     console.log('[listItemsWithPhotosAndOwner] Carregando itens otimizados:', filters);
+    
     let query = supabase
       .from('items')
-      .select('*, profiles!owner_id(name, email, whatsapp, phone)')
+      .select('*, profiles!owner_id(name, email, whatsapp, phone), item_photos(id, url), rewards(id, amount, currency, status, description)')
       .order('created_at', { ascending: false });
 
     if (filters.status) query = query.eq('status', filters.status);
@@ -64,83 +66,90 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
 
     const { data, error } = await query;
     if (error) {
-      console.log('[listItemsWithPhotosAndOwner] Erro:', error.message);
-      return [];
-    }
-
-    // Alguns ambientes podem retornar o relacionamento vazio mesmo com a foto salva.
-    // Busca as referências separadamente para não deixar o anúncio sem imagem na Home.
-    const itemIdsForPhotos = (data || []).map((item) => item.id).filter(Boolean);
-    if (itemIdsForPhotos.length > 0) {
-      const { data: photoRows, error: photoRowsError } = await supabase
-        .from('item_photos')
-        .select('id, item_id, url')
-        .in('item_id', itemIdsForPhotos);
-
-      if (!photoRowsError) {
-        const photosByItemId = photoRows.reduce((groups, photo) => {
-          if (!groups[photo.item_id]) groups[photo.item_id] = [];
-          groups[photo.item_id].push({ id: photo.id, url: photo.url });
-          return groups;
-        }, {});
-
-        data.forEach((item) => {
-          const nestedPhotos = Array.isArray(item.item_photos)
-            ? item.item_photos
-            : item.item_photos ? [item.item_photos] : [];
-          item.item_photos = (nestedPhotos.length > 0
-            ? nestedPhotos
-            : photosByItemId[item.id] || [])
-            .filter((photo) => photo?.url);
-        });
-      } else {
-        console.log('[listItemsWithPhotosAndOwner] Erro no fallback de fotos:', photoRowsError.message);
-      }
-    }
-
-    const itemIds = (data || []).map(item => item.id).filter(Boolean);
-    const rewardsByItemId = {};
-
-    if (itemIds.length > 0) {
-      const { data: rewardsData, error: rewardsError } = await supabase
-        .from('rewards')
-        .select('id, item_id, amount, currency, status, description')
-        .in('item_id', itemIds);
-
-      if (rewardsError) {
-        console.log('[listItemsWithPhotosAndOwner] Erro ao buscar rewards:', rewardsError.message);
-      } else {
-        for (const reward of rewardsData || []) {
-          if (!rewardsByItemId[reward.item_id]) {
-            rewardsByItemId[reward.item_id] = [];
-          }
-          rewardsByItemId[reward.item_id].push(reward);
-        }
-      }
+      console.log('[listItemsWithPhotosAndOwner] Erro na query única, usando fallback:', error.message);
+      return await listItemsWithPhotosAndOwnerFallback(filters);
     }
 
     const visibleItems = (data || []).filter(item => {
       if (filters.owner_id) return true;
       return !shouldHideItem(item);
     });
+
     return visibleItems
-      .map(item => ({
-        ...item,
-        rewards: normalizeItemRewards({
+      .map(item => {
+        const itemPhotos = Array.isArray(item.item_photos)
+          ? item.item_photos
+          : item.item_photos ? [item.item_photos] : [];
+        const itemRewards = Array.isArray(item.rewards)
+          ? item.rewards
+          : item.rewards ? [item.rewards] : [];
+
+        return {
           ...item,
-          rewards: rewardsByItemId[item.id] || [],
-        }),
-        renewalInfo: getRenewalInfo(item),
-      }))
+          item_photos: itemPhotos.filter(p => p && p.url),
+          rewards: normalizeItemRewards({
+            ...item,
+            rewards: itemRewards,
+          }),
+          renewalInfo: getRenewalInfo(item),
+        };
+      })
       .sort((a, b) => {
-        // A ordem da Home deve refletir a publicação, não a expiração.
-        // Avisos de renovação ficam no próprio anúncio sem mover itens antigos para o topo.
         const aDate = new Date(a.created_at || 0).getTime();
         const bDate = new Date(b.created_at || 0).getTime();
         return bDate - aDate;
       });
   } catch (error) {
     console.log('[listItemsWithPhotosAndOwner] Exceção:', error.message);
+    return [];
+  }
+};
+
+const listItemsWithPhotosAndOwnerFallback = async (filters = {}) => {
+  try {
+    let query = supabase
+      .from('items')
+      .select('*, profiles!owner_id(name, email, whatsapp, phone)')
+      .order('created_at', { ascending: false });
+
+    if (filters.status) query = query.eq('status', filters.status);
+    if (filters.category) query = query.eq('category', filters.category);
+    if (filters.resolved !== undefined) query = query.eq('resolved', filters.resolved);
+    if (filters.owner_id) query = query.eq('owner_id', filters.owner_id);
+    if (filters.state) query = query.eq('state', filters.state);
+    if (filters.city) query = query.eq('city', filters.city);
+
+    const { data, error } = await query;
+    if (error) return [];
+
+    const itemIds = (data || []).map((item) => item.id).filter(Boolean);
+    if (itemIds.length > 0) {
+      const [{ data: photoRows }, { data: rewardsData }] = await Promise.all([
+        supabase.from('item_photos').select('id, item_id, url').in('item_id', itemIds),
+        supabase.from('rewards').select('id, item_id, amount, currency, status, description').in('item_id', itemIds),
+      ]);
+
+      const photosByItemId = (photoRows || []).reduce((groups, photo) => {
+        if (!groups[photo.item_id]) groups[photo.item_id] = [];
+        groups[photo.item_id].push({ id: photo.id, url: photo.url });
+        return groups;
+      }, {});
+
+      const rewardsByItemId = (rewardsData || []).reduce((groups, reward) => {
+        if (!groups[reward.item_id]) groups[reward.item_id] = [];
+        groups[reward.item_id].push(reward);
+        return groups;
+      }, {});
+
+      data.forEach((item) => {
+        item.item_photos = photosByItemId[item.id] || [];
+        item.rewards = normalizeItemRewards({ ...item, rewards: rewardsByItemId[item.id] || [] });
+        item.renewalInfo = getRenewalInfo(item);
+      });
+    }
+
+    return (data || []).filter(item => filters.owner_id || !shouldHideItem(item));
+  } catch (e) {
     return [];
   }
 };
@@ -686,14 +695,13 @@ export const getItemDetails = async (itemId) => {
 
 export const searchItems = async (searchTerm) => {
   try {
-    // Simple search without joins to avoid schema relationship errors
     const term = (searchTerm || '').trim();
     if (!term) return [];
 
     const { data, error } = await supabase
       .from('items')
-      .select('*')
-      .or(`title.ilike.%${term}%,description.ilike.%${term}%,city.ilike.%${term}%,state.ilike.%${term}%,neighborhood.ilike.%${term}%`)
+      .select('*, profiles!owner_id(name, email, whatsapp, phone), item_photos(id, url), rewards(id, amount, currency, status, description)')
+      .or(`title.ilike.%${term}%,description.ilike.%${term}%,city.ilike.%${term}%,state.ilike.%${term}%,neighborhood.ilike.%${term}%,species.ilike.%${term}%`)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -701,7 +709,13 @@ export const searchItems = async (searchTerm) => {
       return [];
     }
 
-    return data || [];
+    return (data || []).map((item) => ({
+      ...item,
+      owner_name: item.profiles?.name || item.profiles?.email || 'Usuário',
+      item_photos: Array.isArray(item.item_photos) ? item.item_photos.filter((p) => p && p.url) : [],
+      rewards: normalizeItemRewards({ ...item, rewards: item.rewards || [] }),
+      renewalInfo: getRenewalInfo(item),
+    }));
   } catch (error) {
     console.log('[searchItems] Exceção:', error.message);
     return [];
