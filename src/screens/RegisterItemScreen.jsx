@@ -11,6 +11,7 @@ import {
   Image,
   TextInput,
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Calendar } from 'react-native-calendars';
