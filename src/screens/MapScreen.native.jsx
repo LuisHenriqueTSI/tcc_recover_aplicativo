@@ -1,5 +1,6 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import MapView, { Callout, Marker } from 'react-native-maps';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -23,12 +24,56 @@ const PETS_ONLY_MAP_STYLE = [
 const hasCoordinates = (item) => Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude));
 
 const MapScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
+  const mapRef = useRef(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [locationStatus, setLocationStatus] = useState('checking');
   const locationStatusRef = useRef('checking');
   const [region, setRegion] = useState(BRAZIL_REGION);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredItems = useMemo(() => {
+    if (!searchTerm.trim()) return items;
+    const term = searchTerm.toLowerCase().trim();
+    return items.filter((item) => {
+      const title = (item.title || '').toLowerCase();
+      const desc = (item.description || '').toLowerCase();
+      const species = (item.species || '').toLowerCase();
+      const breed = (item.breed || '').toLowerCase();
+      const city = (item.city || '').toLowerCase();
+      const state = (item.state || '').toLowerCase();
+      const neighborhood = (item.neighborhood || '').toLowerCase();
+      const category = (item.category || '').toLowerCase();
+
+      return (
+        title.includes(term) ||
+        desc.includes(term) ||
+        species.includes(term) ||
+        breed.includes(term) ||
+        city.includes(term) ||
+        state.includes(term) ||
+        neighborhood.includes(term) ||
+        category.includes(term)
+      );
+    });
+  }, [items, searchTerm]);
+
+  // Ao buscar, recentraliza suavemente no primeiro animal correspondente encontrado
+  useEffect(() => {
+    if (searchTerm.trim() && filteredItems.length > 0 && mapRef.current) {
+      const first = filteredItems[0];
+      if (first?.latitude && first?.longitude) {
+        mapRef.current.animateToRegion({
+          latitude: Number(first.latitude),
+          longitude: Number(first.longitude),
+          latitudeDelta: 0.08,
+          longitudeDelta: 0.08,
+        }, 500);
+      }
+    }
+  }, [searchTerm, filteredItems]);
 
   const requestUserLocation = useCallback(async () => {
     locationStatusRef.current = 'checking';
@@ -89,12 +134,16 @@ const MapScreen = ({ navigation }) => {
       }
 
       const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      setRegion({
+      const userCoord = {
         latitude: current.coords.latitude,
         longitude: current.coords.longitude,
         latitudeDelta: 0.08,
         longitudeDelta: 0.08,
-      });
+      };
+      setRegion(userCoord);
+      if (mapRef.current) {
+        mapRef.current.animateToRegion(userCoord, 500);
+      }
       locationStatusRef.current = 'granted';
       setLocationStatus('granted');
     } catch (error) {
@@ -119,9 +168,50 @@ const MapScreen = ({ navigation }) => {
     );
   }
 
+  const isFound = selectedItem?.status === 'found';
+  const isAdoption = selectedItem?.status === 'adoption' || selectedItem?.category === 'adoption' || selectedItem?.is_for_adoption;
+  const statusColor = isFound ? '#16A34A' : (isAdoption ? '#DB2777' : '#F97316');
+  const statusLabel = isFound ? 'Animal encontrado' : (isAdoption ? 'Disponível para adoção' : 'Animal perdido');
+
   return (
     <View style={styles.container}>
+      {/* Barra de Pesquisa Flutuante de Animais */}
+      <View style={[styles.searchContainer, { top: Math.max(insets.top + 8, 44) }]}>
+        <View style={styles.searchBar}>
+          <MaterialIcons name="search" size={22} color="#2563EB" style={{ marginRight: 8 }} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Nome, raça, espécie ou cidade..."
+            placeholderTextColor="#94A3B8"
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+            returnKeyType="search"
+            autoCorrect={false}
+          />
+          {searchTerm.length > 0 ? (
+            <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearSearchBtn} activeOpacity={0.7}>
+              <MaterialIcons name="close" size={18} color="#64748B" />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.countBadge}>
+              <Text style={styles.countBadgeText}>{filteredItems.length}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Feedback visual caso nenhum animal seja encontrado */}
+        {searchTerm.trim().length > 0 && filteredItems.length === 0 && (
+          <View style={styles.noResultsBox}>
+            <MaterialIcons name="info-outline" size={16} color="#DC2626" style={{ marginRight: 6 }} />
+            <Text style={styles.noResultsText}>
+              Nenhum animal encontrado para "{searchTerm}"
+            </Text>
+          </View>
+        )}
+      </View>
+
       <MapView
+        ref={mapRef}
         style={styles.map}
         initialRegion={region}
         region={region}
@@ -132,7 +222,7 @@ const MapScreen = ({ navigation }) => {
         showsBuildings={false}
         customMapStyle={PETS_ONLY_MAP_STYLE}
       >
-        {items.map((item) => (
+        {filteredItems.map((item) => (
           <PetMapMarker
             key={String(item.id)}
             item={item}
@@ -149,11 +239,11 @@ const MapScreen = ({ navigation }) => {
             <Text style={styles.infoCloseText}>✕</Text>
           </TouchableOpacity>
           <Text style={styles.infoTitle} numberOfLines={1}>{selectedItem.title || 'Animal'}</Text>
-          <Text style={[styles.infoStatus, { color: selectedItem.status === 'found' ? '#16A34A' : '#F97316' }]}>
-            {selectedItem.status === 'found' ? 'Animal encontrado' : 'Animal perdido'}
+          <Text style={[styles.infoStatus, { color: statusColor }]}>
+            {statusLabel}
           </Text>
-          <Text style={{ fontSize: 12, fontWeight: '700', color: selectedItem.status === 'found' ? '#16A34A' : '#F97316', marginTop: 4 }}>
-            {selectedItem.status === 'found' ? 'Local onde foi encontrado:' : 'Última vez visto em:'}
+          <Text style={{ fontSize: 12, fontWeight: '700', color: statusColor, marginTop: 4 }}>
+            {isFound ? 'Local onde foi encontrado:' : (isAdoption ? 'Local para adoção:' : 'Última vez visto em:')}
           </Text>
           <Text style={styles.infoLocation} numberOfLines={1}>
             {[selectedItem.city, selectedItem.state, selectedItem.neighborhood].filter(Boolean).join(' - ') || 'Localização escolhida no mapa'}
@@ -210,6 +300,74 @@ const MapScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#E5E7EB' },
   map: { flex: 1 },
+  searchContainer: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    zIndex: 30,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    height: 48,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#0F172A',
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+  },
+  clearSearchBtn: {
+    padding: 4,
+    marginLeft: 4,
+  },
+  countBadge: {
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    marginLeft: 4,
+  },
+  countBadgeText: {
+    color: '#2563EB',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  noResultsBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  noResultsText: {
+    color: '#991B1B',
+    fontSize: 12.5,
+    fontWeight: '600',
+    flex: 1,
+  },
   centerLocationButton: { position: 'absolute', right: 16, bottom: 108, width: 50, height: 50, borderRadius: 25, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 5 },
   centerLocationButtonRaised: { bottom: 270 },
   permissionState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28, backgroundColor: '#F9FAFB' },
