@@ -495,84 +495,203 @@ const SobreScreen = ({ navigation, route }) => {
         {/* Seções informativas exclusivas da tela Sobre completa */}
         {isFullView && (
           <>
-            {/* Como Funciona - Com Botões Diretos para Outras Telas */}
+            {/* Como Funciona - Novo Design Moderno Inspirado na Referência */}
             <View style={styles.howItWorksSection}>
               <View style={styles.howItWorksHeaderRow}>
-                <Text style={styles.sectionTitle}>Como Funciona</Text>
-                <Text style={styles.sectionSubtitle}>Recursos e atalhos rápidos para você começar</Text>
+                <Text style={styles.sectionTitle}>Como Funciona o WeFIND</Text>
+                <Text style={styles.sectionSubtitle}>Passo a passo simples para unir quem perdeu e quem encontrou</Text>
               </View>
 
-              {/* Passo 1: Cadastrar Animal */}
-              <TouchableOpacity
-                style={styles.actionStepCard}
-                onPress={() => navigation.navigate('RegisterItem')}
-                activeOpacity={0.88}
-              >
-                <View style={styles.actionStepTopRow}>
-                  <View style={[styles.actionStepIconBadge, { backgroundColor: '#EFF6FF' }]}>
-                    <MaterialIcons name="add-photo-alternate" size={22} color="#2563EB" />
+              {/* CARD 1: Crie seu anúncio */}
+              <View style={styles.stepCardContainer}>
+                {/* Header com Número em Destaque */}
+                <View style={styles.stepHeaderRow}>
+                  <View style={[styles.stepCircleBadge, { backgroundColor: '#8B5CF6' }]}>
+                    <Text style={styles.stepCircleNumber}>1</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.actionStepNumber}>PASSO 1</Text>
-                    <Text style={styles.actionStepTitle}>Registre um Animal</Text>
+                    <Text style={styles.stepHeaderCategory}>PRIMEIRO PASSO</Text>
+                    <Text style={styles.stepHeaderTitle}>Crie seu anúncio</Text>
                   </View>
                 </View>
-                <Text style={styles.actionStepDescription}>
-                  Cadastre fotos, características e a localização onde o animal foi visto ou sumiu.
-                </Text>
-                <View style={[styles.actionStepButtonBadge, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
-                  <Text style={[styles.actionStepButtonText, { color: '#1D4ED8' }]}>Publicar Anúncio de Animal</Text>
-                  <MaterialIcons name="arrow-forward" size={15} color="#1D4ED8" />
-                </View>
-              </TouchableOpacity>
 
-              {/* Passo 2: Mapa Interativo & GPS */}
-              <TouchableOpacity
-                style={styles.actionStepCard}
-                onPress={() => navigation.navigate('Map')}
-                activeOpacity={0.88}
-              >
-                <View style={styles.actionStepTopRow}>
-                  <View style={[styles.actionStepIconBadge, { backgroundColor: '#FFFBEB' }]}>
-                    <MaterialIcons name="map" size={22} color="#D97706" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.actionStepNumber, { color: '#D97706' }]}>PASSO 2</Text>
-                    <Text style={styles.actionStepTitle}>Mobilize no Mapa & Pistas</Text>
-                  </View>
-                </View>
-                <Text style={styles.actionStepDescription}>
-                  Acompanhe o mapa interativo, veja alertas próximos e registre avistamentos com GPS.
-                </Text>
-                <View style={[styles.actionStepButtonBadge, { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }]}>
-                  <Text style={[styles.actionStepButtonText, { color: '#B45309' }]}>Explorar Mapa Interativo</Text>
-                  <MaterialIcons name="arrow-forward" size={15} color="#B45309" />
-                </View>
-              </TouchableOpacity>
+                {/* Ilustração / Mockup Visual do Cartaz */}
+                <View style={styles.stepGraphicWrapper}>
+                  {/* Partículas decorativas de fundo */}
+                  <View style={[styles.graphicDot, { top: 12, left: 16, backgroundColor: '#DDD6FE' }]} />
+                  <View style={[styles.graphicDot, { bottom: 16, left: 24, backgroundColor: '#FDE68A', width: 10, height: 10 }]} />
+                  <View style={[styles.graphicDot, { top: 20, right: 20, backgroundColor: '#FECDD3', width: 8, height: 8 }]} />
 
-              {/* Passo 3: Finais Felizes & Casos de Sucesso */}
-              <TouchableOpacity
-                style={styles.actionStepCard}
-                onPress={() => navigation.navigate('RecoveredPets')}
-                activeOpacity={0.88}
-              >
-                <View style={styles.actionStepTopRow}>
-                  <View style={[styles.actionStepIconBadge, { backgroundColor: '#ECFDF5' }]}>
-                    <MaterialIcons name="celebration" size={22} color="#059669" />
+                  {/* Cartaz Central */}
+                  <View style={styles.flyerMockupCard}>
+                    <View style={styles.flyerMockupBanner}>
+                      <Text style={styles.flyerMockupBannerText}>PERDIDO</Text>
+                    </View>
+                    <View style={styles.flyerMockupBody}>
+                      {/* Rostinho estilizado do animal */}
+                      <View style={styles.petFaceIllustration}>
+                        <View style={[styles.petEar, styles.petEarLeft]} />
+                        <View style={[styles.petEar, styles.petEarRight]} />
+                        <View style={styles.petHead}>
+                          <View style={styles.petEyesRow}>
+                            <View style={styles.petEye} />
+                            <View style={styles.petEye} />
+                          </View>
+                          <View style={styles.petSnout}>
+                            <View style={styles.petNose} />
+                          </View>
+                        </View>
+                      </View>
+                      <Text style={styles.flyerMockupPetName}>Paçoca</Text>
+                    </View>
+                  </View>
+
+                  {/* Badge Flutuante 1: Megafone */}
+                  <View style={[styles.floatingBadge, styles.floatingBadgeTopRight, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
+                    <Text style={{ fontSize: 16 }}>📢</Text>
+                  </View>
+
+                  {/* Badge Flutuante 2: Alerta */}
+                  <View style={[styles.floatingBadge, styles.floatingBadgeBottomLeft, { backgroundColor: '#FEE2E2', borderColor: '#FECACA' }]}>
+                    <Text style={{ fontSize: 14 }}>❗</Text>
+                  </View>
+                </View>
+
+                {/* Conteúdo Textual */}
+                <Text style={styles.stepDescriptionText}>
+                  Crie seu anúncio em segundos adicionando fotos, características, raça e a localização onde o animal sumiu ou foi avistado. É 100% gratuito!
+                </Text>
+
+                {/* Botão de Ação */}
+                <TouchableOpacity
+                  style={[styles.stepActionButton, { borderColor: '#8B5CF6' }]}
+                  onPress={() => navigation.navigate('RegisterItem')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.stepActionButtonText, { color: '#8B5CF6' }]}>Criar Anúncio Agora</Text>
+                  <MaterialIcons name="arrow-forward" size={16} color="#8B5CF6" />
+                </TouchableOpacity>
+              </View>
+
+              {/* CARD 2: Mobilize no Mapa & Rede */}
+              <View style={styles.stepCardContainer}>
+                {/* Header com Número em Destaque */}
+                <View style={styles.stepHeaderRow}>
+                  <View style={[styles.stepCircleBadge, { backgroundColor: '#2563EB' }]}>
+                    <Text style={styles.stepCircleNumber}>2</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.actionStepNumber, { color: '#059669' }]}>PASSO 3</Text>
-                    <Text style={styles.actionStepTitle}>Reencontros & Finais Felizes</Text>
+                    <Text style={[styles.stepHeaderCategory, { color: '#2563EB' }]}>SEGUNDO PASSO</Text>
+                    <Text style={styles.stepHeaderTitle}>Mobilize no Mapa & Pistas</Text>
                   </View>
                 </View>
-                <Text style={styles.actionStepDescription}>
-                  Converse diretamente com os tutores pelo chat e celebre os animais que já voltaram para casa!
-                </Text>
-                <View style={[styles.actionStepButtonBadge, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
-                  <Text style={[styles.actionStepButtonText, { color: '#047857' }]}>Ver Animais Reencontrados</Text>
-                  <MaterialIcons name="arrow-forward" size={15} color="#047857" />
+
+                {/* Ilustração / Mockup Visual do Radar & Mapa */}
+                <View style={[styles.stepGraphicWrapper, { backgroundColor: '#F0F9FF', borderColor: '#E0F2FE' }]}>
+                  {/* Círculos concêntricos de radar */}
+                  <View style={[styles.radarCircle, { width: 130, height: 130, borderColor: 'rgba(37, 99, 235, 0.12)' }]} />
+                  <View style={[styles.radarCircle, { width: 90, height: 90, borderColor: 'rgba(37, 99, 235, 0.22)' }]} />
+                  <View style={[styles.radarCircle, { width: 50, height: 50, borderColor: 'rgba(37, 99, 235, 0.32)' }]} />
+
+                  {/* Pin Central GPS */}
+                  <View style={styles.radarCenterPin}>
+                    <MaterialIcons name="place" size={34} color="#2563EB" />
+                    <View style={styles.radarPinPaw}>
+                      <Text style={{ fontSize: 9 }}>🐾</Text>
+                    </View>
+                  </View>
+
+                  {/* Badge Flutuante: Alerta Radar */}
+                  <View style={[styles.floatingBadge, styles.floatingBadgeTopRight, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
+                    <Text style={{ fontSize: 16 }}>📡</Text>
+                  </View>
+
+                  {/* Badge Flutuante: Notificação WhatsApp */}
+                  <View style={[styles.floatingBadge, styles.floatingBadgeBottomLeft, { backgroundColor: '#DCFCE7', borderColor: '#BBF7D0' }]}>
+                    <Text style={{ fontSize: 14 }}>💬</Text>
+                  </View>
                 </View>
-              </TouchableOpacity>
+
+                {/* Conteúdo Textual */}
+                <Text style={styles.stepDescriptionText}>
+                  A comunidade e voluntários recebem alertas em tempo real. Qualquer pessoa que avistar o animal pode registrar pistas no mapa com coordenadas GPS.
+                </Text>
+
+                {/* Botão de Ação */}
+                <TouchableOpacity
+                  style={[styles.stepActionButton, { borderColor: '#2563EB' }]}
+                  onPress={() => navigation.navigate('Map')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.stepActionButtonText, { color: '#2563EB' }]}>Explorar Mapa Interativo</Text>
+                  <MaterialIcons name="arrow-forward" size={16} color="#2563EB" />
+                </TouchableOpacity>
+              </View>
+
+              {/* CARD 3: Celebre o Reencontro */}
+              <View style={styles.stepCardContainer}>
+                {/* Header com Número em Destaque */}
+                <View style={styles.stepHeaderRow}>
+                  <View style={[styles.stepCircleBadge, { backgroundColor: '#059669' }]}>
+                    <Text style={styles.stepCircleNumber}>3</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.stepHeaderCategory, { color: '#059669' }]}>TERCEIRO PASSO</Text>
+                    <Text style={styles.stepHeaderTitle}>Celebre o Reencontro</Text>
+                  </View>
+                </View>
+
+                {/* Ilustração / Mockup Visual de Reencontro Feliz */}
+                <View style={[styles.stepGraphicWrapper, { backgroundColor: '#ECFDF5', borderColor: '#D1FAE5' }]}>
+                  {/* Cartaz de Reencontro */}
+                  <View style={[styles.flyerMockupCard, { borderColor: '#A7F3D0' }]}>
+                    <View style={[styles.flyerMockupBanner, { backgroundColor: '#059669' }]}>
+                      <Text style={styles.flyerMockupBannerText}>REENCONTRADO 🎉</Text>
+                    </View>
+                    <View style={styles.flyerMockupBody}>
+                      <View style={[styles.petFaceIllustration, { backgroundColor: '#D1FAE5' }]}>
+                        <View style={[styles.petEar, styles.petEarLeft, { backgroundColor: '#059669' }]} />
+                        <View style={[styles.petEar, styles.petEarRight, { backgroundColor: '#059669' }]} />
+                        <View style={[styles.petHead, { backgroundColor: '#10B981' }]}>
+                          <View style={styles.petEyesRow}>
+                            <View style={styles.petEye} />
+                            <View style={styles.petEye} />
+                          </View>
+                          <View style={styles.petSnout}>
+                            <View style={[styles.petNose, { backgroundColor: '#064E3B' }]} />
+                          </View>
+                        </View>
+                      </View>
+                      <Text style={[styles.flyerMockupPetName, { color: '#065F46' }]}>De volta ao lar! ❤️</Text>
+                    </View>
+                  </View>
+
+                  {/* Badge Flutuante: Coração */}
+                  <View style={[styles.floatingBadge, styles.floatingBadgeTopRight, { backgroundColor: '#FCE7F3', borderColor: '#FBCFE8' }]}>
+                    <Text style={{ fontSize: 16 }}>💖</Text>
+                  </View>
+
+                  {/* Badge Flutuante: Check Sucesso */}
+                  <View style={[styles.floatingBadge, styles.floatingBadgeBottomLeft, { backgroundColor: '#D1FAE5', borderColor: '#A7F3D0' }]}>
+                    <Text style={{ fontSize: 14 }}>✅</Text>
+                  </View>
+                </View>
+
+                {/* Conteúdo Textual */}
+                <Text style={styles.stepDescriptionText}>
+                  Converse diretamente pelo chat com quem encontrou o animal, combine o reencontro com segurança e celebre a volta para casa com toda a comunidade!
+                </Text>
+
+                {/* Botão de Ação */}
+                <TouchableOpacity
+                  style={[styles.stepActionButton, { borderColor: '#059669' }]}
+                  onPress={() => navigation.navigate('RecoveredPets')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.stepActionButtonText, { color: '#059669' }]}>Ver Animais Reencontrados</Text>
+                  <MaterialIcons name="arrow-forward" size={16} color="#059669" />
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Rodapé com Termos e Privacidade */}
@@ -1069,78 +1188,239 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
 
-  // Como Funciona
+  // Como Funciona - Estilo Inspirado na Referência
   howItWorksSection: {
     marginBottom: 24,
   },
   howItWorksHeaderRow: {
-    marginBottom: 14,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: '800',
     color: '#0F172A',
     marginBottom: 2,
   },
   sectionSubtitle: {
-    fontSize: 12,
+    fontSize: 12.5,
     color: '#64748B',
   },
-  actionStepCard: {
+  stepCardContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  actionStepTopRow: {
+  stepHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 14,
   },
-  actionStepIconBadge: {
+  stepCircleBadge: {
     width: 44,
     height: 44,
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  actionStepNumber: {
+  stepCircleNumber: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  stepHeaderCategory: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#2563EB',
-    letterSpacing: 0.5,
+    color: '#8B5CF6',
+    letterSpacing: 0.8,
     marginBottom: 1,
   },
-  actionStepTitle: {
-    fontSize: 15,
+  stepHeaderTitle: {
+    fontSize: 18,
     fontWeight: '800',
     color: '#0F172A',
   },
-  actionStepDescription: {
-    fontSize: 13,
-    color: '#64748B',
-    lineHeight: 18,
-    marginBottom: 12,
+  stepGraphicWrapper: {
+    height: 155,
+    backgroundColor: '#FAF5FF',
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#F3E8FF',
   },
-  actionStepButtonBadge: {
+  graphicDot: {
+    position: 'absolute',
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  flyerMockupCard: {
+    width: 140,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  flyerMockupBanner: {
+    backgroundColor: '#EF4444',
+    width: '100%',
+    paddingVertical: 4,
+    alignItems: 'center',
+  },
+  flyerMockupBannerText: {
+    color: '#FFFFFF',
+    fontSize: 10.5,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  flyerMockupBody: {
+    padding: 8,
+    alignItems: 'center',
+  },
+  flyerMockupPetName: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#334155',
+    marginTop: 4,
+  },
+  petFaceIllustration: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#EDE9FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  petEar: {
+    position: 'absolute',
+    width: 14,
+    height: 20,
+    borderRadius: 7,
+    backgroundColor: '#7C3AED',
+    top: 2,
+  },
+  petEarLeft: {
+    left: 2,
+    transform: [{ rotate: '-25deg' }],
+  },
+  petEarRight: {
+    right: 2,
+    transform: [{ rotate: '25deg' }],
+  },
+  petHead: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#8B5CF6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  petEyesRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  petEye: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#1E1B4B',
+  },
+  petSnout: {
+    width: 14,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#DDD6FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  petNose: {
+    width: 6,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#4C1D95',
+  },
+  floatingBadge: {
+    position: 'absolute',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  floatingBadgeTopRight: {
+    top: 14,
+    right: 18,
+  },
+  floatingBadgeBottomLeft: {
+    bottom: 14,
+    left: 18,
+  },
+  radarCircle: {
+    position: 'absolute',
+    borderRadius: 100,
+    borderWidth: 1.5,
+  },
+  radarCenterPin: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  radarPinPaw: {
+    position: 'absolute',
+    top: 4,
+  },
+  stepDescriptionText: {
+    fontSize: 13.5,
+    color: '#475569',
+    lineHeight: 20,
+    marginBottom: 14,
+  },
+  stepActionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    borderWidth: 1,
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    backgroundColor: '#FFFFFF',
+    gap: 6,
   },
-  actionStepButtonText: {
-    fontSize: 13,
+  stepActionButtonText: {
+    fontSize: 13.5,
     fontWeight: '700',
   },
 
