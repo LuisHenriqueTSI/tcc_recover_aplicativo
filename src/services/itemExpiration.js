@@ -61,9 +61,9 @@ export const getRenewalInfo = (item = {}) => {
 
 export const shouldHideItem = (item = {}) => {
   if (item?.resolved) return true;
-  const expiresAt = getExpirationDate(item);
+  const expiresAt = getItemExpirationDate(item);
   if (!expiresAt) return false;
-  return new Date(expiresAt).getTime() <= Date.now();
+  return expiresAt.getTime() <= Date.now();
 };
 
 export const getExpiredItemIds = (items = []) => {

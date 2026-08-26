@@ -697,9 +697,12 @@ const HomeScreen = ({ navigation, route }) => {
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            setItems(parsed);
-            applyFilters(parsed);
-            setLoading(false);
+            const valid = parsed.filter(item => item && !item.resolved && !itemsService.shouldHideItem?.(item));
+            if (valid.length > 0) {
+              setItems(valid);
+              applyFilters(valid);
+              setLoading(false);
+            }
           }
         }
       } catch (e) {}
@@ -817,6 +820,11 @@ const HomeScreen = ({ navigation, route }) => {
 
   const applyFilters = (itemsToFilter) => {
     let filtered = itemsToFilter || [];
+
+    // Remove publicações fantasmas (resolvidas ou expiradas) do feed público
+    if (!filters.showMyItems) {
+      filtered = filtered.filter(item => item && !item.resolved && !itemsService.shouldHideItem?.(item));
+    }
 
     // Filtro por status (Perdido / Encontrado / Adoção)
     if (filters.status && filters.status !== 'all') {
@@ -1060,8 +1068,14 @@ const HomeScreen = ({ navigation, route }) => {
             try {
               setLoading(true);
               await itemsService.deleteItem(itemId);
+              setItems((prev) => {
+                const next = prev.filter((i) => i.id !== itemId);
+                AsyncStorage.setItem('@wefind/cached_feed_items', JSON.stringify(next.slice(0, 40))).catch(() => {});
+                return next;
+              });
+              setFilteredItems((prev) => prev.filter((i) => i.id !== itemId));
               Alert.alert('Sucesso', 'Item excluído com sucesso');
-              loadItems(); // Reload list
+              loadItems(true);
             } catch (error) {
               Alert.alert('Erro', 'Falha ao excluir item: ' + error.message);
             } finally {
@@ -1085,8 +1099,14 @@ const HomeScreen = ({ navigation, route }) => {
             try {
               setLoading(true);
               await itemsService.markItemAsResolved(itemId);
+              setItems((prev) => {
+                const next = prev.filter((i) => i.id !== itemId);
+                AsyncStorage.setItem('@wefind/cached_feed_items', JSON.stringify(next.slice(0, 40))).catch(() => {});
+                return next;
+              });
+              setFilteredItems((prev) => prev.filter((i) => i.id !== itemId));
               Alert.alert('Sucesso', 'Item marcado como resolvido!');
-              loadItems(); // Reload list
+              loadItems(true);
             } catch (error) {
               Alert.alert('Erro', 'Falha ao marcar como resolvido: ' + error.message);
             } finally {

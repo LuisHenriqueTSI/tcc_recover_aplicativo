@@ -58,7 +58,11 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
 
     if (filters.status) query = query.eq('status', filters.status);
     if (filters.category) query = query.eq('category', filters.category);
-    if (filters.resolved !== undefined) query = query.eq('resolved', filters.resolved);
+    if (filters.resolved !== undefined) {
+      query = query.eq('resolved', filters.resolved);
+    } else if (!filters.owner_id) {
+      query = query.eq('resolved', false);
+    }
     if (filters.owner_id) query = query.eq('owner_id', filters.owner_id);
     if (filters.state) query = query.eq('state', filters.state);
     if (filters.city) query = query.eq('city', filters.city);
@@ -114,7 +118,11 @@ const listItemsWithPhotosAndOwnerFallback = async (filters = {}) => {
 
     if (filters.status) query = query.eq('status', filters.status);
     if (filters.category) query = query.eq('category', filters.category);
-    if (filters.resolved !== undefined) query = query.eq('resolved', filters.resolved);
+    if (filters.resolved !== undefined) {
+      query = query.eq('resolved', filters.resolved);
+    } else if (!filters.owner_id) {
+      query = query.eq('resolved', false);
+    }
     if (filters.owner_id) query = query.eq('owner_id', filters.owner_id);
     if (filters.state) query = query.eq('state', filters.state);
     if (filters.city) query = query.eq('city', filters.city);
@@ -696,6 +704,7 @@ export const searchItems = async (searchTerm) => {
     const { data, error } = await supabase
       .from('items')
       .select('*, profiles!owner_id(name, email, whatsapp, phone), item_photos(id, url), rewards(id, amount, currency, status, description)')
+      .eq('resolved', false)
       .or(`title.ilike.%${term}%,description.ilike.%${term}%,city.ilike.%${term}%,state.ilike.%${term}%,neighborhood.ilike.%${term}%,species.ilike.%${term}%`)
       .order('created_at', { ascending: false });
 
@@ -704,13 +713,15 @@ export const searchItems = async (searchTerm) => {
       return [];
     }
 
-    return (data || []).map((item) => ({
-      ...item,
-      owner_name: item.profiles?.name || item.profiles?.email || 'Usuário',
-      item_photos: Array.isArray(item.item_photos) ? item.item_photos.filter((p) => p && p.url) : [],
-      rewards: normalizeItemRewards({ ...item, rewards: item.rewards || [] }),
-      renewalInfo: getRenewalInfo(item),
-    }));
+    return (data || [])
+      .filter((item) => !shouldHideItem(item))
+      .map((item) => ({
+        ...item,
+        owner_name: item.profiles?.name || item.profiles?.email || 'Usuário',
+        item_photos: Array.isArray(item.item_photos) ? item.item_photos.filter((p) => p && p.url) : [],
+        rewards: normalizeItemRewards({ ...item, rewards: item.rewards || [] }),
+        renewalInfo: getRenewalInfo(item),
+      }));
   } catch (error) {
     console.log('[searchItems] Exceção:', error.message);
     return [];
