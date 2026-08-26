@@ -598,6 +598,11 @@ const MainStack = () => {
         component={RecoveredPetsScreen}
         options={{ title: 'Animais Reencontrados' }}
       />
+      <Stack.Screen
+        name="EsqueciSenha"
+        component={require('../screens/EsqueciSenhaScreen').default}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };

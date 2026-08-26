@@ -4,10 +4,12 @@ import {
   TouchableOpacity,
   View,
   Text,
+  TextInput,
   ScrollView,
   StyleSheet,
   ActivityIndicator,
   Alert,
+  Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,7 +18,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import * as userService from '../services/user';
 import * as supabaseAuth from '../services/supabaseAuth';
-import { sendPasswordReset } from '../services/supabaseAuth';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import MapLocationPicker from '../components/MapLocationPicker';
@@ -87,12 +88,26 @@ const EditProfileScreen = ({ navigation }) => {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Estados para verificação de alteração de WhatsApp
+  const [showPhoneVerifyModal, setShowPhoneVerifyModal] = useState(false);
+  const [phoneVerifyCode, setPhoneVerifyCode] = useState('');
+  const [verifyingPhone, setVerifyingPhone] = useState(false);
+  const [phoneCooldown, setPhoneCooldown] = useState(0);
+
+  useEffect(() => {
+    if (phoneCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setPhoneCooldown((prev) => Math.max(prev - 1, 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [phoneCooldown]);
+
   useEffect(() => {
     if (userProfile) {
       setName(userProfile.name || '');
       setInstagram(userProfile.instagram || '');
       setFacebook(userProfile.facebook || '');
-      setWhatsapp(userProfile.whatsapp || '');
+      setWhatsapp(userProfile.whatsapp || userProfile.phone || '');
       setProfileState(userProfile.state || '');
       setProfileCity(userProfile.city || '');
       if (userProfile.latitude && userProfile.longitude) {
@@ -120,7 +135,6 @@ const EditProfileScreen = ({ navigation }) => {
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const selectedUri = result.assets[0].uri;
       setAvatar(selectedUri);
-      // Faz o upload imediatamente
       if (user) {
         setUploadingAvatar(true);
         try {
@@ -139,34 +153,22 @@ const EditProfileScreen = ({ navigation }) => {
     }
   };
 
-  const handleSave = async () => {
-    if (!user) return;
-    setErrorMsg('');
-
-    if (!name.trim()) {
-      setErrorMsg('Por favor, informe seu nome.');
-      return;
-    }
-
-    if (!profileState || !profileCity) {
-      setErrorMsg('Defina sua localização no mapa antes de salvar.');
-      return;
-    }
-
+  const performSaveProfile = async (targetWhatsapp) => {
     try {
       setSaving(true);
       await userService.updateProfile(user.id, {
         name: name.trim(),
         instagram: instagram.trim(),
         facebook: facebook.trim(),
-        whatsapp: whatsapp.replace(/\D/g, ''),
+        whatsapp: targetWhatsapp,
+        phone: targetWhatsapp,
         state: profileState,
         city: profileCity,
         latitude: profileCoords?.latitude ?? null,
         longitude: profileCoords?.longitude ?? null,
       });
 
-      // Atualiza também no AsyncStorage para sincronia com a HomeScreen
+      // Atualiza no AsyncStorage para sincronia com a HomeScreen
       try {
         await AsyncStorage.setItem(
           '@wefind/saved_location',
@@ -186,7 +188,8 @@ const EditProfileScreen = ({ navigation }) => {
           name: name.trim(),
           instagram: instagram.trim(),
           facebook: facebook.trim(),
-          whatsapp: whatsapp.replace(/\D/g, ''),
+          whatsapp: targetWhatsapp,
+          phone: targetWhatsapp,
           state: profileState,
           city: profileCity,
           latitude: profileCoords?.latitude ?? null,
@@ -204,29 +207,96 @@ const EditProfileScreen = ({ navigation }) => {
     }
   };
 
-  const handleChangePassword = async () => {
-    Alert.alert(
-      'Redefinir senha',
-      'Você receberá um e-mail com o link seguro para redefinir sua senha. Deseja continuar?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Enviar e-mail',
-          onPress: async () => {
-            try {
-              const error = await sendPasswordReset(user?.email);
-              if (!error) {
-                Alert.alert('E-mail enviado!', 'Verifique sua caixa de entrada e spam para criar a nova senha.');
-              } else {
-                Alert.alert('Erro', error.message || 'Não foi possível enviar o e-mail.');
-              }
-            } catch (e) {
-              Alert.alert('Erro', e.message || 'Erro ao solicitar redefinição.');
-            }
-          },
-        },
-      ]
-    );
+  const handleSave = async () => {
+    if (!user) return;
+    setErrorMsg('');
+
+    if (!name.trim()) {
+      setErrorMsg('Por favor, informe seu nome.');
+      return;
+    }
+
+    if (!profileState || !profileCity) {
+      setErrorMsg('Defina sua localização no mapa antes de salvar.');
+      return;
+    }
+
+    const rawNewPhone = whatsapp.replace(/\D/g, '');
+    const rawOriginalPhone = (userProfile?.whatsapp || userProfile?.phone || '').replace(/\D/g, '');
+
+    // Se o número de WhatsApp foi alterado, exige verificação por código via WhatsApp
+    if (rawNewPhone && rawNewPhone !== rawOriginalPhone) {
+      if (rawNewPhone.length < 10) {
+        setErrorMsg('Informe um número de WhatsApp completo com DDD.');
+        return;
+      }
+
+      setSaving(true);
+      try {
+        await supabaseAuth.sendPhoneChangeVerificationCode(rawNewPhone, user.email);
+        setPhoneCooldown(60);
+        setPhoneVerifyCode('');
+        setShowPhoneVerifyModal(true);
+      } catch (err) {
+        Alert.alert(
+          'Não foi possível enviar o código',
+          err.message || 'Verifique o número informado e tente novamente.'
+        );
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
+    // Se não alterou o WhatsApp, salva diretamente
+    await performSaveProfile(rawNewPhone);
+  };
+
+  const handleConfirmPhoneChange = async () => {
+    const cleanCode = phoneVerifyCode.trim().replace(/\D/g, '');
+    if (cleanCode.length !== 6) {
+      Alert.alert('Código Incompleto', 'Digite o código de 6 dígitos recebido no WhatsApp.');
+      return;
+    }
+
+    setVerifyingPhone(true);
+    try {
+      await supabaseAuth.verifyPhoneChangeCode(user.email, cleanCode);
+      setShowPhoneVerifyModal(false);
+      const rawNewPhone = whatsapp.replace(/\D/g, '');
+      await performSaveProfile(rawNewPhone);
+    } catch (err) {
+      Alert.alert('Código Inválido', err.message || 'Código incorreto ou expirado. Tente novamente.');
+    } finally {
+      setVerifyingPhone(false);
+    }
+  };
+
+  const handleResendPhoneCode = async () => {
+    if (phoneCooldown > 0) {
+      Alert.alert('Aguarde', `Você poderá solicitar outro código em ${phoneCooldown}s.`);
+      return;
+    }
+
+    const rawNewPhone = whatsapp.replace(/\D/g, '');
+    setVerifyingPhone(true);
+    try {
+      await supabaseAuth.sendPhoneChangeVerificationCode(rawNewPhone, user.email);
+      setPhoneCooldown(60);
+      Alert.alert('Código Reenviado', 'Um novo código foi enviado para o seu WhatsApp.');
+    } catch (err) {
+      Alert.alert('Erro ao reenviar', err.message || 'Não foi possível reenviar o código.');
+    } finally {
+      setVerifyingPhone(false);
+    }
+  };
+
+  // Redefinir senha de acesso via WhatsApp
+  const handleChangePassword = () => {
+    const phoneToUse = whatsapp || userProfile?.whatsapp || userProfile?.phone || '';
+    navigation.navigate('EsqueciSenha', {
+      initialWhatsapp: phoneToUse,
+    });
   };
 
   const handleDeleteAccount = async () => {
@@ -322,24 +392,54 @@ const EditProfileScreen = ({ navigation }) => {
         </Text>
 
         {hasLocation ? (
-          <View style={[styles.locationDisplayBox, { backgroundColor: isDark ? colors.innerCard : '#F0F9FF', borderColor: isDark ? colors.cardBorder : '#BFDBFE' }]}>
+          <View
+            style={[
+              styles.locationDisplayBox,
+              {
+                backgroundColor: isDark ? colors.innerCard : '#F0F9FF',
+                borderColor: isDark ? colors.cardBorder : '#BFDBFE',
+              },
+            ]}
+          >
             <View style={styles.locationPinCircle}>
               <MaterialIcons name="place" size={20} color={colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.locationLabel, { color: colors.textSecondary }]}>Localização Selecionada:</Text>
-              <Text style={[styles.locationValue, { color: colors.primary }]}>{locationDisplayText}</Text>
+              <Text style={[styles.locationLabel, { color: colors.textSecondary }]}>
+                Localização Selecionada:
+              </Text>
+              <Text style={[styles.locationValue, { color: colors.primary }]}>
+                {locationDisplayText}
+              </Text>
             </View>
           </View>
         ) : (
-          <View style={[styles.noLocationBox, { backgroundColor: isDark ? colors.innerCard : '#F8FAFC', borderColor: colors.border }]}>
-            <MaterialIcons name="location-off" size={20} color={colors.textMuted} style={{ marginRight: 8 }} />
-            <Text style={[styles.noLocationText, { color: colors.textMuted }]}>Nenhuma localização selecionada</Text>
+          <View
+            style={[
+              styles.noLocationBox,
+              { backgroundColor: isDark ? colors.innerCard : '#F8FAFC', borderColor: colors.border },
+            ]}
+          >
+            <MaterialIcons
+              name="location-off"
+              size={20}
+              color={colors.textMuted}
+              style={{ marginRight: 8 }}
+            />
+            <Text style={[styles.noLocationText, { color: colors.textMuted }]}>
+              Nenhuma localização selecionada
+            </Text>
           </View>
         )}
 
         <TouchableOpacity
-          style={[styles.mapLauncherBtn, { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(37, 99, 235, 0.12)' : '#EFF6FF' }]}
+          style={[
+            styles.mapLauncherBtn,
+            {
+              borderColor: colors.primary,
+              backgroundColor: isDark ? 'rgba(37, 99, 235, 0.12)' : '#EFF6FF',
+            },
+          ]}
           onPress={() => setMapVisible(true)}
           activeOpacity={0.8}
         >
@@ -362,6 +462,9 @@ const EditProfileScreen = ({ navigation }) => {
           keyboardType="phone-pad"
           style={styles.input}
         />
+        <Text style={[styles.fieldHint, { color: colors.textMuted }]}>
+          💡 Ao alterar o número do WhatsApp, enviaremos um código de 6 dígitos para confirmação.
+        </Text>
 
         <Input
           label="Instagram (opcional)"
@@ -384,12 +487,20 @@ const EditProfileScreen = ({ navigation }) => {
       <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Segurança</Text>
         <TouchableOpacity
-          style={[styles.securityButton, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#F1F5F9', borderColor: colors.border }]}
+          style={[
+            styles.securityButton,
+            {
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#F1F5F9',
+              borderColor: colors.border,
+            },
+          ]}
           onPress={handleChangePassword}
           activeOpacity={0.75}
         >
           <Feather name="lock" size={16} color={colors.primary} style={{ marginRight: 10 }} />
-          <Text style={[styles.securityButtonText, { color: colors.text }]}>Redefinir senha de acesso</Text>
+          <Text style={[styles.securityButtonText, { color: colors.text }]}>
+            Redefinir senha de acesso via WhatsApp
+          </Text>
           <Feather name="chevron-right" size={16} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
         </TouchableOpacity>
       </View>
@@ -420,7 +531,15 @@ const EditProfileScreen = ({ navigation }) => {
       </View>
 
       {/* Bloco de Excluir Conta */}
-      <View style={[styles.deleteCard, { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.08)' : '#FEF2F2', borderColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEE2E2' }]}>
+      <View
+        style={[
+          styles.deleteCard,
+          {
+            backgroundColor: isDark ? 'rgba(239, 68, 68, 0.08)' : '#FEF2F2',
+            borderColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEE2E2',
+          },
+        ]}
+      >
         <Text style={styles.deleteTitle}>Zona de Perigo</Text>
         <Text style={[styles.deleteText, { color: colors.textSecondary }]}>
           Se desejar encerrar sua conta e remover todos os seus dados definitivamente.
@@ -435,7 +554,85 @@ const EditProfileScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Componente Modal de Mapa (o mesmo utilizado na Home e no Cadastro) */}
+      {/* Modal de Confirmação de Novo WhatsApp */}
+      <Modal
+        visible={showPhoneVerifyModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPhoneVerifyModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalBox, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+            <View style={[styles.modalIconCircle, { backgroundColor: colors.primaryLight }]}>
+              <MaterialIcons name="sms" size={28} color={colors.primary} />
+            </View>
+
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Validar Novo WhatsApp</Text>
+            <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+              Enviamos um código de 6 dígitos para o número{' '}
+              <Text style={{ fontWeight: '800', color: colors.primary }}>
+                {formatBrazilianPhone(whatsapp)}
+              </Text>
+              . Digite o código abaixo para confirmar a alteração.
+            </Text>
+
+            <TextInput
+              style={[
+                styles.codeInput,
+                {
+                  backgroundColor: isDark ? colors.card : '#F8FAFC',
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
+              placeholder="000000"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="number-pad"
+              maxLength={6}
+              value={phoneVerifyCode}
+              onChangeText={setPhoneVerifyCode}
+              autoFocus
+            />
+
+            <TouchableOpacity
+              onPress={handleResendPhoneCode}
+              disabled={phoneCooldown > 0 || verifyingPhone}
+              style={{ marginTop: 8, marginBottom: 16 }}
+            >
+              <Text
+                style={[
+                  styles.resendText,
+                  { color: phoneCooldown > 0 ? colors.textMuted : colors.primary },
+                ]}
+              >
+                {phoneCooldown > 0
+                  ? `Reenviar código em ${phoneCooldown}s`
+                  : 'Não recebeu? Reenviar código'}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.modalActions}>
+              <Button
+                title="Cancelar"
+                variant="secondary"
+                onPress={() => setShowPhoneVerifyModal(false)}
+                disabled={verifyingPhone}
+                style={{ flex: 1 }}
+              />
+              <Button
+                title={verifyingPhone ? 'Validando...' : 'Confirmar'}
+                variant="primary"
+                onPress={handleConfirmPhoneChange}
+                disabled={verifyingPhone || phoneVerifyCode.trim().length !== 6}
+                loading={verifyingPhone}
+                style={{ flex: 1 }}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Componente Modal de Mapa */}
       <MapLocationPicker
         visible={mapVisible}
         mode="profile"
@@ -534,6 +731,12 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     lineHeight: 17,
     marginBottom: 12,
+  },
+  fieldHint: {
+    fontSize: 12,
+    marginTop: -6,
+    marginBottom: 12,
+    lineHeight: 16,
   },
   input: {
     marginBottom: 12,
@@ -655,6 +858,62 @@ const styles = StyleSheet.create({
     color: '#DC2626',
     fontSize: 13,
     fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  modalBox: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 22,
+    width: '100%',
+    maxWidth: 360,
+    alignItems: 'center',
+  },
+  modalIconCircle: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  codeInput: {
+    width: '100%',
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: 8,
+  },
+  resendText: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 10,
+    width: '100%',
   },
 });
 

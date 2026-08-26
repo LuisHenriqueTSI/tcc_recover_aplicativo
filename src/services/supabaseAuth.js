@@ -412,3 +412,96 @@ export const updatePassword = async (newPassword) => {
     throw error;
   }
 };
+
+/**
+ * Dispara código de verificação para validar a alteração de número de WhatsApp
+ */
+export const sendPhoneChangeVerificationCode = async (newWhatsapp, email) => {
+  try {
+    console.log('[sendPhoneChangeVerificationCode] Gerando código para alteração de número:', newWhatsapp);
+    const payloadWhatsapp = normalizeWhatsapp(newWhatsapp);
+    if (!payloadWhatsapp || payloadWhatsapp.length < 10) {
+      throw new Error('Informe um número de WhatsApp válido com DDD.');
+    }
+
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const normalizedPhone = payloadWhatsapp.startsWith('55') ? `+${payloadWhatsapp}` : `+55${payloadWhatsapp}`;
+    const verificationKey = `phone-change:${String(email || '').trim().toLowerCase()}`;
+
+    // Grava no banco signup_verifications
+    const { error: storeError } = await supabase.from('signup_verifications').upsert({
+      email: verificationKey,
+      code: code,
+      whatsapp: normalizedPhone,
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+    }, { onConflict: 'email' });
+
+    if (storeError) {
+      console.warn('[sendPhoneChangeVerificationCode] Erro ao gravar verificação:', storeError.message);
+    }
+
+    // Dispara via Evolution API
+    const { sendWhatsAppMessage } = require('./whatsappNotifications');
+    console.log('[sendPhoneChangeVerificationCode] Enviando mensagem via WhatsApp para:', payloadWhatsapp);
+    await sendWhatsAppMessage({
+      phone: payloadWhatsapp,
+      title: 'Código de Confirmação WeFIND',
+      text: `Seu código para confirmar a alteração do seu WhatsApp é:\n\n*${code}*\n\nInforme este código no aplicativo para atualizar seu número com segurança.`,
+    });
+
+    return {
+      success: true,
+      code,
+      phone: payloadWhatsapp,
+    };
+  } catch (error) {
+    console.warn('[sendPhoneChangeVerificationCode] Erro:', error.message);
+    throw error;
+  }
+};
+
+/**
+ * Valida o código de verificação para alteração de número de WhatsApp
+ */
+export const verifyPhoneChangeCode = async (email, inputCode) => {
+  try {
+    console.log('[verifyPhoneChangeCode] Verificando código de alteração de número...');
+    const verificationKey = `phone-change:${String(email || '').trim().toLowerCase()}`;
+    const cleanCode = String(inputCode || '').trim();
+
+    if (!cleanCode || cleanCode.length !== 6) {
+      throw new Error('Digite o código de 6 dígitos enviado ao seu WhatsApp.');
+    }
+
+    const { data, error } = await supabase
+      .from('signup_verifications')
+      .select('*')
+      .eq('email', verificationKey)
+      .maybeSingle();
+
+    if (error || !data) {
+      throw new Error('Nenhum código recente encontrado. Solicite um novo código.');
+    }
+
+    if (data.code !== cleanCode) {
+      throw new Error('Código incorreto. Verifique a mensagem recebida no WhatsApp.');
+    }
+
+    if (data.expires_at && new Date() > new Date(data.expires_at)) {
+      throw new Error('Código expirado. Por favor, solicite um novo código.');
+    }
+
+    // Limpa o registro após validação com sucesso
+    await supabase.from('signup_verifications').delete().eq('email', verificationKey);
+
+    return {
+      valid: true,
+      whatsapp: data.whatsapp,
+    };
+  } catch (error) {
+    console.warn('[verifyPhoneChangeCode] Erro:', error.message);
+    throw error;
+  }
+};
+

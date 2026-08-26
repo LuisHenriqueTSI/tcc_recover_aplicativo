@@ -18,8 +18,11 @@ import {
   verifyPasswordResetCode,
   resetPasswordWithToken,
 } from '../services/supabaseAuth';
+import { useAuth } from '../contexts/AuthContext';
 
-export default function EsqueciSenhaScreen({ navigation }) {
+export default function EsqueciSenhaScreen({ navigation, route }) {
+  const { user } = useAuth();
+  const initialWhatsapp = route?.params?.initialWhatsapp || '';
   // Passos: 1 = WhatsApp, 2 = Código, 3 = Nova Senha, 4 = Sucesso
   const [step, setStep] = useState(1);
 
@@ -67,6 +70,12 @@ export default function EsqueciSenhaScreen({ navigation }) {
 
     setWhatsapp(formatted);
   };
+
+  useEffect(() => {
+    if (initialWhatsapp) {
+      handleWhatsappChange(initialWhatsapp);
+    }
+  }, [initialWhatsapp]);
 
   // PASSO 1: Enviar código para o WhatsApp
   const handleRequestCode = async () => {
@@ -537,11 +546,19 @@ export default function EsqueciSenhaScreen({ navigation }) {
 
               <TouchableOpacity
                 style={styles.primaryButton}
-                onPress={() => navigation.navigate('Login')}
+                onPress={() => {
+                  if (user) {
+                    navigation.goBack();
+                  } else {
+                    navigation.navigate('Login');
+                  }
+                }}
                 activeOpacity={0.85}
               >
-                <Text style={styles.primaryButtonText}>Ir para o Login</Text>
-                <MaterialIcons name="login" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />
+                <Text style={styles.primaryButtonText}>
+                  {user ? 'Voltar para o Perfil' : 'Ir para o Login'}
+                </Text>
+                <MaterialIcons name={user ? 'arrow-back' : 'login'} size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />
               </TouchableOpacity>
             </View>
           )}
