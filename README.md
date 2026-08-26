@@ -99,6 +99,42 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
   - 💖 **Rosa (`#DB2777`):** Animal Disponível para Adoção
 - Centralização rápida na localização atual do usuário via GPS.
 - Barra inferior com Safe Insets prevenindo sobreposição de botões de navegação do sistema Android.
+- **Localização de Visitante Temporária ("Todo o Brasil" padrão):**
+  - Usuários não autenticados sempre iniciam com "Todo o Brasil" (sem restrição geográfica).
+  - Qualquer seleção de cidade/ponto no mapa é aplicada apenas temporariamente na sessão atual.
+  - Ao trocar de aba ou navegar para outra tela, a localização volta automaticamente para "Todo o Brasil".
+  - Para usuários autenticados, a localização é persistida permanentemente no perfil e no dispositivo.
+
+---
+
+✅ **Feed Inteligente — Performance, Ordenação e Consistência**
+- **Carregamento Instantâneo com Cache (Stale-While-Revalidate):**
+  - Dados do cache local aparecem imediatamente ao abrir o app; o servidor atualiza silenciosamente em background.
+  - O cache é pré-validado para remover itens expirados ou resolvidos antes de renderizar.
+- **Eliminação do Flickering/Pulo de Publicações:**
+  - `filteredItems` convertido para `useMemo` determinístico — produz exatamente **um render atômico** por mudança de dados, sem competição entre cache e servidor.
+  - Removidos todos os `useEffect` redundantes e chamadas paralelas a `applyFilters` que causavam a troca visual de publicações.
+- **Ordenação Estrita por Proximidade (Crescente):**
+  - Animais mais próximos do usuário sempre no topo (ex: 350 m → 1.2 km → 4.5 km → 18 km).
+  - Desempate por data mais recente (`created_at` decrescente).
+  - Qualquer mudança de localização ou raio recalcula a lista imediatamente.
+- **Eliminação de Publicações Fantasmas:**
+  - Função `shouldHideItem` corrigida para calcular expiração a partir de `created_at` (janela de 7 dias), mesmo sem campo `expires_at` explícito.
+  - Queries do Supabase filtram `resolved: false` por padrão em todas as buscas públicas.
+  - Cache e estado local são sanitizados instantaneamente ao excluir ou resolver um anúncio.
+- **Query Única Otimizada com Joins:**
+  - `listItemsWithPhotosAndOwner` busca itens, perfis, fotos e recompensas em **1 único roundtrip de rede**.
+- **Renderização Nativa e Virtualização:**
+  - `ItemCard` com `React.memo`, FlatList com `windowSize`, `removeClippedSubviews` e decodificação multithread de imagens.
+
+---
+
+✅ **Segurança — Senhas Fortes e Mensagens Amigáveis**
+- **Medidor Visual de Força de Senha (`PasswordStrengthIndicator.jsx`):**
+  - Barra de progresso colorida em tempo real com nível: Fraca / Média / Forte / Excelente.
+  - Checklist de requisitos com ícones: mínimo 8 caracteres, maiúscula, minúscula e número.
+- **Tradução Amigável de Erros de Autenticação (`src/utils/authErrors.js`):**
+  - Credenciais incorretas, usuário não encontrado, e-mail não confirmado, conta já existente, senha fraca, rate limit e erros de rede — todos com mensagens claras e humanizadas em português.
 
 ---
 
