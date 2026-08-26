@@ -1200,14 +1200,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
             text: 'Ir para Home',
             onPress: () => {
               goToHomeAfterPublish();
-              if (status === 'lost') {
-                setTimeout(() => {
-                  setFoundModalTitle('Você encontrou seu pet?');
-                  setFoundModalMessage('Você acabou de registrar que perdeu um pet. Caso encontre, pode excluir a publicação. Você já encontrou seu pet?');
-                  setFoundModalItemId(resultItem.id);
-                  setFoundModalVisible(true);
-                }, 1000);
-              }
             },
           },
         ]);

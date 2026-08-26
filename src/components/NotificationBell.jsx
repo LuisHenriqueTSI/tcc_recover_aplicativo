@@ -1,23 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, ActivityIndicator, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, StyleSheet, ActivityIndicator, FlatList, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { getUnreadCount } from '../services/messages';
-import { listItems, markItemAsResolved } from '../services/items';
+import { listItems, markItemAsResolved, bumpItemFeedPriority } from '../services/items';
 
-// Busca itens do usuário que não estão resolvidos
+const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000; // 48 horas (2 dias)
+const DISMISSED_CHECK_KEY = '@pet_found_dismissed_timestamps';
+
+// Busca itens perdidos do usuário que precisam de checagem (espaçados a cada 2 dias)
 async function getPendingNotificationItems(userId) {
   if (!userId) return [];
-  const items = await listItems({ owner_id: userId, resolved: false });
-  // Opcional: filtrar por tempo, status, etc.
-  return items || [];
+  try {
+    const items = await listItems({ owner_id: userId, resolved: false });
+    if (!items || items.length === 0) return [];
+
+    let dismissedMap = {};
+    try {
+      const stored = await AsyncStorage.getItem(DISMISSED_CHECK_KEY);
+      if (stored) dismissedMap = JSON.parse(stored);
+    } catch (_) {}
+
+    const now = Date.now();
+
+    // Filtra apenas itens com status 'lost' que tenham mais de 2 dias de publicação ou da última checagem
+    const dueItems = items.filter((item) => {
+      if (item.status !== 'lost') return false;
+
+      const lastDismissedTime = dismissedMap[item.id] ? new Date(dismissedMap[item.id]).getTime() : 0;
+      const lastPromptedTime = item.extra_fields?.last_prompted_at
+        ? new Date(item.extra_fields.last_prompted_at).getTime()
+        : 0;
+      const creationTime = item.created_at ? new Date(item.created_at).getTime() : now;
+
+      const mostRecentCheck = Math.max(lastDismissedTime, lastPromptedTime, creationTime);
+
+      // Pergunta apenas se passaram 2 dias (48h) desde o registro ou última resposta
+      return (now - mostRecentCheck) >= TWO_DAYS_MS;
+    });
+
+    return dueItems;
+  } catch (error) {
+    console.log('[NotificationBell] Erro ao filtrar itens pendentes:', error.message);
+    return [];
+  }
 }
 
 export default function NotificationBell({ style }) {
   const { user } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
   const [pendingItems, setPendingItems] = useState([]);
-  const [dismissedItems, setDismissedItems] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -34,8 +67,8 @@ export default function NotificationBell({ style }) {
       getPendingNotificationItems(user.id),
       getUnreadCount(user.id),
     ]);
-    setPendingItems(pending.filter(item => !dismissedItems.includes(item.id)));
-    setUnreadCount(unread);
+    setPendingItems(pending || []);
+    setUnreadCount(unread || 0);
     setLoading(false);
   }
 
@@ -44,16 +77,40 @@ export default function NotificationBell({ style }) {
     try {
       await markItemAsResolved(item.id, user.id);
       setPendingItems(prev => prev.filter(i => i.id !== item.id));
-      alert('🎉 Parabéns! Ótimo saber que encontrou seu pet!');
+      Alert.alert('🎉 Parabéns!', 'Ficamos muito felizes que você reencontrou seu pet!');
     } catch (e) {
-      alert('Erro ao marcar como resolvido: ' + (e.message || e));
+      Alert.alert('Erro', 'Não foi possível marcar como resolvido: ' + (e.message || e));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
-  function handleNo(item) {
-    setPendingItems(prev => prev.filter(i => i.id !== item.id));
-    setDismissedItems(prev => [...prev, item.id]);
+  async function handleNo(item) {
+    setLoading(true);
+    try {
+      // Impulsiona a publicação para o topo do feed
+      await bumpItemFeedPriority(item.id, item.extra_fields);
+
+      // Salva timestamp localmente para garantir o intervalo de 2 dias
+      let dismissedMap = {};
+      try {
+        const stored = await AsyncStorage.getItem(DISMISSED_CHECK_KEY);
+        if (stored) dismissedMap = JSON.parse(stored);
+      } catch (_) {}
+      dismissedMap[item.id] = new Date().toISOString();
+      await AsyncStorage.setItem(DISMISSED_CHECK_KEY, JSON.stringify(dismissedMap));
+
+      setPendingItems(prev => prev.filter(i => i.id !== item.id));
+      Alert.alert(
+        '🚀 Publicação Impulsionada!',
+        'Que bom que você continua as buscas! Sua publicação foi colocada no topo do feed para alcançar mais pessoas.'
+      );
+    } catch (e) {
+      console.log('[NotificationBell] Erro ao impulsionar publicação:', e.message);
+      setPendingItems(prev => prev.filter(i => i.id !== item.id));
+    } finally {
+      setLoading(false);
+    }
   }
 
   const notificationCount = (pendingItems?.length || 0) + (unreadCount || 0);

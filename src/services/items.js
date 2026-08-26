@@ -969,6 +969,39 @@ export const markItemAsResolved = async (itemId, userId) => {
   }
 };
 
+export const bumpItemFeedPriority = async (itemId, currentExtraFields = {}) => {
+  try {
+    const nowIso = new Date().toISOString();
+    console.log('[bumpItemFeedPriority] Impulsionando item para o topo do feed:', itemId);
+
+    const updatedExtraFields = {
+      ...(currentExtraFields || {}),
+      last_prompted_at: nowIso,
+      last_bumped_at: nowIso,
+      bump_count: ((currentExtraFields && currentExtraFields.bump_count) || 0) + 1,
+    };
+
+    const { error } = await supabase
+      .from('items')
+      .update({
+        created_at: nowIso,
+        extra_fields: updatedExtraFields,
+      })
+      .eq('id', itemId);
+
+    if (error) {
+      console.log('[bumpItemFeedPriority] Erro ao impulsionar item:', error.message);
+      throw error;
+    }
+
+    console.log('[bumpItemFeedPriority] Item impulsionado com sucesso para o topo do feed');
+    return { success: true, bumped_at: nowIso };
+  } catch (error) {
+    console.log('[bumpItemFeedPriority] Exceção:', error.message);
+    throw error;
+  }
+};
+
 export const getResolvedStatistics = async () => {
   try {
     console.log('[getResolvedStatistics] Buscando estatísticas de itens resolvidos...');
