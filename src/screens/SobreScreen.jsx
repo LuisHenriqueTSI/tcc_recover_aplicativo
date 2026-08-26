@@ -263,6 +263,51 @@ const SobreScreen = ({ navigation }) => {
           </Text>
         </View>
 
+        {/* Botões de Ação no Topo para Acesso Imediato */}
+        <View style={styles.actionSectionTop}>
+          {user ? (
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={() => navigation.goBack()}
+              activeOpacity={0.88}
+            >
+              <MaterialIcons name="arrow-back" size={20} color="#FFFFFF" />
+              <Text style={styles.primaryButtonText}>Voltar ao Aplicativo</Text>
+            </TouchableOpacity>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={handleStart}
+                activeOpacity={0.88}
+              >
+                <Text style={styles.primaryButtonText}>Começar a Explorar</Text>
+                <MaterialIcons name="arrow-forward" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+
+              <View style={styles.authButtonsRow}>
+                <TouchableOpacity
+                  style={styles.secondaryButton}
+                  onPress={handleLoginDirect}
+                  activeOpacity={0.8}
+                >
+                  <MaterialIcons name="login" size={17} color="#2563EB" style={{ marginRight: 5 }} />
+                  <Text style={styles.secondaryButtonText}>Entrar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.secondaryButton}
+                  onPress={handleRegisterDirect}
+                  activeOpacity={0.8}
+                >
+                  <MaterialIcons name="person-add" size={17} color="#2563EB" style={{ marginRight: 5 }} />
+                  <Text style={styles.secondaryButtonText}>Cadastrar</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </View>
+
         {/* Placar Comunitário WeFIND - Estilo Hero Card */}
         <View style={styles.placarHeroCard}>
           {/* Header Category em Roxo/Índigo */}
@@ -514,67 +559,25 @@ const SobreScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Botões de Ação */}
-        <View style={styles.actionSection}>
-          {user ? (
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={() => navigation.goBack()}
-              activeOpacity={0.88}
+        {/* Rodapé com Termos e Privacidade */}
+        <View style={styles.footerSection}>
+          <Text style={styles.termsText}>
+            Ao continuar, você concorda com nossos{' '}
+            <Text
+              style={styles.link}
+              onPress={() => Linking.openURL('https://wefind.app/termos')}
             >
-              <MaterialIcons name="arrow-back" size={20} color="#FFFFFF" />
-              <Text style={styles.primaryButtonText}>Voltar ao Aplicativo</Text>
-            </TouchableOpacity>
-          ) : (
-            <>
-              <TouchableOpacity
-                style={styles.primaryButton}
-                onPress={handleStart}
-                activeOpacity={0.88}
-              >
-                <Text style={styles.primaryButtonText}>Começar a Explorar</Text>
-                <MaterialIcons name="arrow-forward" size={20} color="#FFFFFF" />
-              </TouchableOpacity>
-
-              <View style={styles.authButtonsRow}>
-                <TouchableOpacity
-                  style={styles.secondaryButton}
-                  onPress={handleLoginDirect}
-                  activeOpacity={0.8}
-                >
-                  <MaterialIcons name="login" size={17} color="#2563EB" style={{ marginRight: 5 }} />
-                  <Text style={styles.secondaryButtonText}>Entrar</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.secondaryButton}
-                  onPress={handleRegisterDirect}
-                  activeOpacity={0.8}
-                >
-                  <MaterialIcons name="person-add" size={17} color="#2563EB" style={{ marginRight: 5 }} />
-                  <Text style={styles.secondaryButtonText}>Cadastrar</Text>
-                </TouchableOpacity>
-              </View>
-
-              <Text style={styles.termsText}>
-                Ao continuar, você concorda com nossos{' '}
-                <Text
-                  style={styles.link}
-                  onPress={() => Linking.openURL('https://wefind.app/termos')}
-                >
-                  Termos de Uso
-                </Text>
-                {' '}e{' '}
-                <Text
-                  style={styles.link}
-                  onPress={() => Linking.openURL('https://wefind.app/privacidade')}
-                >
-                  Privacidade
-                </Text>
-                .
-              </Text>
-            </>
-          )}
+              Termos de Uso
+            </Text>
+            {' '}e{' '}
+            <Text
+              style={styles.link}
+              onPress={() => Linking.openURL('https://wefind.app/privacidade')}
+            >
+              Privacidade
+            </Text>
+            .
+          </Text>
         </View>
       </ScrollView>
 
@@ -1123,10 +1126,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // Ações
-  actionSection: {
+  // Ações no Topo e Rodapé
+  actionSectionTop: {
     alignItems: 'center',
-    marginTop: 4,
+    marginBottom: 20,
+  },
+  footerSection: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 16,
   },
   primaryButton: {
     width: '100%',
@@ -1155,7 +1163,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     width: '100%',
-    marginBottom: 16,
+    marginBottom: 4,
   },
   secondaryButton: {
     flex: 1,
