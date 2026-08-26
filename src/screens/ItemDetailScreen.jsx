@@ -1031,70 +1031,146 @@ const ItemDetailScreen = ({ route, navigation }) => {
               </View>
             </View>
             {(isOwner || isAdmin) && (
-              <View style={{ flexDirection: 'row', gap: 8, marginTop: 0, justifyContent: 'flex-end', paddingTop: 8, borderTopWidth: 1, borderTopColor: '#F3F4F6' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: 8,
+                  marginTop: 12,
+                  paddingTop: 12,
+                  borderTopWidth: 1,
+                  borderTopColor: '#F3F4F6',
+                }}
+              >
                 {isOwner && (
                   <TouchableOpacity
-                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10, marginRight: 4 }}
-                    onPress={handleEditItem}
-                  >
-                    <MaterialIcons name="edit" size={18} color="#2563EB" />
-                    <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Editar</Text>
-                  </TouchableOpacity>
-                )}
-                {isOwner && item.status === 'found' && item.extra_fields?.found_custody !== 'spotted' && (
-                  <TouchableOpacity
                     style={{
+                      flex: 1,
+                      minWidth: '45%',
                       flexDirection: 'row',
                       alignItems: 'center',
-                      backgroundColor: item.extra_fields?.available_for_adoption ? '#FDF2F8' : '#ECFDF5',
-                      borderWidth: 1,
-                      borderColor: item.extra_fields?.available_for_adoption ? '#F472B6' : '#A7F3D0',
-                      borderRadius: 6,
-                      paddingVertical: 6,
+                      justifyContent: 'center',
+                      backgroundColor: '#EFF6FF',
+                      borderRadius: 8,
+                      paddingVertical: 10,
                       paddingHorizontal: 10,
-                      marginRight: 4,
                     }}
-                    onPress={handleToggleAdoption}
-                    disabled={togglingAdoption}
+                    onPress={handleEditItem}
                   >
-                    <MaterialIcons
-                      name="favorite"
-                      size={16}
-                      color={item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669'}
-                    />
-                    <Text
-                      style={{
-                        color: item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669',
-                        fontWeight: 'bold',
-                        fontSize: 12.5,
-                        marginLeft: 4,
-                      }}
-                    >
-                      {togglingAdoption
-                        ? 'Atualizando...'
-                        : item.extra_fields?.available_for_adoption
-                        ? 'Pausar Adoção'
-                        : 'Colocar p/ Adoção'}
+                    <MaterialIcons name="edit" size={16} color="#2563EB" />
+                    <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 13, marginLeft: 6 }}>
+                      Editar
                     </Text>
                   </TouchableOpacity>
                 )}
+
+                {isOwner && item.status === 'found' && item.extra_fields?.found_custody !== 'spotted' && (
+                  itemsService.getAdoptionWaitingDays(item) > 0 && !item.extra_fields?.available_for_adoption ? (
+                    <View
+                      style={{
+                        flex: 1,
+                        minWidth: '45%',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: '#FEF3C7',
+                        borderRadius: 8,
+                        paddingVertical: 10,
+                        paddingHorizontal: 10,
+                        borderWidth: 1,
+                        borderColor: '#FDE68A',
+                      }}
+                    >
+                      <MaterialIcons name="schedule" size={16} color="#B45309" />
+                      <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 12, marginLeft: 6 }}>
+                        Busca ({itemsService.getAdoptionWaitingDays(item)}d)
+                      </Text>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={{
+                        flex: 1,
+                        minWidth: '45%',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: item.extra_fields?.available_for_adoption ? '#FDF2F8' : '#ECFDF5',
+                        borderWidth: 1,
+                        borderColor: item.extra_fields?.available_for_adoption ? '#F472B6' : '#A7F3D0',
+                        borderRadius: 8,
+                        paddingVertical: 10,
+                        paddingHorizontal: 10,
+                      }}
+                      onPress={handleToggleAdoption}
+                      disabled={togglingAdoption}
+                    >
+                      <MaterialIcons
+                        name="favorite"
+                        size={16}
+                        color={item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669'}
+                      />
+                      <Text
+                        style={{
+                          color: item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669',
+                          fontWeight: 'bold',
+                          fontSize: 12.5,
+                          marginLeft: 6,
+                        }}
+                      >
+                        {togglingAdoption
+                          ? 'Atualizando...'
+                          : item.extra_fields?.available_for_adoption
+                          ? 'Pausar Adoção'
+                          : 'Colocar p/ Adoção'}
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                )}
+
                 {isOwner && renewalInfo.canRenew && (
                   <TouchableOpacity
-                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F59E0B', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10, marginRight: 4 }}
+                    style={{
+                      flex: 1,
+                      minWidth: '45%',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#F59E0B',
+                      borderRadius: 8,
+                      paddingVertical: 10,
+                      paddingHorizontal: 10,
+                    }}
                     onPress={handleRenewItem}
                     disabled={renewing}
                   >
-                    <MaterialIcons name="refresh" size={18} color="#fff" />
-                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>{renewing ? 'Renovando...' : 'Renovar'}</Text>
+                    <MaterialIcons name="refresh" size={16} color="#fff" />
+                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13, marginLeft: 6 }}>
+                      {renewing ? 'Renovando...' : 'Renovar'}
+                    </Text>
                   </TouchableOpacity>
                 )}
+
                 <TouchableOpacity
-                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#DC2626', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10 }}
+                  style={{
+                    flex: 1,
+                    minWidth: '45%',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#FEE2E2',
+                    borderRadius: 8,
+                    paddingVertical: 10,
+                    paddingHorizontal: 10,
+                    borderWidth: 1,
+                    borderColor: '#FECACA',
+                  }}
                   onPress={handleDeleteItem}
                   disabled={deleting}
                 >
-                  <MaterialIcons name="delete" size={18} color="#fff" />
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>{deleting ? 'Excluindo...' : 'Excluir'}</Text>
+                  <MaterialIcons name="delete-outline" size={16} color="#DC2626" />
+                  <Text style={{ color: '#DC2626', fontWeight: 'bold', fontSize: 13, marginLeft: 6 }}>
+                    {deleting ? 'Excluindo...' : 'Excluir'}
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}
