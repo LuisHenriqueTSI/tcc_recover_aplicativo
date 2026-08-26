@@ -168,10 +168,10 @@ const MapScreen = ({ navigation }) => {
     );
   }
 
-  const isFound = selectedItem?.status === 'found';
-  const isAdoption = selectedItem?.status === 'adoption' || selectedItem?.category === 'adoption' || selectedItem?.is_for_adoption;
-  const statusColor = isFound ? '#16A34A' : (isAdoption ? '#DB2777' : '#F97316');
-  const statusLabel = isFound ? 'Animal encontrado' : (isAdoption ? 'Disponível para adoção' : 'Animal perdido');
+  const isAdoption = itemsService.isPetAvailableForAdoption(selectedItem);
+  const isFound = !isAdoption && selectedItem?.status === 'found';
+  const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#F97316');
+  const statusLabel = isAdoption ? 'Disponível para Adoção' : (isFound ? 'Animal encontrado' : 'Animal perdido');
 
   return (
     <View style={styles.container}>
@@ -455,8 +455,10 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const [tracksViewChanges, setTracksViewChanges] = useState(true);
   const photoUrl = item.item_photos?.[0]?.url;
   const coordinate = { latitude: Number(item.latitude), longitude: Number(item.longitude) };
-  const isFound = item.status === 'found';
-  const statusColor = isFound ? '#16A34A' : '#F97316';
+  const isAdoption = itemsService.isPetAvailableForAdoption(item);
+  const isFound = !isAdoption && item.status === 'found';
+  const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#F97316');
+  const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
 
   return (
     <Marker
@@ -488,8 +490,8 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
       </View>
       <Callout>
         <View style={styles.callout}>
-          <Text style={styles.calloutTitle} numberOfLines={1}>{item.title || 'Pet'}</Text>
-          <Text style={[styles.calloutStatus, { color: statusColor }]}>{item.status === 'found' ? 'Encontrado' : 'Perdido'}</Text>
+          <Text style={styles.calloutTitle} numberOfLines={1}>{item.title || 'Animal'}</Text>
+          <Text style={[styles.calloutStatus, { color: statusColor }]}>{statusLabel}</Text>
           <Text style={styles.calloutAction}>Toque para ver detalhes</Text>
         </View>
       </Callout>
