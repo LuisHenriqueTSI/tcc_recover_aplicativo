@@ -848,10 +848,10 @@ const HomeScreen = ({ navigation, route }) => {
           <View />
         </TouchableOpacity>
       )}
-      {/* App Bar ajustada: nome do app e localização centralizados */}
-      <View style={{ backgroundColor: '#2563EB', paddingTop: 40, paddingBottom: 10, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#2563EB' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', minHeight: 48, position: 'relative' }}>
-          <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      {/* App Bar ajustada: centralizado quando deslogado (Explorar), alinhado à esquerda quando logado */}
+      <View style={{ backgroundColor: '#2563EB', paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#2563EB' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: user ? 'space-between' : 'center', minHeight: 48 }}>
+          <View style={{ flexDirection: 'column', alignItems: user ? 'flex-start' : 'center' }}>
             <Text style={{ color: '#fff', fontWeight: '900', fontSize: 23, letterSpacing: 0.8, marginBottom: 2 }}>WeFIND</Text>
             <TouchableOpacity
               style={{
@@ -884,7 +884,7 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
 
           {user && (
-            <View style={{ position: 'absolute', right: 0, flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12 }}>
               <NotificationBell />
               <TouchableOpacity
                 onPress={() => setShowProfileMenu((prev) => !prev)}
