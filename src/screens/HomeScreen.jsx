@@ -851,60 +851,36 @@ const HomeScreen = ({ navigation, route }) => {
       {/* App Bar ajustada: filtro de localidade ao lado da busca */}
       <View style={{ backgroundColor: '#2563EB', paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: '#2563EB' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-            <View
+          <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Text style={{ color: '#fff', fontWeight: '900', fontSize: 23, letterSpacing: 0.8, marginBottom: 2 }}>WeFIND</Text>
+            <TouchableOpacity
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                backgroundColor: '#FFFFFF',
+                flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.12,
-                shadowRadius: 4,
-                elevation: 3,
+                backgroundColor: 'rgba(255, 255, 255, 0.16)',
+                borderRadius: 20,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                marginTop: 4,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.28)',
               }}
+              onPress={() => {
+                setProfileEditCity(activeCity);
+                setProfileEditState(activeState);
+                setShowProfileLocationModal(true);
+              }}
+              accessibilityLabel={`Localidade: ${displayLocation}`}
+              activeOpacity={0.75}
             >
-              <Image
-                source={require('../assets/logo_wefind.png')}
-                style={{ width: 40, height: 40, borderRadius: 20 }}
-                resizeMode="contain"
-              />
-            </View>
-            <View style={{ flexDirection: 'column', alignItems: 'flex-start', flexShrink: 1 }}>
-              <Text style={{ color: '#fff', fontWeight: '900', fontSize: 21, letterSpacing: 0.8 }}>WeFIND</Text>
-              <TouchableOpacity
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: 'rgba(255, 255, 255, 0.16)',
-                  borderRadius: 20,
-                  paddingHorizontal: 9,
-                  paddingVertical: 3,
-                  marginTop: 2,
-                  borderWidth: 1,
-                  borderColor: 'rgba(255, 255, 255, 0.28)',
-                  maxWidth: '100%',
-                }}
-                onPress={() => {
-                  setProfileEditCity(activeCity);
-                  setProfileEditState(activeState);
-                  setShowProfileLocationModal(true);
-                }}
-                accessibilityLabel={`Localidade: ${displayLocation}`}
-                activeOpacity={0.75}
-              >
-                <MaterialIcons name="place" size={14} color="#FEA937" style={{ marginRight: 3 }} />
-                <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600', marginRight: 4 }} numberOfLines={1}>
-                  {displayLocation}
-                </Text>
-                <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 8, padding: 2 }}>
-                  <MaterialIcons name="edit" size={10} color="#FFFFFF" />
-                </View>
-              </TouchableOpacity>
-            </View>
+              <MaterialIcons name="place" size={15} color="#FEA937" style={{ marginRight: 4 }} />
+              <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '600', marginRight: 6 }}>
+                {displayLocation}
+              </Text>
+              <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 10, padding: 2 }}>
+                <MaterialIcons name="edit" size={12} color="#FFFFFF" />
+              </View>
+            </TouchableOpacity>
           </View>
           {!user && (
             <TouchableOpacity
