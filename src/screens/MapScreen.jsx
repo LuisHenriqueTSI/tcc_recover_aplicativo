@@ -6,7 +6,7 @@ const MapScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Mapa disponível no aplicativo mobile</Text>
       <Text style={styles.description}>
-        Abra o aplicativo no Android ou iPhone para visualizar as regiões e as fotos dos pets marcados no mapa.
+        Abra o aplicativo no Android ou iPhone para visualizar as regiões e as fotos dos animais marcados no mapa.
       </Text>
     </View>
   );
