@@ -13,6 +13,7 @@ import {
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
+import * as itemsService from '../services/items';
 import ShareCardFlyer from './ShareCardFlyer';
 
 const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
@@ -22,7 +23,17 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
   if (!item) return null;
 
   const getShareTextMessage = () => {
-    const status = item.status === 'found' ? '🔍 ENCONTRADO' : (item.extra_fields?.is_direct_adoption ? '🤍 PARA ADOÇÃO' : '❗ PERDIDO');
+    const isAdoption = Boolean(
+      item.extra_fields?.is_direct_adoption ||
+      item.status === 'adoption' ||
+      (item.status === 'found' && (item.extra_fields?.available_for_adoption || itemsService.isPetAvailableForAdoption(item)))
+    );
+
+    const status = isAdoption
+      ? '🤍 PARA ADOÇÃO'
+      : (item.status === 'found' ? '🔍 ENCONTRADO' : '❗ PERDIDO');
+
+    const locationLabel = isAdoption ? '📍 Onde está' : '📍 Local';
     const location = [item.street, item.neighborhood, item.city, item.state].filter(Boolean).join(' - ') || 'Não especificado';
     const rawDate = String(item.date || '');
     const date = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? new Date(`${rawDate}T12:00:00`) : new Date(rawDate);
@@ -40,8 +51,12 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
     ].filter(Boolean).join(' | ');
 
     const detailsLine = details ? `\n${details}\n` : '';
+    const headerTitle = isAdoption ? 'ADOÇÃO RESPONSÁVEL' : 'AJUDE A ENCONTRAR';
+    const callToAction = isAdoption
+      ? 'Interessado em adotar? Entre em contato e compartilhe!'
+      : 'Por favor, compartilhe!';
 
-    return `🐾 *WeFIND - AJUDE A ENCONTRAR*\n\n${status}: *${item.title || 'Animal'}*${detailsLine}\n📍 Local: ${location}\n📅 Data: ${formattedDate}${phoneInfo}\n\n"${item.description || ''}"\n\nPor favor, compartilhe!`;
+    return `🐾 *WeFIND - ${headerTitle}*\n\n${status}: *${item.title || 'Animal'}*${detailsLine}\n${locationLabel}: ${location}\n📅 Data: ${formattedDate}${phoneInfo}\n\n"${item.description || ''}"\n\n${callToAction}`;
   };
 
   const handleShareImage = async () => {
@@ -72,7 +87,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
       // Abre a folha nativa de compartilhamento
       await Sharing.shareAsync(uri, {
         mimeType: 'image/png',
-        dialogTitle: `Compartilhar ${item.title || 'Pet'}`,
+        dialogTitle: `Compartilhar ${item.title || 'Animal'}`,
         UTI: 'public.png',
       });
     } catch (error) {

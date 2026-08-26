@@ -1,16 +1,31 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as itemsService from '../services/items';
 
 const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
   if (!item) return null;
 
-  const isLost = item.status === 'lost';
-  const statusColor = isLost ? '#D64545' : '#2E9B63';
+  const isAdoption = Boolean(
+    item.extra_fields?.is_direct_adoption ||
+    item.status === 'adoption' ||
+    (item.status === 'found' && (item.extra_fields?.available_for_adoption || itemsService.isPetAvailableForAdoption(item)))
+  );
+  const isLost = !isAdoption && item.status === 'lost';
+  const isFound = !isAdoption && item.status === 'found';
 
-  // Cabeçalho dinâmico por espécie (ex: GATO ENCONTRADO, CACHORRO PERDIDO)
-  const speciesRaw = String(item.species || '').trim();
+  const statusColor = isAdoption ? '#DB2777' : (isLost ? '#D64545' : '#2E9B63');
+
+  // Cabeçalho dinâmico por espécie (ex: GATO ENCONTRADO, CACHORRO PERDIDO, CÃO PARA ADOÇÃO)
+  const speciesRaw = String(item.species || item.extra_fields?.species || '').trim();
   const getHeaderTitle = () => {
+    if (isAdoption) {
+      if (speciesRaw) {
+        const upper = speciesRaw.toUpperCase();
+        return `${upper} PARA ADOÇÃO`;
+      }
+      return 'ANIMAL PARA ADOÇÃO';
+    }
     if (speciesRaw) {
       const upper = speciesRaw.toUpperCase();
       if (upper === 'AVE') {
@@ -22,7 +37,7 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
   };
 
   const statusHeaderTitle = getHeaderTitle();
-  const locationLabel = isLost ? 'ÚLTIMA VEZ VISTO EM:' : 'LOCAL ONDE FOI ENCONTRADO:';
+  const locationLabel = isAdoption ? 'ONDE O ANIMAL ESTÁ:' : (isLost ? 'ÚLTIMA VEZ VISTO EM:' : 'LOCAL ONDE FOI ENCONTRADO:');
 
   // Informações de localização
   const city = item.city || item.extra_fields?.location_details?.city || '';
@@ -104,7 +119,7 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
   const ownerName = (isThirdParty && thirdParty.name)
     ? thirdParty.name
     : (item.profiles?.name || item.owner_name || 'Usuário do WeFIND');
-  const ownerLabel = isLost ? 'Tutor' : 'Encontrado por';
+  const ownerLabel = isAdoption ? 'Responsável' : (isLost ? 'Tutor' : 'Encontrado por');
 
   return (
     <View ref={ref} collapsable={false} style={styles.canvasWrapper}>
@@ -112,7 +127,7 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
         {/* Faixa Superior de Alerta */}
         <View style={[styles.headerBanner, { backgroundColor: statusColor }]}>
           <View style={styles.headerTopRow}>
-            <Text style={styles.headerAppBadge}>🐾 WeFIND</Text>
+            <Text style={styles.headerAppBadge}>{isAdoption ? '💖 WeFIND ADOÇÃO' : '🐾 WeFIND'}</Text>
             {formattedDate ? <Text style={styles.headerDate}>{formattedDate}</Text> : null}
           </View>
           <Text style={styles.headerStatusText}>{statusHeaderTitle}</Text>
@@ -224,7 +239,11 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
         {/* Rodapé / Chamada para Compartilhar */}
         <View style={styles.footerContainer}>
           <Text style={styles.footerText}>
-            📢 Compartilhe para ajudar a trazer este animal de volta!
+            {isAdoption
+              ? '💖 Compartilhe para ajudar este animalzinho a encontrar um lar!'
+              : isLost
+              ? '📢 Compartilhe para ajudar a trazer este animal de volta!'
+              : '📢 Compartilhe para ajudar a encontrar a família deste animal!'}
           </Text>
         </View>
       </View>
