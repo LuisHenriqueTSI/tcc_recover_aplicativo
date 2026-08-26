@@ -112,13 +112,31 @@ export const updateProfile = async (userId, updates) => {
   try {
     console.log('[updateProfile] Atualizando perfil do usuário:', userId);
 
-    const sanitizedUpdates = { ...updates };
+    // Whitelist apenas de colunas reais existentes na tabela 'profiles' no Supabase
+    const allowedColumns = [
+      'name',
+      'email',
+      'city',
+      'state',
+      'whatsapp',
+      'phone',
+      'instagram',
+      'facebook',
+      'whatsapp_notifications_enabled',
+      'avatar_path',
+      'avatar_url',
+      'points',
+      'level',
+      'adm',
+      'role',
+    ];
 
-    // Remove campos que não pertencem à tabela 'profiles' no Supabase
-    delete sanitizedUpdates.latitude;
-    delete sanitizedUpdates.longitude;
-    delete sanitizedUpdates.coords;
-    delete sanitizedUpdates.userCoords;
+    const sanitizedUpdates = {};
+    for (const key of Object.keys(updates || {})) {
+      if (allowedColumns.includes(key)) {
+        sanitizedUpdates[key] = updates[key];
+      }
+    }
 
     if (Object.prototype.hasOwnProperty.call(sanitizedUpdates, 'whatsapp')) {
       sanitizedUpdates.whatsapp = normalizeWhatsappForStorage(sanitizedUpdates.whatsapp);
