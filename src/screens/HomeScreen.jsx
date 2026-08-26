@@ -1066,9 +1066,6 @@ const HomeScreen = ({ navigation, route }) => {
 
       {/* Busca de animais acima dos filtros */}
       <View style={{ marginTop: 12, marginHorizontal: 16 }}>
-        <Text style={{ color: '#1E1B4B', fontSize: 14, fontWeight: '800', marginBottom: 7 }}>
-          Encontre um animal perdido ou encontrado
-        </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', borderRadius: 14, borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 14, height: 48 }}>
           <MaterialIcons name="search" size={22} color="#64748B" style={{ marginRight: 8 }} />
           <TextInput
