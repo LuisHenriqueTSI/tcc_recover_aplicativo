@@ -339,6 +339,57 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+async function findUserProfileByPhone(supabaseUrl: string, serviceRoleKey: string, phone: string) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  const cleanPhone = digits.startsWith('55') ? digits.slice(2) : digits;
+  const last8 = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : cleanPhone;
+  const ddd = cleanPhone.length >= 10 ? cleanPhone.slice(0, 2) : '';
+
+  const conditions = [
+    `whatsapp.ilike.*${cleanPhone}*`,
+    `phone.ilike.*${cleanPhone}*`,
+    `whatsapp.ilike.*${last8}*`,
+    `phone.ilike.*${last8}*`,
+  ];
+
+  if (ddd) {
+    const var10 = cleanPhone.length === 11 && cleanPhone[2] === '9' ? `${ddd}${cleanPhone.slice(3)}` : null;
+    const var11 = cleanPhone.length === 10 ? `${ddd}9${cleanPhone.slice(2)}` : null;
+    if (var10) {
+      conditions.push(`whatsapp.ilike.*${var10}*`, `phone.ilike.*${var10}*`);
+    }
+    if (var11) {
+      conditions.push(`whatsapp.ilike.*${var11}*`, `phone.ilike.*${var11}*`);
+    }
+  }
+
+  const profilesUrl = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/profiles?select=id,name,email,whatsapp,phone&or=(${conditions.join(',')})&limit=5`;
+  const profileRes = await fetch(profilesUrl, {
+    method: 'GET',
+    headers: getRestHeaders(serviceRoleKey),
+  });
+
+  if (profileRes.ok) {
+    try {
+      const list = await profileRes.json();
+      if (Array.isArray(list) && list.length > 0) {
+        if (ddd) {
+          const match = list.find((p: Record<string, unknown>) => {
+            const pDigits = String(p.whatsapp || p.phone || '').replace(/\D/g, '');
+            return pDigits.includes(ddd) && pDigits.includes(last8);
+          });
+          if (match) return match;
+        }
+        return list[0];
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return null;
+}
+
   // ==========================================
   // ACTION: send-reset-code (Redefinição de Senha via WhatsApp)
   // ==========================================
@@ -357,24 +408,8 @@ Deno.serve(async (req: Request) => {
     const rawDigits = whatsapp.replace(/\D/g, '');
     const cleanPhone = rawDigits.startsWith('55') ? rawDigits.slice(2) : rawDigits;
 
-    // Buscar perfil do usuário pelo WhatsApp cadastrado
-    const profilesUrl = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/profiles?select=id,name,email,whatsapp,phone&or=(whatsapp.ilike.*${cleanPhone}*,phone.ilike.*${cleanPhone}*)&limit=1`;
-    const profileRes = await fetch(profilesUrl, {
-      method: 'GET',
-      headers: getRestHeaders(serviceRoleKey),
-    });
-
-    let foundProfile = null;
-    if (profileRes.ok) {
-      try {
-        const parsedProfiles = await profileRes.json();
-        if (Array.isArray(parsedProfiles) && parsedProfiles.length > 0) {
-          foundProfile = parsedProfiles[0];
-        }
-      } catch {
-        // ignore
-      }
-    }
+    // Buscar perfil do usuário com correspondência inteligente de DDD e 9 dígitos
+    const foundProfile = await findUserProfileByPhone(supabaseUrl, serviceRoleKey, whatsapp);
 
     if (!foundProfile) {
       return jsonResponse({
@@ -395,7 +430,7 @@ Deno.serve(async (req: Request) => {
     const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') ?? 'wefind_secret_token_123';
     const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE') ?? 'wefind';
 
-    const userName = foundProfile.name ? foundProfile.name.split(' ')[0] : 'Usuário';
+    const userName = foundProfile.name ? String(foundProfile.name).split(' ')[0] : 'Usuário';
     const messageText = `🐾 *Código de Redefinição de Senha - WeFIND*\n\nOlá, ${userName}! Você solicitou a redefinição de sua senha de acesso ao WeFIND.\n\nSeu código de segurança é:\n👉 *${code}*\n\nEste código é válido por 10 minutos. Se não foi você quem solicitou, por favor desconsidere esta mensagem.`;
 
     try {
@@ -443,27 +478,7 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ ok: false, error: 'missing-service-role-key' }, 500);
     }
 
-    const rawDigits = whatsapp.replace(/\D/g, '');
-    const cleanPhone = rawDigits.startsWith('55') ? rawDigits.slice(2) : rawDigits;
-
-    // Buscar perfil
-    const profilesUrl = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/profiles?select=id,email&or=(whatsapp.ilike.*${cleanPhone}*,phone.ilike.*${cleanPhone}*)&limit=1`;
-    const profileRes = await fetch(profilesUrl, {
-      method: 'GET',
-      headers: getRestHeaders(serviceRoleKey),
-    });
-
-    let foundProfile = null;
-    if (profileRes.ok) {
-      try {
-        const parsedProfiles = await profileRes.json();
-        if (Array.isArray(parsedProfiles) && parsedProfiles.length > 0) {
-          foundProfile = parsedProfiles[0];
-        }
-      } catch {
-        // ignore
-      }
-    }
+    const foundProfile = await findUserProfileByPhone(supabaseUrl, serviceRoleKey, whatsapp);
 
     if (!foundProfile) {
       return jsonResponse({ ok: false, error: 'user-not-found' }, 404);
