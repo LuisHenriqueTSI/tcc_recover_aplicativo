@@ -570,6 +570,7 @@ const HomeScreen = ({ navigation, route }) => {
     : (activeCity && activeState)
     ? `${activeCity}, ${activeState}`
     : (activeCity || activeState || 'Todo o Brasil');
+  const displayLocation = headerLocationSummary;
 
   // Salvar localidade (perfil e armazenamento local)
   const handleSaveProfileLocation = async () => {
@@ -1678,10 +1679,10 @@ const HomeScreen = ({ navigation, route }) => {
             </View>
             <View style={{ flex: 1, marginLeft: 8 }}>
               <Text style={[styles.radiusBannerTitle, { color: isDark ? '#93C5FD' : '#1E40AF' }]}>
-                Raio de 60 km ativo
+                Raio de {searchRadiusKm} km ativo
               </Text>
               <Text style={[styles.radiusBannerSubtitle, { color: isDark ? '#60A5FA' : '#3B82F6' }]} numberOfLines={1}>
-                Exibindo pets próximos a {displayLocation}
+                Exibindo pets próximos a {headerLocationSummary}
               </Text>
             </View>
           </View>
@@ -1742,7 +1743,7 @@ const HomeScreen = ({ navigation, route }) => {
             <MaterialIcons name="pets" size={46} color={isDark ? '#334155' : '#CBD5E1'} style={{ marginBottom: 10 }} />
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
               {locationFilter
-                ? `Nenhum animal encontrado em um raio de 60 km de ${displayLocation}.`
+                ? `Nenhum animal encontrado em um raio de ${searchRadiusKm} km de ${headerLocationSummary}.`
                 : 'Nenhum animal encontrado'}
             </Text>
             {locationFilter ? (
