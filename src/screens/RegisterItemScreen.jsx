@@ -278,7 +278,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const initialType = normalizeCategory(route?.params?.itemType || route?.params?.category || editItem?.category) || 'animal';
   const [step, setStep] = useState(2);
   const [itemType, setItemType] = useState(initialType);
-  const [status, setStatus] = useState(editItem?.status || 'lost');
+  const initialStatus = editItem?.extra_fields?.is_direct_adoption ? 'adoption' : (editItem?.status || 'lost');
+  const [status, setStatus] = useState(initialStatus);
   const [title, setTitle] = useState(editItem?.title || '');
   const [description, setDescription] = useState(editItem?.description || '');
   const [state, setState] = useState(editItem?.state || (userProfile?.state || ''));
@@ -317,8 +318,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [foundCustody, setFoundCustody] = useState(
     editItem?.extra_fields?.found_custody || 'with_me' // 'with_me' | 'spotted'
   );
-  const [availableForAdoption, setAvailableForAdoption] = useState(
-    Boolean(editItem?.extra_fields?.available_for_adoption)
+  const [adoptionIntent, setAdoptionIntent] = useState(
+    Boolean(editItem?.extra_fields?.adoption_intent)
   );
 
   const [photos, setPhotos] = useState([]);
@@ -1054,6 +1055,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
         text: normalizedAddressText || null,
       };
 
+      const isDirectAdoption = status === 'adoption';
+      const effectiveStatus = isDirectAdoption ? 'found' : status;
+
       const itemData = {
         title: toNull(currentTitle) || editItem?.title || 'Animal',
         description: toNull(description) || editItem?.description,
@@ -1066,7 +1070,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         house_number: toNull(mapLocationDetails?.number) || editItem?.house_number || null,
         postal_code: toNull(mapLocationDetails?.postalCode) || editItem?.postal_code || null,
         address: toNull(normalizedAddressText) || editItem?.address || null,
-        status: toNull(status) || editItem?.status || 'lost',
+        status: toNull(effectiveStatus) || editItem?.status || 'lost',
         category: toNull(itemType) || editItem?.category || null,
         item_type: toNull(itemType) || editItem?.item_type || null,
         date: date || editItem?.date || new Date().toISOString().split('T')[0],
@@ -1090,8 +1094,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
           size: toNull(animalSize),
           age: toNull(animalAge),
           collar: toNull(animalCollar),
-          found_custody: status === 'found' ? foundCustody : null,
-          available_for_adoption: status === 'found' && foundCustody === 'with_me' ? Boolean(availableForAdoption) : false,
+          is_direct_adoption: isDirectAdoption,
+          found_custody: status === 'found' ? foundCustody : (isDirectAdoption ? 'with_me' : null),
+          adoption_intent: status === 'found' && foundCustody === 'with_me' ? Boolean(adoptionIntent) : false,
+          available_for_adoption: isDirectAdoption ? true : (editItem?.extra_fields?.available_for_adoption || false),
           location_details: exactLocationDetails,
           third_party_owner: isThirdPartyOwner && (thirdPartyName.trim() || thirdPartyPhone.trim()) ? {
             active: true,
@@ -1331,7 +1337,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ paddingBottom: 180 }}>
             <View>
               <View style={styles.statusContainer}>
-                <Text style={styles.label}>Você perdeu ou encontrou? *</Text>
+                <Text style={styles.label}>Qual é o objetivo desta publicação? *</Text>
                 <View style={styles.statusOptions}>
                   <TouchableOpacity
                     style={[
@@ -1365,10 +1371,43 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       Encontrei
                     </Text>
                   </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.statusButton,
+                      status === 'adoption' && [styles.statusButtonActive, { backgroundColor: '#DB2777', borderColor: '#DB2777' }],
+                    ]}
+                    onPress={() => {
+                      setStatus('adoption');
+                      setOfferReward(false);
+                      setRewardAmount('');
+                    }}
+                  >
+                    <Text style={[
+                      styles.statusText,
+                      status === 'adoption' && styles.statusTextActive,
+                    ]}>
+                      Para Adoção
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
 
-              {/* Opções de Custódia e Adoção para Pet Encontrado */}
+              {/* Informação sobre Publicação Direta para Adoção */}
+              {status === 'adoption' && (
+                <View style={{ backgroundColor: '#FDF2F8', borderWidth: 1.5, borderColor: '#F472B6', borderRadius: 12, padding: 14, marginBottom: 20 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
+                    <MaterialIcons name="favorite" size={18} color="#DB2777" />
+                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#9D174D' }}>
+                      Adoção Imediata (Pet sem Tutor Conhecido)
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 12, lineHeight: 16, color: '#BE185D' }}>
+                    Utilize esta opção para doar ou cadastrar animais resgatados, ninhadas ou pets de abrigo que não possuem dono prévio. O anúncio entrará diretamente no feed de adoção.
+                  </Text>
+                </View>
+              )}
+
+              {/* Opções de Custódia e Adoção Futura para Pet Encontrado */}
               {status === 'found' && (
                 <View style={styles.custodySection}>
                   <Text style={styles.label}>Onde o animal está agora? *</Text>
@@ -1403,7 +1442,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       ]}
                       onPress={() => {
                         setFoundCustody('spotted');
-                        setAvailableForAdoption(false);
+                        setAdoptionIntent(false);
                       }}
                       activeOpacity={0.85}
                     >
@@ -1423,35 +1462,35 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     </TouchableOpacity>
                   </View>
 
-                  {/* Opção de Adoção Responsável (apenas se estiver com o animal) */}
+                  {/* Opção de Intenção de Adoção (após período mínimo de 7 dias de busca pelo tutor) */}
                   {foundCustody === 'with_me' && (
                     <TouchableOpacity
                       style={[
                         styles.adoptionToggleCard,
-                        availableForAdoption && styles.adoptionToggleCardActive,
+                        adoptionIntent && styles.adoptionToggleCardActive,
                       ]}
-                      onPress={() => setAvailableForAdoption((prev) => !prev)}
+                      onPress={() => setAdoptionIntent((prev) => !prev)}
                       activeOpacity={0.85}
                     >
                       <View style={styles.adoptionToggleLeft}>
-                        <View style={[styles.adoptionIconBadge, availableForAdoption && styles.adoptionIconBadgeActive]}>
+                        <View style={[styles.adoptionIconBadge, adoptionIntent && styles.adoptionIconBadgeActive]}>
                           <MaterialIcons
                             name="favorite"
                             size={18}
-                            color={availableForAdoption ? '#FFFFFF' : '#E11D48'}
+                            color={adoptionIntent ? '#FFFFFF' : '#E11D48'}
                           />
                         </View>
                         <View style={{ flex: 1 }}>
                           <Text style={styles.adoptionToggleTitle}>
-                            Disponibilizar para Adoção Responsável
+                            Disponibilizar para adoção caso o dono não apareça
                           </Text>
                           <Text style={styles.adoptionToggleSubtitle}>
-                            Caso o tutor não apareça após as buscas, permitir que pessoas interessadas se candidatem para adotar.
+                            ⏳ Janela obrigatória de 7 dias: O pet ficará listado como "Encontrado" durante a primeira semana de buscas. Se o tutor não for localizado após 1 semana, a adoção responsável será liberada.
                           </Text>
                         </View>
                       </View>
-                      <View style={[styles.customCheckbox, availableForAdoption && styles.customCheckboxChecked]}>
-                        {availableForAdoption && <MaterialIcons name="check" size={14} color="#FFFFFF" />}
+                      <View style={[styles.customCheckbox, adoptionIntent && styles.customCheckboxChecked]}>
+                        {adoptionIntent && <MaterialIcons name="check" size={14} color="#FFFFFF" />}
                       </View>
                     </TouchableOpacity>
                   )}

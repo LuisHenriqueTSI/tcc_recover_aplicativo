@@ -160,9 +160,11 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
         {/* Badges */}
         <View style={{ position: 'absolute', top: 12, left: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 6, zIndex: 10, maxWidth: cardWidth > 0 ? cardWidth - 70 : 250 }}>
           <View style={{ backgroundColor: statusColor, borderRadius: 8, paddingHorizontal: 9, paddingVertical: 2 }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12.5 }}>{statusLabel}</Text>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12.5 }}>
+              {item.extra_fields?.is_direct_adoption ? 'Para Adoção' : statusLabel}
+            </Text>
           </View>
-          {item.status === 'found' && (
+          {item.status === 'found' && !item.extra_fields?.is_direct_adoption && (
             item.extra_fields?.found_custody === 'spotted' ? (
               <View style={{ backgroundColor: '#FEF3C7', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 }}>
                 <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 11.5 }}>👀 Visto na Rua</Text>
@@ -173,10 +175,18 @@ const ItemCard = ({ item, user, thumbnails, handleSendMessage, handleEditItem, h
               </View>
             )
           )}
-          {item.extra_fields?.available_for_adoption && (
+          {itemsService.isPetAvailableForAdoption(item) ? (
             <View style={{ backgroundColor: '#FCE7F3', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 }}>
               <Text style={{ color: '#BE185D', fontWeight: 'bold', fontSize: 11.5 }}>🐾 Para Adoção</Text>
             </View>
+          ) : (
+            item.status === 'found' && item.extra_fields?.adoption_intent && itemsService.getAdoptionWaitingDays(item) > 0 ? (
+              <View style={{ backgroundColor: '#FEF3C7', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 }}>
+                <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 11.5 }}>
+                  ⏳ Busca ({itemsService.getAdoptionWaitingDays(item)}d)
+                </Text>
+              </View>
+            ) : null
           )}
           <View style={{ backgroundColor: cat.bg, borderRadius: 8, paddingHorizontal: 9, paddingVertical: 2 }}>
             <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 12.5 }}>{cat.label}</Text>
@@ -574,7 +584,7 @@ const HomeScreen = ({ navigation, route }) => {
     // Filtro por status (Perdido / Encontrado / Adoção)
     if (filters.status && filters.status !== 'all') {
       if (filters.status === 'adoption') {
-        filtered = filtered.filter(item => Boolean(item.extra_fields?.available_for_adoption));
+        filtered = filtered.filter(item => itemsService.isPetAvailableForAdoption(item));
       } else {
         filtered = filtered.filter(item => item.status === filters.status);
       }

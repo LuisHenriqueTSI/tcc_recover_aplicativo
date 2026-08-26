@@ -1103,6 +1103,41 @@ export const getCommunityImpactStats = async () => {
   }
 };
 
+export const isPetAvailableForAdoption = (item) => {
+  if (!item) return false;
+  if (item.status === 'adoption' || item.extra_fields?.is_direct_adoption) {
+    return true;
+  }
+  if (item.extra_fields?.available_for_adoption) {
+    return true;
+  }
+  if (
+    item.status === 'found' &&
+    item.extra_fields?.adoption_intent &&
+    item.created_at
+  ) {
+    const created = new Date(item.created_at).getTime();
+    const now = Date.now();
+    const daysPassed = (now - created) / (1000 * 60 * 60 * 24);
+    if (daysPassed >= 7) {
+      return true;
+    }
+  }
+  return false;
+};
+
+export const getAdoptionWaitingDays = (item) => {
+  if (!item) return 0;
+  if (item.status === 'adoption' || item.extra_fields?.is_direct_adoption) return 0;
+  if (!item.extra_fields?.adoption_intent || !item.created_at) return 0;
+
+  const created = new Date(item.created_at).getTime();
+  const now = Date.now();
+  const daysPassed = (now - created) / (1000 * 60 * 60 * 24);
+  const remaining = Math.ceil(7 - daysPassed);
+  return remaining > 0 ? remaining : 0;
+};
+
 export const toggleItemAdoption = async (itemId, currentExtraFields = {}, availableForAdoption = true) => {
   try {
     const updatedExtraFields = {

@@ -397,45 +397,64 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleToggleAdoption = async () => {
     const isCurrentlyAdoption = Boolean(item?.extra_fields?.available_for_adoption);
+    const waitingDays = itemsService.getAdoptionWaitingDays(item);
+
+    if (!isCurrentlyAdoption && waitingDays > 0) {
+      Alert.alert(
+        'Período Prioritário de Busca',
+        `Este animal foi encontrado na rua e está no período prioritário de busca pelo tutor original. Faltam ${waitingDays} dia${waitingDays === 1 ? '' : 's'} para a liberação oficial de adoção. Deseja liberar a adoção agora caso já tenha certeza que o animal não possui tutor?`,
+        [
+          { text: 'Aguardar Prazo', style: 'cancel' },
+          {
+            text: 'Liberar Adoção',
+            onPress: () => confirmAdoptionChange(false),
+          },
+        ]
+      );
+      return;
+    }
+
     Alert.alert(
       isCurrentlyAdoption ? 'Pausar Adoção' : 'Disponibilizar para Adoção',
       isCurrentlyAdoption
         ? 'Deseja remover este pet da listagem de adoção?'
-        : 'Ao disponibilizar para adoção responsável, outros membros da comunidade poderão entrar em contato para adotar o pet caso o dono original não apareça. Deseja continuar?',
+        : 'Ao disponibilizar para adoção responsável, outros membros da comunidade poderão entrar em contato para adotar o pet. Deseja continuar?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: isCurrentlyAdoption ? 'Remover' : 'Disponibilizar',
-          onPress: async () => {
-            setTogglingAdoption(true);
-            try {
-              await itemsService.toggleItemAdoption(
-                item.id,
-                item.extra_fields,
-                !isCurrentlyAdoption
-              );
-              setItem((prev) => ({
-                ...prev,
-                extra_fields: {
-                  ...(prev?.extra_fields || {}),
-                  available_for_adoption: !isCurrentlyAdoption,
-                },
-              }));
-              Alert.alert(
-                'Sucesso',
-                !isCurrentlyAdoption
-                  ? 'Pet disponibilizado para adoção responsável com sucesso!'
-                  : 'Pet removido da listagem de adoção.'
-              );
-            } catch (error) {
-              Alert.alert('Erro', 'Não foi possível atualizar o status de adoção.');
-            } finally {
-              setTogglingAdoption(false);
-            }
-          },
+          onPress: () => confirmAdoptionChange(isCurrentlyAdoption),
         },
       ]
     );
+  };
+
+  const confirmAdoptionChange = async (isCurrentlyAdoption) => {
+    setTogglingAdoption(true);
+    try {
+      await itemsService.toggleItemAdoption(
+        item.id,
+        item.extra_fields,
+        !isCurrentlyAdoption
+      );
+      setItem((prev) => ({
+        ...prev,
+        extra_fields: {
+          ...(prev?.extra_fields || {}),
+          available_for_adoption: !isCurrentlyAdoption,
+        },
+      }));
+      Alert.alert(
+        'Sucesso',
+        !isCurrentlyAdoption
+          ? 'Pet disponibilizado para adoção responsável com sucesso!'
+          : 'Pet removido da listagem de adoção.'
+      );
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível atualizar o status de adoção.');
+    } finally {
+      setTogglingAdoption(false);
+    }
   };
 
   const handleOpenReport = () => {
@@ -673,10 +692,14 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
         {/* Título, descrição e recompensa */}
         <View style={styles.introSection}>
-          <View style={[styles.statusPill, item.status === 'found' ? styles.foundPill : styles.lostPill]}>
-            <MaterialIcons name={item.status === 'found' ? 'check-circle' : 'search'} size={15} color={item.status === 'found' ? '#047857' : '#C2410C'} />
-            <Text style={[styles.statusPillText, { color: item.status === 'found' ? '#047857' : '#C2410C' }]}>
-              {item.status === 'found' ? 'Encontrado' : 'Perdido'}
+          <View style={[styles.statusPill, item.extra_fields?.is_direct_adoption ? { backgroundColor: '#FCE7F3' } : (item.status === 'found' ? styles.foundPill : styles.lostPill)]}>
+            <MaterialIcons
+              name={item.extra_fields?.is_direct_adoption ? 'favorite' : (item.status === 'found' ? 'check-circle' : 'search')}
+              size={15}
+              color={item.extra_fields?.is_direct_adoption ? '#BE185D' : (item.status === 'found' ? '#047857' : '#C2410C')}
+            />
+            <Text style={[styles.statusPillText, { color: item.extra_fields?.is_direct_adoption ? '#BE185D' : (item.status === 'found' ? '#047857' : '#C2410C') }]}>
+              {item.extra_fields?.is_direct_adoption ? 'Para Adoção' : (item.status === 'found' ? 'Encontrado' : 'Perdido')}
             </Text>
           </View>
           <Text style={styles.detailTitle}>{item.title}</Text>
@@ -699,8 +722,33 @@ const ItemDetailScreen = ({ route, navigation }) => {
           )}
         </View>
 
-        {/* Card de Custódia / Lar Temporário ou Avistamento na Rua */}
-        {item.status === 'found' && (
+        {/* Card de Adoção Direta (Animal sem tutor prévio) */}
+        {item.extra_fields?.is_direct_adoption && (
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginTop: 10,
+              padding: 14,
+              borderRadius: 12,
+              borderWidth: 1.5,
+              backgroundColor: '#FDF2F8',
+              borderColor: '#F472B6',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
+              <MaterialIcons name="favorite" size={18} color="#DB2777" />
+              <Text style={{ fontSize: 14, fontWeight: '800', color: '#9D174D' }}>
+                Disponível para Adoção Responsável
+              </Text>
+            </View>
+            <Text style={{ fontSize: 12.5, lineHeight: 18, color: '#BE185D' }}>
+              Este animal não tem tutor conhecido e está pronto para adoção imediata. Fale diretamente com quem o resgatou pelo chat para combinar o encontro!
+            </Text>
+          </View>
+        )}
+
+        {/* Card de Custódia para Pet Encontrado */}
+        {item.status === 'found' && !item.extra_fields?.is_direct_adoption && (
           <View
             style={{
               marginHorizontal: 16,
@@ -744,29 +792,55 @@ const ItemDetailScreen = ({ route, navigation }) => {
           </View>
         )}
 
-        {/* Card de Adoção Responsável */}
-        {item.extra_fields?.available_for_adoption && (
-          <View
-            style={{
-              marginHorizontal: 16,
-              marginTop: 10,
-              padding: 14,
-              borderRadius: 12,
-              borderWidth: 1.5,
-              backgroundColor: '#FDF2F8',
-              borderColor: '#F472B6',
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
-              <MaterialIcons name="favorite" size={18} color="#DB2777" />
-              <Text style={{ fontSize: 14, fontWeight: '800', color: '#9D174D' }}>
-                Disponível para Adoção Responsável
+        {/* Card de Período de Busca vs Adoção Liberada para Pet Encontrado com Intenção de Adoção */}
+        {item.status === 'found' && !item.extra_fields?.is_direct_adoption && (
+          itemsService.isPetAvailableForAdoption(item) ? (
+            <View
+              style={{
+                marginHorizontal: 16,
+                marginTop: 10,
+                padding: 14,
+                borderRadius: 12,
+                borderWidth: 1.5,
+                backgroundColor: '#FDF2F8',
+                borderColor: '#F472B6',
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
+                <MaterialIcons name="favorite" size={18} color="#DB2777" />
+                <Text style={{ fontSize: 14, fontWeight: '800', color: '#9D174D' }}>
+                  Período de busca encerrado - Liberado para Adoção!
+                </Text>
+              </View>
+              <Text style={{ fontSize: 12.5, lineHeight: 18, color: '#BE185D' }}>
+                O período prioritário de 7 dias de busca pelo tutor foi concluído sem localização do dono original. O pet agora está aberto para adoção responsável com amor!
               </Text>
             </View>
-            <Text style={{ fontSize: 12.5, lineHeight: 18, color: '#BE185D' }}>
-              Caso o tutor original não apareça, este pet pode ser adotado com muito carinho. Entre em contato com o protetor para conhecer o animal!
-            </Text>
-          </View>
+          ) : (
+            item.extra_fields?.adoption_intent && itemsService.getAdoptionWaitingDays(item) > 0 ? (
+              <View
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 10,
+                  padding: 14,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  backgroundColor: '#FFFBEB',
+                  borderColor: '#FDE68A',
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
+                  <MaterialIcons name="schedule" size={18} color="#D97706" />
+                  <Text style={{ fontSize: 14, fontWeight: '800', color: '#B45309' }}>
+                    Período Prioritário de Busca pelo Tutor (Faltam {itemsService.getAdoptionWaitingDays(item)} dia{itemsService.getAdoptionWaitingDays(item) === 1 ? '' : 's'})
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 12.5, lineHeight: 18, color: '#92400E' }}>
+                  Este pet foi encontrado na rua e está na primeira semana obrigatória de busca pelo tutor original. Caso o dono não apareça até o final deste prazo, a adoção responsável será oficialmente liberada.
+                </Text>
+              </View>
+            ) : null
+          )
         )}
 
         {/* Bairro e Data */}
