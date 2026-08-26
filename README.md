@@ -40,12 +40,27 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - Atalhos diretos para acessar **"Mural de Reencontros"** e **"Sobre o WeFIND"** no menu do perfil e configurações.
 - Telas de Login e Cadastro acolhedoras ("Bem-vindo de volta" e "Criar sua conta").
 
-✅ **Autenticação, Notificações e WhatsApp**
+✅ **Autenticação, Notificações e Segurança por WhatsApp**
 - Registro e login direto e simplificado com nome, email, WhatsApp e senha.
 - **Verificação em 2 etapas por WhatsApp:** Envio do código de 6 dígitos via Evolution API / Supabase Functions com opção de reenvio com timer de recarga e edição rápida de dados.
+- **Redefinição de Senha e Alteração de WhatsApp com Código:**
+  - Redefinição de senha diretamente pelo perfil através do fluxo oficial de WhatsApp (`EsqueciSenhaScreen.jsx`).
+  - Validação obrigatória por código de 6 dígitos no WhatsApp ao atualizar o número de telefone no perfil.
 - **Notificações de Busca e Feed Inteligente:** Lembretes automáticos a cada 2 dias perguntando se o animal foi encontrado; respostas "Ainda não" impulsionam automaticamente a publicação para o topo do feed (`created_at`).
 - **Notificações e Alertas por WhatsApp:** Caixa de consentimento no cadastro (`whatsapp_notifications_enabled`), controle de preferências na tela de configurações (`ConfigScreen.jsx`), botão de disparo de teste instantâneo e alertas em tempo real para os tutores sobre **novas informações de animais** via Evolution API.
-- Ao entrar, o feed exibe automaticamente publicações de **Todo o Brasil**, com opção de filtrar por estado, cidade, espécie ou mapa no cabeçalho.
+- **Perfil do Usuário Humanizado e Sem Blocos Artificiais:**
+  - Identidade visual limpa, botão em linha para edição de dados e agrupamentos nativos de menu (Comunidade, Conta & Preferências).
+
+✅ **Localização Inteligente, Endereço Completo e Raio de Busca Personalizável**
+- **Sincronização Bidirecional de Localização:**
+  - Definição pelo cabeçalho da Tela Inicial ou pela tela de Editar Perfil com persistência local (`AsyncStorage`) e no Supabase (`profiles`).
+- **Endereço Completo e Detalhado:**
+  - Geolocalização reversa automática capturando Rua, Número, Bairro, Cidade, Estado e CEP com suporte a edição manual.
+  - Cabeçalho compacto (`Rua, Cidade, UF • <raio> km`) que preserva o layout sem empurrar a foto de perfil.
+- **Raio de Busca Personalizável (15 km a 250 km):**
+  - Seletores interativos de distância rápida (**15 km**, **30 km**, **60 km**, **100 km**, **150 km**, **250 km**).
+  - Visualização em tempo real do **círculo de alcance** no mapa (`MapLocationPicker.native.jsx`).
+- Ao entrar, o feed filtra automaticamente as publicações pelo ponto GPS marcado e pelo raio selecionado, com opção de resetar para **Todo o Brasil**.
 - Cabeçalho dinâmico da tela de feed: centralizado no modo visitante ("Explorar") e alinhado à esquerda com avatar/notificações quando autenticado ("Início").
 - Perfis de usuário com foto de avatar, fallback elegante com inicial do nome e edição de localidade opcional.
 
