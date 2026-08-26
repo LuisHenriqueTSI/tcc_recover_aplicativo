@@ -34,10 +34,10 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 
 ✅ **Identidade e Apresentação Humana**
 - Nova identidade visual completa **WeFIND** com foco universal em **Animais** (cães, gatos, equinos, bovinos, aves e outros).
-- Tela de apresentação (`SobreScreen.jsx`) com abordagem humanizada, espaçamento generoso e nova seção **"Como Funciona o WeFIND"** com mockups visuais interativos (Cadastro Inteligente, Radar GPS e Chat de Conexão).
-- **Placar de Impacto Real:** Cálculo em tempo real dos reencontros do dia atual (`startOfToday`) e total acumulado diretamente do banco de dados Supabase.
-- Tela de **Finais Felizes & Impacto** otimizada para usuários logados, exibindo diretamente o mural de animais reencontrados e histórias da comunidade.
-- Atalhos diretos para acessar **"Sobre o WeFIND"** no menu do cabeçalho da Home, tela de Perfil e Configurações.
+- Tela de apresentação institucional (**"Sobre o WeFIND"** - `SobreScreen.jsx`) com abordagem humanizada, espaçamento generoso e seção **"Como Funciona o WeFIND"** com mockups visuais interativos (Cadastro Inteligente, Radar GPS e Chat de Conexão).
+- **Mural de Reencontros (`MuralReencontrosScreen.jsx`):** Tela dedicada e de carregamento instantâneo com placar comunitário em tempo real dos reencontros do dia atual (`startOfToday`), total acumulado desde o início e histórias/depoimentos enviados por tutores.
+- **Paleta de Cores Padronizada:** 100% alinhada à identidade visual WeFIND (Azul Real `#2563EB`, Verde Sucesso `#10B981`/`#16A34A`, Dourado `#FEA937` e Neutros/Ardósia), sem cores roxas.
+- Atalhos diretos para acessar **"Mural de Reencontros"** e **"Sobre o WeFIND"** no menu do perfil e configurações.
 - Telas de Login e Cadastro acolhedoras ("Bem-vindo de volta" e "Criar sua conta").
 
 ✅ **Autenticação, Notificações e WhatsApp**
