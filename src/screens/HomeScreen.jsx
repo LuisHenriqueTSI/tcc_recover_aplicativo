@@ -849,8 +849,23 @@ const HomeScreen = ({ navigation, route }) => {
       filtered = filtered.filter(item => item.owner_id === user.id);
     }
 
-    // Filtro por Localização com RAIO DE 60 KM
+    // Calcula a distância exata de cada item em relação às coordenadas do usuário (se disponíveis)
+    filtered = filtered.map(item => {
+      const itemLat = item.latitude ?? item.extra_fields?.location_details?.latitude;
+      const itemLng = item.longitude ?? item.extra_fields?.location_details?.longitude;
+      let distanceKm = null;
+      if (userCoords?.latitude && userCoords?.longitude && itemLat != null && itemLng != null) {
+        distanceKm = calculateDistanceKm(userCoords.latitude, userCoords.longitude, itemLat, itemLng);
+      }
+      return {
+        ...item,
+        _distanceKm: distanceKm,
+      };
+    });
+
+    // Filtro por Localização com RAIO DE BUSCA
     if (locationFilter && locationFilter.trim().length > 0) {
+      const maxRadius = searchRadiusKm || 60;
       const parts = locationFilter
         .split(',')
         .map(p => normalizeText(p))
@@ -868,54 +883,29 @@ const HomeScreen = ({ navigation, route }) => {
       // Identifica cidade
       const cityToken = parts.find(p => p !== stateToken);
 
-      filtered = filtered
-        .map(item => {
-          const itemLat = item.latitude ?? item.extra_fields?.location_details?.latitude;
-          const itemLng = item.longitude ?? item.extra_fields?.location_details?.longitude;
-          let distanceKm = null;
-          if (userCoords?.latitude && userCoords?.longitude && itemLat != null && itemLng != null) {
-            distanceKm = calculateDistanceKm(userCoords.latitude, userCoords.longitude, itemLat, itemLng);
-          }
-          return {
-            ...item,
-            _distanceKm: distanceKm,
-          };
-        })
-        .filter(item => {
-          // 1. Se possuir coordenadas do usuário e do pet: filtra rigorosamente pelo raio selecionado
-          if (item._distanceKm != null) {
-            return item._distanceKm <= (searchRadiusKm || 60);
-          }
-
-          // 2. Se o pet não possuir coordenadas gravadas: fallback textual para a mesma cidade/estado
-          const rawItemCity = item.city || item.extra_fields?.location_details?.city || '';
-          const rawItemState = item.state || item.extra_fields?.location_details?.state || '';
-
-          const itemCityNorm = normalizeText(rawItemCity);
-          const itemStateNorm = normalizeText(rawItemState);
-          const itemStateUf = (
-            states.find(uf => normalizeText(uf) === itemStateNorm) ||
-            normalizedRegionToUf[itemStateNorm] ||
-            rawItemState
-          ).toUpperCase();
-
-          const matchesCity = !cityToken || itemCityNorm.includes(cityToken) || cityToken.includes(itemCityNorm);
-          const matchesState = !targetUf || itemStateUf === targetUf;
-
-          return matchesCity && matchesState;
-        });
-
-      // Ordenar por proximidade quando houver cálculo de distância
-      filtered.sort((a, b) => {
-        if (a._distanceKm != null && b._distanceKm != null) {
-          return a._distanceKm - b._distanceKm;
+      filtered = filtered.filter(item => {
+        // 1. Se possuir coordenadas: filtra estritamente pelo raio selecionado
+        if (item._distanceKm != null) {
+          return item._distanceKm <= maxRadius;
         }
-        if (a._distanceKm != null) return -1;
-        if (b._distanceKm != null) return 1;
-        return 0;
+
+        // 2. Se o pet não possuir coordenadas gravadas: fallback textual para a mesma cidade/estado
+        const rawItemCity = item.city || item.extra_fields?.location_details?.city || '';
+        const rawItemState = item.state || item.extra_fields?.location_details?.state || '';
+
+        const itemCityNorm = normalizeText(rawItemCity);
+        const itemStateNorm = normalizeText(rawItemState);
+        const itemStateUf = (
+          states.find(uf => normalizeText(uf) === itemStateNorm) ||
+          normalizedRegionToUf[itemStateNorm] ||
+          rawItemState
+        ).toUpperCase();
+
+        const matchesCity = !cityToken || itemCityNorm.includes(cityToken) || cityToken.includes(itemCityNorm);
+        const matchesState = !targetUf || itemStateUf === targetUf;
+
+        return matchesCity && matchesState;
       });
-    } else {
-      filtered = filtered.map(item => ({ ...item, _distanceKm: null }));
     }
 
     // Filtro por termo de busca
@@ -945,11 +935,41 @@ const HomeScreen = ({ navigation, route }) => {
       });
     }
 
+    // ORDENAÇÃO DEFINITIVA: MAIS PRÓXIMOS EM ORDEM CRESCENTE DE DISTÂNCIA
+    // 1. Menor distância em KM sempre no topo (ordem crescente: 0.1km, 0.5km, 1.2km, 8km...)
+    // 2. Empate ou sem coordenadas: itens mais recentes (created_at decrescente)
+    filtered.sort((a, b) => {
+      const aDist = a._distanceKm;
+      const bDist = b._distanceKm;
+
+      if (aDist != null && bDist != null) {
+        if (Math.abs(aDist - bDist) > 0.05) {
+          return aDist - bDist; // Menor distância sempre no topo
+        }
+      } else if (aDist != null) {
+        return -1;
+      } else if (bDist != null) {
+        return 1;
+      }
+
+      // Desempate por data mais recente
+      const aDate = new Date(a.created_at || 0).getTime();
+      const bDate = new Date(b.created_at || 0).getTime();
+      return bDate - aDate;
+    });
+
     console.log('[HomeScreen] Itens após filtros:', filtered.length);
     setFilteredItems(filtered);
     setExpandedItem(null);
     setExpandedItemDetails(null);
   };
+
+  // Re-aplica filtros e ordenação por proximidade sempre que as coordenadas mudarem
+  useEffect(() => {
+    if (items && items.length > 0) {
+      applyFilters(items);
+    }
+  }, [userCoords, searchRadiusKm]);
 
   useEffect(() => {
     loadItems();

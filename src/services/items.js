@@ -624,11 +624,6 @@ export const listItems = async (filters = {}) => {
     const sortedItems = visibleItems
       .map(item => ({ ...item, renewalInfo: getRenewalInfo(item) }))
       .sort((a, b) => {
-        const aNeedsAttention = a.renewalInfo?.needsRenewal ? 1 : 0;
-        const bNeedsAttention = b.renewalInfo?.needsRenewal ? 1 : 0;
-        if (aNeedsAttention !== bNeedsAttention) {
-          return bNeedsAttention - aNeedsAttention;
-        }
         const aDate = new Date(a.created_at || 0).getTime();
         const bDate = new Date(b.created_at || 0).getTime();
         return bDate - aDate;
