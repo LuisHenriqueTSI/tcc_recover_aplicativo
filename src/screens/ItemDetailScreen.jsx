@@ -1084,21 +1084,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
 
-
-        {/* Contato Rápido */}
-        {owner && owner.phone && (
-          <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
-            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937', marginBottom: 10 }}>Contato Rápido</Text>
-            <TouchableOpacity
-              style={{ backgroundColor: '#3B82F6', borderRadius: 8, paddingVertical: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}
-              onPress={() => Linking.openURL(`tel:${String(owner.phone).replace(/[^0-9+]/g, '')}`)}
-            >
-              <MaterialIcons name="call" size={20} color="#fff" />
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16, marginLeft: 8 }}>Ligar para {owner.name}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
         {/* Comentários */}
         <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
