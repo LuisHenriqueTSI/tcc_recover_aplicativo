@@ -715,11 +715,16 @@ const HomeScreen = ({ navigation, route }) => {
 
   const handleReportSighting = () => {
     if (!user) {
-      alert('Faça login para reportar avistamentos');
-      navigation.navigate('Login');
+      Alert.alert(
+        'Login necessário',
+        'Entre ou crie uma conta para compartilhar informações sobre o pet.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+        ]
+      );
       return;
     }
-    // TODO: Implement report sighting flow
   };
 
   const handleEditItem = (item) => {
@@ -1282,14 +1287,6 @@ const HomeScreen = ({ navigation, route }) => {
             handleEditItem={handleEditItem}
             handleDeleteItem={handleDeleteItem}
             onPress={() => {
-              if (!user) {
-                // Corrigido: nunca retorna alert() no JSX, apenas executa efeito colateral
-                Alert.alert('Atenção', 'Faça login para ver os detalhes do pet');
-                navigation.navigate('Login', {
-                  redirectAfterLogin: null,
-                });
-                return;
-              }
               navigation.navigate('ItemDetail', { itemId: item.id });
             }}
           />

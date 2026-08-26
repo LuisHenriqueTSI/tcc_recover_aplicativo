@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { TouchableOpacity, Text, View } from 'react-native';
+import { TouchableOpacity, Text, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -507,7 +507,15 @@ const RootNavigator = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return null; // or a splash screen
+    return (
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+        <Image
+          source={require('../assets/logo_wefind.png')}
+          style={{ width: 160, height: 160 }}
+          resizeMode="contain"
+        />
+      </View>
+    );
   }
 
   // If user is authenticated, show full app with all features
@@ -515,8 +523,8 @@ const RootNavigator = () => {
     return <MainStack />;
   }
 
-    // If not authenticated, show public app (can view items but limited features)
-    return <PublicStack />;
+  // If not authenticated, show public app (can view items but limited features)
+  return <PublicStack />;
 };
 
 export default RootNavigator;

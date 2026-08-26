@@ -41,6 +41,10 @@ yarn-error.*
 supabase/.temp/
 .temp/
 
+# Astah lock files
+*.asta.lock
+
 # generated native folders
 /ios
 /android
+

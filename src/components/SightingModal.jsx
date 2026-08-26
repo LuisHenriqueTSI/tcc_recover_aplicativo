@@ -115,8 +115,8 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
                   <MaterialIcons name="visibility" size={20} color="#2563EB" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.title}>Informar Avistamento</Text>
-                  <Text style={styles.subtitle}>Ajude o tutor informando onde o pet foi visto</Text>
+                  <Text style={styles.title}>Compartilhar Informação</Text>
+                  <Text style={styles.subtitle}>Ajude o tutor com detalhes ou pistas sobre o pet</Text>
                 </View>
               </View>
               <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
@@ -126,7 +126,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
               {/* Campo de Descrição */}
-              <Text style={styles.inputLabel}>Detalhes do avistamento *</Text>
+              <Text style={styles.inputLabel}>Detalhes e Informações *</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
                 placeholder="Ex: Vi o pet correndo na calçada em direção ao parque..."
@@ -179,7 +179,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
                 />
               </View>
 
-              {/* Foto do Avistamento */}
+              {/* Foto da Informação */}
               <Text style={styles.inputLabel}>Foto do pet no local (opcional)</Text>
               {photoUrl ? (
                 <View style={styles.photoContainer}>
@@ -195,7 +195,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
                 <TouchableOpacity onPress={handlePickImage} style={styles.uploadBox} activeOpacity={0.7}>
                   <Feather name="camera" size={22} color="#2563EB" />
                   <Text style={styles.uploadText}>
-                    {uploading ? 'Carregando foto...' : 'Adicionar foto do avistamento'}
+                    {uploading ? 'Carregando foto...' : 'Adicionar foto da informação'}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -258,7 +258,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
             <View style={styles.actions}>
               <Button title="Cancelar" onPress={handleClose} variant="secondary" style={styles.button} />
               <Button
-                title={loading ? 'Enviando...' : 'Enviar Avistamento'}
+                title={loading ? 'Enviando...' : 'Enviar Informação'}
                 onPress={handleSend}
                 disabled={loading || !description.trim()}
                 style={styles.button}

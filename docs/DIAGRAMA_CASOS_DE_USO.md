@@ -9,7 +9,7 @@ Este documento contém a modelagem formal dos **Casos de Uso (UML Use Case Diagr
 | Ator | Tipo | Descrição |
 |---|---|---|
 | 👤 **Visitante** | Humano (Primário) | Usuário não autenticado que acessa o app para buscar e visualizar pets perdidos/encontrados. |
-| 🧑‍💼 **Usuário Autenticado (Tutor / Cidadão)** | Humano (Primário) | Usuário com conta verificada via WhatsApp que publica pets, informa avistamentos e conversa no chat. |
+| 🧑‍💼 **Usuário Autenticado (Tutor / Cidadão)** | Humano (Primário) | Usuário com conta verificada via WhatsApp que publica pets, compartilha informações e conversa no chat. |
 | 🛡️ **Administrador** | Humano (Secundário) | Responsável pela moderação de anúncios, análise de denúncias e métricas da plataforma. |
 | 🤖 **Serviço WhatsApp (Evolution API)** | Sistema Externo | Gateway de mensageria para envio de códigos 2FA e alertas em tempo real. |
 | 🗺️ **Serviço de Mapas (GPS / Geocoding)** | Sistema Externo | API de geolocalização, mapas interativos e geocodificação reversa de endereços. |
@@ -41,8 +41,8 @@ flowchart LR
         UC_CropPhotos(["Ajustar e Cortar Fotos"])
         UC_ThirdParty(["Informar Tutor Terceiro"])
 
-        %% Módulo de Avistamentos e Interação
-        UC_MaintainSightings(["Manter Avistamentos"])
+        %% Módulo de Informações e Interação
+        UC_MaintainSightings(["Manter Informações do Pet"])
         UC_PickMapLocation(["Selecionar Ponto no Mapa"])
         UC_NotifyOwnerWhatsApp(["Notificar Tutor no WhatsApp"])
         
@@ -113,19 +113,19 @@ flowchart LR
 
 ---
 
-### **3. Informar Avistamento com Geolocalização**
+### **3. Compartilhar Informações do Pet com Geolocalização**
 * **Ator Principal:** Usuário Autenticado.
 * **Atores Secundários:** Serviço de Mapas (GPS), Evolution API.
 * **Pré-condição:** O pet deve estar com status "Perdido".
 * **Fluxo Principal:**
-  1. O usuário acessa a publicação do pet e clica em *"Informar Avistamento"*.
-  2. O usuário descreve as condições em que o pet foi avistado.
+  1. O usuário acessa a publicação do pet e clica em *"Compartilhar Informação"*.
+  2. O usuário descreve detalhes, pistas e observações sobre onde o pet foi visto.
   3. O usuário toca em *"Abrir mapa interativo"*, seleciona o ponto GPS e o endereço é preenchido via geocodificação reversa (`«include» Selecionar Ponto no Mapa`).
   4. *(Opcional)* O usuário anexa uma foto do pet no local e contatos para retorno.
-  5. O usuário clica em *"Enviar Avistamento"*.
+  5. O usuário clica em *"Enviar Informação"*.
   6. O sistema salva o registro na tabela `sightings`.
   7. Se o tutor tiver notificações ativas, o sistema dispara uma notificação instantânea no WhatsApp do tutor contendo o link do Google Maps para traçar a rota até o local (`«extend» Notificar Tutor no WhatsApp`).
-* **Pós-condição:** Avistamento publicado nos comentários e tutor alertado via WhatsApp.
+* **Pós-condição:** Informações publicadas nos comentários e tutor alertado via WhatsApp.
 
 ---
 
@@ -171,7 +171,7 @@ rectangle "Aplicativo WeFIND" {
   usecase "Publicar para Terceiro" as UC9
   usecase "Gerar e Compartilhar Flyer" as UC10
   usecase "Gerenciar Meus Anúncios" as UC11
-  usecase "Informar Avistamento" as UC12
+  usecase "Compartilhar Informações do Pet" as UC12
   usecase "Selecionar Ponto no Mapa" as UC13
   usecase "Notificar Tutor no WhatsApp" as UC14
   usecase "Conversar via Chat" as UC15

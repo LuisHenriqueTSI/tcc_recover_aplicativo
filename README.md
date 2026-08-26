@@ -22,7 +22,7 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 ✅ **Autenticação, Notificações e WhatsApp**
 - Registro e login direto e simplificado com nome, email, WhatsApp e senha (sem exigência de localização no cadastro).
 - **Verificação em 2 etapas por WhatsApp:** Envio do código de 6 dígitos via Evolution API / Supabase Functions com opção de reenvio com timer de recarga e edição rápida de dados.
-- **Notificações e Alertas por WhatsApp:** Caixa de consentimento no cadastro (`whatsapp_notifications_enabled`), controle de preferências na tela de configurações (`ConfigScreen.jsx`), botão de disparo de teste instantâneo e alertas em tempo real para os tutores sobre **novos avistamentos de pets** via Evolution API.
+- **Notificações e Alertas por WhatsApp:** Caixa de consentimento no cadastro (`whatsapp_notifications_enabled`), controle de preferências na tela de configurações (`ConfigScreen.jsx`), botão de disparo de teste instantâneo e alertas em tempo real para os tutores sobre **novas informações de pets** via Evolution API.
 - Ao entrar, o feed exibe automaticamente publicações de **Todo o Brasil**, com opção de filtrar por estado, cidade ou mapa no cabeçalho.
 - Rolagem inteligente e fluida com `KeyboardAwareScrollView` prevenindo sobreposição do teclado virtual nos formulários.
 - Perfis de usuário com foto de avatar e edição de localidade opcional.
@@ -34,13 +34,13 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - Adição de até 6 fotos com enquadramento/corte nativo e botão "✂️ Ajustar" por miniatura para reenquadrar antes de publicar.
 - Carrossel interativo de fotos nos cards do feed (`HomeScreen`) com pontos de paginação e contador de fotos (`1/3`).
 - Carrossel de fotos de alta resolução nos detalhes do pet (`ItemDetailScreen`) com navegação paginada e modal de ampliação em tela cheia.
-- **Avistamentos e Comentários com Mapa Interativo:** Modal de novo avistamento com seleção de localização por GPS/Mapa interativo em tela cheia, geocodificação reversa de endereço, pré-visualização de foto, contatos opcionais e envio automático de notificação no WhatsApp do tutor com link traçado do Google Maps.
+- **Compartilhamento de Informações e Comentários com Mapa Interativo:** Modal de novas informações com seleção de localização por GPS/Mapa interativo em tela cheia, geocodificação reversa de endereço, pré-visualização de foto, contatos opcionais e envio automático de notificação no WhatsApp do tutor com link traçado do Google Maps.
 - Filtros rápidos por status, espécie, sexo e localização.
 - Seletor de localização no cabeçalho com botão destacado e ícone de edição interativo.
 - Geocodificação reversa com edição completa de endereço (rua, número da casa, bairro, cidade, estado).
 - Publicação em nome de terceiros (amigo, parente, vizinho, ONG) com campos dedicados para nome e telefone direto do tutor/responsável.
 - Recompensas opcionais e gamificação.
-- Reivindicação e histórico de avistamentos.
+- Reivindicação e histórico de informações da comunidade.
 
 ✅ **Compartilhamento Visual para Redes Sociais**
 - Geração automática de cartaz visual (flyer) em alta resolução do pet com faixa de alerta colorida (Perdido/Encontrado), foto principal, características, localização contextual, data do ocorrido, recompensa e telefone/WhatsApp de contato direto (com suporte a tutor terceiro).
@@ -52,9 +52,9 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - Notificações de novas mensagens e propostas.
 - Histórico de conversas por pet.
 
-✅ **Avistamentos**
-- Reportar avistamentos de pets com fotos e coordenadas.
-- Notificações automáticas ao tutor.
+✅ **Informações e Pistas da Comunidade**
+- Compartilhar informações sobre pets com fotos e coordenadas GPS.
+- Notificações automáticas ao tutor via WhatsApp.
 
 ✅ **Perfil e Painel**
 - Editar informações pessoais (nome, telefone, cidade, estado).

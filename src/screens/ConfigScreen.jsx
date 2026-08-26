@@ -120,7 +120,7 @@ const ConfigScreen = ({ navigation }) => {
       <View style={styles.panel}>
         <SettingRow icon="bell" title="Notificações no App" description="Receber novidades e mensagens internas" right={<Switch value={preferences.notifications} onValueChange={() => togglePreference('notifications')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.notifications ? '#2563EB' : '#F8FAFC'} />} />
         <View style={styles.divider} />
-        <SettingRow icon="message-circle" title="Notificações por WhatsApp" description="Receber avisos e avistamentos de pets no seu WhatsApp" right={<Switch value={preferences.whatsappNotifications} onValueChange={() => togglePreference('whatsappNotifications')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.whatsappNotifications ? '#2563EB' : '#F8FAFC'} />} />
+        <SettingRow icon="message-circle" title="Notificações por WhatsApp" description="Receber avisos e novas informações de pets no seu WhatsApp" right={<Switch value={preferences.whatsappNotifications} onValueChange={() => togglePreference('whatsappNotifications')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.whatsappNotifications ? '#2563EB' : '#F8FAFC'} />} />
         <View style={styles.divider} />
         <SettingRow icon="clock" title="Lembretes de publicações" description="Avisar quando uma publicação precisar de renovação" right={<Switch value={preferences.reminders} onValueChange={() => togglePreference('reminders')} trackColor={{ false: '#DBEAFE', true: '#BFDBFE' }} thumbColor={preferences.reminders ? '#2563EB' : '#F8FAFC'} />} />
         <View style={styles.divider} />

@@ -26,8 +26,8 @@ Este documento contém toda a estrutura do quadro de gestão do **WeFIND** para 
 ### 1️⃣ Lista: ✅ Concluído (Done)
 ```text
 🐾 Verificação em 2 Etapas por WhatsApp no Cadastro (Evolution API + Timer de 60s)
-🗺️ Mapa Interativo em Tela Cheia no Modal de Novos Avistamentos
-📲 Notificação de Avistamento no WhatsApp com Rota do Google Maps
+🗺️ Mapa Interativo em Tela Cheia no Modal de Novas Informações
+📲 Notificação de Novas Informações no WhatsApp com Rota do Google Maps
 🎨 Geração e Compartilhamento de Flyer/Cartaz para WhatsApp e Instagram
 ✂️ Upload e Corte Nativo Individual de até 6 Fotos por Pet
 🇧🇷 Feed Nacional com Busca por Estados (UF), Cidades (IBGE) e Filtro de Mapa

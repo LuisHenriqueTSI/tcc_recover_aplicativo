@@ -12,6 +12,7 @@ import {
   Modal,
   TextInput,
   Dimensions,
+  Linking,
 } from 'react-native';
 import { MaterialIcons, FontAwesome, FontAwesome5, Entypo } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -381,8 +382,14 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleSendMessage = () => {
     if (!user) {
-      Alert.alert('Login Necessário', 'Faça login para enviar mensagens');
-      navigation.navigate('Login');
+      Alert.alert(
+        'Login necessário',
+        'Entre ou crie uma conta para enviar mensagens ao tutor.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+        ]
+      );
       return;
     }
     if (!item) return;
@@ -417,14 +424,49 @@ const ItemDetailScreen = ({ route, navigation }) => {
     });
   };
 
-
   const handleReportSighting = () => {
     if (!user) {
-      Alert.alert('Login Necessário', 'Faça login para comentar');
-      navigation.navigate('Login');
+      Alert.alert(
+        'Login necessário',
+        'Entre ou crie uma conta para adicionar uma informação ou comentário.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+        ]
+      );
       return;
     }
     setSightingModalVisible(true);
+  };
+
+  const handleClaimPet = () => {
+    if (!user) {
+      Alert.alert(
+        'Login necessário',
+        'Entre ou crie uma conta para reivindicar a posse deste pet.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+        ]
+      );
+      return;
+    }
+    setClaimModalVisible(true);
+  };
+
+  const handleOpenReport = () => {
+    if (!user) {
+      Alert.alert(
+        'Login necessário',
+        'Entre ou crie uma conta para denunciar uma publicação.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+        ]
+      );
+      return;
+    }
+    setReportModalVisible(true);
   };
 
   const handleSubmitReport = async () => {
@@ -470,18 +512,18 @@ const ItemDetailScreen = ({ route, navigation }) => {
         contact_info: form.contact_info,
         photo_url: form.photo_url,
       });
-      console.log('[ItemDetailScreen.handleSubmitSighting] ✓ Avistamento criado no banco:', created);
+      console.log('[ItemDetailScreen.handleSubmitSighting] ✓ Informação criada no banco:', created);
       setSightingModalVisible(false);
       loadSightings();
 
       console.log('[ItemDetailScreen.handleSubmitSighting] item atual:', { itemId, owner_id: item?.owner_id, title: item?.title });
 
-      // Notifica o tutor do pet sobre o novo avistamento (inclusive por WhatsApp se opt-in)
+      // Notifica o tutor do pet sobre a nova informação (inclusive por WhatsApp se opt-in)
       if (item?.owner_id) {
         try {
           const { createNotification } = require('../services/notifications');
           const commenterName = userProfile?.name || user?.user_metadata?.name || 'Um membro da comunidade';
-          console.log('[ItemDetailScreen] Disparando notificação de avistamento para o tutor:', { ownerId: item.owner_id, commenter: commenterName });
+          console.log('[ItemDetailScreen] Disparando notificação de informação para o tutor:', { ownerId: item.owner_id, commenter: commenterName });
 
           let mapsLink = '';
           if (form.coordinate?.latitude && form.coordinate?.longitude) {
@@ -490,7 +532,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
             mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(form.location)}`;
           }
 
-          let notificationMessage = `${commenterName} informou ter avistado o pet em: ${form.location || 'Local informado'}.\n\nDetalhes: "${form.description || ''}"`;
+          let notificationMessage = `${commenterName} compartilhou uma nova informação sobre o pet em: ${form.location || 'Local informado'}.\n\nDetalhes: "${form.description || ''}"`;
 
           if (mapsLink) {
             notificationMessage += `\n\n📍 *Ver localização no Google Maps:*\n${mapsLink}`;
@@ -501,22 +543,22 @@ const ItemDetailScreen = ({ route, navigation }) => {
           const notifRes = await createNotification({
             user_id: item.owner_id,
             type: 'sighting',
-            title: `🐾 Novo avistamento de ${item.title || 'seu pet'}!`,
+            title: `🐾 Nova informação sobre ${item.title || 'seu pet'}!`,
             message: notificationMessage,
             item_id: item.id,
           });
           console.log('[ItemDetailScreen] Resultado da createNotification:', notifRes);
         } catch (notifErr) {
-          console.error('[ItemDetailScreen] Falha ao enviar notificação de avistamento:', notifErr);
+          console.error('[ItemDetailScreen] Falha ao enviar notificação de informação:', notifErr);
         }
       } else {
         console.warn('[ItemDetailScreen] ⚠️ item.owner_id não encontrado!', item);
       }
 
-      Alert.alert('Sucesso', 'Comentário e avistamento enviados!');
+      Alert.alert('Sucesso', 'Informações compartilhadas com sucesso!');
     } catch (e) {
       console.error('[ItemDetailScreen.handleSubmitSighting] ❌ Erro:', e);
-      Alert.alert('Erro', 'Não foi possível enviar o comentário.');
+      Alert.alert('Erro', 'Não foi possível enviar as informações.');
     } finally {
       setSightingLoading(false);
     }
@@ -898,7 +940,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 {shouldShowClaimButton && (
                   <TouchableOpacity
                     style={{ borderWidth: 2, borderColor: '#2563EB', borderRadius: 8, paddingVertical: 12, alignItems: 'center', backgroundColor: '#EFF6FF' }}
-                    onPress={() => setClaimModalVisible(true)}
+                    onPress={handleClaimPet}
                   >
                     <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 15 }}>Esse é meu!</Text>
                   </TouchableOpacity>
@@ -924,7 +966,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
             {!isOwner && !isAdmin && (
               <TouchableOpacity
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 14, paddingVertical: 8 }}
-                onPress={() => setReportModalVisible(true)}
+                onPress={handleOpenReport}
               >
                 <MaterialIcons name="flag" size={17} color="#B91C1C" />
                 <Text style={{ color: '#B91C1C', fontWeight: '700', fontSize: 13, marginLeft: 6 }}>Denunciar publicação</Text>
@@ -962,7 +1004,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
         {owner && owner.phone && (
           <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
             <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937', marginBottom: 10 }}>Contato Rápido</Text>
-            <TouchableOpacity style={{ backgroundColor: '#3B82F6', borderRadius: 8, paddingVertical: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }} onPress={() => {}}>
+            <TouchableOpacity
+              style={{ backgroundColor: '#3B82F6', borderRadius: 8, paddingVertical: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}
+              onPress={() => Linking.openURL(`tel:${String(owner.phone).replace(/[^0-9+]/g, '')}`)}
+            >
               <MaterialIcons name="call" size={20} color="#fff" />
               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16, marginLeft: 8 }}>Ligar para {owner.name}</Text>
             </TouchableOpacity>

@@ -24,21 +24,21 @@ Organize o diagrama com:
 3. Fronteira do Sistema: "Aplicativo WeFIND" contendo os seguintes casos de uso em elipses:
    - Módulo Autenticação: "Criar Conta", "Verificar Conta por WhatsApp", "Efetuar Login", "Gerenciar Perfil e Notificações"
    - Módulo Pets: "Explorar e Filtrar Pets", "Visualizar Detalhes do Pet", "Publicar Pet Perdido/Encontrado", "Ajustar e Cortar Fotos", "Publicar para Tutor Terceiro", "Gerar e Compartilhar Flyer", "Gerenciar Meus Anúncios"
-   - Módulo Interação: "Informar Avistamento", "Selecionar Ponto no Mapa", "Notificar Tutor no WhatsApp", "Conversar via Chat em Tempo Real"
+   - Módulo Interação: "Compartilhar Informações do Pet", "Selecionar Ponto no Mapa", "Notificar Tutor no WhatsApp", "Conversar via Chat em Tempo Real"
    - Módulo Moderação: "Moderar Publicações", "Analisar Denúncias"
 
 4. Relacionamentos e Associações:
    - Visitante conecta em: "Criar Conta", "Efetuar Login", "Explorar e Filtrar Pets", "Visualizar Detalhes do Pet", "Gerar e Compartilhar Flyer"
-   - Usuário Autenticado conecta em: "Publicar Pet Perdido/Encontrado", "Informar Avistamento", "Conversar via Chat em Tempo Real", "Gerenciar Meus Anúncios", "Gerenciar Perfil e Notificações"
+   - Usuário Autenticado conecta em: "Publicar Pet Perdido/Encontrado", "Compartilhar Informações do Pet", "Conversar via Chat em Tempo Real", "Gerenciar Meus Anúncios", "Gerenciar Perfil e Notificações"
    - Administrador conecta em: "Moderar Publicações", "Analisar Denúncias"
 
 5. Relacionamentos de Inclusão e Extensão:
    - "Criar Conta" tem <<include>> para "Verificar Conta por WhatsApp"
    - "Publicar Pet Perdido/Encontrado" tem <<include>> para "Ajustar e Cortar Fotos"
    - "Publicar Pet Perdido/Encontrado" tem <<include>> para "Selecionar Ponto no Mapa"
-   - "Informar Avistamento" tem <<include>> para "Selecionar Ponto no Mapa"
+   - "Compartilhar Informações do Pet" tem <<include>> para "Selecionar Ponto no Mapa"
    - "Publicar para Tutor Terceiro" tem <<extend>> para "Publicar Pet Perdido/Encontrado"
-   - "Notificar Tutor no WhatsApp" tem <<extend>> para "Informar Avistamento"
+   - "Notificar Tutor no WhatsApp" tem <<extend>> para "Compartilhar Informações do Pet"
    - "Gerar e Compartilhar Flyer" tem <<extend>> para "Visualizar Detalhes do Pet"
 
 6. Integrações com Sistemas Externos:
@@ -85,7 +85,7 @@ rectangle "Aplicativo WeFIND" {
   usecase "Publicar para Tutor Terceiro" as UC9
   usecase "Gerar e Compartilhar Flyer" as UC10
   usecase "Gerenciar Meus Anúncios" as UC11
-  usecase "Informar Avistamento" as UC12
+  usecase "Compartilhar Informações do Pet" as UC12
   usecase "Selecionar Ponto no Mapa" as UC13
   usecase "Notificar Tutor no WhatsApp" as UC14
   usecase "Conversar via Chat em Tempo Real" as UC15
