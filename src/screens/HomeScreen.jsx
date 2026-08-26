@@ -944,19 +944,6 @@ const HomeScreen = ({ navigation, route }) => {
                 <Text style={styles.profileMenuItemText}>Perfil</Text>
                 <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowProfileMenu(false);
-                  navigation.navigate('Sobre', { forceFullView: true });
-                }}
-                style={styles.profileMenuItem}
-              >
-                <View style={styles.profileMenuIcon}>
-                  <MaterialIcons name="info-outline" size={18} color="#2563EB" />
-                </View>
-                <Text style={styles.profileMenuItemText}>Sobre o WeFIND</Text>
-                <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
               <View style={styles.profileMenuDivider} />
               <TouchableOpacity
                 onPress={() => {
