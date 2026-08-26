@@ -515,6 +515,31 @@ const HomeScreen = ({ navigation, route }) => {
     setShowProfileLocationModal(false);
   };
 
+  // Aplicar filtro de localidade / bairro
+  const handleApplyLocation = async () => {
+    setLocationFilterTouched(true);
+    setEditLocationModal(false);
+    setLocationFilter(`${editCity}, ${editState}${editNeighborhood ? ', ' + editNeighborhood : ''}`);
+
+    if (editCity && editState) {
+      const coords = await geocodeCityState(editCity, editState);
+      if (coords) setUserCoords(coords);
+    }
+
+    try {
+      if (user && user.id) {
+        await userService.updateProfile(user.id, {
+          neighborhood: editNeighborhood,
+          city: editCity,
+          state: editState,
+        });
+        if (typeof refreshProfile === 'function') refreshProfile();
+      }
+    } catch (e) {
+      console.log('[HomeScreen] Erro ao atualizar localidade no perfil:', e.message);
+    }
+  };
+
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
