@@ -9,12 +9,17 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
+import * as storiesService from '../services/stories';
 import OptimizedImage from '../components/OptimizedImage';
 
 const DEFAULT_FEATURED_STORIES = [
@@ -48,8 +53,8 @@ const DEFAULT_FEATURED_STORIES = [
 ];
 
 const SobreScreen = ({ navigation }) => {
-  const { user } = useAuth();
-  const [recoveredPets, setRecoveredPets] = useState([]);
+  const { user, userProfile } = useAuth();
+  const [userStories, setUserStories] = useState([]);
   const [statistics, setStatistics] = useState({
     resolved_count: 0,
     lost_count: 0,
@@ -59,13 +64,25 @@ const SobreScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Estado do Modal de Envio de História
+  const [showStoryModal, setShowStoryModal] = useState(false);
+  const [petNameInput, setPetNameInput] = useState('');
+  const [authorInput, setAuthorInput] = useState(userProfile?.name || '');
+  const [locationInput, setLocationInput] = useState(
+    [userProfile?.city, userProfile?.state].filter(Boolean).join(' - ') || ''
+  );
+  const [testimonialInput, setTestimonialInput] = useState('');
+  const [ratingInput, setRatingInput] = useState(5);
+  const [photoUriInput, setPhotoUriInput] = useState(null);
+  const [submittingStory, setSubmittingStory] = useState(false);
+
   const loadData = useCallback(async () => {
     try {
-      const [recoveredList, stats] = await Promise.all([
-        itemsService.listRecoveredPets(10),
+      const [storiesList, stats] = await Promise.all([
+        storiesService.listSuccessStories(),
         itemsService.getCommunityImpactStats(),
       ]);
-      setRecoveredPets(recoveredList || []);
+      setUserStories(storiesList || []);
       if (stats) setStatistics(stats);
     } catch (error) {
       console.warn('[SobreScreen] Erro ao carregar dados:', error.message);
@@ -78,6 +95,15 @@ const SobreScreen = ({ navigation }) => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (userProfile) {
+      if (userProfile.name && !authorInput) setAuthorInput(userProfile.name);
+      if (userProfile.city && userProfile.state && !locationInput) {
+        setLocationInput(`${userProfile.city} - ${userProfile.state}`);
+      }
+    }
+  }, [userProfile]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -99,27 +125,68 @@ const SobreScreen = ({ navigation }) => {
     navigation.navigate('Register');
   };
 
-  // Monta a lista combinada de histórias (do banco de dados + histórias modelo)
-  const dbStories = (recoveredPets || []).map((pet) => {
-    const photoUrl =
-      pet.item_photos && pet.item_photos.length > 0 ? pet.item_photos[0].url : null;
-    return {
-      id: `db-${pet.id}`,
-      itemId: pet.id,
-      petName: pet.title || 'Pet Amado',
-      author: pet.owner_name || 'Tutor',
-      rating: 5,
-      location: [pet.city, pet.state].filter(Boolean).join(' - ') || 'Brasil',
-      photoUrl,
-      testimonial:
-        pet.extra_fields?.resolution_notes ||
-        pet.extra_fields?.testimonial ||
-        pet.description ||
-        'Reencontro comemorado com sucesso! Agradecemos o carinho e o apoio de todos que compartilharam e enviaram pistas.',
-    };
-  });
+  const handlePickPhoto = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permissão necessária', 'Permita o acesso à galeria para anexar a foto do reencontro.');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets?.[0]?.uri) {
+        setPhotoUriInput(result.assets[0].uri);
+      }
+    } catch (e) {
+      console.log('[SobreScreen] Erro ao selecionar foto:', e.message);
+    }
+  };
 
-  const allStories = dbStories.length > 0 ? [...dbStories, ...DEFAULT_FEATURED_STORIES] : DEFAULT_FEATURED_STORIES;
+  const handleSubmitStory = async () => {
+    if (!petNameInput.trim()) {
+      Alert.alert('Atenção', 'Informe o nome do animalzinho reencontrado.');
+      return;
+    }
+    if (!authorInput.trim()) {
+      Alert.alert('Atenção', 'Informe seu nome ou do tutor.');
+      return;
+    }
+    if (!testimonialInput.trim()) {
+      Alert.alert('Atenção', 'Escreva seu relato ou depoimento sobre o reencontro.');
+      return;
+    }
+
+    setSubmittingStory(true);
+    try {
+      await storiesService.submitSuccessStory({
+        petName: petNameInput.trim(),
+        author: authorInput.trim(),
+        location: locationInput.trim() || 'Brasil',
+        testimonial: testimonialInput.trim(),
+        photoUrl: photoUriInput,
+        rating: ratingInput,
+        userId: user?.id || null,
+      });
+
+      Alert.alert('História Publicada! 🎉', 'Seu relato de reencontro foi publicado e já está visível para toda a comunidade.');
+      setShowStoryModal(false);
+      setPetNameInput('');
+      setTestimonialInput('');
+      setPhotoUriInput(null);
+      loadData();
+    } catch (error) {
+      Alert.alert('Erro ao enviar', 'Não foi possível salvar seu relato. Tente novamente.');
+    } finally {
+      setSubmittingStory(false);
+    }
+  };
+
+  // Histórias exibidas: somente histórias explicitamente enviadas no app (com fallback modelo se vazio)
+  const displayedStories = userStories.length > 0 ? userStories : DEFAULT_FEATURED_STORIES;
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
@@ -198,12 +265,20 @@ const SobreScreen = ({ navigation }) => {
           )}
         </View>
 
-        {/* Seção: Histórias em Destaque (Card Fiel à Referência) */}
+        {/* Seção: Histórias em Destaque (Apenas histórias enviadas no app) */}
         <View style={styles.featuredSection}>
           <View style={styles.featuredSectionHeader}>
-            <Text style={styles.featuredSectionTitle}>Histórias em destaque</Text>
-            <TouchableOpacity onPress={handleStart} activeOpacity={0.7}>
-              <Text style={styles.seeMoreText}>Ver mais</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.featuredSectionTitle}>Histórias em destaque</Text>
+              <Text style={styles.featuredSectionSubtitle}>Relatos enviados por tutores que recuperaram seus pets</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.sendStoryButton}
+              onPress={() => setShowStoryModal(true)}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="add-comment" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
+              <Text style={styles.sendStoryButtonText}>Enviar História</Text>
             </TouchableOpacity>
           </View>
 
@@ -212,7 +287,7 @@ const SobreScreen = ({ navigation }) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.featuredScroll}
           >
-            {allStories.map((story) => (
+            {displayedStories.map((story) => (
               <TouchableOpacity
                 key={String(story.id)}
                 style={styles.storyCard}
@@ -254,7 +329,12 @@ const SobreScreen = ({ navigation }) => {
                     </Text>
                     <View style={styles.starsRow}>
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <MaterialIcons key={star} name="star" size={15} color="#F59E0B" />
+                        <MaterialIcons
+                          key={star}
+                          name="star"
+                          size={15}
+                          color={star <= story.rating ? '#F59E0B' : '#CBD5E1'}
+                        />
                       ))}
                     </View>
                   </View>
@@ -376,6 +456,138 @@ const SobreScreen = ({ navigation }) => {
           )}
         </View>
       </ScrollView>
+
+      {/* Modal: Enviar História de Reencontro */}
+      <Modal
+        visible={showStoryModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowStoryModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.modalHeader}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <MaterialIcons name="favorite" size={22} color="#059669" style={{ marginRight: 8 }} />
+                  <Text style={styles.modalTitle}>Enviar História de Reencontro</Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setShowStoryModal(false)}
+                  style={styles.modalCloseButton}
+                >
+                  <MaterialIcons name="close" size={20} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.modalSubtitle}>
+                Compartilhe a foto e o relato de como você recuperou seu animalzinho para inspirar a comunidade!
+              </Text>
+
+              {/* Foto do Reencontro */}
+              <Text style={styles.inputLabel}>Foto do Pet ou com o Tutor</Text>
+              <TouchableOpacity
+                onPress={handlePickPhoto}
+                style={styles.photoPickerBox}
+                activeOpacity={0.8}
+              >
+                {photoUriInput ? (
+                  <Image source={{ uri: photoUriInput }} style={styles.photoPickerImage} />
+                ) : (
+                  <View style={styles.photoPickerPlaceholder}>
+                    <MaterialIcons name="add-a-photo" size={28} color="#2563EB" />
+                    <Text style={styles.photoPickerText}>Toque para escolher foto</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              {/* Nome do Pet */}
+              <Text style={styles.inputLabel}>Nome do Animal</Text>
+              <TextInput
+                placeholder="Ex: Spike, Agnes, Mel..."
+                placeholderTextColor="#94A3B8"
+                value={petNameInput}
+                onChangeText={setPetNameInput}
+                style={styles.textInput}
+              />
+
+              {/* Nome do Tutor */}
+              <Text style={styles.inputLabel}>Seu Nome (Tutor)</Text>
+              <TextInput
+                placeholder="Ex: Anna, Paulo, Maria..."
+                placeholderTextColor="#94A3B8"
+                value={authorInput}
+                onChangeText={setAuthorInput}
+                style={styles.textInput}
+              />
+
+              {/* Localização */}
+              <Text style={styles.inputLabel}>Cidade - Estado</Text>
+              <TextInput
+                placeholder="Ex: Guarulhos - SP, Curitiba - PR..."
+                placeholderTextColor="#94A3B8"
+                value={locationInput}
+                onChangeText={setLocationInput}
+                style={styles.textInput}
+              />
+
+              {/* Avaliação */}
+              <Text style={styles.inputLabel}>Avaliação da Experiência</Text>
+              <View style={styles.ratingRow}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() => setRatingInput(star)}
+                    style={{ padding: 4 }}
+                  >
+                    <MaterialIcons
+                      name="star"
+                      size={28}
+                      color={star <= ratingInput ? '#F59E0B' : '#CBD5E1'}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Depoimento */}
+              <Text style={styles.inputLabel}>Relato / Depoimento do Reencontro</Text>
+              <TextInput
+                placeholder="Conte como a comunidade ou o app ajudou no reencontro do seu pet..."
+                placeholderTextColor="#94A3B8"
+                value={testimonialInput}
+                onChangeText={setTestimonialInput}
+                style={[styles.textInput, styles.textArea]}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+
+              {/* Botões do Modal */}
+              <View style={styles.modalButtonsRow}>
+                <TouchableOpacity
+                  style={styles.modalCancelButton}
+                  onPress={() => setShowStoryModal(false)}
+                  disabled={submittingStory}
+                >
+                  <Text style={styles.modalCancelText}>Cancelar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modalSubmitButton, submittingStory && { opacity: 0.7 }]}
+                  onPress={handleSubmitStory}
+                  disabled={submittingStory}
+                >
+                  {submittingStory ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.modalSubmitText}>Publicar História 🎉</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -515,19 +727,37 @@ const styles = StyleSheet.create({
   },
   featuredSectionHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     marginBottom: 14,
+    gap: 8,
   },
   featuredSectionTitle: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '800',
     color: '#0F172A',
   },
-  seeMoreText: {
-    fontSize: 13.5,
+  featuredSectionSubtitle: {
+    fontSize: 11.5,
     color: '#64748B',
-    fontWeight: '600',
+    marginTop: 2,
+  },
+  sendStoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#059669',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 10,
+    shadowColor: '#059669',
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  sendStoryButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 12,
   },
   featuredScroll: {
     gap: 14,
@@ -733,6 +963,137 @@ const styles = StyleSheet.create({
     color: '#2563EB',
     fontWeight: '600',
     textDecorationLine: 'underline',
+  },
+
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  modalContainer: {
+    width: '100%',
+    maxWidth: 420,
+    maxHeight: '90%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  modalCloseButton: {
+    padding: 6,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+  },
+  modalSubtitle: {
+    fontSize: 12.5,
+    color: '#64748B',
+    marginBottom: 16,
+    lineHeight: 18,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#334155',
+    marginBottom: 6,
+    marginTop: 4,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
+    marginBottom: 12,
+  },
+  textArea: {
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  photoPickerBox: {
+    width: '100%',
+    height: 110,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: '#93C5FD',
+    borderRadius: 14,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  photoPickerImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  photoPickerPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoPickerText: {
+    fontSize: 12.5,
+    color: '#2563EB',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    gap: 4,
+    marginBottom: 12,
+  },
+  modalButtonsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 8,
+    marginBottom: 10,
+  },
+  modalCancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  modalSubmitButton: {
+    flex: 2,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#059669',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalSubmitText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
 
