@@ -1210,40 +1210,40 @@ const HomeScreen = ({ navigation, route }) => {
             <MaterialIcons name="tune" size={21} color={showAdvancedFilters ? '#fff' : '#1E3A8A'} />
           </TouchableOpacity>
           <TouchableOpacity
-          style={[
-            styles.filterChip,
-            filters.status === 'all' && styles.filterChipActive,
-          ]}
-          onPress={() => setFilters({ ...filters, status: 'all' })}
-          activeOpacity={0.85}
-        >
-          <MaterialIcons name="layers" size={14} color={filters.status === 'all' ? '#fff' : '#1F2937'} style={{ marginRight: 4 }} />
-          <Text style={[styles.filterChipText, filters.status === 'all' && styles.filterChipTextActive]}>Todos</Text>
-        </TouchableOpacity>
+            style={[
+              styles.filterChip,
+              filters.status === 'all' && styles.filterChipActive,
+            ]}
+            onPress={() => setFilters({ ...filters, status: 'all' })}
+            activeOpacity={0.85}
+          >
+            <MaterialIcons name="grid-view" size={13.5} color={filters.status === 'all' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 4 }} />
+            <Text style={[styles.filterChipText, filters.status === 'all' && styles.filterChipTextActive]}>Todos</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
-          style={[
-            styles.filterChip,
-            filters.status === 'lost' && styles.filterChipActive,
-          ]}
-          onPress={() => setFilters({ ...filters, status: 'lost' })}
-          activeOpacity={0.85}
-        >
-          {/* Bolinha removida */}
-          <Text style={[styles.filterChipText, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
-        </TouchableOpacity>
+            style={[
+              styles.filterChip,
+              filters.status === 'lost' && styles.filterChipActive,
+            ]}
+            onPress={() => setFilters({ ...filters, status: 'lost' })}
+            activeOpacity={0.85}
+          >
+            <MaterialIcons name="priority-high" size={14} color={filters.status === 'lost' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 2 }} />
+            <Text style={[styles.filterChipText, filters.status === 'lost' && styles.filterChipTextActive]}>Perdidos</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
-          style={[
-            styles.filterChip,
-            filters.status === 'found' && styles.filterChipActive,
-          ]}
-          onPress={() => setFilters({ ...filters, status: 'found' })}
-          activeOpacity={0.85}
-        >
-          {/* Bolinha removida */}
-          <Text style={[styles.filterChipText, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
-        </TouchableOpacity>
+            style={[
+              styles.filterChip,
+              filters.status === 'found' && styles.filterChipActive,
+            ]}
+            onPress={() => setFilters({ ...filters, status: 'found' })}
+            activeOpacity={0.85}
+          >
+            <MaterialIcons name="search" size={15} color={filters.status === 'found' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 4 }} />
+            <Text style={[styles.filterChipText, filters.status === 'found' && styles.filterChipTextActive]}>Encontrados</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={[
@@ -1253,21 +1253,21 @@ const HomeScreen = ({ navigation, route }) => {
             onPress={() => setFilters({ ...filters, status: 'adoption' })}
             activeOpacity={0.85}
           >
-            <MaterialIcons name="favorite" size={14} color={filters.status === 'adoption' ? '#fff' : '#E11D48'} style={{ marginRight: 4 }} />
+            <MaterialIcons name="favorite-border" size={13.5} color={filters.status === 'adoption' ? '#FFFFFF' : '#4B5563'} style={{ marginRight: 4 }} />
             <Text style={[styles.filterChipText, filters.status === 'adoption' && styles.filterChipTextActive]}>Para Adoção</Text>
           </TouchableOpacity>
 
           {user && (
             <TouchableOpacity
-            style={[
-              styles.filterChip,
-              filters.showMyItems && styles.filterChipActive,
-            ]}
-            onPress={handleMyItemsToggle}
-            activeOpacity={0.85}
-            accessibilityLabel="Minhas publicações"
-          >
-              <MaterialIcons name="person" size={16} color={filters.showMyItems ? '#fff' : '#1F2937'} />
+              style={[
+                styles.filterChip,
+                filters.showMyItems && styles.filterChipActive,
+              ]}
+              onPress={handleMyItemsToggle}
+              activeOpacity={0.85}
+              accessibilityLabel="Minhas publicações"
+            >
+              <MaterialIcons name="person-outline" size={16} color={filters.showMyItems ? '#FFFFFF' : '#4B5563'} />
             </TouchableOpacity>
           )}
         </ScrollView>
