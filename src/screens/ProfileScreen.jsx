@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,6 +36,15 @@ const ProfileScreen = ({ navigation }) => {
     };
     loadProfileData();
   }, [user, refreshProfile]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        refreshProfile();
+        itemsService.getUserItems(user.id).then((items) => setUserItems(items || []));
+      }
+    }, [user, refreshProfile])
+  );
 
   useEffect(() => {
     setAvatarUrl(userProfile?.avatar_url || userProfile?.avatarUrl || null);

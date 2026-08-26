@@ -69,7 +69,7 @@ const formatBrazilianPhone = (value = '') => {
 };
 
 const EditProfileScreen = ({ navigation }) => {
-  const { user, userProfile, refreshProfile } = useAuth();
+  const { user, userProfile, refreshProfile, setUserProfile } = useAuth();
   const { colors, isDark } = useTheme();
 
   const [name, setName] = useState('');
@@ -178,6 +178,20 @@ const EditProfileScreen = ({ navigation }) => {
         );
       } catch (e) {
         console.warn('[EditProfileScreen] Falha ao sincronizar AsyncStorage:', e.message);
+      }
+
+      if (typeof setUserProfile === 'function') {
+        setUserProfile((prev) => ({
+          ...prev,
+          name: name.trim(),
+          instagram: instagram.trim(),
+          facebook: facebook.trim(),
+          whatsapp: whatsapp.replace(/\D/g, ''),
+          state: profileState,
+          city: profileCity,
+          latitude: profileCoords?.latitude ?? null,
+          longitude: profileCoords?.longitude ?? null,
+        }));
       }
 
       await refreshProfile();

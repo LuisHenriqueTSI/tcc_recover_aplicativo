@@ -560,6 +560,15 @@ const HomeScreen = ({ navigation, route }) => {
           latitude: coords?.latitude ?? null,
           longitude: coords?.longitude ?? null,
         });
+        if (typeof setUserProfile === 'function') {
+          setUserProfile((prev) => ({
+            ...prev,
+            state: profileEditState,
+            city: profileEditCity,
+            latitude: coords?.latitude ?? null,
+            longitude: coords?.longitude ?? null,
+          }));
+        }
         if (typeof refreshProfile === 'function') refreshProfile();
       } catch (err) {
         console.warn('[HomeScreen] Falha ao atualizar perfil no Supabase:', err.message);
