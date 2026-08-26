@@ -695,7 +695,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <View style={[styles.statusPill, item.extra_fields?.is_direct_adoption ? { backgroundColor: '#FCE7F3', marginBottom: 0 } : (item.status === 'found' ? [styles.foundPill, { marginBottom: 0 }] : [styles.lostPill, { marginBottom: 0 }])]}>
               <MaterialIcons
-                name={item.extra_fields?.is_direct_adoption ? 'favorite' : (item.status === 'found' ? 'check-circle' : 'search')}
+                name={item.extra_fields?.is_direct_adoption ? 'favorite-border' : (item.status === 'found' ? 'search' : 'priority-high')}
                 size={14}
                 color={item.extra_fields?.is_direct_adoption ? '#BE185D' : (item.status === 'found' ? '#047857' : '#C2410C')}
               />
