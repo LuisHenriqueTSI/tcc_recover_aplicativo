@@ -24,11 +24,9 @@ import Card from '../components/Card';
 import Button from '../components/Button';
 import ShareButton from '../components/ShareButton';
 import ShareFlyerModal from '../components/ShareFlyerModal';
-import ItemClaimModal from './ItemClaimModal';
 
 import SightingModal from '../components/SightingModal';
 import * as sightingsService from '../services/sightings';
-import * as claimsService from '../services/itemClaims';
 import { getRenewalInfo } from '../services/itemExpiration';
 import { createRenewalReminderNotification } from '../services/notifications';
 import * as reportsService from '../services/reports';
@@ -93,8 +91,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [editCommentPhotoUrl, setEditCommentPhotoUrl] = useState('');
   const [editUploading, setEditUploading] = useState(false);
   const [renewing, setRenewing] = useState(false);
-  const [claimModalVisible, setClaimModalVisible] = useState(false);
-  const [claimAccessState, setClaimAccessState] = useState('blocked');
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reportDetails, setReportDetails] = useState('');
@@ -141,46 +137,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
     }
   };
 
-  const checkApprovedClaim = async (itemData = item) => {
-    if (!user?.id || !itemData?.id) {
-      setClaimAccessState('blocked');
-      return;
-    }
-
-    if (user.id === itemData.owner_id) {
-      setClaimAccessState('owner');
-      return;
-    }
-
-    if (itemData.status !== 'found') {
-      setClaimAccessState('available');
-      return;
-    }
-
-    try {
-      const claim = await claimsService.getClaimForItemByUser(itemData.id, user.id);
-      if (claim?.status === 'approved') {
-        setClaimAccessState('approved');
-      } else if (claim?.status === 'pending') {
-        setClaimAccessState('pending');
-      } else if (claim?.status === 'rejected') {
-        setClaimAccessState('rejected');
-      } else {
-        setClaimAccessState('blocked');
-      }
-    } catch (error) {
-      console.warn('[ItemDetailScreen] Erro ao verificar reivindicação:', error.message);
-      setClaimAccessState('blocked');
-    }
-  };
-
   const loadItemDetails = async () => {
     try {
       setLoading(true);
       const itemData = await itemsService.getItemDetails(itemId);
       if (itemData) {
         setItem(itemData);
-        await checkApprovedClaim(itemData);
         if (isOwner && itemData && itemData.owner_id === user?.id) {
           const renewalInfo = getRenewalInfo(itemData);
           if (renewalInfo.needsRenewal) {
@@ -432,21 +394,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
     setSightingModalVisible(true);
   };
 
-  const handleClaimPet = () => {
-    if (!user) {
-      Alert.alert(
-        'Login necessário',
-        'Entre ou crie uma conta para reivindicar a posse deste pet.',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          { text: 'Entrar', onPress: () => navigation.navigate('Login') },
-        ]
-      );
-      return;
-    }
-    setClaimModalVisible(true);
-  };
-
   const handleOpenReport = () => {
     if (!user) {
       Alert.alert(
@@ -582,8 +529,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const isOwner = user && item && item.owner_id === user.id;
   const canDelete = isOwner || isAdmin;
-  const shouldShowClaimButton = item?.status === 'found' && user?.id !== item?.owner_id && claimAccessState !== 'approved';
-  const isMessageBlocked = item?.status === 'found' && user?.id !== item?.owner_id && claimAccessState !== 'approved';
 
   if (loading) {
     return (
@@ -929,30 +874,24 @@ const ItemDetailScreen = ({ route, navigation }) => {
               </View>
             )}
             {!isOwner && !isAdmin && (
-              <View style={{ flexDirection: 'column', gap: 8, marginTop: 8 }}>
-                {shouldShowClaimButton && (
-                  <TouchableOpacity
-                    style={{ borderWidth: 2, borderColor: '#2563EB', borderRadius: 8, paddingVertical: 12, alignItems: 'center', backgroundColor: '#EFF6FF' }}
-                    onPress={handleClaimPet}
-                  >
-                    <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 15 }}>Esse é meu!</Text>
-                  </TouchableOpacity>
-                )}
+              <View style={{ marginTop: 8 }}>
                 <TouchableOpacity
                   style={{
-                    borderWidth: 1,
-                    borderColor: '#2563EB',
-                    borderRadius: 8,
-                    paddingVertical: 11,
+                    backgroundColor: '#2563EB',
+                    borderRadius: 10,
+                    paddingVertical: 13,
                     alignItems: 'center',
-                    backgroundColor: '#fff',
                     flexDirection: 'row',
                     justifyContent: 'center',
+                    shadowColor: '#2563EB',
+                    shadowOpacity: 0.25,
+                    shadowRadius: 6,
+                    elevation: 3,
                   }}
                   onPress={handleSendMessage}
                 >
-                  <MaterialIcons name="chat" size={18} color="#2563EB" style={{ marginRight: 6 }} />
-                  <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 15 }}>
+                  <MaterialIcons name="chat" size={19} color="#FFFFFF" style={{ marginRight: 8 }} />
+                  <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 15 }}>
                     Enviar Mensagem
                   </Text>
                 </TouchableOpacity>
@@ -1229,17 +1168,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
         <View style={{ height: 40 }} />
       </View>
-
-      <ItemClaimModal
-        visible={claimModalVisible}
-        onClose={() => setClaimModalVisible(false)}
-        item={item}
-        userId={user?.id}
-        onSuccess={() => {
-          setClaimModalVisible(false);
-          checkApprovedClaim(item);
-        }}
-      />
 
       {/* Modal de visualização de foto em tela cheia */}
       <Modal

@@ -33,7 +33,6 @@ import AjudaSuporteScreen from '../screens/AjudaSuporteScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import SobreScreen from '../screens/SobreScreen';
 import RecoveredPetsScreen from '../screens/RecoveredPetsScreen';
-import ClaimsManagementScreen from '../screens/ClaimsManagementScreen';
 import { listItems } from '../services/items';
 import { buildRenewalAlerts } from '../services/notifications';
 
@@ -549,11 +548,6 @@ const MainStack = () => {
         name="RegisterItem"
         component={RegisterItemScreen}
         options={{ title: 'Registrar' }}
-      />
-      <Stack.Screen
-        name="ClaimsManagement"
-        component={ClaimsManagementScreen}
-        options={{ title: 'Reivindicações' }}
       />
       <Stack.Screen
         name="Dashboard"
