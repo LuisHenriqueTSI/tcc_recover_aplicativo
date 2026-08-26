@@ -887,24 +887,30 @@ const ItemDetailScreen = ({ route, navigation }) => {
           )
         )}
 
-        {/* Bairro e Data */}
-        <View style={styles.locationGrid}>
-          <View style={styles.locationCard}>
-            <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>
-              {item.status === 'lost' ? 'Última vez visto' : 'Local onde foi encontrado'}
+        {/* Local onde foi visto / encontrado (largura total) com data integrada em texto */}
+        <View style={styles.fullWidthLocationCard}>
+          <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 3 }}>
+            {item.status === 'lost' ? 'Última vez visto' : 'Local onde foi encontrado'}
+          </Text>
+          <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold', lineHeight: 22 }}>
+            {formatCityState(item)}
+          </Text>
+          {formatStreetNumberNeighborhood(item) ? (
+            <Text style={{ fontSize: 13.5, color: '#4B5569', marginTop: 4, lineHeight: 18 }}>
+              {formatStreetNumberNeighborhood(item)}
             </Text>
-            <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold', lineHeight: 22 }}>
-              {formatCityState(item)}
-            </Text>
-            {formatStreetNumberNeighborhood(item) ? (
-              <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 4, lineHeight: 18 }}>
-                {formatStreetNumberNeighborhood(item)}
+          ) : null}
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#F3F4F6' }}>
+            <MaterialIcons name="event" size={15} color="#6B7280" style={{ marginRight: 6 }} />
+            <Text style={{ fontSize: 13.5, color: '#6B7280' }}>
+              <Text style={{ fontWeight: '600' }}>
+                {item.status === 'lost' ? 'Data em que perdi: ' : 'Data em que encontrei: '}
               </Text>
-            ) : null}
-          </View>
-          <View style={styles.locationCard}>
-            <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 2 }}>Data</Text>
-            <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold' }}>{formatItemDate(item.date)}</Text>
+              <Text style={{ color: '#1F2937', fontWeight: 'bold' }}>
+                {formatItemDate(item.date)}
+              </Text>
+            </Text>
           </View>
         </View>
 
@@ -1535,6 +1541,16 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontSize: 15,
     lineHeight: 22,
+  },
+  fullWidthLocationCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 4,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   locationGrid: {
     flexDirection: 'row',
