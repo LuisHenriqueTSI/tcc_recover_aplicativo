@@ -114,12 +114,28 @@ const ItemDetailScreen = ({ route, navigation }) => {
         color: '#fff',
       },
       headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginLeft: 12, marginRight: 8, padding: 4 }}>
-          <MaterialIcons name="arrow-back" size={26} color="#fff" />
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{
+            width: 38,
+            height: 38,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginLeft: 12,
+            marginRight: 8,
+            borderRadius: 19,
+            backgroundColor: 'rgba(255, 255, 255, 0.14)',
+            borderWidth: 1,
+            borderColor: 'rgba(255, 255, 255, 0.28)',
+          }}
+          accessibilityLabel="Voltar"
+          activeOpacity={0.75}
+        >
+          <MaterialIcons name="chevron-left" size={28} color="#fff" />
         </TouchableOpacity>
       ),
     });
-  }, []);
+  }, [navigation]);
 
 
   useFocusEffect(

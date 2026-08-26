@@ -240,17 +240,17 @@ const PublicStack = () => {
       <Stack.Screen
         name="ItemDetail"
         component={ItemDetailScreen}
-        options={{ title: 'Detalhes do Pet' }}
+        options={{ title: 'Detalhes do Animal' }}
       />
       <Stack.Screen
         name="RecoveredPets"
         component={RecoveredPetsScreen}
-        options={{ title: 'Pets Reencontrados' }}
+        options={{ title: 'Animais Reencontrados' }}
       />
       <Stack.Screen
         name="RegisterItem"
         component={RegisterItemScreen}
-        options={{ title: 'Cadastrar Pet' }}
+        options={{ title: 'Cadastrar Animal' }}
       />
     </Stack.Navigator>
   );
@@ -537,7 +537,7 @@ const MainStack = () => {
       <Stack.Screen
         name="ItemDetail"
         component={ItemDetailScreen}
-        options={{ title: 'Detalhes do Pet' }}
+        options={{ title: 'Detalhes do Animal' }}
       />
       <Stack.Screen
         name="ChatScreen"
