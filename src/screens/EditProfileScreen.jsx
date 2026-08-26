@@ -118,11 +118,13 @@ const EditProfileScreen = ({ navigation }) => {
         const storedLoc = await AsyncStorage.getItem('@wefind/saved_location');
         if (storedLoc) {
           const parsed = JSON.parse(storedLoc);
-          if (parsed?.addressText) setProfileAddressText(parsed.addressText);
-          if (parsed?.street) setProfileStreet(parsed.street);
-          if (parsed?.district || parsed?.neighborhood) setProfileDistrict(parsed.district || parsed.neighborhood);
+          if (parsed?.city) setProfileCity((prev) => prev || parsed.city);
+          if (parsed?.state) setProfileState((prev) => prev || parsed.state);
+          if (parsed?.addressText) setProfileAddressText((prev) => prev || parsed.addressText);
+          if (parsed?.street) setProfileStreet((prev) => prev || parsed.street);
+          if (parsed?.district || parsed?.neighborhood) setProfileDistrict((prev) => prev || parsed.district || parsed.neighborhood);
           if (parsed?.radiusKm) setSearchRadiusKm(Number(parsed.radiusKm));
-          if (parsed?.coords) setProfileCoords(parsed.coords);
+          if (parsed?.coords) setProfileCoords((prev) => prev || parsed.coords);
         }
       } catch (e) {
         console.warn('[EditProfileScreen] Erro ao carregar localização:', e.message);
@@ -137,8 +139,8 @@ const EditProfileScreen = ({ navigation }) => {
       setInstagram(userProfile.instagram || '');
       setFacebook(userProfile.facebook || '');
       setWhatsapp(userProfile.whatsapp || userProfile.phone || '');
-      setProfileState(userProfile.state || '');
-      setProfileCity(userProfile.city || '');
+      if (userProfile.state) setProfileState(userProfile.state);
+      if (userProfile.city) setProfileCity(userProfile.city);
       if (userProfile.neighborhood) setProfileDistrict(userProfile.neighborhood);
       if (userProfile.latitude && userProfile.longitude) {
         setProfileCoords({

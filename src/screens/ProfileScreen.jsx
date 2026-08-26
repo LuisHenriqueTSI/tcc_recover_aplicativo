@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -22,11 +23,16 @@ const ProfileScreen = ({ navigation }) => {
   const [userItems, setUserItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(userProfile?.avatar_url || userProfile?.avatarUrl || null);
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [localSavedLocation, setLocalSavedLocation] = useState(null);
 
   useEffect(() => {
     const loadProfileData = async () => {
       setLoading(true);
+      try {
+        const stored = await AsyncStorage.getItem('@wefind/saved_location');
+        if (stored) setLocalSavedLocation(JSON.parse(stored));
+      } catch (e) {}
       if (user) {
         await refreshProfile();
         const items = await itemsService.getUserItems(user.id);
@@ -39,6 +45,13 @@ const ProfileScreen = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
+      AsyncStorage.getItem('@wefind/saved_location').then((data) => {
+        if (data) {
+          try {
+            setLocalSavedLocation(JSON.parse(data));
+          } catch (e) {}
+        }
+      });
       if (user) {
         refreshProfile();
         itemsService.getUserItems(user.id).then((items) => setUserItems(items || []));
@@ -99,9 +112,16 @@ const ProfileScreen = ({ navigation }) => {
   const initial = userProfile?.name?.[0]?.toUpperCase() || 'U';
   const phoneNumber = userProfile?.whatsapp || userProfile?.phone || user?.phone || null;
   const formattedPhone = phoneNumber ? formatDisplayPhone(phoneNumber) : null;
-  const locationText = (userProfile?.neighborhood && userProfile?.city && userProfile?.state)
-    ? `${userProfile.neighborhood}, ${userProfile.city} - ${userProfile.state}`
-    : [userProfile?.city, userProfile?.state].filter(Boolean).join(', ');
+  
+  const effectiveCity = userProfile?.city || localSavedLocation?.city;
+  const effectiveState = userProfile?.state || localSavedLocation?.state;
+  const effectiveNeighborhood = userProfile?.neighborhood || localSavedLocation?.neighborhood || localSavedLocation?.district;
+
+  const locationText = (effectiveNeighborhood && effectiveCity && effectiveState)
+    ? `${effectiveNeighborhood}, ${effectiveCity} - ${effectiveState}`
+    : (effectiveCity && effectiveState)
+    ? `${effectiveCity}, ${effectiveState}`
+    : (effectiveCity || effectiveState || null);
 
   const communityLinks = [
     {

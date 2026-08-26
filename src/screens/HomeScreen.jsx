@@ -561,16 +561,15 @@ const HomeScreen = ({ navigation, route }) => {
     loadInitialLocation();
   }, [userProfile]);
 
-  // Localidade ativa para exibição no cabeçalho
+  // Localidade ativa para exibição no cabeçalho (compacto: Nome da rua, Cidade, Estado)
   const activeCity = sessionCity;
   const activeState = sessionState;
-  const displayLocation = sessionAddressText
-    ? sessionAddressText
-    : (sessionDistrict && sessionCity && sessionState)
-    ? `${sessionDistrict}, ${sessionCity} - ${sessionState}`
-    : (sessionCity && sessionState)
-    ? `${sessionCity}, ${sessionState}`
-    : (sessionCity || sessionState || 'Todo o Brasil');
+  const activeStreet = sessionStreet;
+  const headerLocationSummary = activeStreet && activeCity && activeState
+    ? `${activeStreet}, ${activeCity}, ${activeState}`
+    : (activeCity && activeState)
+    ? `${activeCity}, ${activeState}`
+    : (activeCity || activeState || 'Todo o Brasil');
 
   // Salvar localidade (perfil e armazenamento local)
   const handleSaveProfileLocation = async () => {
@@ -1114,7 +1113,7 @@ const HomeScreen = ({ navigation, route }) => {
       {/* App Bar ajustada: centralizado quando deslogado (Explorar), alinhado à esquerda quando logado */}
       <View style={{ backgroundColor: colors.headerBg, paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: colors.border }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: user ? 'space-between' : 'center', minHeight: 48 }}>
-          <View style={{ flexDirection: 'column', alignItems: user ? 'flex-start' : 'center' }}>
+          <View style={{ flex: 1, flexDirection: 'column', alignItems: user ? 'flex-start' : 'center', marginRight: user ? 12 : 0 }}>
             <Text style={{ color: '#fff', fontWeight: '900', fontSize: 23, letterSpacing: 0.8, marginBottom: 2 }}>WeFIND</Text>
             <TouchableOpacity
               style={{
@@ -1123,9 +1122,9 @@ const HomeScreen = ({ navigation, route }) => {
                 backgroundColor: 'rgba(255, 255, 255, 0.16)',
                 borderRadius: 20,
                 paddingHorizontal: 10,
-                paddingVertical: 5,
+                paddingVertical: 4,
                 marginTop: 2,
-                maxWidth: '92%',
+                maxWidth: '100%',
                 borderWidth: 1,
                 borderColor: 'rgba(255, 255, 255, 0.28)',
               }}
@@ -1138,31 +1137,31 @@ const HomeScreen = ({ navigation, route }) => {
                 setProfileEditRadiusKm(searchRadiusKm);
                 setShowProfileLocationModal(true);
               }}
-              accessibilityLabel={`Localidade: ${displayLocation}`}
+              accessibilityLabel={`Localidade: ${headerLocationSummary}`}
               activeOpacity={0.75}
             >
-              <MaterialIcons name="place" size={14} color="#FEA937" style={{ marginRight: 4 }} />
+              <MaterialIcons name="place" size={14} color="#FEA937" style={{ marginRight: 4, flexShrink: 0 }} />
               <Text
                 style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600', marginRight: 6, flexShrink: 1 }}
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
                 {activeCity && activeState
-                  ? `${displayLocation} • ${searchRadiusKm} km`
-                  : displayLocation}
+                  ? `${headerLocationSummary} • ${searchRadiusKm} km`
+                  : headerLocationSummary}
               </Text>
-              <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 10, padding: 2 }}>
+              <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 10, padding: 2, flexShrink: 0 }}>
                 <MaterialIcons name="edit" size={11} color="#FFFFFF" />
               </View>
             </TouchableOpacity>
           </View>
 
           {user && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0 }}>
               <NotificationBell />
               <TouchableOpacity
                 onPress={() => setShowProfileMenu((prev) => !prev)}
-                style={{ borderWidth: 2, borderColor: '#fff', borderRadius: 22, padding: 2 }}
+                style={{ borderWidth: 2, borderColor: '#fff', borderRadius: 22, padding: 2, marginLeft: 8 }}
                 accessibilityLabel="Abrir menu do perfil"
               >
                 {userProfile?.avatar_url ? (
