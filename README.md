@@ -16,8 +16,10 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 
 ✅ **Identidade e Apresentação Humana**
 - Nova identidade visual completa **WeFIND** com foco universal em **Animais** (cães, gatos, equinos, bovinos, aves e outros).
-- Tela inicial de apresentação (`SobreScreen.jsx`) com abordagem humanizada, espaçamento generoso e sem poluição visual.
+- Tela de apresentação (`SobreScreen.jsx`) com abordagem humanizada, espaçamento generoso e nova seção **"Como Funciona o WeFIND"** com mockups visuais interativos (Cadastro Inteligente, Radar GPS e Chat de Conexão).
+- **Placar de Impacto Real:** Cálculo em tempo real dos reencontros do dia atual (`startOfToday`) e total acumulado diretamente do banco de dados Supabase.
 - Tela de **Finais Felizes & Impacto** otimizada para usuários logados, exibindo diretamente o mural de animais reencontrados e histórias da comunidade.
+- Atalhos diretos para acessar **"Sobre o WeFIND"** no menu do cabeçalho da Home, tela de Perfil e Configurações.
 - Telas de Login e Cadastro acolhedoras ("Bem-vindo de volta" e "Criar sua conta").
 
 ✅ **Autenticação, Notificações e WhatsApp**
@@ -26,6 +28,7 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - **Notificações de Busca e Feed Inteligente:** Lembretes automáticos a cada 2 dias perguntando se o animal foi encontrado; respostas "Ainda não" impulsionam automaticamente a publicação para o topo do feed (`created_at`).
 - **Notificações e Alertas por WhatsApp:** Caixa de consentimento no cadastro (`whatsapp_notifications_enabled`), controle de preferências na tela de configurações (`ConfigScreen.jsx`), botão de disparo de teste instantâneo e alertas em tempo real para os tutores sobre **novas informações de animais** via Evolution API.
 - Ao entrar, o feed exibe automaticamente publicações de **Todo o Brasil**, com opção de filtrar por estado, cidade, espécie ou mapa no cabeçalho.
+- Cabeçalho dinâmico da tela de feed: centralizado no modo visitante ("Explorar") e alinhado à esquerda com avatar/notificações quando autenticado ("Início").
 - Perfis de usuário com foto de avatar, fallback elegante com inicial do nome e edição de localidade opcional.
 
 ✅ **Animais Perdidos, Encontrados e Adoção Responsável**
@@ -42,8 +45,10 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
   - Badges de características com emojis e chamada de compartilhamento personalizada.
 - **Card de Localização em Largura Total com Data Integrada:**
   - Indicação em linha `"Data em que perdi: DD/MM/AAAA"` ou `"Data em que encontrei: DD/MM/AAAA"`.
-- **Avatar e Foto do Autor em "Publicado por":**
+- **Avatar e Foto do Autor em "Publicado por" e Avistamentos:**
   - Exibição da foto atualizada do perfil ou avatar circular colorido com a letra inicial do nome do usuário.
+- **Padronização do Botão de Retorno:**
+  - Botão voltar com moldura circular translúcida e ícone `chevron-left` padronizado na tela de Detalhes do Animal e em toda a pilha de navegação.
 - Adição de até 6 fotos com enquadramento/corte nativo e botão "✂️ Ajustar" por miniatura.
 - Carrossel interativo de fotos nos cards do feed (`HomeScreen`) e modal em tela cheia nos detalhes (`ItemDetailScreen`).
 - **Placar Comunitário WeFIND:** Hero Card com contador dinâmico de animais reencontrados hoje, total acumulado desde o início e avatares sobrepostos.
@@ -52,10 +57,9 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - Recompensas opcionais e gamificação.
 
 ✅ **Modo Público e Mapa Interativo para Visitantes**
-- **Exploração Livre do Mapa:** Visitantes não autenticados podem navegar pelo mapa, consultar cards de animais, ver detalhes e ler comentários livremente.
+- **Exploração Livre do Mapa:** Visitantes não autenticados podem navegar pelo mapa, consultar cards de animais, ver detalhes e ler comentários livremente com visualização limpa em tela cheia.
 - **Mensagens Diretas sem Bloqueios:** Chat direto e instantâneo com o autor da publicação.
 - Visualização dos animais com fotos e moldura colorida indicando o status (Verde para Encontrado / Laranja para Perdido / Rosa para Adoção).
-- Busca de localidades via OpenStreetMap e catálogo nacional.
 - Centralização rápida na localização atual do usuário.
 - Barra inferior com Safe Insets prevenindo sobreposição de botões de navegação do sistema Android.
 
