@@ -184,14 +184,9 @@ const PublicAppTabs = ({ navigation }) => {
 
 // Public Stack for unauthenticated users
 const PublicStack = () => {
-  // Para teste: sempre mostrar a tela Sobre
-  const showSobre = true;
-  const checked = true;
-
-  if (!checked) return null;
-
   return (
     <Stack.Navigator
+      initialRouteName="PublicApp"
       screenOptions={{
         headerStyle: {
           backgroundColor: '#2563EB',
@@ -204,13 +199,6 @@ const PublicStack = () => {
         },
       }}
     >
-      {showSobre && (
-        <Stack.Screen
-          name="Sobre"
-          component={SobreScreen}
-          options={{ headerShown: false }}
-        />
-      )}
       <Stack.Screen
         name="PublicApp"
         component={PublicAppTabs}
@@ -225,7 +213,7 @@ const PublicStack = () => {
         name="Login"
         component={LoginScreen}
         options={{ headerShown: false }}
-        initialParams={{}} // Garante que seja a primeira tela
+        initialParams={{}}
       />
       <Stack.Screen
         name="EsqueciSenha"
@@ -251,6 +239,11 @@ const PublicStack = () => {
         name="RegisterItem"
         component={RegisterItemScreen}
         options={{ title: 'Cadastrar Animal' }}
+      />
+      <Stack.Screen
+        name="Sobre"
+        component={SobreScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
@@ -525,6 +518,7 @@ const MainStackHeader = ({ navigation, route, options, back }) => {
 const MainStack = () => {
   return (
     <Stack.Navigator
+      initialRouteName="MainApp"
       screenOptions={{
         header: MainStackHeader,
       }}
