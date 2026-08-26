@@ -722,7 +722,14 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
     const species = normalizeSpeciesValue(animalSpecies) || 'Animal';
     const isFemale = species.toLowerCase() === 'ave';
-    const statusLabel = status === 'lost' ? (isFemale ? 'perdida' : 'perdido') : (isFemale ? 'encontrada' : 'encontrado');
+    let statusLabel = '';
+    if (status === 'lost') {
+      statusLabel = isFemale ? 'perdida' : 'perdido';
+    } else if (status === 'adoption') {
+      statusLabel = 'para adoção';
+    } else {
+      statusLabel = isFemale ? 'encontrada' : 'encontrado';
+    }
     const colorLabel = color && color.trim() && color.trim().toLowerCase() !== 'cor não informada' ? color.trim().toLowerCase() : '';
     
     // Prioriza rua/praça selecionada, depois bairro/distrito, depois cidade
@@ -763,8 +770,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
   };
 
   const formatDateDisplay = (dateString) => {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR');
+    if (!dateString) return 'Selecione a data';
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
   };
 
   const MAX_PHOTOS = 6;
@@ -941,44 +949,77 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const validateFields = () => {
     setError('');
 
+    if (!user) {
+      Alert.alert('Login necessário', 'Você precisa estar conectado para publicar um pet.', [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+      ]);
+      return false;
+    }
+
     if (!itemType) {
-      setError('Selecione o tipo do pet');
+      const msg = 'Selecione o tipo do pet';
+      setError(msg);
+      Alert.alert('Campo obrigatório', msg);
       return false;
     }
 
     if (itemType === 'animal' && (!animalSpecies || !animalSpecies.trim())) {
-      setError('Selecione a espécie do animal');
+      const msg = 'Selecione a espécie do animal';
+      setError(msg);
+      Alert.alert('Campo obrigatório', msg);
+      return false;
+    }
+
+    if (itemType === 'animal' && (!color || !color.trim())) {
+      const msg = 'Selecione a cor do animal';
+      setError(msg);
+      Alert.alert('Campo obrigatório', msg);
       return false;
     }
 
     if (editItem) {
       if (!date.trim() && !editItem.date) {
-        setError('Selecione a data');
+        const msg = 'Selecione a data';
+        setError(msg);
+        Alert.alert('Campo obrigatório', msg);
         return false;
       }
       return true;
     }
 
     if (!date.trim()) {
-      setError('Selecione a data');
+      const msg = 'Selecione a data do evento';
+      setError(msg);
+      Alert.alert('Campo obrigatório', msg);
       return false;
     }
+
     if (!mapLocation?.latitude || !mapLocation?.longitude) {
-      setError('Escolha a localização do pet no mapa');
+      const msg = 'Toque em "Definir Local no Mapa" para escolher a localização do pet.';
+      setError(msg);
+      Alert.alert('Localização necessária', msg);
       return false;
     }
+
     if (!status) {
-      setError('Selecione se perdeu ou encontrou');
+      const msg = 'Selecione o objetivo da publicação (Perdi, Encontrei ou Para Adoção)';
+      setError(msg);
+      Alert.alert('Campo obrigatório', msg);
       return false;
     }
 
     if (isThirdPartyOwner) {
       if (!thirdPartyName || !thirdPartyName.trim()) {
-        setError('Informe o nome do tutor/responsável');
+        const msg = 'Informe o nome do tutor/responsável';
+        setError(msg);
+        Alert.alert('Campo obrigatório', msg);
         return false;
       }
       if (!thirdPartyPhone || !thirdPartyPhone.trim()) {
-        setError('Informe o telefone de contato do tutor');
+        const msg = 'Informe o telefone de contato do tutor';
+        setError(msg);
+        Alert.alert('Campo obrigatório', msg);
         return false;
       }
     }
