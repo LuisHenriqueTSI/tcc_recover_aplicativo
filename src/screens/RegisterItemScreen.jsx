@@ -1055,9 +1055,14 @@ const RegisterItemScreen = ({ navigation, route }) => {
   };
 
   const handlePublish = async () => {
-    if (!validateFields()) return;
+    console.log('[RegisterItem] handlePublish acionado! Status:', status, 'ItemType:', itemType, 'Fotos:', photos.length);
+    if (!validateFields()) {
+      console.log('[RegisterItem] Falha na validação dos campos.');
+      return;
+    }
 
     if (photos.length > 0) {
+      console.log('[RegisterItem] Validando foto do pet...');
       const validation = await validatePetPhoto({ imageUri: photos[0].uri });
       if (!validation.isPet) {
         setError('A imagem precisa ser de um animal visível.');
@@ -1375,7 +1380,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
     if (itemType === 'animal') {
       return (
         <View style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
-          <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ paddingBottom: 180 }}>
+          <ScrollView
+            style={{ flex: 1, padding: 16 }}
+            contentContainerStyle={{ paddingBottom: 180 }}
+            keyboardShouldPersistTaps="handled"
+          >
             <View>
               <View style={styles.statusContainer}>
                 <Text style={styles.label}>Qual é o objetivo desta publicação? *</Text>
@@ -1636,7 +1645,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           </ScrollView>
           {renderMapLocationPicker()}
           {renderFoundModal()}
-          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB' }}>
+          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#F9FAFB', padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: '#E5E7EB', zIndex: 100, elevation: 10 }}>
             <Button
               title={loading ? 'Publicando...' : 'Publicar'}
               onPress={handlePublish}
