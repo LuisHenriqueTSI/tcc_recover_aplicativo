@@ -272,14 +272,23 @@ const SobreScreen = ({ navigation }) => {
               <Text style={styles.featuredSectionTitle}>Histórias em destaque</Text>
               <Text style={styles.featuredSectionSubtitle}>Relatos enviados por tutores que recuperaram seus pets</Text>
             </View>
-            <TouchableOpacity
-              style={styles.sendStoryButton}
-              onPress={() => setShowStoryModal(true)}
-              activeOpacity={0.8}
-            >
-              <MaterialIcons name="add-comment" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
-              <Text style={styles.sendStoryButtonText}>Enviar História</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('RecoveredPets')}
+                activeOpacity={0.7}
+                style={styles.seeMoreButton}
+              >
+                <Text style={styles.seeMoreText}>Ver mais</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.sendStoryButton}
+                onPress={() => setShowStoryModal(true)}
+                activeOpacity={0.8}
+              >
+                <MaterialIcons name="add-comment" size={15} color="#FFFFFF" style={{ marginRight: 3 }} />
+                <Text style={styles.sendStoryButtonText}>Enviar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <ScrollView
@@ -733,7 +742,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   featuredSectionTitle: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: '800',
     color: '#0F172A',
   },
@@ -741,6 +750,15 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: '#64748B',
     marginTop: 2,
+  },
+  seeMoreButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  seeMoreText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#2563EB',
   },
   sendStoryButton: {
     flexDirection: 'row',

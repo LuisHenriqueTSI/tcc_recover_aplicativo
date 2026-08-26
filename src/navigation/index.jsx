@@ -32,6 +32,7 @@ import ConfigScreen from '../screens/ConfigScreen';
 import AjudaSuporteScreen from '../screens/AjudaSuporteScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import SobreScreen from '../screens/SobreScreen';
+import RecoveredPetsScreen from '../screens/RecoveredPetsScreen';
 import ClaimsManagementScreen from '../screens/ClaimsManagementScreen';
 import { listItems } from '../services/items';
 import { buildRenewalAlerts } from '../services/notifications';
@@ -241,6 +242,11 @@ const PublicStack = () => {
         name="ItemDetail"
         component={ItemDetailScreen}
         options={{ title: 'Detalhes do Pet' }}
+      />
+      <Stack.Screen
+        name="RecoveredPets"
+        component={RecoveredPetsScreen}
+        options={{ title: 'Animais Encontrados' }}
       />
     </Stack.Navigator>
   );
@@ -578,6 +584,11 @@ const MainStack = () => {
         name="Sobre"
         component={SobreScreen}
         options={{ title: 'Finais Felizes & Impacto' }}
+      />
+      <Stack.Screen
+        name="RecoveredPets"
+        component={RecoveredPetsScreen}
+        options={{ title: 'Animais Encontrados' }}
       />
     </Stack.Navigator>
   );
