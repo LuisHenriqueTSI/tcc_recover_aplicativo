@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import MapView, { Callout, Marker } from 'react-native-maps';
@@ -439,12 +439,11 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#F97316');
   const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
 
-  // Dimensões fixas — nunca dependem de overflow
-  const RING = isSelected ? 72 : 58;
-  const BORDER = isSelected ? 4 : 3.5;
-  const PHOTO = RING - BORDER * 2;   // diâmetro da foto
-  const PAD = 4;                      // padding extra para evitar clipping nativo Android
-  const WRAPPER = RING + PAD * 2;
+  const SIZE = isSelected ? 70 : 56;
+  const BORDER = 4;
+  // Diâmetro interno da foto = circulo total menos as 2 bordas e 2px de gap branco
+  const GAP = 2;
+  const PHOTO = SIZE - (BORDER + GAP) * 2;
 
   return (
     <Marker
@@ -455,72 +454,62 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
       anchor={{ x: 0.5, y: 0.5 }}
     >
       {/*
-        O wrapper extra com padding garante que o Android nunca corte
-        a borda externa do círculo ao calcular os bounds do View.
+        Android: elevation + borderRadius num View pai clipa os filhos.
+        Solução: estrutura PLANA — o anel é um View circular sem elevation;
+        a foto é uma Image com borderRadius (Android clipa a Image por conta
+        própria sem precisar de overflow:hidden no pai).
+        iOS: usamos shadowColor no wrapper transparente.
       */}
       <View
         collapsable={false}
         style={{
-          width: WRAPPER,
-          height: WRAPPER,
+          width: SIZE,
+          height: SIZE,
+          borderRadius: SIZE / 2,
+          borderWidth: BORDER,
+          borderColor: statusColor,
+          backgroundColor: '#FFFFFF',
           alignItems: 'center',
           justifyContent: 'center',
-          // Sombra colorida (iOS)
+          // iOS shadow (não afeta Android)
           shadowColor: statusColor,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isSelected ? 0.8 : 0.55,
-          shadowRadius: isSelected ? 10 : 6,
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.6,
+          shadowRadius: 6,
+          // Android: NÃO usar elevation aqui — causaria clipping
+          // Escala quando selecionado
+          transform: isSelected ? [{ scale: 1.12 }] : [{ scale: 1 }],
         }}
       >
-        {/* Anel colorido — SEM overflow:hidden para não cortar */}
-        <View
-          style={{
-            width: RING,
-            height: RING,
-            borderRadius: RING / 2,
-            borderWidth: BORDER,
-            borderColor: statusColor,
-            backgroundColor: '#FFFFFF',
-            alignItems: 'center',
-            justifyContent: 'center',
-            // Sombra Android via elevation
-            elevation: isSelected ? 12 : 8,
-            transform: isSelected ? [{ scale: 1.1 }] : [],
-          }}
-        >
-          {photoUrl ? (
-            /*
-              borderRadius na própria Image + overflow:hidden apenas aqui
-              já que está dentro do anel e não será cortado pelo Android
-            */
-            <Image
-              source={{ uri: photoUrl }}
-              style={{
-                width: PHOTO,
-                height: PHOTO,
-                borderRadius: PHOTO / 2,
-                overflow: 'hidden',
-              }}
-              resizeMode="cover"
-              onLoadEnd={() => {
-                setTimeout(() => setTracksViewChanges(false), 500);
-              }}
-            />
-          ) : (
-            <View
-              style={{
-                width: PHOTO,
-                height: PHOTO,
-                borderRadius: PHOTO / 2,
-                backgroundColor: statusColor + '28',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 20 }}>🐾</Text>
-            </View>
-          )}
-        </View>
+        {photoUrl ? (
+          // Image com borderRadius: Android renderiza circular sem overflow:hidden no pai
+          <Image
+            source={{ uri: photoUrl }}
+            style={{
+              width: PHOTO,
+              height: PHOTO,
+              borderRadius: PHOTO / 2,
+              backgroundColor: '#E5E7EB',
+            }}
+            resizeMode="cover"
+            onLoadEnd={() => {
+              setTimeout(() => setTracksViewChanges(false), 500);
+            }}
+          />
+        ) : (
+          <View
+            style={{
+              width: PHOTO,
+              height: PHOTO,
+              borderRadius: PHOTO / 2,
+              backgroundColor: statusColor + '28',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={{ fontSize: 18 }}>🐾</Text>
+          </View>
+        )}
       </View>
       <Callout>
         <View style={styles.callout}>
