@@ -8,7 +8,25 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 * **Laranja Ações:** `#F28213` (Botões secundários e destaques).
 * **Dourado:** `#FEA937` (Pins de mapa, estrelas e recompensas).
 * **Neutros:** Fundo `#F8FAFB`, Superfície `#FFFFFF`, Destaques `#EFF6FF` e Bordas `#DBEAFE`.
-* **Centralização de Tokens:** `src/constants/theme.js`.
+* **Centralização de Tokens:** `src/constants/theme.js` e `src/contexts/ThemeContext.jsx`.
+
+---
+
+## 🌙 Suporte a Tema Escuro e Aparência (Dark Mode)
+
+* **Provedor Global de Temas (`ThemeContext.jsx`):** Suporte a modo Claro (`light`), modo Escuro (`dark`) e modo Automático/Sistema (`system`).
+* **Cards Suaves no Modo Claro:** Cores refinadas para off-white suave (`#F8FAFC`) com bordas delicadas (`#E2E8F0`), evitando o branco estático ofuscante.
+* **Cards Imersivos no Modo Escuro:** Paleta em tom ardósia (`#161F30`), bordas suaves (`#243248`) e blocos internos em `#0F172A`.
+* **Controle de Aparência nas Configurações:** Seção "Aparência" na tela de Configurações com switch rápido e modal de seleção detalhada.
+* **Redefinição Automática para Modo Claro no Logout:** Ao desconectar a conta, o sistema automaticamente redefine as preferências e o estado para o modo claro, garantindo visualização padrão a visitantes.
+* **Telas Totalmente Adaptadas ao Tema Escuro:**
+  - Tela Inicial (`HomeScreen.jsx`), busca, barra de filtros rápidos, painel avançado e banner de raio de 60 km.
+  - Tela de Detalhes do Animal (`ItemDetailScreen.jsx`).
+  - Tela de Mensagens e Chat (`InboxScreen.jsx` e `ChatScreen.jsx`).
+  - Tela de Minhas Publicações (`MeusAnunciosScreen.jsx`).
+  - Fluxo completo de Cadastro/Edição de Animais (`RegisterItemScreen.jsx`).
+  - Modal "Compartilhar Cartaz" (`ShareFlyerModal.jsx`).
+  - Navegação de Abas Inferiores e Cabeçalhos de Navegação.
 
 ---
 
@@ -40,7 +58,7 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
   - Filtro dedicado **"Para Adoção"** no topo do feed com contadores e badges coloridos.
 - **Design Minimalista de Atributos com Emojis:**
   - Espécie, raça, sexo, idade, porte e cor organizados em badges minimalistas diretamente abaixo da foto do animal (`🐾`, `🏷️`, `⚧`, `🎂`, `📏`, `🎨`).
-- **Cartazes de Compartilhamento Dinâmicos (`ShareCardFlyer.jsx`):**
+- **Cartazes de Compartilhamento Dinâmicos ("Compartilhar Cartaz" - `ShareCardFlyer.jsx` & `ShareFlyerModal.jsx`):**
   - Geração de flyer em imagem de alta definição com cores e temas inteligentes (Vermelho para Perdido, Verde para Encontrado, Rosa/Magenta `#DB2777` para Adoção).
   - Badges de características com emojis e chamada de compartilhamento personalizada.
 - **Card de Localização em Largura Total com Data Integrada:**
