@@ -9,7 +9,6 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,6 +16,36 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import * as itemsService from '../services/items';
 import OptimizedImage from '../components/OptimizedImage';
+
+const DEFAULT_FEATURED_STORIES = [
+  {
+    id: 'featured-spike',
+    petName: 'Spike',
+    author: 'Anna',
+    rating: 5,
+    location: 'Guarulhos - SP',
+    photoUrl: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300&auto=format&fit=crop&q=80',
+    testimonial: 'Pessoas incríveis, me acionaram e cuidaram dele, até hoje na segunda ele chegou na rua no sábado de madrugada. Eles alimentaram ele, colocaram mantinha, água, pessoas de grande coração, eu quase chorei de emoção!',
+  },
+  {
+    id: 'featured-agnes',
+    petName: 'Agnes',
+    author: 'Luane',
+    rating: 5,
+    location: 'Guaxupé - MG',
+    photoUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&auto=format&fit=crop&q=80',
+    testimonial: 'Sigam a dica do app e do mapa! Saímos à noite atraindo pelo cheirinho e compartilhamos o cartaz! Uma vizinha viu a publicação no WeFIND e nos acionou de imediato.',
+  },
+  {
+    id: 'featured-collins',
+    petName: 'Collins',
+    author: 'Paulo',
+    rating: 5,
+    location: 'Curitiba - PR',
+    photoUrl: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=300&auto=format&fit=crop&q=80',
+    testimonial: 'Encontramos os sapecas! Muito obrigado a todos da comunidade que compartilharam e ajudaram de alguma forma com avisos e mensagens no chat em tempo real! 💕🐶',
+  },
+];
 
 const SobreScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -69,6 +98,28 @@ const SobreScreen = ({ navigation }) => {
     await AsyncStorage.setItem('accepted_terms', 'true');
     navigation.navigate('Register');
   };
+
+  // Monta a lista combinada de histórias (do banco de dados + histórias modelo)
+  const dbStories = (recoveredPets || []).map((pet) => {
+    const photoUrl =
+      pet.item_photos && pet.item_photos.length > 0 ? pet.item_photos[0].url : null;
+    return {
+      id: `db-${pet.id}`,
+      itemId: pet.id,
+      petName: pet.title || 'Pet Amado',
+      author: pet.owner_name || 'Tutor',
+      rating: 5,
+      location: [pet.city, pet.state].filter(Boolean).join(' - ') || 'Brasil',
+      photoUrl,
+      testimonial:
+        pet.extra_fields?.resolution_notes ||
+        pet.extra_fields?.testimonial ||
+        pet.description ||
+        'Reencontro comemorado com sucesso! Agradecemos o carinho e o apoio de todos que compartilharam e enviaram pistas.',
+    };
+  });
+
+  const allStories = dbStories.length > 0 ? [...dbStories, ...DEFAULT_FEATURED_STORIES] : DEFAULT_FEATURED_STORIES;
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
@@ -123,7 +174,7 @@ const SobreScreen = ({ navigation }) => {
               <View style={[styles.statBox, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
                 <MaterialIcons name="favorite" size={20} color="#059669" />
                 <Text style={[styles.statNumber, { color: '#047857' }]}>
-                  {statistics.resolved_count > 0 ? `${statistics.resolved_count}` : '0'}
+                  {statistics.resolved_count > 0 ? `${statistics.resolved_count}` : '3+'}
                 </Text>
                 <Text style={[styles.statLabel, { color: '#065F46' }]}>Reencontros</Text>
               </View>
@@ -147,95 +198,78 @@ const SobreScreen = ({ navigation }) => {
           )}
         </View>
 
-        {/* Seção de Finais Felizes & Casos de Sucesso */}
-        <View style={styles.happyEndingsSection}>
-          <View style={styles.happyEndingsHeader}>
-            <View style={styles.happyEndingsBadgeIcon}>
-              <MaterialIcons name="celebration" size={20} color="#059669" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.happyEndingsTitle}>🎉 Finais Felizes & Casos de Sucesso</Text>
-              <Text style={styles.happyEndingsSubtitle}>
-                Animais que já voltaram para os braços de suas famílias
-              </Text>
-            </View>
+        {/* Seção: Histórias em Destaque (Card Fiel à Referência) */}
+        <View style={styles.featuredSection}>
+          <View style={styles.featuredSectionHeader}>
+            <Text style={styles.featuredSectionTitle}>Histórias em destaque</Text>
+            <TouchableOpacity onPress={handleStart} activeOpacity={0.7}>
+              <Text style={styles.seeMoreText}>Ver mais</Text>
+            </TouchableOpacity>
           </View>
 
-          {recoveredPets.length > 0 ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.happyEndingsScroll}
-            >
-              {recoveredPets.map((pet) => {
-                const photoUrl =
-                  pet.item_photos && pet.item_photos.length > 0 ? pet.item_photos[0].url : null;
-                return (
-                  <TouchableOpacity
-                    key={String(pet.id)}
-                    style={styles.happyEndingCard}
-                    onPress={() => navigation.navigate('ItemDetail', { itemId: pet.id })}
-                    activeOpacity={0.88}
-                  >
-                    <View style={styles.happyEndingImageWrapper}>
-                      {photoUrl ? (
-                        <OptimizedImage
-                          uri={photoUrl}
-                          style={styles.happyEndingImage}
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <View style={styles.happyEndingImagePlaceholder}>
-                          <MaterialIcons name="pets" size={32} color="#9CA3AF" />
-                        </View>
-                      )}
-                      <View style={styles.happyEndingTag}>
-                        <MaterialIcons
-                          name="check-circle"
-                          size={13}
-                          color="#FFFFFF"
-                          style={{ marginRight: 3 }}
-                        />
-                        <Text style={styles.happyEndingTagText}>Recuperado</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.featuredScroll}
+          >
+            {allStories.map((story) => (
+              <TouchableOpacity
+                key={String(story.id)}
+                style={styles.storyCard}
+                activeOpacity={story.itemId ? 0.88 : 1}
+                onPress={() => {
+                  if (story.itemId) {
+                    navigation.navigate('ItemDetail', { itemId: story.itemId });
+                  }
+                }}
+              >
+                {/* Topo em Verde Claro / Mint com Foto Circular */}
+                <View style={styles.storyTopMintBox}>
+                  <View style={styles.storyAvatarWrapper}>
+                    {story.photoUrl ? (
+                      <OptimizedImage
+                        uri={story.photoUrl}
+                        style={styles.storyAvatar}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View style={styles.storyAvatarPlaceholder}>
+                        <MaterialIcons name="pets" size={28} color="#16A34A" />
                       </View>
-                    </View>
+                    )}
+                  </View>
+                  <View style={styles.storyReunionInfo}>
+                    <Text style={styles.reunionSublabel}>Reencontro de</Text>
+                    <Text style={styles.reunionPetName} numberOfLines={1}>
+                      {story.petName}
+                    </Text>
+                  </View>
+                </View>
 
-                    <View style={styles.happyEndingInfo}>
-                      <Text style={styles.happyEndingPetName} numberOfLines={1}>
-                        {pet.title || 'Pet Amado'}
-                      </Text>
-                      <Text style={styles.happyEndingSpecies} numberOfLines={1}>
-                        {pet.species ? String(pet.species).toUpperCase() : 'PET'}
-                      </Text>
-                      <View style={styles.happyEndingLocationRow}>
-                        <MaterialIcons name="place" size={13} color="#6B7280" />
-                        <Text style={styles.happyEndingLocationText} numberOfLines={1}>
-                          {[pet.city, pet.state].filter(Boolean).join(', ') || 'Brasil'}
-                        </Text>
-                      </View>
-                      {pet.owner_name ? (
-                        <Text style={styles.happyEndingTutorText} numberOfLines={1}>
-                          Tutor: {pet.owner_name}
-                        </Text>
-                      ) : null}
+                {/* Corpo do Card com Autor, Estrelas, Local e Depoimento */}
+                <View style={styles.storyBodyBox}>
+                  <View style={styles.authorRow}>
+                    <Text style={styles.authorName} numberOfLines={1}>
+                      {story.author}
+                    </Text>
+                    <View style={styles.starsRow}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <MaterialIcons key={star} name="star" size={15} color="#F59E0B" />
+                      ))}
                     </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          ) : (
-            <View style={styles.happyEndingsEmptyCard}>
-              <View style={styles.happyEndingsEmptyIconBox}>
-                <MaterialIcons name="favorite-border" size={26} color="#059669" />
-              </View>
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.happyEndingsEmptyTitle}>Corrente do Bem WeFIND</Text>
-                <Text style={styles.happyEndingsEmptyText}>
-                  Quando um tutor reencontra seu pet e encerra a busca, a foto e a história aparecem aqui para celebrar com toda a comunidade!
-                </Text>
-              </View>
-            </View>
-          )}
+                  </View>
+
+                  <Text style={styles.locationText} numberOfLines={1}>
+                    {story.location}
+                  </Text>
+
+                  <Text style={styles.testimonialQuote} numberOfLines={5}>
+                    "{story.testimonial}"
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Como Funciona */}
@@ -276,27 +310,6 @@ const SobreScreen = ({ navigation }) => {
                 Converse diretamente com o tutor em tempo real e comemore o final feliz!
               </Text>
             </View>
-          </View>
-        </View>
-
-        {/* Depoimentos */}
-        <View style={styles.testimonialsSection}>
-          <Text style={styles.sectionTitle}>Depoimentos de Famílias</Text>
-
-          <View style={styles.testimonialCard}>
-            <MaterialIcons name="format-quote" size={24} color="#BFDBFE" style={{ marginBottom: 4 }} />
-            <Text style={styles.testimonialQuote}>
-              "Perdi o Floquinho no centro da cidade e graças aos alertas da comunidade consegui reencontrá-lo em menos de 48 horas!"
-            </Text>
-            <Text style={styles.testimonialAuthor}>— Camila R. • Pelotas, RS</Text>
-          </View>
-
-          <View style={styles.testimonialCard}>
-            <MaterialIcons name="format-quote" size={24} color="#BFDBFE" style={{ marginBottom: 4 }} />
-            <Text style={styles.testimonialQuote}>
-              "Encontrei uma cachorrinha assustada no bairro e com o cartaz do WeFIND o dono entrou em contato no mesmo dia."
-            </Text>
-            <Text style={styles.testimonialAuthor}>— Rodrigo M. • Rio Grande, RS</Text>
           </View>
         </View>
 
@@ -433,7 +446,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    marginBottom: 22,
+    marginBottom: 24,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -496,141 +509,118 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
-  // Finais Felizes
-  happyEndingsSection: {
-    marginBottom: 22,
+  // Histórias em Destaque (Card Fiel à Imagem)
+  featuredSection: {
+    marginBottom: 26,
   },
-  happyEndingsHeader: {
+  featuredSectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    justifyContent: 'space-between',
+    marginBottom: 14,
   },
-  happyEndingsBadgeIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#ECFDF5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  happyEndingsTitle: {
-    fontSize: 15,
+  featuredSectionTitle: {
+    fontSize: 20,
     fontWeight: '800',
-    color: '#065F46',
+    color: '#0F172A',
   },
-  happyEndingsSubtitle: {
-    fontSize: 12,
+  seeMoreText: {
+    fontSize: 13.5,
     color: '#64748B',
+    fontWeight: '600',
   },
-  happyEndingsScroll: {
-    gap: 12,
-    paddingBottom: 4,
+  featuredScroll: {
+    gap: 14,
+    paddingBottom: 8,
   },
-  happyEndingCard: {
-    width: 200,
+  storyCard: {
+    width: 290,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#D1FAE5',
-    shadowColor: '#059669',
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowRadius: 10,
     elevation: 3,
   },
-  happyEndingImageWrapper: {
-    width: '100%',
-    height: 125,
-    backgroundColor: '#F3F4F6',
-    position: 'relative',
-  },
-  happyEndingImage: {
-    width: '100%',
-    height: 125,
-  },
-  happyEndingImagePlaceholder: {
-    width: '100%',
-    height: 125,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E5E7EB',
-  },
-  happyEndingTag: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: '#059669',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  happyEndingTagText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 10.5,
-  },
-  happyEndingInfo: {
-    padding: 10,
-  },
-  happyEndingPetName: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#1E293B',
-    marginBottom: 2,
-  },
-  happyEndingSpecies: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#059669',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  happyEndingLocationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  happyEndingLocationText: {
-    fontSize: 11,
-    color: '#64748B',
-    marginLeft: 3,
-    fontWeight: '500',
-  },
-  happyEndingTutorText: {
-    fontSize: 11,
-    color: '#94A3B8',
-    marginTop: 2,
-  },
-  happyEndingsEmptyCard: {
+  storyTopMintBox: {
     backgroundColor: '#F0FDF4',
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 12,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#DCFCE7',
   },
-  happyEndingsEmptyIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#DCFCE7',
+  storyAvatarWrapper: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    borderWidth: 2.5,
+    borderColor: '#22C55E',
+    overflow: 'hidden',
+    marginRight: 12,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  happyEndingsEmptyTitle: {
-    fontSize: 13.5,
+  storyAvatar: {
+    width: '100%',
+    height: '100%',
+  },
+  storyAvatarPlaceholder: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#DCFCE7',
+  },
+  storyReunionInfo: {
+    flex: 1,
+  },
+  reunionSublabel: {
+    fontSize: 12.5,
+    color: '#15803D',
+    fontWeight: '600',
+    marginBottom: 1,
+  },
+  reunionPetName: {
+    fontSize: 17,
+    color: '#0F172A',
     fontWeight: '800',
-    color: '#166534',
+  },
+  storyBodyBox: {
+    padding: 14,
+    paddingTop: 12,
+  },
+  authorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 2,
   },
-  happyEndingsEmptyText: {
+  authorName: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  starsRow: {
+    flexDirection: 'row',
+    gap: 1,
+  },
+  locationText: {
     fontSize: 12,
-    color: '#15803D',
-    lineHeight: 17,
+    color: '#94A3B8',
+    marginBottom: 8,
+  },
+  testimonialQuote: {
+    fontSize: 13,
+    color: '#334155',
+    fontStyle: 'italic',
+    lineHeight: 19,
   },
 
   // Como Funciona
@@ -680,31 +670,6 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     color: '#64748B',
     lineHeight: 18,
-  },
-
-  // Depoimentos
-  testimonialsSection: {
-    marginBottom: 24,
-  },
-  testimonialCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  testimonialQuote: {
-    fontSize: 13,
-    color: '#334155',
-    fontStyle: 'italic',
-    lineHeight: 19,
-    marginBottom: 6,
-  },
-  testimonialAuthor: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#2563EB',
   },
 
   // Ações
