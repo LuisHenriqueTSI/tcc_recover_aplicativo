@@ -15,43 +15,48 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 ## 📱 Funcionalidades
 
 ✅ **Identidade e Apresentação Humana**
-- Nova identidade visual completa **WeFIND** com logotipo integrado (cão, gato, ave sobre o pin de localização).
+- Nova identidade visual completa **WeFIND** com foco universal em **Animais** (cães, gatos, equinos, bovinos, aves e outros).
 - Tela inicial de apresentação (`SobreScreen.jsx`) com abordagem humanizada, espaçamento generoso e sem poluição visual.
+- Tela de **Finais Felizes & Impacto** otimizada para usuários logados, exibindo diretamente o mural de animais reencontrados e histórias da comunidade.
 - Telas de Login e Cadastro acolhedoras ("Bem-vindo de volta" e "Criar sua conta").
 
 ✅ **Autenticação, Notificações e WhatsApp**
-- Registro e login direto e simplificado com nome, email, WhatsApp e senha (sem exigência de localização no cadastro).
+- Registro e login direto e simplificado com nome, email, WhatsApp e senha.
 - **Verificação em 2 etapas por WhatsApp:** Envio do código de 6 dígitos via Evolution API / Supabase Functions com opção de reenvio com timer de recarga e edição rápida de dados.
-- **Notificações e Alertas por WhatsApp:** Caixa de consentimento no cadastro (`whatsapp_notifications_enabled`), controle de preferências na tela de configurações (`ConfigScreen.jsx`), botão de disparo de teste instantâneo e alertas em tempo real para os tutores sobre **novas informações de pets** via Evolution API.
-- Ao entrar, o feed exibe automaticamente publicações de **Todo o Brasil**, com opção de filtrar por estado, cidade ou mapa no cabeçalho.
-- Rolagem inteligente e fluida com `KeyboardAwareScrollView` prevenindo sobreposição do teclado virtual nos formulários.
-- Perfis de usuário com foto de avatar e edição de localidade opcional.
-- Confirmação de email e recuperação de senha.
+- **Notificações de Busca e Feed Inteligente:** Lembretes automáticos a cada 2 dias perguntando se o animal foi encontrado; respostas "Ainda não" impulsionam automaticamente a publicação para o topo do feed (`created_at`).
+- **Notificações e Alertas por WhatsApp:** Caixa de consentimento no cadastro (`whatsapp_notifications_enabled`), controle de preferências na tela de configurações (`ConfigScreen.jsx`), botão de disparo de teste instantâneo e alertas em tempo real para os tutores sobre **novas informações de animais** via Evolution API.
+- Ao entrar, o feed exibe automaticamente publicações de **Todo o Brasil**, com opção de filtrar por estado, cidade, espécie ou mapa no cabeçalho.
+- Perfis de usuário com foto de avatar, fallback elegante com inicial do nome e edição de localidade opcional.
 
-✅ **Pets Perdidos e Pets Reencontrados**
-- Cadastro de pets em etapas intuitivas com integração de mapa e endereço.
-- Seleção completa de espécie, sexo/gênero (Macho/Fêmea), raça, porte, cor, idade e coleira.
-- Adição de até 6 fotos com enquadramento/corte nativo e botão "✂️ Ajustar" por miniatura para reenquadrar antes de publicar.
-- Carrossel interativo de fotos nos cards do feed (`HomeScreen`) com pontos de paginação e contador de fotos (`1/3`).
-- Carrossel de fotos de alta resolução nos detalhes do pet (`ItemDetailScreen`) com navegação paginada e modal de ampliação em tela cheia.
-- **Placar Comunitário WeFIND:** Hero Card na tela inicial com contador dinâmico de pets reencontrados hoje, total acumulado desde o início e avatares sobrepostos dos reencontros mais recentes.
+✅ **Animais Perdidos, Encontrados e Adoção Responsável**
+- **Nomenclatura Universal de Animais:** Plataforma expandida para todo tipo de animal (cães, gatos, bovinos, cavalos, aves e outros).
+- **Custódia de Animais Encontrados:** Opção clara para indicar se o animal foi **"Apenas visto na rua"** (sem recolhimento) ou se **"Está comigo (Lar Temporário)"**.
+- **Sistema de Adoção Responsável e Janela de Busca:**
+  - Animais resgatados acolhidos contam com janela obrigatória de 7 dias de busca pelo tutor original antes da liberação oficial para adoção.
+  - Suporte a **Adoção Direta** imediata para animais de abrigo ou ninhadas sem dono prévio.
+  - Filtro dedicado **"Para Adoção"** no topo do feed com contadores e badges coloridos.
+- **Design Minimalista de Atributos com Emojis:**
+  - Espécie, raça, sexo, idade, porte e cor organizados em badges minimalistas diretamente abaixo da foto do animal (`🐾`, `🏷️`, `⚧`, `🎂`, `📏`, `🎨`).
+- **Cartazes de Compartilhamento Dinâmicos (`ShareCardFlyer.jsx`):**
+  - Geração de flyer em imagem de alta definição com cores e temas inteligentes (Vermelho para Perdido, Verde para Encontrado, Rosa/Magenta `#DB2777` para Adoção).
+  - Badges de características com emojis e chamada de compartilhamento personalizada.
+- **Card de Localização em Largura Total com Data Integrada:**
+  - Indicação em linha `"Data em que perdi: DD/MM/AAAA"` ou `"Data em que encontrei: DD/MM/AAAA"`.
+- **Avatar e Foto do Autor em "Publicado por":**
+  - Exibição da foto atualizada do perfil ou avatar circular colorido com a letra inicial do nome do usuário.
+- Adição de até 6 fotos com enquadramento/corte nativo e botão "✂️ Ajustar" por miniatura.
+- Carrossel interativo de fotos nos cards do feed (`HomeScreen`) e modal em tela cheia nos detalhes (`ItemDetailScreen`).
+- **Placar Comunitário WeFIND:** Hero Card com contador dinâmico de animais reencontrados hoje, total acumulado desde o início e avatares sobrepostos.
 - **Histórias de Reencontro em Destaque:** Carrossel de relatos enviados por tutores com foto, avaliação por estrelas, depoimentos e moderação/exclusão pelo administrador.
-- **Tela Dedicada de Pets Reencontrados (`RecoveredPetsScreen.jsx`):** Mural de animais que voltaram para casa com cálculo do tempo até o reencontro (ex: "Reencontrado após 1d 4h"), busca e filtros por espécie.
-- **Seção "Como Funciona" Interativa:** Atalhos diretos para cadastro de publicação, mapa interativo e mural de reencontros.
-- **Compartilhamento de Informações e Comentários com Mapa Interativo:** Modal de novas informações com seleção de localização por GPS/Mapa interativo em tela cheia, geocodificação reversa de endereço, pré-visualização de foto, contatos opcionais e envio automático de notificação no WhatsApp do tutor com link traçado do Google Maps.
-- Filtros rápidos por status, espécie, sexo e localização.
-- Seletor de localização no cabeçalho com botão destacado e ícone de edição interativo.
-- Geocodificação reversa com edição completa de endereço (rua, número da casa, bairro, cidade, estado).
-- Publicação em nome de terceiros (amigo, parente, vizinho, ONG) com campos dedicados para nome e telefone direto do tutor/responsável.
+- **Tela Dedicada de Animais Reencontrados (`RecoveredPetsScreen.jsx`):** Mural de animais que voltaram para casa com cálculo do tempo até o reencontro, busca e filtros por espécie.
 - Recompensas opcionais e gamificação.
 
 ✅ **Modo Público e Mapa Interativo para Visitantes**
-- **Exploração Livre do Mapa:** Visitantes não autenticados podem navegar pelo mapa, consultar cards de pets, ver detalhes e ler comentários livremente.
-- **Mensagens Diretas sem Bloqueios:** Chat direto e instantâneo com o autor da publicação (sem burocracia de aprovação prévia de reivindicação).
-- Visualização dos pets com fotos e moldura colorida indicando o status (Verde para Encontrado / Laranja para Perdido).
+- **Exploração Livre do Mapa:** Visitantes não autenticados podem navegar pelo mapa, consultar cards de animais, ver detalhes e ler comentários livremente.
+- **Mensagens Diretas sem Bloqueios:** Chat direto e instantâneo com o autor da publicação.
+- Visualização dos animais com fotos e moldura colorida indicando o status (Verde para Encontrado / Laranja para Perdido / Rosa para Adoção).
 - Busca de localidades via OpenStreetMap e catálogo nacional.
 - Centralização rápida na localização atual do usuário.
-- Cards e balões informativos interativos para abrir os detalhes do pet.
 - Barra inferior com Safe Insets prevenindo sobreposição de botões de navegação do sistema Android.
 
 ---
