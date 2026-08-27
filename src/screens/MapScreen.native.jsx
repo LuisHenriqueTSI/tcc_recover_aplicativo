@@ -21,7 +21,48 @@ const PETS_ONLY_MAP_STYLE = [
   { featureType: 'road', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
 ];
 
-const hasCoordinates = (item) => Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude));
+// Cache em memória para geocodificação de cidades/estados
+const geoCityCache = {};
+
+const geocodeItemLocation = async (item) => {
+  // 1. Tenta extrair coordenadas diretas já presentes
+  const directLat = item.latitude ?? item.extra_fields?.location_details?.latitude ?? item.extra_fields?.latitude;
+  const directLng = item.longitude ?? item.extra_fields?.location_details?.longitude ?? item.extra_fields?.longitude;
+
+  if (Number.isFinite(Number(directLat)) && Number.isFinite(Number(directLng)) && Number(directLat) !== 0 && Number(directLng) !== 0) {
+    return {
+      latitude: Number(directLat),
+      longitude: Number(directLng),
+    };
+  }
+
+  // 2. Tenta geocodificar por Cidade e Estado
+  const city = item.city || item.extra_fields?.city;
+  const state = item.state || item.extra_fields?.state;
+  if (!city || !state) return null;
+
+  const cacheKey = `${city.trim()}-${state.trim()}`.toLowerCase();
+  if (geoCityCache[cacheKey]) {
+    return geoCityCache[cacheKey];
+  }
+
+  try {
+    const query = `${city}, ${state}, Brasil`;
+    const results = await Location.geocodeAsync(query);
+    if (results && results.length > 0) {
+      const coords = {
+        latitude: results[0].latitude,
+        longitude: results[0].longitude,
+      };
+      geoCityCache[cacheKey] = coords;
+      return coords;
+    }
+  } catch (err) {
+    console.log('[MapScreen] Erro no geocoding do item:', err?.message || err);
+  }
+
+  return null;
+};
 
 const MapScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -110,16 +151,37 @@ const MapScreen = ({ navigation }) => {
     setLoading(true);
     try {
       const data = await itemsService.listItemsWithPhotosAndOwner({ resolved: false });
-      const mappedItems = (data || []).filter(hasCoordinates);
-      setItems(mappedItems);
-      if (mappedItems.length > 0 && locationStatusRef.current !== 'granted') {
+
+      // Resolve coordenadas de forma resiliente para todos os animais cadastrados
+      const resolvedList = await Promise.all(
+        (data || []).map(async (rawItem) => {
+          const coords = await geocodeItemLocation(rawItem);
+          if (coords) {
+            return {
+              ...rawItem,
+              latitude: coords.latitude,
+              longitude: coords.longitude,
+            };
+          }
+          return null;
+        })
+      );
+
+      const validItems = resolvedList.filter(Boolean);
+      setItems(validItems);
+
+      // Se o usuário ainda não concedeu GPS, centraliza no primeiro animal encontrado ou região padrão
+      if (validItems.length > 0 && locationStatusRef.current !== 'granted') {
+        const first = validItems[0];
         setRegion({
-          latitude: Number(mappedItems[0].latitude),
-          longitude: Number(mappedItems[0].longitude),
-          latitudeDelta: 0.5,
-          longitudeDelta: 0.5,
+          latitude: first.latitude,
+          longitude: first.longitude,
+          latitudeDelta: 0.15,
+          longitudeDelta: 0.15,
         });
       }
+    } catch (e) {
+      console.warn('[MapScreen] Erro ao carregar itens para o mapa:', e?.message || e);
     } finally {
       setLoading(false);
     }
@@ -304,7 +366,7 @@ const MapScreen = ({ navigation }) => {
       {loading && (
         <View style={styles.loadingState}>
           <ActivityIndicator color="#2563EB" />
-          <Text style={styles.loadingText}>Carregando localizações...</Text>
+          <Text style={styles.loadingText}>Carregando animais no mapa...</Text>
         </View>
       )}
     </View>
@@ -391,7 +453,6 @@ const styles = StyleSheet.create({
   locationNoticeText: { color: '#374151', lineHeight: 19 },
   retryButton: { alignSelf: 'flex-start', marginTop: 8 },
   retryText: { color: '#2563EB', fontWeight: '700' },
-  // markerRing, markerRingSelected e markerInner removidos — estilos inline no componente
   markerFallback: { fontSize: 22 },
   infoCard: {
     position: 'absolute',
@@ -440,8 +501,12 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  loadingText: { color: '#374151' },
+  loadingText: { color: '#374151', fontWeight: '600', fontSize: 13 },
 });
 
 const getSpeciesEmoji = (item) => {
@@ -470,26 +535,40 @@ const getSpeciesEmoji = (item) => {
 };
 
 const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) => {
-  const coordinate = { latitude: Number(item.latitude), longitude: Number(item.longitude) };
+  const [tracksViewChanges, setTracksViewChanges] = useState(true);
+
+  useEffect(() => {
+    // Permite que o React Native monte o layout visual antes de congelar a renderização do marcador
+    const timer = setTimeout(() => {
+      setTracksViewChanges(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [isSelected, item.id]);
+
+  const coordinate = {
+    latitude: Number(item.latitude),
+    longitude: Number(item.longitude),
+  };
+
   const isAdoption = itemsService.isPetAvailableForAdoption(item);
   const isFound = !isAdoption && item.status === 'found';
-  const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#F97316');
+  const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#EA580C');
   const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
   const emoji = getSpeciesEmoji(item);
 
-  const PIN_SIZE = isSelected ? 68 : 56;
-  const INNER_SIZE = isSelected ? 52 : 42;
+  const PIN_SIZE = isSelected ? 62 : 52;
+  const INNER_SIZE = isSelected ? 46 : 38;
 
   return (
     <Marker
       coordinate={coordinate}
       onPress={onPress}
       onCalloutPress={onCalloutPress}
-      tracksViewChanges={false}
+      tracksViewChanges={tracksViewChanges}
       anchor={{ x: 0.5, y: 1.0 }}
     >
       <View collapsable={false} style={{ alignItems: 'center', justifyContent: 'center', paddingBottom: 4 }}>
-        {/* Badge Principal Grande, Imponente e Arredondado */}
+        {/* Badge Principal com Cor de Status */}
         <View
           style={{
             width: PIN_SIZE,
@@ -498,17 +577,16 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
             backgroundColor: statusColor,
             alignItems: 'center',
             justifyContent: 'center',
-            borderWidth: 3.5,
+            borderWidth: 3,
             borderColor: '#FFFFFF',
-            shadowColor: statusColor,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.45,
-            shadowRadius: 6,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.35,
+            shadowRadius: 5,
             elevation: 8,
-            transform: isSelected ? [{ scale: 1.1 }] : [],
           }}
         >
-          {/* Núcleo Branco Interno com Ícone da Espécie Destacado */}
+          {/* Núcleo Branco Interno com Emoji da Espécie */}
           <View
             style={{
               width: INNER_SIZE,
@@ -519,24 +597,29 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: isSelected ? 28 : 24 }}>{emoji}</Text>
+            <Text style={{ fontSize: isSelected ? 24 : 20 }}>{emoji}</Text>
           </View>
         </View>
 
-        {/* Indicador de posição arredondado e suave (sem pontas ou triângulos) */}
+        {/* Ponteiro Triangular */}
         <View
           style={{
-            width: 10,
-            height: 6,
-            borderRadius: 3,
-            backgroundColor: statusColor,
-            marginTop: -3,
-            borderWidth: 1,
-            borderColor: '#FFFFFF',
+            width: 0,
+            height: 0,
+            backgroundColor: 'transparent',
+            borderStyle: 'solid',
+            borderLeftWidth: 6,
+            borderRightWidth: 6,
+            borderBottomWidth: 0,
+            borderTopWidth: 8,
+            borderLeftColor: 'transparent',
+            borderRightColor: 'transparent',
+            borderTopColor: statusColor,
+            marginTop: -1,
           }}
         />
       </View>
-      <Callout>
+      <Callout tooltip={false}>
         <View style={styles.callout}>
           <Text style={styles.calloutTitle} numberOfLines={1}>{item.title || 'Animal'}</Text>
           <Text style={[styles.calloutStatus, { color: statusColor }]}>{statusLabel}</Text>
