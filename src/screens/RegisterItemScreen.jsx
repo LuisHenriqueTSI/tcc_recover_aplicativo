@@ -35,6 +35,7 @@ const PET_SPECIES_OPTIONS = [
   { label: 'Outro', value: 'Outro' },
 ];
 
+const STANDARD_PET_SPECIES = ['Cachorro', 'Gato', 'Bovino', 'Ave', 'Cavalo'];
 const PET_SPECIES_CHIPS = PET_SPECIES_OPTIONS.filter((option) => option.value);
 const PET_COLOR_OPTIONS = ['Preto', 'Branco', 'Marrom', 'Laranja', 'Cinza', 'Amarelo', 'Dourado', 'Caramelo'];
 const PET_SIZE_OPTIONS = ['Pequeno', 'Médio', 'Grande', 'Gigante'];
@@ -318,7 +319,12 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [serialNumber, setSerialNumber] = useState(editItem?.serial_number || editItem?.extra_fields?.serial_number || '');
 
   // Campos detalhados para animal (colunas diretas da tabela + extra_fields)
-  const [animalSpecies, setAnimalSpecies] = useState(editItem?.species || editItem?.extra_fields?.species || '');
+  const initialSpecies = editItem?.species || editItem?.extra_fields?.species || '';
+  const isInitialCustom = Boolean(initialSpecies && !STANDARD_PET_SPECIES.includes(initialSpecies));
+
+  const [animalSpecies, setAnimalSpecies] = useState(isInitialCustom ? 'Outro' : initialSpecies);
+  const [customSpecies, setCustomSpecies] = useState(isInitialCustom ? initialSpecies : '');
+  const [isCustomSpecies, setIsCustomSpecies] = useState(isInitialCustom || initialSpecies === 'Outro');
   const [animalGender, setAnimalGender] = useState(editItem?.gender || editItem?.extra_fields?.gender || '');
   const [animalBreed, setAnimalBreed] = useState(editItem?.breed || editItem?.extra_fields?.breed || '');
   const [animalSize, setAnimalSize] = useState(editItem?.size || editItem?.extra_fields?.size || '');
@@ -695,8 +701,20 @@ const RegisterItemScreen = ({ navigation, route }) => {
       if (typeof editItem.serial_number !== 'undefined') setSerialNumber(editItem.serial_number);
       else if (editItem.extra_fields && typeof editItem.extra_fields.serial_number !== 'undefined') setSerialNumber(editItem.extra_fields.serial_number);
       
-      if (typeof editItem.species !== 'undefined') setAnimalSpecies(editItem.species);
-      else if (editItem.extra_fields && typeof editItem.extra_fields.species !== 'undefined') setAnimalSpecies(editItem.extra_fields.species);
+      const loadedSpecies = typeof editItem.species !== 'undefined'
+        ? editItem.species
+        : (editItem.extra_fields && typeof editItem.extra_fields.species !== 'undefined' ? editItem.extra_fields.species : '');
+      if (loadedSpecies) {
+        if (STANDARD_PET_SPECIES.includes(loadedSpecies)) {
+          setAnimalSpecies(loadedSpecies);
+          setIsCustomSpecies(false);
+          setCustomSpecies('');
+        } else {
+          setAnimalSpecies('Outro');
+          setIsCustomSpecies(true);
+          setCustomSpecies(loadedSpecies);
+        }
+      }
       
       if (typeof editItem.gender !== 'undefined') setAnimalGender(editItem.gender);
       else if (editItem.extra_fields && typeof editItem.extra_fields.gender !== 'undefined') setAnimalGender(editItem.extra_fields.gender);
@@ -743,12 +761,24 @@ const RegisterItemScreen = ({ navigation, route }) => {
     if (day?.dateString) setDate(day.dateString);
   };
 
+  const handleSpeciesChange = (selected) => {
+    if (selected === 'Outro') {
+      setAnimalSpecies('Outro');
+      setIsCustomSpecies(true);
+    } else {
+      setAnimalSpecies(selected);
+      setIsCustomSpecies(false);
+      setCustomSpecies('');
+    }
+  };
+
   const buildAutoTitle = () => {
     if (itemType !== 'animal') {
       return 'Item';
     }
 
-    const species = normalizeSpeciesValue(animalSpecies) || 'Animal';
+    const effectiveSpecies = isCustomSpecies ? (customSpecies.trim() || 'Outro') : (animalSpecies.trim() || 'Animal');
+    const species = normalizeSpeciesValue(effectiveSpecies) || 'Animal';
     const isFemale = species.toLowerCase() === 'ave';
     let statusLabel = '';
     if (status === 'lost') {
@@ -961,8 +991,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
       return false;
     }
 
-    if (itemType === 'animal' && (!animalSpecies || !animalSpecies.trim())) {
-      const msg = 'Selecione a espécie do animal';
+    const effectiveSpecies = isCustomSpecies ? customSpecies.trim() : animalSpecies.trim();
+    if (itemType === 'animal' && (!effectiveSpecies || effectiveSpecies.toLowerCase() === 'outro')) {
+      const msg = isCustomSpecies || animalSpecies === 'Outro'
+        ? 'Por favor, informe a espécie do animal'
+        : 'Selecione a espécie do animal';
       setError(msg);
       Alert.alert('Campo obrigatório', msg);
       return false;
@@ -1094,6 +1127,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
       const isDirectAdoption = status === 'adoption';
       const effectiveStatus = isDirectAdoption ? 'found' : status;
+      const effectiveSpecies = isCustomSpecies ? customSpecies.trim() : animalSpecies.trim();
 
       const itemData = {
         title: toNull(currentTitle) || editItem?.title || 'Animal',
@@ -1114,7 +1148,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         brand: toNull(brand),
         color: toNull(color),
         serial_number: toNull(serialNumber),
-        species: toNull(animalSpecies),
+        species: toNull(effectiveSpecies),
         gender: toNull(animalGender),
         breed: toNull(animalBreed),
         size: toNull(animalSize),
@@ -1125,7 +1159,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           brand: toNull(brand),
           color: toNull(color),
           serial_number: toNull(serialNumber),
-          species: toNull(animalSpecies),
+          species: toNull(effectiveSpecies),
           gender: toNull(animalGender),
           breed: toNull(animalBreed),
           size: toNull(animalSize),
@@ -1596,7 +1630,24 @@ const RegisterItemScreen = ({ navigation, route }) => {
                 </View>
               )}
 
-              <SelectionChips label="Espécie *" options={PET_SPECIES_CHIPS.map((option) => option.value)} value={animalSpecies} onChange={setAnimalSpecies} />
+              <SelectionChips
+                label="Espécie *"
+                options={PET_SPECIES_CHIPS.map((option) => option.value)}
+                value={animalSpecies}
+                onChange={handleSpeciesChange}
+              />
+              {isCustomSpecies && (
+                <View style={{ marginTop: 2, marginBottom: 10 }}>
+                  <Input
+                    label="Qual é a espécie do animal? *"
+                    placeholder="Ex: Coelho, Hamster, Tartaruga, Porquinho da Índia..."
+                    value={customSpecies}
+                    onChangeText={setCustomSpecies}
+                    style={styles.input}
+                    autoFocus
+                  />
+                </View>
+              )}
               <SelectionChips
                 label="Cor *"
                 options={PET_COLOR_OPTIONS}
