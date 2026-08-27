@@ -431,7 +431,6 @@ const styles = StyleSheet.create({
 });
 
 const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) => {
-  const [tracksViewChanges, setTracksViewChanges] = useState(true);
   const photoUrl = item.item_photos?.[0]?.url;
   const coordinate = { latitude: Number(item.latitude), longitude: Number(item.longitude) };
   const isAdoption = itemsService.isPetAvailableForAdoption(item);
@@ -439,27 +438,19 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#F97316');
   const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
 
-  const SIZE = isSelected ? 70 : 56;
-  const BORDER = 4;
-  // Diâmetro interno da foto = circulo total menos as 2 bordas e 2px de gap branco
-  const GAP = 2;
-  const PHOTO = SIZE - (BORDER + GAP) * 2;
+  const SIZE = isSelected ? 64 : 52;
+  const BORDER = 3.5;
+  const PHOTO = SIZE - BORDER * 2;
 
   return (
     <Marker
       coordinate={coordinate}
       onPress={onPress}
       onCalloutPress={onCalloutPress}
-      tracksViewChanges={tracksViewChanges}
+      tracksViewChanges={true}
       anchor={{ x: 0.5, y: 0.5 }}
+      style={{ width: SIZE, height: SIZE }}
     >
-      {/*
-        Android: elevation + borderRadius num View pai clipa os filhos.
-        Solução: estrutura PLANA — o anel é um View circular sem elevation;
-        a foto é uma Image com borderRadius (Android clipa a Image por conta
-        própria sem precisar de overflow:hidden no pai).
-        iOS: usamos shadowColor no wrapper transparente.
-      */}
       <View
         collapsable={false}
         style={{
@@ -471,30 +462,25 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
           backgroundColor: '#FFFFFF',
           alignItems: 'center',
           justifyContent: 'center',
-          // iOS shadow (não afeta Android)
-          shadowColor: statusColor,
-          shadowOffset: { width: 0, height: 3 },
-          shadowOpacity: 0.6,
-          shadowRadius: 6,
-          // Android: NÃO usar elevation aqui — causaria clipping
-          // Escala quando selecionado
-          transform: isSelected ? [{ scale: 1.12 }] : [{ scale: 1 }],
+          overflow: 'hidden',
+          // Sombra para Android e iOS
+          elevation: isSelected ? 8 : 4,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
         }}
       >
         {photoUrl ? (
-          // Image com borderRadius: Android renderiza circular sem overflow:hidden no pai
           <Image
             source={{ uri: photoUrl }}
             style={{
               width: PHOTO,
               height: PHOTO,
               borderRadius: PHOTO / 2,
-              backgroundColor: '#E5E7EB',
+              backgroundColor: '#E2E8F0',
             }}
             resizeMode="cover"
-            onLoadEnd={() => {
-              setTimeout(() => setTracksViewChanges(false), 500);
-            }}
           />
         ) : (
           <View
@@ -502,7 +488,7 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
               width: PHOTO,
               height: PHOTO,
               borderRadius: PHOTO / 2,
-              backgroundColor: statusColor + '28',
+              backgroundColor: statusColor + '20',
               alignItems: 'center',
               justifyContent: 'center',
             }}
