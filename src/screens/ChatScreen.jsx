@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,11 +10,13 @@ import {
   Keyboard,
   Platform,
   Animated,
+  Alert,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMessages, sendMessage, markMessagesAsRead, uploadMessagePhoto } from '../services/messages';
+import { submitOwnershipProof } from '../services/proofVerification';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -41,10 +42,17 @@ const ChatScreen = (props) => {
   const [petTitle, setPetTitle] = useState(conversation?.itemTitle || '');
   const [otherName, setOtherName] = useState(conversation?.otherName || '');
   const [avatarUrl, setAvatarUrl] = useState(conversation?.avatarUrl || null);
+  const [itemData, setItemData] = useState(null);
 
   const [sending, setSending] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+
+  // Estados para a comprovação inicial obrigatória de posse
+  const [proofText, setProofText] = useState('');
+  const [proofPhoto, setProofPhoto] = useState(null);
+  const [submittingProof, setSubmittingProof] = useState(false);
+
   const flatListRef = useRef(null);
 
   const otherId = conversation?.otherId;
@@ -141,14 +149,17 @@ const ChatScreen = (props) => {
             }).catch(() => {});
         }
 
-        if (!conversation?.itemTitle && itemId) {
+        if (itemId) {
           supabase
             .from('items')
-            .select('title')
+            .select('id, title, status, owner_id, species, extra_fields')
             .eq('id', itemId)
             .single()
-            .then(({ data: itemData }) => {
-              if (itemData?.title) setPetTitle(itemData.title);
+            .then(({ data: iData }) => {
+              if (iData) {
+                setItemData(iData);
+                if (iData.title) setPetTitle(iData.title);
+              }
             }).catch(() => {});
         }
       } catch (err) {
@@ -159,6 +170,12 @@ const ChatScreen = (props) => {
     };
     load();
   }, [user?.id, otherId, itemId]);
+
+  // Verifica se o chat é sobre um animal encontrado e o visitante ainda não enviou comprovação
+  const isFoundPet = itemData?.status === 'found' || conversation?.itemStatus === 'found';
+  const isMeOwner = itemData ? itemData.owner_id === user?.id : conversation?.itemOwnerId === user?.id;
+  const hasUserSentMessage = messages.some(m => m.sender_id === user?.id);
+  const requiresInitialProof = Boolean(itemId && isFoundPet && !isMeOwner && !hasUserSentMessage && !loading);
 
   useEffect(() => {
     if (!user?.id || !otherId) return;
@@ -243,6 +260,98 @@ const ChatScreen = (props) => {
     setPhotoPreview(null);
   };
 
+  // Seletor de Foto para Comprovação Inicial Obrigatória
+  const handlePickProofPhoto = async (source = 'gallery') => {
+    try {
+      let result;
+      if (source === 'camera') {
+        const perm = await ImagePicker.requestCameraPermissionsAsync();
+        if (!perm.granted) {
+          Alert.alert('Permissão necessária', 'Permita o acesso à câmera para fotografar o pet ou documento.');
+          return;
+        }
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          quality: 0.7,
+        });
+      } else {
+        const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!perm.granted) {
+          Alert.alert('Permissão necessária', 'Permita o acesso à galeria para selecionar fotos.');
+          return;
+        }
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          quality: 0.7,
+        });
+      }
+
+      if (!result.canceled && result.assets?.[0]?.uri) {
+        setProofPhoto(result.assets[0]);
+      }
+    } catch (e) {
+      console.error('[ChatScreen] Erro ao selecionar foto de comprovação:', e);
+    }
+  };
+
+  // Envio da Comprovação Inicial Obrigatória
+  const handleSubmitProof = async () => {
+    if (!proofText.trim() && !proofPhoto) {
+      Alert.alert(
+        'Comprovação Necessária',
+        'Por favor, descreva ao menos uma característica marcante do pet ou anexe uma foto para comprovar a posse antes de enviar.'
+      );
+      return;
+    }
+
+    setSubmittingProof(true);
+    try {
+      let photoUrl = null;
+      if (proofPhoto) {
+        photoUrl = await uploadMessagePhoto(Date.now(), proofPhoto.uri);
+      }
+
+      const formattedContent = `🛡️ [COMPROVAÇÃO DE TUTOR]\n${proofText.trim() || 'Foto de comprovação anexada.'}`;
+
+      const sentMsg = await sendMessage({
+        sender_id: user.id,
+        receiver_id: otherId,
+        item_id: itemId,
+        content: formattedContent,
+        photo_url: photoUrl,
+      });
+
+      // Também registra no sistema de comprovação oficial em background para o administrador/resgatista
+      if (itemId) {
+        submitOwnershipProof({
+          itemId,
+          claimantId: user.id,
+          photoUris: photoUrl ? [photoUrl] : [],
+          message: proofText.trim() || 'Comprovação enviada via Chat.',
+          itemTitle: petTitle || 'o pet',
+          finderId: otherId,
+        }).catch((err) => console.log('[ChatScreen] Erro no submitOwnershipProof background:', err));
+      }
+
+      setMessages((prev) => {
+        if (!sentMsg || !sentMsg.id) return prev;
+        if (prev.some(m => m.id === sentMsg.id)) return prev;
+        return [...prev, sentMsg].sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at));
+      });
+
+      setProofText('');
+      setProofPhoto(null);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      Alert.alert('Comprovação Enviada! 🎉', 'Sua identificação foi enviada para o protetor/resgatista. O chat agora está liberado para mensagens!');
+    } catch (err) {
+      Alert.alert('Erro ao enviar comprovação', err.message || 'Tente novamente.');
+    } finally {
+      setSubmittingProof(false);
+    }
+  };
+
   const handleSend = async () => {
     if ((!input.trim() && !selectedPhoto) || sending) return;
     setSending(true);
@@ -277,6 +386,8 @@ const ChatScreen = (props) => {
   const renderItem = ({ item }) => {
     const isMe = item.sender_id === user.id;
     const isHighlight = highlightMessageId && item.id === highlightMessageId;
+    const isProofMsg = typeof item.content === 'string' && item.content.includes('[COMPROVAÇÃO DE TUTOR]');
+
     return (
       <View style={[styles.messageRow, isMe ? styles.myMessage : styles.otherMessage]}>
         <View
@@ -285,9 +396,19 @@ const ChatScreen = (props) => {
             isMe
               ? { backgroundColor: colors.primary, borderColor: colors.primary, borderBottomRightRadius: 4 }
               : { backgroundColor: colors.surface, borderColor: colors.border, borderBottomLeftRadius: 4 },
+            isProofMsg && { borderWidth: 1.5, borderColor: isMe ? '#60A5FA' : '#10B981' },
             isHighlight && { borderWidth: 2, borderColor: '#F59E0B' },
           ]}
         >
+          {isProofMsg && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 4 }}>
+              <MaterialIcons name="verified" size={14} color={isMe ? '#FFFFFF' : '#10B981'} />
+              <Text style={{ fontSize: 11, fontWeight: '800', color: isMe ? '#FFFFFF' : '#10B981' }}>
+                IDENTIFICAÇÃO DE TUTOR
+              </Text>
+            </View>
+          )}
+
           {item.photo_url ? (
             <Image source={{ uri: item.photo_url }} style={styles.messageImage} />
           ) : null}
@@ -398,9 +519,98 @@ const ChatScreen = (props) => {
         onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
         keyboardShouldPersistTaps="handled"
         style={{ flex: 1 }}
+        ListEmptyComponent={
+          requiresInitialProof ? (
+            <View style={[styles.proofCard, { backgroundColor: colors.surface, borderColor: isDark ? '#2563EB' : '#93C5FD' }]}>
+              <View style={[styles.proofBadge, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF' }]}>
+                <MaterialIcons name="verified-user" size={20} color="#2563EB" />
+                <Text style={[styles.proofBadgeText, { color: colors.primary }]}>Comprovação Obrigatória</Text>
+              </View>
+
+              <Text style={[styles.proofTitle, { color: colors.text }]}>
+                Identifique-se como tutor deste pet
+              </Text>
+              <Text style={[styles.proofSubtitle, { color: colors.textSecondary }]}>
+                Para a segurança do animal e do protetor, envie fotos anteriores ou descreva características marcantes (marcas, coleira, hábitos) para comprovar a tutela antes de iniciar a conversa.
+              </Text>
+
+              {/* Botões de Câmera / Galeria */}
+              <View style={styles.proofPhotoActions}>
+                <TouchableOpacity
+                  style={[styles.proofBtn, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: colors.border }]}
+                  onPress={() => handlePickProofPhoto('camera')}
+                >
+                  <MaterialIcons name="photo-camera" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+                  <Text style={[styles.proofBtnText, { color: colors.text }]}>Tirar Foto</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.proofBtn, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: colors.border }]}
+                  onPress={() => handlePickProofPhoto('gallery')}
+                >
+                  <MaterialIcons name="photo-library" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+                  <Text style={[styles.proofBtnText, { color: colors.text }]}>Galeria</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Preview da foto selecionada para comprovação */}
+              {proofPhoto && (
+                <View style={styles.proofPreviewContainer}>
+                  <Image source={{ uri: proofPhoto.uri }} style={styles.proofPreviewImg} />
+                  <TouchableOpacity
+                    style={styles.proofRemoveBtn}
+                    onPress={() => setProofPhoto(null)}
+                  >
+                    <MaterialIcons name="close" size={16} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Campo para descrição de características */}
+              <TextInput
+                style={[
+                  styles.proofInput,
+                  {
+                    backgroundColor: isDark ? '#0F172A' : '#F8FAFC',
+                    borderColor: colors.border,
+                    color: colors.text,
+                  },
+                ]}
+                placeholder="Descreva marcas, manchas, cor da coleira, cicatrizes ou detalhes que comprovem que você é o tutor..."
+                placeholderTextColor={colors.textMuted}
+                value={proofText}
+                onChangeText={setProofText}
+                multiline
+                numberOfLines={3}
+              />
+
+              {/* Botão de Envio de Comprovação */}
+              <TouchableOpacity
+                style={[styles.proofSubmitBtn, { backgroundColor: colors.primary }]}
+                onPress={handleSubmitProof}
+                disabled={submittingProof}
+                activeOpacity={0.85}
+              >
+                {submittingProof ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <MaterialIcons name="security" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                    <Text style={styles.proofSubmitBtnText}>Enviar Comprovação e Liberar Chat</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
+              <MaterialIcons name="chat-bubble-outline" size={40} color={colors.textMuted} />
+              <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 8 }}>Nenhuma mensagem ainda</Text>
+            </View>
+          )
+        }
       />
 
-      {/* Preview de foto selecionada */}
+      {/* Preview de foto selecionada no chat normal */}
       {photoPreview && (
         <View style={[styles.previewRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Image source={{ uri: photoPreview }} style={styles.previewImage} />
@@ -421,55 +631,63 @@ const ChatScreen = (props) => {
           },
         ]}
       >
-        <View
-          style={[
-            styles.inputPill,
-            {
-              backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
-              borderColor: isDark ? '#334155' : '#E2E8F0',
-            },
-          ]}
-        >
-          <TouchableOpacity
-            onPress={handlePickPhoto}
-            style={[styles.photoButton, { backgroundColor: colors.primary }]}
-            activeOpacity={0.8}
-            accessibilityLabel="Anexar foto"
-          >
-            <Feather name="camera" size={17} color="#FFFFFF" />
-          </TouchableOpacity>
-
-          <TextInput
+        {requiresInitialProof ? (
+          <View style={{ paddingVertical: 10, paddingHorizontal: 12, alignItems: 'center' }}>
+            <Text style={{ fontSize: 12, color: colors.textSecondary, textAlign: 'center', fontWeight: '600' }}>
+              🔒 Preencha e envie a comprovação acima para liberar as mensagens.
+            </Text>
+          </View>
+        ) : (
+          <View
             style={[
-              styles.input,
-              { color: colors.text },
+              styles.inputPill,
+              {
+                backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+                borderColor: isDark ? '#334155' : '#E2E8F0',
+              },
             ]}
-            value={input}
-            onChangeText={setInput}
-            placeholder="Mensagem..."
-            placeholderTextColor={colors.textMuted}
-            editable={!sending}
-            onSubmitEditing={handleSend}
-            blurOnSubmit={false}
-            returnKeyType="send"
-            multiline
-          />
-
-          {input.trim().length > 0 || photoPreview ? (
+          >
             <TouchableOpacity
-              onPress={handleSend}
-              disabled={sending}
-              style={[styles.sendPillBtn, { backgroundColor: colors.primary }]}
+              onPress={handlePickPhoto}
+              style={[styles.photoButton, { backgroundColor: colors.primary }]}
               activeOpacity={0.8}
+              accessibilityLabel="Anexar foto"
             >
-              {sending ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <Ionicons name="send" size={16} color="#FFFFFF" style={{ marginLeft: 2 }} />
-              )}
+              <Feather name="camera" size={17} color="#FFFFFF" />
             </TouchableOpacity>
-          ) : null}
-        </View>
+
+            <TextInput
+              style={[
+                styles.input,
+                { color: colors.text },
+              ]}
+              value={input}
+              onChangeText={setInput}
+              placeholder="Mensagem..."
+              placeholderTextColor={colors.textMuted}
+              editable={!sending}
+              onSubmitEditing={handleSend}
+              blurOnSubmit={false}
+              returnKeyType="send"
+              multiline
+            />
+
+            {input.trim().length > 0 || photoPreview ? (
+              <TouchableOpacity
+                onPress={handleSend}
+                disabled={sending}
+                style={[styles.sendPillBtn, { backgroundColor: colors.primary }]}
+                activeOpacity={0.8}
+              >
+                {sending ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Ionicons name="send" size={16} color="#FFFFFF" style={{ marginLeft: 2 }} />
+                )}
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        )}
       </View>
     </Animated.View>
   );
@@ -500,6 +718,106 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontSize: 15, paddingVertical: 6, paddingHorizontal: 6, maxHeight: 100 },
   sendPillBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginLeft: 6 },
   error: { color: 'red', textAlign: 'center', marginTop: 20 },
+
+  // Estilos da Comprovação Obrigatória
+  proofCard: {
+    marginVertical: 10,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  proofBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
+    marginBottom: 8,
+    gap: 6,
+  },
+  proofBadgeText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  proofTitle: {
+    fontSize: 15.5,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  proofSubtitle: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    marginBottom: 14,
+  },
+  proofPhotoActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 10,
+  },
+  proofBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  proofBtnText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  proofPreviewContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 140,
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  proofPreviewImg: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  proofRemoveBtn: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  proofInput: {
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 10,
+    fontSize: 13,
+    minHeight: 75,
+    textAlignVertical: 'top',
+    marginBottom: 12,
+  },
+  proofSubmitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  proofSubmitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
 });
 
 export default ChatScreen;
