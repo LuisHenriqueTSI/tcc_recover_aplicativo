@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, Feather, FontAwesome5 } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -48,14 +48,15 @@ const SobreScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Logo Circular em Destaque */}
-        <View style={styles.logoSection}>
+        {/* HERO SECTION */}
+        <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          {/* Logo Circular */}
           <View
             style={[
               styles.circularLogoContainer,
               {
-                backgroundColor: isDark ? colors.card : '#FFFFFF',
-                borderColor: isDark ? colors.cardBorder : '#EFF6FF',
+                backgroundColor: colors.card,
+                borderColor: isDark ? 'rgba(37, 99, 235, 0.3)' : '#EFF6FF',
               },
             ]}
           >
@@ -65,20 +66,39 @@ const SobreScreen = ({ navigation }) => {
               resizeMode="contain"
             />
           </View>
-        </View>
 
-        {/* Mensagem de Boas-Vindas */}
-        <View style={styles.textSection}>
+          <View style={[styles.brandPill, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : '#DBEAFE' }]}>
+            <MaterialIcons name="pets" size={13} color={colors.primary} style={{ marginRight: 4 }} />
+            <Text style={[styles.brandPillText, { color: colors.primary }]}>REDE COLABORATIVA ANIMAL</Text>
+          </View>
+
           <Text style={[styles.headline, { color: colors.text }]}>
-            Cada animal tem uma história e uma família esperando por ele.
+            Reunindo pets e famílias com inteligência e comunidade.
           </Text>
+
           <Text style={[styles.subheadline, { color: colors.textSecondary }]}>
-            Conectamos quem perdeu e quem encontrou um animal, de forma simples, rápida e acolhedora.
+            O WeFIND conecta quem perdeu e quem encontrou um animal, tornando a busca rápida, geolocalizada e acolhedora.
           </Text>
+
+          {/* Quick Value Badges */}
+          <View style={styles.valueBadgesRow}>
+            <View style={[styles.valBadge, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.12)' : '#ECFDF5', borderColor: isDark ? 'rgba(34, 197, 94, 0.3)' : '#A7F3D0' }]}>
+              <MaterialIcons name="check-circle" size={14} color="#059669" style={{ marginRight: 4 }} />
+              <Text style={[styles.valBadgeText, { color: isDark ? '#6EE7B7' : '#047857' }]}>100% Gratuito</Text>
+            </View>
+            <View style={[styles.valBadge, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.12)' : '#EFF6FF', borderColor: isDark ? 'rgba(37, 99, 235, 0.3)' : '#BFDBFE' }]}>
+              <MaterialIcons name="my-location" size={14} color="#2563EB" style={{ marginRight: 4 }} />
+              <Text style={[styles.valBadgeText, { color: isDark ? '#93C5FD' : '#1D4ED8' }]}>GPS em Tempo Real</Text>
+            </View>
+            <View style={[styles.valBadge, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FFFBEB', borderColor: isDark ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A' }]}>
+              <MaterialIcons name="chat" size={14} color="#D97706" style={{ marginRight: 4 }} />
+              <Text style={[styles.valBadgeText, { color: isDark ? '#FDE68A' : '#B45309' }]}>WhatsApp Integrado</Text>
+            </View>
+          </View>
         </View>
 
-        {/* Botões de Ação no Topo para Visitantes / Voltar */}
-        {!user ? (
+        {/* BOTOES DE ACAO INICIAL PARA VISITANTES */}
+        {!user && (
           <View style={styles.actionSectionTop}>
             <TouchableOpacity
               style={[styles.primaryButton, { backgroundColor: colors.primary }]}
@@ -86,37 +106,64 @@ const SobreScreen = ({ navigation }) => {
               activeOpacity={0.88}
             >
               <Text style={styles.primaryButtonText}>Começar a Explorar</Text>
-              <MaterialIcons name="arrow-forward" size={20} color="#FFFFFF" />
+              <MaterialIcons name="arrow-forward" size={18} color="#FFFFFF" />
             </TouchableOpacity>
 
             <View style={styles.authButtonsRow}>
               <TouchableOpacity
-                style={[styles.secondaryButton, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : '#BFDBFE' }]}
+                style={[styles.secondaryButton, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
                 onPress={handleLoginDirect}
                 activeOpacity={0.8}
               >
-                <MaterialIcons name="login" size={17} color={colors.primary} style={{ marginRight: 5 }} />
-                <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>Entrar</Text>
+                <MaterialIcons name="login" size={17} color={colors.primary} style={{ marginRight: 6 }} />
+                <Text style={[styles.secondaryButtonText, { color: colors.text }]}>Entrar</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.secondaryButton, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : '#BFDBFE' }]}
+                style={[styles.secondaryButton, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
                 onPress={handleRegisterDirect}
                 activeOpacity={0.8}
               >
-                <MaterialIcons name="person-add" size={17} color={colors.primary} style={{ marginRight: 5 }} />
-                <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>Cadastrar</Text>
+                <MaterialIcons name="person-add" size={17} color={colors.primary} style={{ marginRight: 6 }} />
+                <Text style={[styles.secondaryButtonText, { color: colors.text }]}>Criar Conta</Text>
               </TouchableOpacity>
             </View>
           </View>
-        ) : null}
+        )}
 
-        {/* Como Funciona - Design WeFIND */}
+        {/* STATS IMPACT HIGHLIGHTS */}
+        <View style={styles.statsRow}>
+          <View style={[styles.statTile, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <View style={[styles.statIconCircle, { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2' }]}>
+              <MaterialIcons name="notifications-active" size={18} color="#EF4444" />
+            </View>
+            <Text style={[styles.statNumber, { color: colors.text }]}>Ágil</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Alertas imediatos na vizinhança</Text>
+          </View>
+
+          <View style={[styles.statTile, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <View style={[styles.statIconCircle, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' }]}>
+              <MaterialIcons name="map" size={18} color="#2563EB" />
+            </View>
+            <Text style={[styles.statNumber, { color: colors.text }]}>Interativo</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Radar de busca com raio personalizável</Text>
+          </View>
+
+          <View style={[styles.statTile, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <View style={[styles.statIconCircle, { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5' }]}>
+              <MaterialIcons name="volunteer-activism" size={18} color="#10B981" />
+            </View>
+            <Text style={[styles.statNumber, { color: colors.text }]}>Solidário</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Comunidade ativa e sem custos</Text>
+          </View>
+        </View>
+
+        {/* COMO FUNCIONA O WEFIND */}
         <View style={styles.howItWorksSection}>
           <View style={styles.howItWorksHeaderRow}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Como Funciona o WeFIND</Text>
             <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
-              Passo a passo simples para unir quem perdeu e quem encontrou
+              Três passos simples para encontrar ou ajudar um animal
             </Text>
           </View>
 
@@ -126,7 +173,7 @@ const SobreScreen = ({ navigation }) => {
               <View style={[styles.wefindStepTag, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : '#BFDBFE' }]}>
                 <Text style={[styles.wefindStepTagText, { color: colors.primary }]}>PASSO 01</Text>
               </View>
-              <Text style={[styles.wefindStepSubtitle, { color: colors.textSecondary }]}>CADASTRO INTELIGENTE</Text>
+              <Text style={[styles.wefindStepSubtitle, { color: colors.primary }]}>CADASTRO INTELIGENTE</Text>
             </View>
             <Text style={[styles.wefindStepTitle, { color: colors.text }]}>Publique o anúncio em 1 minuto</Text>
 
@@ -162,17 +209,17 @@ const SobreScreen = ({ navigation }) => {
                 </View>
               </View>
 
-              <View style={[styles.wefindFloatingPill, { top: 12, right: 12, backgroundColor: isDark ? 'rgba(245, 158, 11, 0.18)' : '#FEF3C7', borderColor: isDark ? '#D97706' : '#FDE68A' }]}>
+              <View style={[styles.wefindFloatingPill, { top: 12, right: 12, backgroundColor: isDark ? 'rgba(245, 158, 11, 0.2)' : '#FEF3C7', borderColor: isDark ? '#D97706' : '#FDE68A' }]}>
                 <Text style={{ fontSize: 11, fontWeight: '700', color: isDark ? '#FCD34D' : '#B45309' }}>✨ Gera Cartaz</Text>
               </View>
 
-              <View style={[styles.wefindFloatingPill, { bottom: 12, left: 12, backgroundColor: isDark ? 'rgba(34, 197, 94, 0.18)' : '#DCFCE7', borderColor: isDark ? '#22C55E' : '#BBF7D0' }]}>
+              <View style={[styles.wefindFloatingPill, { bottom: 12, left: 12, backgroundColor: isDark ? 'rgba(34, 197, 94, 0.2)' : '#DCFCE7', borderColor: isDark ? '#22C55E' : '#BBF7D0' }]}>
                 <Text style={{ fontSize: 11, fontWeight: '700', color: isDark ? '#86EFAC' : '#15803D' }}>⚡ 100% Grátis</Text>
               </View>
             </View>
 
             <Text style={[styles.wefindStepDescription, { color: colors.textSecondary }]}>
-              Adicione fotos, características e o último local visto. O aplicativo gera automaticamente um cartaz digital pronto para imprimir e compartilhar nas redes sociais.
+              Adicione fotos, características e o último local visto. O aplicativo gera automaticamente um cartaz digital pronto para imprimir e compartilhar no WhatsApp e redes sociais.
             </Text>
 
             <TouchableOpacity
@@ -220,7 +267,7 @@ const SobreScreen = ({ navigation }) => {
                 </View>
               </View>
 
-              <View style={[styles.wefindFloatingPill, { top: 10, right: 10, backgroundColor: isDark ? 'rgba(34, 197, 94, 0.18)' : '#DCFCE7', borderColor: isDark ? '#22C55E' : '#86EFAC' }]}>
+              <View style={[styles.wefindFloatingPill, { top: 10, right: 10, backgroundColor: isDark ? 'rgba(34, 197, 94, 0.2)' : '#DCFCE7', borderColor: isDark ? '#22C55E' : '#86EFAC' }]}>
                 <Text style={{ fontSize: 11, fontWeight: '700', color: isDark ? '#86EFAC' : '#166534' }}>💬 Alerta no WhatsApp</Text>
               </View>
             </View>
@@ -266,7 +313,7 @@ const SobreScreen = ({ navigation }) => {
                 <Text style={[styles.miniChatText, { color: '#FFFFFF' }]}>"Que alívio! Já estou indo buscar! ❤️"</Text>
               </View>
 
-              <View style={[styles.wefindFloatingPill, { bottom: 10, right: 12, backgroundColor: isDark ? 'rgba(245, 158, 11, 0.18)' : '#FEF3C7', borderColor: isDark ? '#D97706' : '#FDE68A' }]}>
+              <View style={[styles.wefindFloatingPill, { bottom: 10, right: 12, backgroundColor: isDark ? 'rgba(245, 158, 11, 0.2)' : '#FEF3C7', borderColor: isDark ? '#D97706' : '#FDE68A' }]}>
                 <Text style={{ fontSize: 11, fontWeight: '700', color: isDark ? '#FCD34D' : '#B45309' }}>🎉 Reencontro Feliz</Text>
               </View>
             </View>
@@ -283,6 +330,47 @@ const SobreScreen = ({ navigation }) => {
               <Text style={styles.wefindStepBtnText}>Ver Mural de Reencontros</Text>
               <MaterialIcons name="arrow-forward" size={16} color="#FFFFFF" />
             </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* NOSSOS PILARES */}
+        <View style={[styles.pillarsCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <Text style={[styles.pillarsTitle, { color: colors.text }]}>Nossos Compromissos</Text>
+
+          <View style={styles.pillarItem}>
+            <View style={[styles.pillarIconBox, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' }]}>
+              <MaterialIcons name="verified-user" size={20} color="#2563EB" />
+            </View>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={[styles.pillarItemTitle, { color: colors.text }]}>Privacidade e Segurança</Text>
+              <Text style={[styles.pillarItemDesc, { color: colors.textSecondary }]}>
+                Seus dados de contato ficam resguardados e você controla o compartilhamento de mensagens.
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.pillarItem}>
+            <View style={[styles.pillarIconBox, { backgroundColor: isDark ? 'rgba(236, 72, 153, 0.15)' : '#FDF2F8' }]}>
+              <MaterialIcons name="favorite" size={20} color="#EC4899" />
+            </View>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={[styles.pillarItemTitle, { color: colors.text }]}>Adoção Consciente</Text>
+              <Text style={[styles.pillarItemDesc, { color: colors.textSecondary }]}>
+                Espaço dedicado para divulgar pets que buscam um lar amoroso e responsável.
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.pillarItem, { marginBottom: 0 }]}>
+            <View style={[styles.pillarIconBox, { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5' }]}>
+              <MaterialIcons name="all-inclusive" size={20} color="#10B981" />
+            </View>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={[styles.pillarItemTitle, { color: colors.text }]}>100% Gratuito e Aberto</Text>
+              <Text style={[styles.pillarItemDesc, { color: colors.textSecondary }]}>
+                Uma plataforma construída para salvar vidas e conectar comunidades sem cobranças.
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -319,37 +407,54 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingHorizontal: 18,
+    paddingTop: 14,
     paddingBottom: 40,
   },
-  logoSection: {
+  heroCard: {
+    borderRadius: 24,
+    padding: 22,
     alignItems: 'center',
-    marginTop: 6,
-    marginBottom: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
   },
   circularLogoContainer: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
+    width: 108,
+    height: 108,
+    borderRadius: 54,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 3,
-    shadowColor: '#000',
+    shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.16,
     shadowRadius: 10,
     elevation: 4,
+    marginBottom: 14,
   },
   circularLogo: {
     width: '100%',
     height: '100%',
   },
-  textSection: {
+  brandPill: {
+    flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
-    marginBottom: 20,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  brandPillText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.6,
   },
   headline: {
     fontSize: 20,
@@ -357,29 +462,49 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 27,
     marginBottom: 8,
+    letterSpacing: -0.3,
   },
   subheadline: {
-    fontSize: 14,
+    fontSize: 13.5,
     textAlign: 'center',
     lineHeight: 20,
     maxWidth: 320,
+    marginBottom: 16,
+  },
+  valueBadgesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'center',
+  },
+  valBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  valBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   actionSectionTop: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   primaryButton: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 14,
+    borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 24,
     gap: 8,
     shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.28,
     shadowRadius: 8,
     elevation: 3,
     marginBottom: 10,
@@ -387,7 +512,8 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
   authButtonsRow: {
     flexDirection: 'row',
@@ -399,32 +525,74 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
-    paddingVertical: 11,
+    borderRadius: 14,
+    paddingVertical: 12,
     borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
   secondaryButtonText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
   },
-  howItWorksSection: {
-    marginBottom: 24,
+  statsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 20,
   },
-  howItWorksHeaderRow: {
-    marginBottom: 16,
+  statTile: {
+    flex: 1,
+    borderRadius: 18,
+    padding: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  sectionTitle: {
-    fontSize: 19,
+  statIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  statNumber: {
+    fontSize: 13,
     fontWeight: '800',
     marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 10,
+    textAlign: 'center',
+    lineHeight: 13,
+  },
+  howItWorksSection: {
+    marginBottom: 20,
+  },
+  howItWorksHeaderRow: {
+    marginBottom: 14,
+    paddingHorizontal: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 2,
+    letterSpacing: -0.2,
   },
   sectionSubtitle: {
     fontSize: 12.5,
   },
   wefindStepCard: {
-    borderRadius: 20,
+    borderRadius: 22,
     padding: 18,
-    marginBottom: 18,
+    marginBottom: 16,
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -445,22 +613,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   wefindStepTagText: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
   wefindStepSubtitle: {
     fontSize: 11.5,
-    fontWeight: '700',
+    fontWeight: '800',
     letterSpacing: 0.5,
   },
   wefindStepTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
     marginBottom: 14,
+    letterSpacing: -0.2,
   },
   wefindShowcaseBox: {
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     padding: 14,
     minHeight: 140,
@@ -470,7 +639,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   miniCardMockup: {
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 10,
     borderWidth: 1,
     shadowColor: '#000',
@@ -489,7 +658,7 @@ const styles = StyleSheet.create({
   miniStatusBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 5,
+    borderRadius: 6,
   },
   miniStatusBadgeText: {
     color: '#FFFFFF',
@@ -499,7 +668,7 @@ const styles = StyleSheet.create({
   miniSpeciesBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 5,
+    borderRadius: 6,
   },
   miniSpeciesBadgeText: {
     fontSize: 10,
@@ -512,7 +681,7 @@ const styles = StyleSheet.create({
   miniPhotoBox: {
     width: 44,
     height: 44,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -526,7 +695,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   miniCardPetName: {
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '800',
   },
   miniCardLocationText: {
@@ -608,9 +777,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 13,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     gap: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -621,7 +790,46 @@ const styles = StyleSheet.create({
   wefindStepBtnText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
+  },
+  pillarsCard: {
+    borderRadius: 22,
+    padding: 18,
+    borderWidth: 1,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  pillarsTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    marginBottom: 14,
+    letterSpacing: -0.2,
+  },
+  pillarItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 14,
+  },
+  pillarIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  pillarItemTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  pillarItemDesc: {
+    fontSize: 12.5,
+    lineHeight: 18,
   },
   footerSection: {
     alignItems: 'center',
@@ -635,7 +843,7 @@ const styles = StyleSheet.create({
     maxWidth: 300,
   },
   link: {
-    fontWeight: '600',
+    fontWeight: '700',
     textDecorationLine: 'underline',
   },
 });
