@@ -8,33 +8,27 @@ import { getConversations, hideConversation } from '../services/messages';
 import { getItemById } from '../services/items';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import Card from '../components/Card';
-import { Feather } from '@expo/vector-icons';
-// import ChatScreen from './ChatScreen';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 
 const InboxScreen = () => {
-  console.log('[InboxScreen] MONTADO', Date.now());
   const navigation = useNavigation();
   const { user } = useAuth();
   const { colors, isDark } = useTheme();
   const [conversations, setConversations] = useState([]);
   const [filtered, setFiltered] = useState([]);
-  const [searchResults, setSearchResults] = useState([]); // [{conversation, message}]
+  const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [selectedConversationKey, setSelectedConversationKey] = useState(null);
-  // const [selectedConversation, setSelectedConversation] = useState(null);
 
   const loadConversations = useCallback(async () => {
-    console.log('[InboxScreen] loadConversations chamado', Date.now());
     setLoading(true);
     setError('');
     try {
       if (!user?.id) throw new Error('Usuário não autenticado');
       const convs = await getConversations(user.id);
-      // Buscar título do item se não estiver presente
       const convsWithTitles = await Promise.all(convs.map(async (conv) => {
         if (!conv.itemTitle && conv.itemId) {
           const item = await getItemById(conv.itemId);
@@ -51,14 +45,10 @@ const InboxScreen = () => {
     }
   }, [user]);
 
-
-  // Carrega conversas ao montar
   useEffect(() => {
-    console.log('[InboxScreen] useEffect inicial', Date.now());
     loadConversations();
   }, [loadConversations]);
 
-  // Atualiza conversas ao focar na tela, sem loading visível
   useFocusEffect(
     useCallback(() => {
       loadConversations();
@@ -98,21 +88,20 @@ const InboxScreen = () => {
 
   const handleDeleteConversation = (conversation) => {
     Alert.alert(
-      'Apagar conversa',
-      `A conversa com ${conversation.otherName || 'este usuário'} será removida da sua caixa de mensagens.`,
+      'Ocultar conversa',
+      `Deseja ocultar a conversa com ${conversation.otherName || 'usuário'}?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Apagar',
+          text: 'Ocultar',
           style: 'destructive',
           onPress: async () => {
             try {
-              await hideConversation(user.id, conversation.otherId);
-              setConversations((current) => current.filter((item) => item.otherId !== conversation.otherId));
-              setFiltered((current) => current.filter((item) => item.otherId !== conversation.otherId));
+              await hideConversation(user.id, conversation.otherId, conversation.itemId);
               setSelectedConversationKey(null);
-            } catch (error) {
-              Alert.alert('Erro', error.message || 'Não foi possível apagar a conversa.');
+              loadConversations();
+            } catch (err) {
+              Alert.alert('Erro', 'Não foi possível ocultar a conversa.');
             }
           },
         },
@@ -121,7 +110,6 @@ const InboxScreen = () => {
   };
 
   const renderItem = ({ item }) => {
-    // Horário formatado
     let time = '';
     if (item.lastMessageAt) {
       const date = new Date(item.lastMessageAt);
@@ -135,11 +123,13 @@ const InboxScreen = () => {
       }
     }
     const isSelected = selectedConversationKey === `${item.otherId}_${item.itemId || ''}`;
+    const initial = item.otherName?.trim()[0]?.toUpperCase() || 'U';
+
     return (
       <View style={[
         styles.convBtn,
         { backgroundColor: colors.card, borderColor: colors.cardBorder },
-        isSelected && { borderColor: colors.primary, backgroundColor: colors.primaryLight },
+        isSelected && { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' },
       ]}>
         <TouchableOpacity
           onPress={() => navigation.navigate('ChatScreen', { conversation: item })}
@@ -147,35 +137,62 @@ const InboxScreen = () => {
           style={styles.convMainButton}
           activeOpacity={0.85}
         >
-        <View style={[styles.avatarCircle, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF' }]}>
-          <Image
-            source={item.avatarUrl ? { uri: item.avatarUrl } : require('../assets/logo_wefind.png')}
-            style={styles.avatarImage}
-          />
-        </View>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>{item.otherName || 'Usuário'}</Text>
-            <Text style={[styles.time, { color: colors.textMuted }]}>{time}</Text>
+          {/* Avatar com foto ou inicial estilizada */}
+          <View style={[styles.avatarCircle, { backgroundColor: colors.primaryLight }]}>
+            {item.avatarUrl ? (
+              <Image source={{ uri: item.avatarUrl }} style={styles.avatarImage} />
+            ) : (
+              <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 19 }}>
+                {initial}
+              </Text>
+            )}
           </View>
-          {item.itemTitle ? <Text style={[styles.itemTitle, { color: colors.primary }]} numberOfLines={1}>{item.itemTitle}</Text> : null}
-          {item.lastPhotoUrl ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Feather name="image" size={16} color={colors.primary} style={{ marginRight: 4 }} />
-              <Text style={[styles.lastMessage, { color: colors.textSecondary }]} numberOfLines={1}>Imagem enviada</Text>
+
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+              <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
+                {item.otherName || 'Usuário'}
+              </Text>
+              <Text style={[styles.time, { color: colors.textMuted }]}>{time}</Text>
             </View>
-          ) : (
-            <Text style={[styles.lastMessage, { color: colors.textSecondary }]} numberOfLines={1}>{item.lastMessage}</Text>
-          )}
-        </View>
-        {item.unread ? (
-          <View style={[styles.unreadBadge, { backgroundColor: colors.primary }]}><Text style={styles.unreadBadgeText}>{item.unread}</Text></View>
-        ) : null}
+
+            {/* Chip de Pet Relacionado */}
+            {item.itemTitle ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>
+                <View style={[styles.petChip, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+                  <MaterialIcons name="pets" size={10} color={colors.primary} style={{ marginRight: 3 }} />
+                  <Text style={[styles.petChipText, { color: colors.primary }]} numberOfLines={1}>
+                    {item.itemTitle}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+
+            {item.lastPhotoUrl ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Feather name="image" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                <Text style={[styles.lastMessage, { color: colors.textSecondary }]} numberOfLines={1}>
+                  Foto enviada
+                </Text>
+              </View>
+            ) : (
+              <Text style={[styles.lastMessage, { color: colors.textSecondary }]} numberOfLines={1}>
+                {item.lastMessage || 'Conversa iniciada'}
+              </Text>
+            )}
+          </View>
+
+          {item.unread ? (
+            <View style={[styles.unreadBadge, { backgroundColor: colors.primary }]}>
+              <Text style={styles.unreadBadgeText}>{item.unread}</Text>
+            </View>
+          ) : null}
         </TouchableOpacity>
+
         {isSelected && (
           <TouchableOpacity
             onPress={() => handleDeleteConversation(item)}
-            style={[styles.deleteConversationButton, { backgroundColor: isDark ? '#1E293B' : '#F9FAFB' }]}
+            style={[styles.deleteConversationButton, { backgroundColor: isDark ? '#1E293B' : '#FEE2E2' }]}
             accessibilityLabel={`Apagar conversa com ${item.otherName || 'usuário'}`}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
@@ -191,6 +208,7 @@ const InboxScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Barra de Busca de Conversas */}
       <View style={styles.searchWrapper}>
         <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />
         <TextInput
@@ -203,13 +221,14 @@ const InboxScreen = () => {
         {search.length > 0 && (
           <TouchableOpacity
             onPress={() => setSearch('')}
-            style={{ position: 'absolute', right: 8, top: 8, zIndex: 3, padding: 4 }}
+            style={{ position: 'absolute', right: 10, top: 12, zIndex: 3, padding: 4 }}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Feather name="x-circle" size={20} color={colors.textMuted} />
+            <Feather name="x-circle" size={18} color={colors.textMuted} />
           </TouchableOpacity>
         )}
       </View>
+
       {search.trim() ? (
         searching ? (
           <ActivityIndicator style={{ flex: 1, marginTop: 32 }} size="large" color={colors.primary} />
@@ -223,9 +242,15 @@ const InboxScreen = () => {
                 style={[styles.convBtn, { backgroundColor: colors.card, borderColor: colors.cardBorder, flexDirection: 'column', alignItems: 'flex-start' }]}
                 activeOpacity={0.85}
               >
-                <Text style={{ fontWeight: 'bold', color: colors.primary, marginBottom: 2 }}>{item.conversation.otherName} {item.conversation.itemTitle ? `• ${item.conversation.itemTitle}` : ''}</Text>
-                <Text style={{ color: isDark ? '#F8FAFC' : '#1F2937', fontSize: 15, backgroundColor: isDark ? '#334155' : '#FFF9C4', borderRadius: 6, padding: 4 }}>{item.message.content}</Text>
-                <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>{new Date(item.message.sent_at).toLocaleString()}</Text>
+                <Text style={{ fontWeight: '800', color: colors.primary, marginBottom: 4 }}>
+                  {item.conversation.otherName} {item.conversation.itemTitle ? `• 🐾 ${item.conversation.itemTitle}` : ''}
+                </Text>
+                <Text style={{ color: isDark ? '#F8FAFC' : '#1F2937', fontSize: 14, backgroundColor: isDark ? '#334155' : '#FFF9C4', borderRadius: 8, padding: 6 }}>
+                  {item.message.content}
+                </Text>
+                <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
+                  {new Date(item.message.sent_at).toLocaleString()}
+                </Text>
               </TouchableOpacity>
             )}
             style={{ flex: 1 }}
@@ -234,7 +259,7 @@ const InboxScreen = () => {
         ) : (
           <View style={styles.emptyState}>
             <View style={[styles.emptyIconCircle, { backgroundColor: colors.surface }]}>
-              <Feather name="search" size={40} color={colors.textMuted} />
+              <Feather name="search" size={36} color={colors.textMuted} />
             </View>
             <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhuma mensagem encontrada</Text>
             <Text style={[styles.emptyMsg, { color: colors.textSecondary }]}>Nenhuma mensagem ou conversa contém o termo pesquisado.</Text>
@@ -246,15 +271,18 @@ const InboxScreen = () => {
           keyExtractor={item => `${item.otherId || ''}_${item.itemId || ''}`}
           renderItem={renderItem}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 24 }}
+          contentContainerStyle={{ paddingBottom: 24, paddingTop: 4 }}
+          showsVerticalScrollIndicator={false}
         />
       ) : (
         <View style={styles.emptyState}>
-          <View style={[styles.emptyIconCircle, { backgroundColor: colors.surface }]}>
-            <Feather name="message-circle" size={40} color={colors.textMuted} />
+          <View style={[styles.emptyIconCircle, { backgroundColor: colors.primaryLight }]}>
+            <MaterialIcons name="chat-bubble-outline" size={38} color={colors.primary} />
           </View>
           <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhuma conversa ainda</Text>
-          <Text style={[styles.emptyMsg, { color: colors.textSecondary }]}>Quando você entrar em contato sobre um item, suas conversas aparecerão aqui.</Text>
+          <Text style={[styles.emptyMsg, { color: colors.textSecondary }]}>
+            Quando você trocar mensagens sobre um animal com outros tutores, elas aparecerão aqui em tempo real.
+          </Text>
         </View>
       )}
     </View>
@@ -262,82 +290,61 @@ const InboxScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
-  header: {
-    paddingTop: 32,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    zIndex: 10,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 12,
-  },
+  container: { flex: 1 },
   searchWrapper: {
     position: 'relative',
     marginHorizontal: 16,
-    marginTop: 14,
+    marginTop: 12,
     marginBottom: 12,
   },
   searchIcon: {
     position: 'absolute',
-    left: 12,
-    top: 12,
+    left: 14,
+    top: 14,
     zIndex: 2,
   },
   searchInput: {
     height: 48,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    paddingLeft: 40,
-    paddingRight: 12,
-    fontSize: 16,
-    color: '#111827',
+    borderRadius: 16,
+    paddingLeft: 42,
+    paddingRight: 36,
+    fontSize: 15,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
   },
   convBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 14,
     marginHorizontal: 16,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
     gap: 10,
-  },
-  convBtnSelected: {
-    borderColor: '#BFDBFE',
-    backgroundColor: '#EFF6FF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 5,
+    elevation: 2,
   },
   convMainButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     minWidth: 0,
-    gap: 10,
+    gap: 12,
   },
   deleteConversationButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F9FAFB',
   },
   avatarCircle: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -348,48 +355,45 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     resizeMode: 'cover',
   },
-  avatarText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 20,
-  },
   name: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    color: '#1F2937',
+    fontWeight: '800',
+    fontSize: 15.5,
     flex: 1,
     marginRight: 8,
   },
   time: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    marginLeft: 8,
+    fontSize: 11.5,
+    fontWeight: '600',
     flexShrink: 0,
   },
-  itemTitle: {
-    color: '#2563EB',
-    fontSize: 13,
-    marginBottom: 2,
+  petChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  petChipText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   lastMessage: {
-    color: '#6B7280',
-    fontSize: 14,
-    marginTop: 0,
+    fontSize: 13,
+    lineHeight: 17,
   },
   unreadBadge: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    borderRadius: 12,
+    minWidth: 22,
+    height: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 10,
-    paddingHorizontal: 5,
+    marginLeft: 6,
+    paddingHorizontal: 6,
   },
   unreadBadgeText: {
     color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 12,
+    fontWeight: '800',
+    fontSize: 11.5,
   },
   error: { color: 'red', textAlign: 'center', marginTop: 20 },
   emptyState: {
@@ -400,26 +404,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   emptyIconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#F3F4F6',
+    width: 72,
+    height: 72,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontSize: 17,
+    fontWeight: '800',
     marginBottom: 6,
     textAlign: 'center',
   },
   emptyMsg: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13.5,
     textAlign: 'center',
-    maxWidth: 260,
+    maxWidth: 280,
+    lineHeight: 19,
   },
 });
 

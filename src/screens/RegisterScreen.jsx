@@ -15,6 +15,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import Button from '../components/Button';
 import Input from '../components/Input';
 
@@ -29,6 +30,7 @@ const formatBrazilianPhone = (value = '') => {
 
 const RegisterScreen = ({ navigation }) => {
   const { signUp, confirmSignUp, loading, user } = useAuth();
+  const { colors, isDark } = useTheme();
 
   // Captura o botão físico de voltar do Android e redireciona para a tela inicial
   useFocusEffect(
@@ -218,7 +220,7 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <KeyboardAwareScrollView
         ref={scrollRef}
         contentContainerStyle={[
@@ -234,7 +236,7 @@ const RegisterScreen = ({ navigation }) => {
         keyboardOpeningTime={0}
       >
         {/* Logo Circular */}
-        <View style={styles.circularLogoContainer}>
+        <View style={[styles.circularLogoContainer, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#EFF6FF' }]}>
           <Image
             source={require('../assets/logo_wefind.png')}
             style={styles.circularLogo}
@@ -243,11 +245,11 @@ const RegisterScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.headerBox}>
-          <Text style={styles.headerTitle}>Criar sua conta</Text>
-          <Text style={styles.headerSubtitle}>Junte-se à nossa comunidade</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Criar sua conta</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Junte-se à nossa comunidade de proteção animal</Text>
         </View>
 
-        <View style={styles.formBox}>
+        <View style={[styles.formBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <Input
             label="Nome Completo"
             placeholder="Ex: João da Silva"
@@ -256,7 +258,7 @@ const RegisterScreen = ({ navigation }) => {
             error={errors.name}
             editable={!pendingVerification}
             style={styles.input}
-            inputStyle={styles.inputField}
+            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
             returnKeyType="next"
           />
 
@@ -270,7 +272,7 @@ const RegisterScreen = ({ navigation }) => {
             editable={!pendingVerification}
             error={errors.email}
             style={styles.input}
-            inputStyle={styles.inputField}
+            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
             returnKeyType="next"
           />
 
@@ -283,7 +285,7 @@ const RegisterScreen = ({ navigation }) => {
             editable={!pendingVerification}
             error={errors.whatsapp || errors.phone}
             style={styles.input}
-            inputStyle={styles.inputField}
+            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
             returnKeyType="next"
           />
 
@@ -296,7 +298,7 @@ const RegisterScreen = ({ navigation }) => {
             editable={!pendingVerification}
             error={errors.password}
             style={styles.input}
-            inputStyle={styles.inputField}
+            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
             returnKeyType="next"
           />
 
@@ -309,7 +311,7 @@ const RegisterScreen = ({ navigation }) => {
             editable={!pendingVerification}
             error={errors.confirmPassword}
             style={styles.input}
-            inputStyle={styles.inputField}
+            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
             returnKeyType="done"
           />
 
@@ -320,25 +322,25 @@ const RegisterScreen = ({ navigation }) => {
               onPress={() => setWhatsappConsent(prev => !prev)}
               activeOpacity={0.8}
             >
-              <View style={[styles.checkbox, whatsappConsent && styles.checkboxChecked]}>
+              <View style={[styles.checkbox, { borderColor: colors.border, backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }, whatsappConsent && styles.checkboxChecked]}>
                 {whatsappConsent ? <MaterialIcons name="check" size={16} color="#FFFFFF" /> : null}
               </View>
-              <Text style={styles.consentText}>
+              <Text style={[styles.consentText, { color: colors.textSecondary }]}>
                 Desejo receber avisos e notificações de novas informações de animais no meu WhatsApp
               </Text>
             </TouchableOpacity>
           )}
 
           {pendingVerification ? (
-            <View style={styles.verificationBox}>
+            <View style={[styles.verificationBox, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FFF7ED', borderColor: isDark ? 'rgba(245, 158, 11, 0.35)' : '#FDBA74' }]}>
               <View style={styles.verificationHeader}>
-                <Text style={styles.verificationTitle}>🔐 Verificação por WhatsApp</Text>
+                <Text style={[styles.verificationTitle, { color: isDark ? '#FBBF24' : '#C2410C' }]}>🔐 Verificação por WhatsApp</Text>
                 <TouchableOpacity onPress={handleCancelVerification} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Text style={styles.editDataText}>Editar dados</Text>
+                  <Text style={[styles.editDataText, { color: colors.primary }]}>Editar dados</Text>
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.verificationDesc}>
+              <Text style={[styles.verificationDesc, { color: isDark ? '#FDE68A' : '#7C2D12' }]}>
                 Enviamos um código de 6 dígitos para o WhatsApp <Text style={{ fontWeight: 'bold' }}>{formatBrazilianPhone(whatsapp)}</Text>:
               </Text>
 
@@ -349,7 +351,7 @@ const RegisterScreen = ({ navigation }) => {
                 onChangeText={setVerificationCode}
                 keyboardType="number-pad"
                 style={styles.input}
-                inputStyle={[styles.inputField, styles.codeInputField]}
+                inputStyle={[styles.inputField, styles.codeInputField, { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', color: colors.text }]}
                 onFocus={() => {
                   scrollRef.current?.scrollToEnd?.(true);
                 }}
@@ -357,7 +359,7 @@ const RegisterScreen = ({ navigation }) => {
 
               {/* Botão de Reenviar Código */}
               <View style={styles.resendContainer}>
-                <Text style={styles.resendQuestion}>Não recebeu o código?</Text>
+                <Text style={[styles.resendQuestion, { color: isDark ? '#FDE68A' : '#9A3412' }]}>Não recebeu o código?</Text>
                 <TouchableOpacity
                   onPress={handleResendCode}
                   disabled={isSubmitting || resendCooldown > 0}
@@ -367,10 +369,10 @@ const RegisterScreen = ({ navigation }) => {
                   <Feather
                     name="refresh-cw"
                     size={14}
-                    color={resendCooldown > 0 ? '#94A3B8' : '#2563EB'}
+                    color={resendCooldown > 0 ? colors.textMuted : colors.primary}
                     style={{ marginRight: 6 }}
                   />
-                  <Text style={[styles.resendText, resendCooldown > 0 && styles.resendTextDisabled]}>
+                  <Text style={[styles.resendText, { color: colors.primary }, resendCooldown > 0 && { color: colors.textMuted }]}>
                     {resendCooldown > 0 ? `Reenviar em ${resendCooldown}s` : 'Reenviar código no WhatsApp'}
                   </Text>
                 </TouchableOpacity>
@@ -383,15 +385,15 @@ const RegisterScreen = ({ navigation }) => {
             onPress={handleRegister}
             disabled={isSubmitting}
             loading={isSubmitting}
-            style={styles.registerButton}
+            style={[styles.registerButton, { backgroundColor: colors.primary }]}
             textStyle={styles.registerButtonText}
           />
         </View>
 
         <View style={styles.footerRow}>
-          <Text style={styles.footerText}>Já tem uma conta? </Text>
+          <Text style={[styles.footerText, { color: colors.textSecondary }]}>Já tem uma conta? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.7}>
-            <Text style={styles.createAccountText}>Fazer login</Text>
+            <Text style={[styles.createAccountText, { color: colors.primary }]}>Fazer login</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
@@ -402,7 +404,6 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8FAFB',
   },
   scrollContent: {
     flexGrow: 1,
@@ -416,19 +417,17 @@ const styles = StyleSheet.create({
     width: 104,
     height: 104,
     borderRadius: 52,
-    backgroundColor: '#FFFFFF',
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 3,
-    borderColor: '#EFF6FF',
     shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.12,
     shadowRadius: 6,
     elevation: 3,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   circularLogo: {
     width: '100%',
@@ -436,53 +435,47 @@ const styles = StyleSheet.create({
   },
   headerBox: {
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#0F172A',
     marginBottom: 2,
+    letterSpacing: -0.3,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#64748B',
     textAlign: 'center',
   },
   formBox: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
+    borderRadius: 22,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
     shadowColor: '#000',
-    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
     shadowRadius: 10,
-    elevation: 2,
+    elevation: 3,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
   },
   input: {
     marginBottom: 12,
   },
   inputField: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    borderColor: '#E2E8F0',
+    borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 14,
-    paddingVertical: 11,
     fontSize: 15,
+    height: 48,
   },
   codeInputField: {
-    backgroundColor: '#FFFFFF',
     borderColor: '#FDBA74',
     textAlign: 'center',
     fontSize: 20,
     letterSpacing: 6,
     fontWeight: 'bold',
-    color: '#1E293B',
   },
   consentRow: {
     flexDirection: 'row',
@@ -496,8 +489,6 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -508,16 +499,13 @@ const styles = StyleSheet.create({
   },
   consentText: {
     flex: 1,
-    fontSize: 13,
-    color: '#475569',
-    lineHeight: 18,
+    fontSize: 12.5,
+    lineHeight: 17,
     fontWeight: '500',
   },
   verificationBox: {
-    backgroundColor: '#FFF7ED',
     borderWidth: 1.5,
-    borderColor: '#FDBA74',
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 14,
     marginBottom: 14,
   },
@@ -530,17 +518,14 @@ const styles = StyleSheet.create({
   verificationTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#C2410C',
   },
   editDataText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#2563EB',
+    fontWeight: '700',
     textDecorationLine: 'underline',
   },
   verificationDesc: {
     fontSize: 13,
-    color: '#7C2D12',
     marginBottom: 10,
     lineHeight: 18,
   },
@@ -551,7 +536,6 @@ const styles = StyleSheet.create({
   },
   resendQuestion: {
     fontSize: 12,
-    color: '#9A3412',
     marginBottom: 4,
   },
   resendButton: {
@@ -562,25 +546,23 @@ const styles = StyleSheet.create({
   },
   resendText: {
     fontSize: 13,
-    color: '#2563EB',
     fontWeight: '700',
     textDecorationLine: 'underline',
   },
-  resendTextDisabled: {
-    color: '#94A3B8',
-    textDecorationLine: 'none',
-    fontWeight: '600',
-  },
   registerButton: {
     marginTop: 4,
-    backgroundColor: '#2563EB',
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 13,
     marginBottom: 2,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 3,
   },
   registerButtonText: {
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontWeight: '800',
+    fontSize: 15.5,
     letterSpacing: 0.3,
     color: '#FFFFFF',
   },
@@ -592,14 +574,12 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   footerText: {
-    color: '#64748B',
     fontSize: 14,
+    fontWeight: '500',
   },
   createAccountText: {
-    color: '#2563EB',
-    fontWeight: 'bold',
+    fontWeight: '800',
     fontSize: 14,
-    textDecorationLine: 'underline',
   },
 });
 

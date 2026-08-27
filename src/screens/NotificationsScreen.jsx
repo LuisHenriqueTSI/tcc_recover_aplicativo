@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import { getUnreadCount, getConversations, markMessagesAsRead } from '../services/messages';
+import { useTheme } from '../contexts/ThemeContext';
+import { getConversations, markMessagesAsRead } from '../services/messages';
 import { listItems, cleanupExpiredItems } from '../services/items';
 import { getUserNotifications, markAllNotificationsRead, markNotificationRead, buildRenewalAlerts } from '../services/notifications';
 import { renewItem } from '../services/items';
-
-
-
-// Utilitário para tempo relativo
 
 function getRelativeTime(dateString) {
   if (!dateString) return '';
@@ -23,10 +20,9 @@ function getRelativeTime(dateString) {
   return date.toLocaleDateString();
 }
 
-
-
 export default function NotificationsScreen({ navigation, onNotificationsUpdated }) {
   const { user } = useAuth();
+  const { colors, isDark } = useTheme();
   const [loading, setLoading] = useState(false);
   const [messageNotifications, setMessageNotifications] = useState([]);
   const [systemAlerts, setSystemAlerts] = useState([]);
@@ -37,19 +33,20 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
   const notificationSections = [
     {
       key: 'system',
-      title: 'Alertas e atualizações',
-      subtitle: 'Você pode marcar estes alertas como lidos.',
+      title: 'Alertas e Atualizações',
+      subtitle: 'Toque para abrir os detalhes ou renovar publicações.',
       data: systemAlerts,
       markable: true,
     },
     {
       key: 'messages',
-      title: 'Mensagens novas',
-      subtitle: 'Toque para abrir a conversa e marcar como lida.',
+      title: 'Mensagens Recentes',
+      subtitle: 'Toque para abrir a conversa.',
       data: messageNotifications,
       markable: true,
     },
   ].filter(section => section.data.length > 0);
+
   const notificationRows = notificationSections.flatMap(section => [
     { id: `section_${section.key}`, isSection: true, ...section },
     ...section.data.map(notification => ({
@@ -86,9 +83,9 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
       time: getRelativeTime(msg.lastMessageAt),
       read: false,
       otherId: msg.otherId,
-      icon: 'message-circle',
-      iconColor: '#F59E42',
-      bgColor: '#FFF7ED',
+      icon: 'chat-bubble',
+      iconColor: colors.primary,
+      bgColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF',
     }));
 
     setMessageNotifications(mappedMessageNotifications);
@@ -99,19 +96,12 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
     const mappedSystemAlerts = [...renewalAlerts, ...(systemAlertsData || [])]
       .filter(alert => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed'))
       .map(alert => ({
-        id: `system_${alert.id}`,
-        type: alert.type,
-        title: alert.type === 'item_removed'
-          ? 'Sua publicação foi removida'
-          : 'Renove sua publicação',
-        message: alert.message,
-        time: getRelativeTime(alert.created_at),
-        read: Boolean(alert.read),
-        icon: alert.type === 'item_removed' ? 'trash-2' : 'alert-triangle',
-        iconColor: alert.type === 'item_removed' ? '#DC2626' : '#F59E42',
-        bgColor: alert.type === 'item_removed' ? '#FEF2F2' : '#FFF7ED',
-        critical: alert.type === 'renewal_reminder' || alert.type === 'item_removed',
-        itemId: alert.item_id,
+        ...alert,
+        icon: alert.type === 'renewal_reminder' ? 'schedule' : 'info-outline',
+        iconColor: alert.type === 'renewal_reminder' ? '#D97706' : '#DC2626',
+        bgColor: alert.type === 'renewal_reminder'
+          ? (isDark ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7')
+          : (isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2'),
       }));
 
     setSystemAlerts(mappedSystemAlerts);
@@ -120,13 +110,14 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
 
   async function handleMarkAllRead() {
     if (!user) return;
-
-    await markAllNotificationsRead(user.id);
-    setSystemAlerts(prev => prev.map(alert => ({ ...alert, read: true })));
-    await fetchNotifications();
-
-    if (typeof onNotificationsUpdated === 'function') {
-      onNotificationsUpdated();
+    try {
+      await markAllNotificationsRead(user.id);
+      setSystemAlerts(prev => prev.map(item => ({ ...item, read: true })));
+      if (typeof onNotificationsUpdated === 'function') {
+        onNotificationsUpdated();
+      }
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível marcar todas as notificações como lidas.');
     }
   }
 
@@ -136,11 +127,13 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
         setRenewingItemId(notification.itemId);
         await renewItem(notification.itemId);
         await markNotificationRead(notification.id.replace('system_', ''));
-        Alert.alert('Sucesso', 'Sua publicação foi renovada com sucesso.');
         await fetchNotifications();
+        if (typeof onNotificationsUpdated === 'function') {
+          onNotificationsUpdated();
+        }
+        Alert.alert('Sucesso', 'Publicação renovada com sucesso!');
       } catch (err) {
-        console.error('Erro ao renovar publicação pelo alerta:', err);
-        Alert.alert('Erro', 'Não foi possível renovar a publicação neste momento.');
+        Alert.alert('Erro', err?.message || 'Falha ao renovar publicação.');
       } finally {
         setRenewingItemId(null);
       }
@@ -164,18 +157,11 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
       return;
     }
 
-    // Marca notificações persistentes como lidas quando tocadas, se houver id válido
     if (notification.id?.startsWith('system_')) {
       const normalizedId = notification.id.replace('system_', '');
-      if (!/^\d+$/.test(normalizedId)) {
-        await fetchNotifications();
-        if (typeof onNotificationsUpdated === 'function') {
-          onNotificationsUpdated();
-        }
-        return;
+      if (/^\d+$/.test(normalizedId)) {
+        await markNotificationRead(normalizedId);
       }
-
-      await markNotificationRead(normalizedId);
       await fetchNotifications();
       if (typeof onNotificationsUpdated === 'function') {
         onNotificationsUpdated();
@@ -184,74 +170,91 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {unreadCount > 0 && (
-        <View style={styles.unreadBanner}>
+        <View style={[styles.unreadBanner, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.15)' : '#DCFCE7', borderColor: isDark ? 'rgba(34, 197, 94, 0.3)' : '#BBF7D0' }]}>
           <View style={styles.unreadBannerTextContainer}>
-            <Text style={styles.unreadBannerTitle}>{unreadCount} notificações não lidas</Text>
-            <Text style={styles.unreadBannerSubtitle}>Toque em cada notificação para marcar como lida.</Text>
+            <Text style={[styles.unreadBannerTitle, { color: isDark ? '#4ADE80' : '#15803D' }]}>
+              {unreadCount} alerta{unreadCount === 1 ? '' : 's'} pendente{unreadCount === 1 ? '' : 's'}
+            </Text>
+            <Text style={[styles.unreadBannerSubtitle, { color: isDark ? '#86EFAC' : '#166534' }]}>
+              Toque nos alertas para visualizar ou marcar como lido.
+            </Text>
           </View>
-          <TouchableOpacity style={styles.unreadBannerButton} onPress={handleMarkAllRead}>
-            <Text style={styles.unreadBannerButtonText}>Marcar todas</Text>
+          <TouchableOpacity
+            style={[styles.unreadBannerButton, { backgroundColor: '#16A34A' }]}
+            onPress={handleMarkAllRead}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.unreadBannerButtonText}>Marcar todos</Text>
           </TouchableOpacity>
         </View>
       )}
-      {/* Notifications List */}
+
       {loading ? (
-        <ActivityIndicator size="large" color="#F59E42" style={{ marginVertical: 24 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: 32 }} />
       ) : notificationRows.length > 0 ? (
         <FlatList
           data={notificationRows}
           contentContainerStyle={styles.notificationList}
           keyExtractor={item => item.id.toString()}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => item.isSection ? (
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{item.title}</Text>
-              <Text style={styles.sectionSubtitle}>{item.subtitle}</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{item.title}</Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
             </View>
           ) : (
             <TouchableOpacity
               key={item.id}
               style={[
                 styles.notificationCard,
-                { backgroundColor: item.bgColor },
-                item.critical ? styles.criticalCard : {},
+                { backgroundColor: colors.card, borderColor: colors.cardBorder },
+                item.critical ? { borderLeftWidth: 3.5, borderLeftColor: '#F59E0B' } : {},
               ]}
               activeOpacity={0.85}
               onPress={() => handleNotificationPress(item)}
             >
-              <View style={styles.iconCircle}>
-                <Feather name={item.icon} size={22} color={item.iconColor} />
+              <View style={[styles.iconCircle, { backgroundColor: item.bgColor }]}>
+                <MaterialIcons name={item.icon} size={22} color={item.iconColor} />
               </View>
+
               <View style={{ flex: 1, minWidth: 0 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.notifTitle, { color: '#1F2937' }]} numberOfLines={1}>{item.title}</Text>
+                  <View style={{ flex: 1, marginRight: 8 }}>
+                    <Text style={[styles.notifTitle, { color: colors.text }]} numberOfLines={1}>
+                      {item.title}
+                    </Text>
                     {item.critical && (
                       <View style={styles.criticalBadge}>
                         <Text style={styles.criticalBadgeText}>Urgente</Text>
                       </View>
                     )}
                   </View>
-                  <Text style={styles.notifTime}>{item.time}</Text>
+                  <Text style={[styles.notifTime, { color: colors.textMuted }]}>{item.time}</Text>
                 </View>
-                <Text style={styles.notifMsg} numberOfLines={2}>{item.message}</Text>
+                <Text style={[styles.notifMsg, { color: colors.textSecondary }]} numberOfLines={2}>
+                  {item.message}
+                </Text>
               </View>
+
               {renewingItemId === item.itemId && (
-                <ActivityIndicator size="small" color="#F59E42" style={{ marginLeft: 8 }} />
+                <ActivityIndicator size="small" color={colors.primary} style={{ marginLeft: 8 }} />
               )}
-              {item.markable && !item.read && <View style={styles.unreadDot} />}
-              <Feather name="chevron-right" size={18} color="#A3A3A3" style={styles.chevron} />
+              {item.markable && !item.read && <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />}
+              <MaterialIcons name="chevron-right" size={20} color={colors.textMuted} style={styles.chevron} />
             </TouchableOpacity>
           )}
         />
       ) : (
         <View style={styles.emptyState}>
-          <View style={styles.emptyIconCircle}>
-            <Feather name="bell" size={40} color="#9CA3AF" />
+          <View style={[styles.emptyIconCircle, { backgroundColor: colors.primaryLight }]}>
+            <MaterialIcons name="notifications-none" size={40} color={colors.primary} />
           </View>
-          <Text style={styles.emptyTitle}>Nenhuma notificação</Text>
-          <Text style={styles.emptyMsg}>Você receberá alertas quando houver novidades sobre seus pets.</Text>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>Tudo limpo por aqui</Text>
+          <Text style={[styles.emptyMsg, { color: colors.textSecondary }]}>
+            Você receberá avisos quando houver novidades sobre seus animais ou mensagens novas da comunidade.
+          </Text>
         </View>
       )}
     </View>
@@ -261,212 +264,158 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F4',
-    paddingTop: 0,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 28,
-    paddingBottom: 10,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: '#A3A3A3',
-    marginTop: 2,
   },
   notificationList: {
     paddingTop: 10,
-    paddingBottom: 24,
+    paddingBottom: 32,
   },
   sectionHeader: {
-    paddingHorizontal: 14,
-    marginHorizontal: 12,
-    marginTop: 10,
+    paddingHorizontal: 16,
+    marginTop: 12,
     marginBottom: 8,
   },
   sectionTitle: {
-    color: '#27272A',
     fontSize: 15,
     fontWeight: '800',
   },
   sectionSubtitle: {
-    color: '#71717A',
     fontSize: 12,
-    marginTop: 3,
-  },
-  markAllBtn: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    backgroundColor: 'transparent',
+    marginTop: 2,
   },
   notificationCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    borderRadius: 10,
+    borderRadius: 18,
     paddingVertical: 13,
-    paddingHorizontal: 12,
-    marginHorizontal: 12,
-    marginBottom: 8,
+    paddingHorizontal: 14,
+    marginHorizontal: 16,
+    marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#E1E4E6',
-    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 5,
+    elevation: 2,
     position: 'relative',
   },
-  criticalCard: {
-    borderLeftWidth: 3,
-    borderLeftColor: '#F59E42',
-  },
   iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
+    width: 42,
+    height: 42,
+    borderRadius: 13,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
-    backgroundColor: '#EFF6FF',
+    marginRight: 12,
   },
   notifTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    flex: 1,
+    fontSize: 14.5,
+    fontWeight: '800',
     marginBottom: 2,
   },
   notifTime: {
-    fontSize: 12,
-    color: '#A3A3A3',
-    marginLeft: 8,
+    fontSize: 11.5,
+    fontWeight: '600',
     flexShrink: 0,
-    alignSelf: 'flex-start',
   },
   notifMsg: {
-    color: '#5F6368',
     fontSize: 13,
     lineHeight: 18,
-    marginTop: 3,
+    marginTop: 2,
   },
   criticalBadge: {
     alignSelf: 'flex-start',
-    marginTop: 4,
-    backgroundColor: '#FFF3E0',
-    borderRadius: 4,
+    marginTop: 3,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
   criticalBadgeText: {
     color: '#B45309',
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   unreadDot: {
-    width: 7,
-    height: 7,
+    width: 8,
+    height: 8,
     borderRadius: 4,
-    backgroundColor: '#2E7D32',
     position: 'absolute',
     top: 14,
-    right: 34,
+    right: 32,
   },
   chevron: {
     alignSelf: 'center',
-    marginLeft: 8,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    marginTop: 10,
-  },
-  actionButton: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingVertical: 8,
-    marginRight: 8,
-    alignItems: 'center',
-  },
-  actionButtonSecondary: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#2563EB',
-    marginRight: 0,
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
+    marginLeft: 6,
   },
   emptyState: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 60,
+    paddingHorizontal: 24,
   },
   emptyIconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#EFF6FF',
+    width: 76,
+    height: 76,
+    borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: '800',
     marginBottom: 6,
+    textAlign: 'center',
   },
   emptyMsg: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13.5,
     textAlign: 'center',
-    maxWidth: 260,
+    maxWidth: 280,
+    lineHeight: 19,
   },
   unreadBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#EAF7EE',
-    borderRadius: 10,
+    borderRadius: 16,
+    borderWidth: 1,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    marginHorizontal: 12,
+    marginHorizontal: 16,
     marginTop: 12,
-    marginBottom: 8,
+    marginBottom: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
   },
   unreadBannerTextContainer: {
     flex: 1,
-    marginRight: 12,
+    marginRight: 10,
   },
   unreadBannerTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#256B35',
+    fontSize: 14.5,
+    fontWeight: '800',
     marginBottom: 2,
   },
   unreadBannerSubtitle: {
-    fontSize: 13,
-    color: '#3F6F49',
+    fontSize: 12,
+    lineHeight: 16,
   },
   unreadBannerButton: {
-    backgroundColor: '#2E7D32',
-    borderRadius: 6,
+    borderRadius: 10,
     paddingVertical: 8,
     paddingHorizontal: 12,
+    shadowColor: '#16A34A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
   },
   unreadBannerButtonText: {
     color: '#fff',
-    fontSize: 13,
-    fontWeight: 'bold',
+    fontSize: 12,
+    fontWeight: '800',
   },
 });

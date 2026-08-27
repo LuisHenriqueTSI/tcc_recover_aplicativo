@@ -19,9 +19,11 @@ import {
   resetPasswordWithToken,
 } from '../services/supabaseAuth';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function EsqueciSenhaScreen({ navigation, route }) {
   const { user } = useAuth();
+  const { colors, isDark } = useTheme();
   const initialWhatsapp = route?.params?.initialWhatsapp || '';
   // Passos: 1 = WhatsApp, 2 = Código, 3 = Nova Senha, 4 = Sucesso
   const [step, setStep] = useState(1);
@@ -186,7 +188,7 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
         </View>
 
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { backgroundColor: colors.background }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -197,31 +199,34 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                 <View
                   style={[
                     styles.stepIndicator,
+                    { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' },
                     step >= 1 && styles.stepIndicatorActive,
                   ]}
                 >
-                  <Text style={[styles.stepNumber, step >= 1 && styles.stepNumberActive]}>1</Text>
+                  <Text style={[styles.stepNumber, { color: colors.textMuted }, step >= 1 && styles.stepNumberActive]}>1</Text>
                 </View>
-                <View style={[styles.stepLine, step >= 2 && styles.stepLineActive]} />
+                <View style={[styles.stepLine, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }, step >= 2 && styles.stepLineActive]} />
                 <View
                   style={[
                     styles.stepIndicator,
+                    { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' },
                     step >= 2 && styles.stepIndicatorActive,
                   ]}
                 >
-                  <Text style={[styles.stepNumber, step >= 2 && styles.stepNumberActive]}>2</Text>
+                  <Text style={[styles.stepNumber, { color: colors.textMuted }, step >= 2 && styles.stepNumberActive]}>2</Text>
                 </View>
-                <View style={[styles.stepLine, step >= 3 && styles.stepLineActive]} />
+                <View style={[styles.stepLine, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }, step >= 3 && styles.stepLineActive]} />
                 <View
                   style={[
                     styles.stepIndicator,
+                    { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' },
                     step >= 3 && styles.stepIndicatorActive,
                   ]}
                 >
-                  <Text style={[styles.stepNumber, step >= 3 && styles.stepNumberActive]}>3</Text>
+                  <Text style={[styles.stepNumber, { color: colors.textMuted }, step >= 3 && styles.stepNumberActive]}>3</Text>
                 </View>
               </View>
-              <Text style={styles.stepLabel}>
+              <Text style={[styles.stepLabel, { color: colors.textSecondary }]}>
                 {step === 1 && 'Passo 1 de 3: Identificação'}
                 {step === 2 && 'Passo 2 de 3: Código de Segurança'}
                 {step === 3 && 'Passo 3 de 3: Nova Senha'}
@@ -233,24 +238,24 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
           {/* PASSO 1: INFORMAR O NÚMERO DO WHATSAPP */}
           {/* ======================================================== */}
           {step === 1 && (
-            <View style={styles.card}>
-              <View style={styles.iconCircle}>
-                <MaterialIcons name="phone-android" size={32} color="#2563EB" />
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <View style={[styles.iconCircle, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' }]}>
+                <MaterialIcons name="phone-android" size={32} color={colors.primary} />
               </View>
 
-              <Text style={styles.cardTitle}>Recuperar Acesso</Text>
-              <Text style={styles.cardSubtitle}>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>Recuperar Acesso</Text>
+              <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]}>
                 Informe o número de WhatsApp cadastrado na sua conta para enviarmos um código de verificação.
               </Text>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Seu WhatsApp com DDD</Text>
-                <View style={styles.inputWrapper}>
+                <Text style={[styles.inputLabel, { color: colors.text }]}>Seu WhatsApp com DDD</Text>
+                <View style={[styles.inputWrapper, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border }]}>
                   <MaterialIcons name="chat" size={20} color="#16A34A" style={styles.inputIcon} />
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { color: colors.text }]}
                     placeholder="(00) 00000-0000"
-                    placeholderTextColor="#94A3B8"
+                    placeholderTextColor={colors.textMuted}
                     keyboardType="phone-pad"
                     value={whatsapp}
                     onChangeText={handleWhatsappChange}
@@ -289,25 +294,25 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
           {/* PASSO 2: DIGITAR O CÓDIGO DE 6 DÍGITOS */}
           {/* ======================================================== */}
           {step === 2 && (
-            <View style={styles.card}>
-              {/* Cabeçalho Compacto do Passo 2 para economizar espaço vertical */}
-              <View style={styles.step2Header}>
-                <View style={[styles.miniIconCircle, { backgroundColor: '#DCFCE7' }]}>
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              {/* Cabeçalho Compacto do Passo 2 */}
+              <View style={[styles.step2Header, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.15)' : '#ECFDF5', borderColor: isDark ? 'rgba(34, 197, 94, 0.3)' : '#DCFCE7' }]}>
+                <View style={[styles.miniIconCircle, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.2)' : '#DCFCE7' }]}>
                   <MaterialIcons name="mark-email-read" size={20} color="#16A34A" />
                 </View>
                 <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={styles.compactCardTitle}>Código de Confirmação</Text>
-                  <Text style={styles.compactCardSubtitle}>Enviado para {maskedPhone}</Text>
+                  <Text style={[styles.compactCardTitle, { color: colors.text }]}>Código de Confirmação</Text>
+                  <Text style={[styles.compactCardSubtitle, { color: colors.textSecondary }]}>Enviado para {maskedPhone}</Text>
                 </View>
               </View>
 
-              {/* Campo do Código colocado BEM NO TOPO para NUNCA ser coberto pelo teclado */}
+              {/* Campo do Código */}
               <View style={styles.codeInputContainer}>
-                <Text style={styles.codeInputLabel}>Digite o código de 6 dígitos:</Text>
+                <Text style={[styles.codeInputLabel, { color: colors.textSecondary }]}>Digite o código de 6 dígitos:</Text>
                 <TextInput
-                  style={styles.codeInput}
+                  style={[styles.codeInput, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', color: colors.text, borderColor: colors.primary }]}
                   placeholder="000000"
-                  placeholderTextColor="#CBD5E1"
+                  placeholderTextColor={colors.textMuted}
                   keyboardType="number-pad"
                   maxLength={6}
                   value={code}
@@ -318,15 +323,19 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
 
               {/* Seletor de Contas caso mais de uma conta use o mesmo WhatsApp */}
               {accounts.length > 1 && (
-                <View style={styles.multiAccountBox}>
-                  <Text style={styles.multiAccountTitle}>Selecione a conta que deseja redefinir:</Text>
+                <View style={[styles.multiAccountBox, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border }]}>
+                  <Text style={[styles.multiAccountTitle, { color: colors.textSecondary }]}>Selecione a conta que deseja redefinir:</Text>
                   {accounts.map((acc) => {
                     const isSelected = selectedAccount?.id === acc.id;
                     return (
                       <TouchableOpacity
                         key={acc.id}
                         onPress={() => setSelectedAccount(acc)}
-                        style={[styles.accountOption, isSelected && styles.accountOptionSelected]}
+                        style={[
+                          styles.accountOption,
+                          { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: colors.border },
+                          isSelected && [styles.accountOptionSelected, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF', borderColor: colors.primary }],
+                        ]}
                         activeOpacity={0.8}
                       >
                         <View style={[styles.accountAvatar, isSelected && styles.accountAvatarSelected]}>
@@ -335,17 +344,17 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                           </Text>
                         </View>
                         <View style={{ flex: 1, marginLeft: 10 }}>
-                          <Text style={[styles.accountName, isSelected && styles.accountNameSelected]} numberOfLines={1}>
+                          <Text style={[styles.accountName, { color: colors.text }, isSelected && styles.accountNameSelected]} numberOfLines={1}>
                             {acc.name || 'Usuário'}
                           </Text>
-                          <Text style={styles.accountEmail} numberOfLines={1}>
+                          <Text style={[styles.accountEmail, { color: colors.textSecondary }]} numberOfLines={1}>
                             {acc.maskedEmail || acc.email}
                           </Text>
                         </View>
                         <MaterialIcons
                           name={isSelected ? 'radio-button-checked' : 'radio-button-unchecked'}
                           size={20}
-                          color={isSelected ? '#2563EB' : '#94A3B8'}
+                          color={isSelected ? colors.primary : colors.textMuted}
                         />
                       </TouchableOpacity>
                     );
@@ -354,7 +363,7 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
               )}
 
               <TouchableOpacity
-                style={[styles.primaryButton, loading && styles.buttonDisabled]}
+                style={[styles.primaryButton, loading && styles.buttonDisabled, { backgroundColor: colors.primary }]}
                 onPress={handleVerifyCode}
                 disabled={loading}
                 activeOpacity={0.85}
@@ -376,10 +385,10 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                   <MaterialIcons
                     name="refresh"
                     size={16}
-                    color={cooldownSeconds > 0 ? '#94A3B8' : '#2563EB'}
+                    color={cooldownSeconds > 0 ? colors.textMuted : colors.primary}
                     style={{ marginRight: 4 }}
                   />
-                  <Text style={[styles.resendText, cooldownSeconds > 0 && { color: '#94A3B8' }]}>
+                  <Text style={[styles.resendText, { color: colors.primary }, cooldownSeconds > 0 && { color: colors.textMuted }]}>
                     {cooldownSeconds > 0
                       ? `Reenviar código em ${cooldownSeconds}s`
                       : 'Reenviar código por WhatsApp'}
@@ -393,7 +402,7 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                   }}
                   style={styles.changePhoneButton}
                 >
-                  <Text style={styles.changePhoneText}>Informar outro número</Text>
+                  <Text style={[styles.changePhoneText, { color: colors.textSecondary }]}>Informar outro número</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -403,25 +412,25 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
           {/* PASSO 3: CRIAR A NOVA SENHA */}
           {/* ======================================================== */}
           {step === 3 && (
-            <View style={styles.card}>
-              <View style={[styles.iconCircle, { backgroundColor: '#FEF3C7' }]}>
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <View style={[styles.iconCircle, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7' }]}>
                 <MaterialIcons name="lock" size={32} color="#D97706" />
               </View>
 
-              <Text style={styles.cardTitle}>Criar Nova Senha</Text>
-              <Text style={styles.cardSubtitle}>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>Criar Nova Senha</Text>
+              <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]}>
                 Defina uma senha segura para acessar sua conta WeFIND.
               </Text>
 
               {/* Campo Nova Senha */}
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Nova Senha</Text>
-                <View style={styles.inputWrapper}>
-                  <MaterialIcons name="lock-outline" size={20} color="#64748B" style={styles.inputIcon} />
+                <Text style={[styles.inputLabel, { color: colors.text }]}>Nova Senha</Text>
+                <View style={[styles.inputWrapper, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border }]}>
+                  <MaterialIcons name="lock-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { color: colors.text }]}
                     placeholder="Mínimo 6 caracteres"
-                    placeholderTextColor="#94A3B8"
+                    placeholderTextColor={colors.textMuted}
                     secureTextEntry={!showPassword}
                     value={newPassword}
                     onChangeText={setNewPassword}
@@ -435,7 +444,7 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                     <MaterialIcons
                       name={showPassword ? 'visibility-off' : 'visibility'}
                       size={20}
-                      color="#64748B"
+                      color={colors.textMuted}
                     />
                   </TouchableOpacity>
                 </View>
@@ -443,13 +452,13 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
 
               {/* Campo Confirmar Nova Senha */}
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Confirmar Nova Senha</Text>
-                <View style={styles.inputWrapper}>
-                  <MaterialIcons name="lock-outline" size={20} color="#64748B" style={styles.inputIcon} />
+                <Text style={[styles.inputLabel, { color: colors.text }]}>Confirmar Nova Senha</Text>
+                <View style={[styles.inputWrapper, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border }]}>
+                  <MaterialIcons name="lock-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { color: colors.text }]}
                     placeholder="Digite novamente a senha"
-                    placeholderTextColor="#94A3B8"
+                    placeholderTextColor={colors.textMuted}
                     secureTextEntry={!showConfirmPassword}
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
@@ -462,24 +471,25 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                     <MaterialIcons
                       name={showConfirmPassword ? 'visibility-off' : 'visibility'}
                       size={20}
-                      color="#64748B"
+                      color={colors.textMuted}
                     />
                   </TouchableOpacity>
                 </View>
               </View>
 
               {/* Checklist de Validações em Tempo Real */}
-              <View style={styles.validationBox}>
+              <View style={[styles.validationBox, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border }]}>
                 <View style={styles.validationRow}>
                   <MaterialIcons
                     name={newPassword.length >= 6 ? 'check-circle' : 'radio-button-unchecked'}
                     size={16}
-                    color={newPassword.length >= 6 ? '#16A34A' : '#94A3B8'}
+                    color={newPassword.length >= 6 ? '#16A34A' : colors.textMuted}
                     style={{ marginRight: 6 }}
                   />
                   <Text
                     style={[
                       styles.validationText,
+                      { color: colors.textSecondary },
                       newPassword.length >= 6 && styles.validationTextSuccess,
                     ]}
                   >
@@ -496,13 +506,14 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                     }
                     size={16}
                     color={
-                      newPassword && newPassword === confirmPassword ? '#16A34A' : '#94A3B8'
+                      newPassword && newPassword === confirmPassword ? '#16A34A' : colors.textMuted
                     }
                     style={{ marginRight: 6 }}
                   />
                   <Text
                     style={[
                       styles.validationText,
+                      { color: colors.textSecondary },
                       newPassword &&
                         newPassword === confirmPassword &&
                         styles.validationTextSuccess,
@@ -516,6 +527,7 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
               <TouchableOpacity
                 style={[
                   styles.primaryButton,
+                  { backgroundColor: colors.primary },
                   (loading || newPassword.length < 6 || newPassword !== confirmPassword) &&
                     styles.buttonDisabled,
                 ]}
@@ -536,18 +548,18 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
           {/* PASSO 4: SUCESSO / CONFIRMAÇÃO */}
           {/* ======================================================== */}
           {step === 4 && (
-            <View style={styles.card}>
-              <View style={[styles.iconCircle, { backgroundColor: '#DCFCE7' }]}>
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <View style={[styles.iconCircle, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.15)' : '#DCFCE7' }]}>
                 <MaterialIcons name="check-circle" size={42} color="#16A34A" />
               </View>
 
-              <Text style={styles.cardTitle}>Senha Atualizada!</Text>
-              <Text style={styles.cardSubtitle}>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>Senha Atualizada!</Text>
+              <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]}>
                 Sua senha foi redefinida com segurança. Você já pode fazer login na sua conta com a nova senha.
               </Text>
 
               <TouchableOpacity
-                style={styles.primaryButton}
+                style={[styles.primaryButton, { backgroundColor: colors.primary }]}
                 onPress={() => {
                   if (navigation.canGoBack()) {
                     navigation.goBack();

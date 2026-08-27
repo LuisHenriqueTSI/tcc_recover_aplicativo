@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Linking, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { updatePassword } from '../services/supabaseAuth';
@@ -78,15 +78,15 @@ const ConfigScreen = ({ navigation }) => {
     }
   };
 
-  const SettingRow = ({ icon, title, description, onPress, right }) => (
+  const SettingRow = ({ icon, iconColor, iconBg, title, description, onPress, right }) => (
     <TouchableOpacity
       style={styles.row}
       onPress={onPress}
       disabled={!onPress}
       activeOpacity={0.7}
     >
-      <View style={[styles.rowIcon, { backgroundColor: colors.primaryLight }]}>
-        <Feather name={icon} size={19} color={colors.primary} />
+      <View style={[styles.rowIcon, { backgroundColor: iconBg || colors.primaryLight }]}>
+        <MaterialIcons name={icon} size={20} color={iconColor || colors.primary} />
       </View>
       <View style={styles.rowCopy}>
         <Text style={[styles.rowTitle, { color: colors.text }]}>{title}</Text>
@@ -96,7 +96,7 @@ const ConfigScreen = ({ navigation }) => {
           </Text>
         ) : null}
       </View>
-      {right || <Feather name="chevron-right" size={20} color={colors.textMuted} />}
+      {right || <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} />}
     </TouchableOpacity>
   );
 
@@ -130,25 +130,28 @@ const ConfigScreen = ({ navigation }) => {
   };
 
   const themeOptions = [
-    { id: 'light', label: 'Modo Claro', icon: 'sun', description: 'Visual clássico e luminoso' },
-    { id: 'dark', label: 'Modo Escuro', icon: 'moon', description: 'Descanso visual e economia de bateria' },
-    { id: 'system', label: 'Automático (Sistema)', icon: 'smartphone', description: 'Seguir configurações do seu dispositivo' },
+    { id: 'light', label: 'Modo Claro', icon: 'light-mode', description: 'Visual clássico e luminoso' },
+    { id: 'dark', label: 'Modo Escuro', icon: 'dark-mode', description: 'Descanso visual e economia de bateria' },
+    { id: 'system', label: 'Automático (Sistema)', icon: 'settings-suggest', description: 'Seguir configurações do seu dispositivo' },
   ];
 
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
     >
       {/* SEÇÃO: APARÊNCIA */}
-      <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Aparência</Text>
-      <View style={[styles.panel, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+      <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>APARÊNCIA</Text>
+      <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
         <SettingRow
-          icon={isDark ? 'moon' : 'sun'}
+          icon={isDark ? 'dark-mode' : 'light-mode'}
+          iconColor={isDark ? '#818CF8' : '#F59E0B'}
+          iconBg={isDark ? 'rgba(129, 140, 248, 0.15)' : '#FEF3C7'}
           title="Tema Escuro"
           description={
             themeMode === 'system'
-              ? `Automático (Seguindo sistema: ${isDark ? 'Escuro' : 'Claro'})`
+              ? `Automático (Sistema: ${isDark ? 'Escuro' : 'Claro'})`
               : isDark
               ? 'Ativado (Modo Escuro)'
               : 'Desativado (Modo Claro)'
@@ -164,7 +167,9 @@ const ConfigScreen = ({ navigation }) => {
         />
         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
         <SettingRow
-          icon="sliders"
+          icon="palette"
+          iconColor="#3B82F6"
+          iconBg={isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF'}
           title="Opções de Tema"
           description={
             themeMode === 'light'
@@ -178,12 +183,14 @@ const ConfigScreen = ({ navigation }) => {
       </View>
 
       {/* SEÇÃO: PREFERÊNCIAS */}
-      <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Preferências</Text>
-      <View style={[styles.panel, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+      <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>PREFERÊNCIAS & NOTIFICAÇÕES</Text>
+      <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
         <SettingRow
-          icon="bell"
+          icon="notifications-active"
+          iconColor="#10B981"
+          iconBg={isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5'}
           title="Notificações no App"
-          description="Receber novidades e mensagens internas"
+          description="Receber alertas sobre pets e mensagens no app"
           right={
             <Switch
               value={preferences.notifications}
@@ -195,9 +202,11 @@ const ConfigScreen = ({ navigation }) => {
         />
         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
         <SettingRow
-          icon="message-circle"
+          icon="chat"
+          iconColor="#22C55E"
+          iconBg={isDark ? 'rgba(34, 197, 94, 0.15)' : '#DCFCE7'}
           title="Notificações por WhatsApp"
-          description="Receber avisos e novas informações de pets no seu WhatsApp"
+          description="Receber avisos instantâneos de pets no seu número"
           right={
             <Switch
               value={preferences.whatsappNotifications}
@@ -209,9 +218,11 @@ const ConfigScreen = ({ navigation }) => {
         />
         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
         <SettingRow
-          icon="clock"
-          title="Lembretes de publicações"
-          description="Avisar quando uma publicação precisar de renovação"
+          icon="schedule"
+          iconColor="#F59E0B"
+          iconBg={isDark ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7'}
+          title="Lembretes de Renovação"
+          description="Avisar quando seu anúncio precisar de renovação"
           right={
             <Switch
               value={preferences.reminders}
@@ -224,48 +235,92 @@ const ConfigScreen = ({ navigation }) => {
         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
         <SettingRow
           icon="send"
-          title="Enviar teste no WhatsApp"
-          description="Disparar um alerta de teste para o seu número agora"
+          iconColor="#6366F1"
+          iconBg={isDark ? 'rgba(99, 102, 241, 0.15)' : '#EEF2FF'}
+          title="Testar Envio no WhatsApp"
+          description="Disparar um alerta de teste para seu número"
           onPress={handleTestWhatsAppNotification}
         />
       </View>
 
       {/* SEÇÃO: CONTA */}
-      <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Conta</Text>
-      <View style={[styles.panel, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-        <SettingRow icon="user" title="Editar perfil" description="Nome, telefone e localização" onPress={() => navigation.navigate('EditProfile')} />
-        <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-        <SettingRow icon="lock" title="Alterar senha" description="Mantenha sua conta protegida" onPress={handlePasswordChange} />
+      <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>CONTA & SEGURANÇA</Text>
+      <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+        <SettingRow
+          icon="person"
+          iconColor="#3B82F6"
+          iconBg={isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF'}
+          title="Editar perfil"
+          description="Nome, telefone, WhatsApp e cidade padrão"
+          onPress={() => navigation.navigate('EditProfile')}
+        />
         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
         <SettingRow
-          icon="refresh-cw"
+          icon="lock"
+          iconColor="#8B5CF6"
+          iconBg={isDark ? 'rgba(139, 92, 246, 0.15)' : '#F5F3FF'}
+          title="Alterar senha"
+          description="Mantenha sua conta sempre protegida"
+          onPress={handlePasswordChange}
+        />
+        <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+        <SettingRow
+          icon="sync"
+          iconColor="#06B6D4"
+          iconBg={isDark ? 'rgba(6, 182, 212, 0.15)' : '#ECFEFF'}
           title="Sincronizar dados"
-          description="Atualizar as informações do seu perfil"
+          description="Atualizar as informações do seu perfil com o servidor"
           onPress={async () => {
             await refreshProfile();
-            Alert.alert('Dados atualizados', 'Seu perfil foi sincronizado.');
+            Alert.alert('Dados sincronizados', 'Seu perfil foi atualizado com sucesso.');
           }}
         />
       </View>
 
       {/* SEÇÃO: INFORMAÇÕES */}
-      <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Informações</Text>
-      <View style={[styles.panel, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-        <SettingRow icon="info" title="Sobre o WeFIND" description="Conheça o aplicativo e nossa missão" onPress={() => navigation.navigate('Sobre', { forceFullView: true })} />
+      <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>INFORMAÇÕES & SUPORTE</Text>
+      <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+        <SettingRow
+          icon="info-outline"
+          iconColor="#3B82F6"
+          iconBg={isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF'}
+          title="Sobre o WeFIND"
+          description="Conheça nossa missão e tecnologia"
+          onPress={() => navigation.navigate('Sobre', { forceFullView: true })}
+        />
         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-        <SettingRow icon="help-circle" title="Ajuda e suporte" onPress={() => navigation.navigate('AjudaSuporte')} />
+        <SettingRow
+          icon="help-outline"
+          iconColor="#10B981"
+          iconBg={isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5'}
+          title="Ajuda e suporte"
+          description="Dúvidas frequentes e canais de atendimento"
+          onPress={() => navigation.navigate('AjudaSuporte')}
+        />
         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-        <SettingRow icon="file-text" title="Termos de uso" onPress={() => Linking.openURL('https://wefind.app/termos')} />
+        <SettingRow
+          icon="description"
+          iconColor="#64748B"
+          iconBg={isDark ? '#1E293B' : '#F1F5F9'}
+          title="Termos de uso"
+          onPress={() => Linking.openURL('https://wefind.app/termos')}
+        />
         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-        <SettingRow icon="shield" title="Política de privacidade" onPress={() => Linking.openURL('https://wefind.app/privacidade')} />
+        <SettingRow
+          icon="privacy-tip"
+          iconColor="#64748B"
+          iconBg={isDark ? '#1E293B' : '#F1F5F9'}
+          title="Política de privacidade"
+          onPress={() => Linking.openURL('https://wefind.app/privacidade')}
+        />
       </View>
 
       <TouchableOpacity
         style={[
           styles.logout,
           {
-            backgroundColor: isDark ? '#2D1515' : '#FFF7F7',
-            borderColor: isDark ? '#7F1D1D' : '#FECACA',
+            backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : '#FEF2F2',
+            borderColor: isDark ? 'rgba(239, 68, 68, 0.25)' : '#FEE2E2',
           },
         ]}
         onPress={signOut}
@@ -274,7 +329,7 @@ const ConfigScreen = ({ navigation }) => {
         <Feather name="log-out" size={18} color="#DC2626" />
         <Text style={styles.logoutText}>Sair da conta</Text>
       </TouchableOpacity>
-      <Text style={[styles.version, { color: colors.textMuted }]}>WeFIND • versão 1.0.0</Text>
+      <Text style={[styles.version, { color: colors.textMuted }]}>WeFIND • Versão 1.0.0</Text>
 
       {/* MODAL DE SELEÇÃO DE TEMA */}
       <Modal
@@ -284,7 +339,7 @@ const ConfigScreen = ({ navigation }) => {
         onRequestClose={() => setThemeModalVisible(false)}
       >
         <View style={styles.modalBackdrop}>
-          <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }]}>
+          <View style={[styles.modalCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>Escolha o Tema</Text>
             <Text style={[styles.modalDescription, { color: colors.textSecondary }]}>
               Selecione o esquema de cores de sua preferência:
@@ -302,14 +357,14 @@ const ConfigScreen = ({ navigation }) => {
                   style={[
                     styles.themeOptionCard,
                     {
-                      backgroundColor: isSelected ? colors.primaryLight : (isDark ? '#111827' : '#F8FAFC'),
+                      backgroundColor: isSelected ? (isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF') : (isDark ? '#0F172A' : '#F8FAFC'),
                       borderColor: isSelected ? colors.primary : colors.cardBorder,
                     },
                   ]}
                   activeOpacity={0.8}
                 >
                   <View style={[styles.themeOptionIcon, { backgroundColor: isSelected ? colors.primary : (isDark ? '#1E293B' : '#E2E8F0') }]}>
-                    <Feather name={opt.icon} size={18} color={isSelected ? '#FFFFFF' : (isDark ? '#94A3B8' : '#475569')} />
+                    <MaterialIcons name={opt.icon} size={18} color={isSelected ? '#FFFFFF' : (isDark ? '#94A3B8' : '#475569')} />
                   </View>
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={[styles.themeOptionLabel, { color: isSelected ? colors.primary : colors.text }]}>
@@ -319,9 +374,9 @@ const ConfigScreen = ({ navigation }) => {
                       {opt.description}
                     </Text>
                   </View>
-                  <Feather
-                    name={isSelected ? 'check-circle' : 'circle'}
-                    size={20}
+                  <MaterialIcons
+                    name={isSelected ? 'check-circle' : 'radio-button-unchecked'}
+                    size={22}
                     color={isSelected ? colors.primary : colors.textMuted}
                   />
                 </TouchableOpacity>
@@ -330,7 +385,8 @@ const ConfigScreen = ({ navigation }) => {
 
             <TouchableOpacity
               onPress={() => setThemeModalVisible(false)}
-              style={[styles.closeModalButton, { backgroundColor: isDark ? '#334155' : '#E2E8F0' }]}
+              style={[styles.closeModalButton, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}
+              activeOpacity={0.8}
             >
               <Text style={[styles.closeModalText, { color: colors.text }]}>Fechar</Text>
             </TouchableOpacity>
@@ -346,10 +402,10 @@ const ConfigScreen = ({ navigation }) => {
         onRequestClose={() => setPasswordModalVisible(false)}
       >
         <View style={styles.modalBackdrop}>
-          <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }]}>
+          <View style={[styles.modalCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>Alterar senha</Text>
             <Text style={[styles.modalDescription, { color: colors.textSecondary }]}>
-              Crie uma senha com pelo menos 6 caracteres.
+              Crie uma nova senha com pelo menos 6 caracteres.
             </Text>
             <TextInput
               value={newPassword}
@@ -358,7 +414,7 @@ const ConfigScreen = ({ navigation }) => {
               placeholderTextColor={colors.textMuted}
               secureTextEntry
               autoFocus
-              style={[styles.passwordInput, { borderColor: colors.border, color: colors.text, backgroundColor: colors.inputBg }]}
+              style={[styles.passwordInput, { borderColor: colors.border, color: colors.text, backgroundColor: isDark ? '#0F172A' : '#F8FAFC' }]}
             />
             <View style={styles.modalActions}>
               <TouchableOpacity onPress={() => setPasswordModalVisible(false)} style={styles.cancelButton}>
@@ -368,6 +424,7 @@ const ConfigScreen = ({ navigation }) => {
                 onPress={savePassword}
                 disabled={updatingPassword}
                 style={[styles.saveButton, { backgroundColor: colors.primary }]}
+                activeOpacity={0.85}
               >
                 {updatingPassword ? (
                   <Text style={styles.saveText}>Salvando...</Text>
@@ -384,41 +441,70 @@ const ConfigScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F7F7FB' },
-  content: { padding: 20, paddingBottom: 42 },
-  sectionLabel: { color: '#71717A', fontSize: 12, fontWeight: '800', letterSpacing: 1, marginBottom: 9, marginLeft: 3, textTransform: 'uppercase' },
-  panel: { backgroundColor: '#fff', borderRadius: 16, paddingHorizontal: 15, marginBottom: 22, borderWidth: 1, borderColor: '#E4E4E7' },
-  row: { minHeight: 68, flexDirection: 'row', alignItems: 'center' },
-  rowIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  container: { flex: 1 },
+  content: { padding: 16, paddingBottom: 42 },
+  sectionLabel: { fontSize: 11.5, fontWeight: '800', letterSpacing: 0.6, marginBottom: 8, marginLeft: 4 },
+  panel: {
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    marginBottom: 20,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  row: { minHeight: 64, flexDirection: 'row', alignItems: 'center' },
+  rowIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   rowCopy: { flex: 1, paddingVertical: 10 },
-  rowTitle: { color: '#18181B', fontSize: 15, fontWeight: '700' },
-  rowDescription: { color: '#71717A', fontSize: 12, marginTop: 3, lineHeight: 17 },
-  divider: { height: 1, backgroundColor: '#F0F0F2', marginLeft: 50 },
-  logout: { height: 52, borderRadius: 14, borderWidth: 1, borderColor: '#FECACA', backgroundColor: '#FFF7F7', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 },
-  logoutText: { color: '#DC2626', fontSize: 15, fontWeight: '800' },
-  version: { color: '#A1A1AA', textAlign: 'center', fontSize: 12, marginTop: 18 },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.55)', alignItems: 'center', justifyContent: 'center', padding: 22 },
-  modalCard: { width: '100%', backgroundColor: '#fff', borderRadius: 18, padding: 20 },
-  modalTitle: { color: '#18181B', fontSize: 19, fontWeight: '800' },
-  modalDescription: { color: '#71717A', fontSize: 13, lineHeight: 19, marginTop: 6, marginBottom: 15 },
-  passwordInput: { height: 50, borderWidth: 1, borderColor: '#D4D4D8', borderRadius: 11, paddingHorizontal: 13, color: '#18181B', fontSize: 15 },
-  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 10, marginTop: 17 },
-  cancelButton: { paddingVertical: 11, paddingHorizontal: 10 },
-  cancelText: { color: '#71717A', fontWeight: '700' },
-  saveButton: { backgroundColor: '#2563EB', borderRadius: 10, paddingVertical: 11, paddingHorizontal: 14 },
-  saveText: { color: '#fff', fontWeight: '800' },
+  rowTitle: { fontSize: 14.5, fontWeight: '700' },
+  rowDescription: { fontSize: 12, marginTop: 2, lineHeight: 16 },
+  divider: { height: 1, marginLeft: 50 },
+  logout: {
+    height: 52,
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  logoutText: { color: '#DC2626', fontSize: 14.5, fontWeight: '800' },
+  version: { textAlign: 'center', fontSize: 12, marginTop: 18, fontWeight: '500' },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  modalCard: {
+    width: '100%',
+    borderRadius: 22,
+    padding: 22,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  modalTitle: { fontSize: 19, fontWeight: '800' },
+  modalDescription: { fontSize: 13, lineHeight: 18, marginTop: 4, marginBottom: 16 },
+  passwordInput: { height: 48, borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, fontSize: 15 },
+  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 10, marginTop: 18 },
+  cancelButton: { paddingVertical: 10, paddingHorizontal: 12 },
+  cancelText: { fontWeight: '700', fontSize: 13.5 },
+  saveButton: { borderRadius: 12, paddingVertical: 11, paddingHorizontal: 18 },
+  saveText: { color: '#fff', fontWeight: '800', fontSize: 13.5 },
   themeOptionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
+    padding: 13,
+    borderRadius: 14,
     borderWidth: 1.5,
     marginBottom: 10,
   },
   themeOptionIcon: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -427,21 +513,20 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   themeOptionDesc: {
-    fontSize: 11.5,
+    fontSize: 12,
     marginTop: 2,
   },
   closeModalButton: {
-    marginTop: 6,
+    marginTop: 8,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeModalText: {
-    fontWeight: '700',
-    fontSize: 14,
+    fontWeight: '800',
+    fontSize: 13.5,
   },
 });
 
 export default ConfigScreen;
-
