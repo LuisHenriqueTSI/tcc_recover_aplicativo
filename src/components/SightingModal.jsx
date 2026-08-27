@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -11,6 +11,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { MaterialIcons, Feather, FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -31,6 +33,17 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
 
   const [photoUrl, setPhotoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
+
+  // Força o retorno do modal à posição centralizada quando o teclado fecha
+  useEffect(() => {
+    const subscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        Keyboard.dismiss();
+      }
+    );
+    return () => subscription.remove();
+  }, []);
 
   const handleSend = () => {
     if (!description.trim()) return;
@@ -103,26 +116,29 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
   return (
     <>
       <Modal visible={visible && !mapPickerVisible} animationType="slide" transparent onRequestClose={handleClose}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.overlay}
-        >
-          <View style={styles.modal}>
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.headerTitleRow}>
-                <View style={styles.iconCircle}>
-                  <MaterialIcons name="visibility" size={20} color="#2563EB" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.title}>Compartilhar Informação</Text>
-                  <Text style={styles.subtitle}>Ajude o tutor com detalhes ou pistas sobre o pet</Text>
-                </View>
-              </View>
-              <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
-                <MaterialIcons name="close" size={20} color="#6B7280" />
-              </TouchableOpacity>
-            </View>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.overlay}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+              style={{ width: '100%', maxWidth: 440, alignItems: 'center' }}
+            >
+              <TouchableWithoutFeedback onPress={() => {}}>
+                <View style={styles.modal}>
+                  {/* Header */}
+                  <View style={styles.header}>
+                    <View style={styles.headerTitleRow}>
+                      <View style={styles.iconCircle}>
+                        <MaterialIcons name="visibility" size={20} color="#2563EB" />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.title}>Compartilhar Informação</Text>
+                        <Text style={styles.subtitle}>Ajude o tutor com detalhes ou pistas sobre o pet</Text>
+                      </View>
+                    </View>
+                    <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
+                      <MaterialIcons name="close" size={20} color="#6B7280" />
+                    </TouchableOpacity>
+                  </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
               {/* Campo de Descrição */}
@@ -266,8 +282,11 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
             </View>
             {loading && <ActivityIndicator style={{ marginTop: 8 }} color="#2563EB" />}
           </View>
-        </KeyboardAvoidingView>
-      </Modal>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </View>
+  </TouchableWithoutFeedback>
+</Modal>
 
       {/* Seletor de Mapa Interativo Integrado */}
       <MapLocationPicker

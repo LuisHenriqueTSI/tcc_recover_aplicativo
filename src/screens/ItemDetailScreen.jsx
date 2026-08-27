@@ -13,6 +13,10 @@ import {
   TextInput,
   Dimensions,
   Linking,
+  Keyboard,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { MaterialIcons, FontAwesome, FontAwesome5, Entypo } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -1399,8 +1403,14 @@ const ItemDetailScreen = ({ route, navigation }) => {
           animationType="fade"
           onRequestClose={handleCancelEditComment}
         >
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center' }}>
-            <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 24, width: '85%' }}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
+              <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                style={{ width: '100%', maxWidth: 440, alignItems: 'center' }}
+              >
+                <TouchableWithoutFeedback onPress={() => {}}>
+                  <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 440 }}>
               <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>Editar comentário</Text>
               <TextInput
                 value={editCommentText}
@@ -1472,9 +1482,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 15 }}>Salvar</Text>
                 </TouchableOpacity>
               </View>
-            </View>
-          </View>
-        </Modal>
+              </View>
+            </TouchableWithoutFeedback>
+          </KeyboardAvoidingView>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
 
         <View style={{ height: 40 }} />
       </View>
