@@ -10,27 +10,39 @@ import {
   Linking,
   Alert,
   Share,
+  Modal,
+  TextInput,
   Dimensions,
 } from 'react-native';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { MaterialIcons, Feather, Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import * as userService from '../services/user';
 import * as itemsService from '../services/items';
+import * as ratingsService from '../services/ratings';
 import OptimizedImage from '../components/OptimizedImage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const UserProfileScreen = ({ route, navigation }) => {
   const { userId, userName: initialName, avatarUrl: initialAvatar } = route.params || {};
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, userProfile: currentUserProfile } = useAuth();
   const { colors, isDark } = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [userItems, setUserItems] = useState([]);
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'lost' | 'found' | 'adoption' | 'resolved'
+  const [ratingsData, setRatingsData] = useState({ ratings: [], average: 5.0, total: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
+  const [activeMainSection, setActiveMainSection] = useState('posts'); // 'posts' | 'ratings'
+  const [activePostTab, setActivePostTab] = useState('all'); // 'all' | 'lost' | 'found' | 'adoption' | 'resolved'
   const [refreshing, setRefreshing] = useState(false);
+
+  // Estados do Modal de Avaliação
+  const [ratingModalVisible, setRatingModalVisible] = useState(false);
+  const [selectedStars, setSelectedStars] = useState(5);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [reviewComment, setReviewComment] = useState('');
+  const [submittingRating, setSubmittingRating] = useState(false);
 
   const isOwnProfile = currentUser && currentUser.id === userId;
 
@@ -40,19 +52,31 @@ const UserProfileScreen = ({ route, navigation }) => {
       return;
     }
     try {
-      const [profileData, itemsData] = await Promise.all([
+      const [profileData, itemsData, userRatings] = await Promise.all([
         userService.getUserById(userId),
         itemsService.getUserItems(userId),
+        ratingsService.getUserRatings(userId),
       ]);
       setProfile(profileData || { name: initialName, avatar_url: initialAvatar });
       setUserItems(itemsData || []);
+      setRatingsData(userRatings || { ratings: [], average: 5.0, total: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
+
+      // Se o usuário logado já tiver avaliação existente, pré-carrega
+      if (currentUser && userRatings?.ratings) {
+        const existing = userRatings.ratings.find(r => r.reviewerId === currentUser.id);
+        if (existing) {
+          setSelectedStars(existing.stars || 5);
+          setSelectedTags(existing.tags || []);
+          setReviewComment(existing.comment || '');
+        }
+      }
     } catch (error) {
       console.log('[UserProfileScreen] Erro ao carregar dados do usuário:', error.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [userId, initialName, initialAvatar]);
+  }, [userId, initialName, initialAvatar, currentUser]);
 
   useEffect(() => {
     loadUserData();
@@ -61,6 +85,63 @@ const UserProfileScreen = ({ route, navigation }) => {
   const handleRefresh = () => {
     setRefreshing(true);
     loadUserData();
+  };
+
+  const handleOpenRatingModal = () => {
+    if (!currentUser) {
+      Alert.alert(
+        'Login necessário',
+        'Entre ou crie uma conta para avaliar e deixar um relato sobre este membro.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+        ]
+      );
+      return;
+    }
+
+    if (isOwnProfile) {
+      Alert.alert('Aviso', 'Você não pode avaliar seu próprio perfil.');
+      return;
+    }
+
+    setRatingModalVisible(true);
+  };
+
+  const handleToggleTag = (tag) => {
+    setSelectedTags((prev) => {
+      if (prev.includes(tag)) {
+        return prev.filter(t => t !== tag);
+      }
+      return [...prev, tag];
+    });
+  };
+
+  const handleSubmitRating = async () => {
+    if (!currentUser) return;
+    setSubmittingRating(true);
+    try {
+      const reviewerDisplayName = currentUserProfile?.name || currentUser.user_metadata?.name || 'Membro da Comunidade';
+      const reviewerAvatar = currentUserProfile?.avatar_url || currentUserProfile?.avatarUrl || null;
+
+      await ratingsService.submitUserRating({
+        targetUserId: userId,
+        reviewerId: currentUser.id,
+        reviewerName: reviewerDisplayName,
+        reviewerAvatar,
+        stars: selectedStars,
+        tags: selectedTags,
+        comment: reviewComment,
+      });
+
+      Alert.alert('Avaliação enviada!', 'Obrigado por ajudar a manter a comunidade WeFIND confiável e unida!');
+      setRatingModalVisible(false);
+      loadUserData();
+    } catch (error) {
+      Alert.alert('Erro ao avaliar', error.message || 'Não foi possível registrar a avaliação.');
+    } finally {
+      setSubmittingRating(false);
+    }
   };
 
   const handleOpenChat = () => {
@@ -129,7 +210,7 @@ const UserProfileScreen = ({ route, navigation }) => {
 
   const formatDisplayPhone = (value) => {
     let digits = String(value || '').replace(/\D/g, '');
-    if (digits.startsWith('55')) digits = digits.slice(2);
+    if (!digits.startsWith('55')) digits = digits.slice(2);
     if (!digits) return null;
     if (digits.length === 10) return `(${digits.slice(0, 2)}) 9${digits.slice(2, 6)}-${digits.slice(6)}`;
     if (digits.length === 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
@@ -147,6 +228,27 @@ const UserProfileScreen = ({ route, navigation }) => {
       return `Membro desde ${months[d.getMonth()]} de ${d.getFullYear()}`;
     } catch {
       return 'Membro da Comunidade';
+    }
+  };
+
+  const formatReviewDate = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+    } catch {
+      return '';
+    }
+  };
+
+  const getStarLabel = (stars) => {
+    switch (stars) {
+      case 5: return 'Excelente experiência! ⭐⭐⭐⭐⭐';
+      case 4: return 'Muito boa experiência! ⭐⭐⭐⭐';
+      case 3: return 'Experiência regular ⭐⭐⭐';
+      case 2: return 'Experiência abaixo do esperado ⭐⭐';
+      case 1: return 'Experiência ruim ⭐';
+      default: return 'Selecione uma nota';
     }
   };
 
@@ -179,13 +281,15 @@ const UserProfileScreen = ({ route, navigation }) => {
   const adoptionPosts = userItems.filter(i => (i.extra_fields?.is_direct_adoption || itemsService.isPetAvailableForAdoption(i)) && !i.resolved);
 
   const filteredItems = userItems.filter(item => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'lost') return item.status === 'lost' && !item.resolved;
-    if (activeTab === 'found') return item.status === 'found' && !item.resolved;
-    if (activeTab === 'adoption') return (item.extra_fields?.is_direct_adoption || itemsService.isPetAvailableForAdoption(item)) && !item.resolved;
-    if (activeTab === 'resolved') return item.resolved || item.status === 'resolved';
+    if (activePostTab === 'all') return true;
+    if (activePostTab === 'lost') return item.status === 'lost' && !item.resolved;
+    if (activePostTab === 'found') return item.status === 'found' && !item.resolved;
+    if (activePostTab === 'adoption') return (item.extra_fields?.is_direct_adoption || itemsService.isPetAvailableForAdoption(item)) && !item.resolved;
+    if (activePostTab === 'resolved') return item.resolved || item.status === 'resolved';
     return true;
   });
+
+  const existingMyRating = ratingsData.ratings.find(r => r.reviewerId === currentUser?.id);
 
   return (
     <ScrollView
@@ -195,7 +299,6 @@ const UserProfileScreen = ({ route, navigation }) => {
     >
       {/* 1. HERO HEADER CARD */}
       <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-        {/* Banner decorativo sutil de fundo */}
         <View style={[styles.heroCover, { backgroundColor: isDark ? '#1E293B' : '#DBEAFE' }]}>
           <View style={styles.heroCoverOverlay} />
         </View>
@@ -217,10 +320,20 @@ const UserProfileScreen = ({ route, navigation }) => {
         <View style={styles.profileInfoContainer}>
           <Text style={[styles.profileName, { color: colors.text }]}>{displayName}</Text>
 
-          <View style={[styles.roleBadge, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF', borderColor: isDark ? 'rgba(37, 99, 235, 0.4)' : '#BFDBFE' }]}>
-            <MaterialIcons name="verified-user" size={13} color={colors.primary} style={{ marginRight: 4 }} />
-            <Text style={[styles.roleBadgeText, { color: colors.primary }]}>Membro da Comunidade WeFIND</Text>
-          </View>
+          {/* Badge de Reputação / Estrelas */}
+          <TouchableOpacity
+            onPress={() => setActiveMainSection('ratings')}
+            style={[styles.reputationBadge, { backgroundColor: isDark ? '#1E293B' : '#FEF3C7', borderColor: '#F59E0B' }]}
+            activeOpacity={0.8}
+          >
+            <MaterialIcons name="star" size={16} color="#F59E0B" />
+            <Text style={[styles.reputationScore, { color: isDark ? '#FBBF24' : '#B45309' }]}>
+              {ratingsData.average.toFixed(1)}
+            </Text>
+            <Text style={[styles.reputationCount, { color: isDark ? '#FDE68A' : '#92400E' }]}>
+              ({ratingsData.total} {ratingsData.total === 1 ? 'avaliação' : 'avaliações'})
+            </Text>
+          </TouchableOpacity>
 
           {/* Localização e Data de entrada */}
           <View style={styles.metaRow}>
@@ -239,14 +352,14 @@ const UserProfileScreen = ({ route, navigation }) => {
             </View>
           </View>
 
-          {/* Bio / Apresentação (se houver) */}
+          {/* Bio / Apresentação */}
           {profile?.bio ? (
             <Text style={[styles.bioText, { color: colors.textSecondary }]}>
               "{profile.bio}"
             </Text>
           ) : null}
 
-          {/* Ações Rápidas (Chat, WhatsApp, Compartilhar) */}
+          {/* Ações Rápidas (Chat, WhatsApp, Avaliar, Compartilhar) */}
           <View style={styles.actionButtonsRow}>
             {!isOwnProfile && (
               <TouchableOpacity
@@ -255,7 +368,20 @@ const UserProfileScreen = ({ route, navigation }) => {
                 activeOpacity={0.85}
               >
                 <MaterialIcons name="chat-bubble-outline" size={17} color="#FFFFFF" style={{ marginRight: 6 }} />
-                <Text style={styles.primaryActionBtnText}>Enviar Mensagem</Text>
+                <Text style={styles.primaryActionBtnText}>Mensagem</Text>
+              </TouchableOpacity>
+            )}
+
+            {!isOwnProfile && (
+              <TouchableOpacity
+                onPress={handleOpenRatingModal}
+                style={[styles.rateActionBtn, { backgroundColor: isDark ? '#1E293B' : '#FEF3C7', borderColor: '#F59E0B' }]}
+                activeOpacity={0.85}
+              >
+                <MaterialIcons name={existingMyRating ? 'edit' : 'star'} size={17} color="#D97706" style={{ marginRight: 5 }} />
+                <Text style={[styles.rateActionBtnText, { color: isDark ? '#FBBF24' : '#B45309' }]}>
+                  {existingMyRating ? 'Editar Nota' : 'Classificar'}
+                </Text>
               </TouchableOpacity>
             )}
 
@@ -265,8 +391,7 @@ const UserProfileScreen = ({ route, navigation }) => {
                 style={[styles.whatsappActionBtn, { backgroundColor: '#25D366' }]}
                 activeOpacity={0.85}
               >
-                <Feather name="phone-call" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-                <Text style={styles.whatsappActionBtnText}>WhatsApp</Text>
+                <Feather name="phone-call" size={16} color="#FFFFFF" />
               </TouchableOpacity>
             )}
 
@@ -282,197 +407,440 @@ const UserProfileScreen = ({ route, navigation }) => {
 
         {/* Grid de Estatísticas de Impacto */}
         <View style={[styles.statsGrid, { borderColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
-          <View style={styles.statBox}>
+          <TouchableOpacity onPress={() => { setActiveMainSection('posts'); setActivePostTab('all'); }} style={styles.statBox}>
             <Text style={[styles.statNumber, { color: colors.primary }]}>{userItems.length}</Text>
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>Publicações</Text>
-          </View>
+          </TouchableOpacity>
 
           <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
 
-          <View style={styles.statBox}>
+          <TouchableOpacity onPress={() => { setActiveMainSection('posts'); setActivePostTab('resolved'); }} style={styles.statBox}>
             <Text style={[styles.statNumber, { color: '#059669' }]}>{resolvedPosts.length}</Text>
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>Reencontros</Text>
-          </View>
+          </TouchableOpacity>
 
           <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
 
-          <View style={styles.statBox}>
-            <Text style={[styles.statNumber, { color: '#D97706' }]}>{activePosts.length}</Text>
-            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Ativas</Text>
-          </View>
+          <TouchableOpacity onPress={() => setActiveMainSection('ratings')} style={styles.statBox}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <MaterialIcons name="star" size={16} color="#F59E0B" style={{ marginRight: 2 }} />
+              <Text style={[styles.statNumber, { color: '#D97706' }]}>{ratingsData.average.toFixed(1)}</Text>
+            </View>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Reputação</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* 2. SEÇÃO DE REDES / CONTATOS ADICIONAIS */}
-      {(profile?.instagram || profile?.facebook) && (
-        <View style={[styles.socialCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Redes e Contato</Text>
-          <View style={styles.socialRow}>
-            {profile?.instagram && (
-              <TouchableOpacity
-                style={[styles.socialChip, { backgroundColor: isDark ? '#1E293B' : '#FDF2F8', borderColor: '#F472B6' }]}
-                onPress={() => {
-                  const handle = profile.instagram.replace('@', '');
-                  Linking.openURL(`https://instagram.com/${handle}`);
-                }}
-              >
-                <Feather name="instagram" size={14} color="#E1306C" style={{ marginRight: 5 }} />
-                <Text style={{ color: isDark ? '#F472B6' : '#BE185D', fontSize: 12.5, fontWeight: '700' }}>
-                  @{profile.instagram.replace('@', '')}
-                </Text>
-              </TouchableOpacity>
-            )}
+      {/* 2. CHIP TOGGLE PRINCIPAL: PUBLICAÇÕES VS AVALIAÇÕES */}
+      <View style={styles.mainToggleContainer}>
+        <TouchableOpacity
+          onPress={() => setActiveMainSection('posts')}
+          style={[
+            styles.mainToggleBtn,
+            { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: colors.cardBorder },
+            activeMainSection === 'posts' && [styles.mainToggleBtnActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+          ]}
+          activeOpacity={0.85}
+        >
+          <MaterialIcons name="pets" size={17} color={activeMainSection === 'posts' ? '#FFFFFF' : colors.textSecondary} style={{ marginRight: 6 }} />
+          <Text style={[styles.mainToggleText, { color: activeMainSection === 'posts' ? '#FFFFFF' : colors.textSecondary }]}>
+            Publicações ({userItems.length})
+          </Text>
+        </TouchableOpacity>
 
-            {profile?.facebook && (
-              <TouchableOpacity
-                style={[styles.socialChip, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: '#93C5FD' }]}
-                onPress={() => Linking.openURL(profile.facebook.startsWith('http') ? profile.facebook : `https://${profile.facebook}`)}
-              >
-                <Feather name="facebook" size={14} color="#1877F2" style={{ marginRight: 5 }} />
-                <Text style={{ color: isDark ? '#93C5FD' : '#1D4ED8', fontSize: 12.5, fontWeight: '700' }}>Facebook</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+        <TouchableOpacity
+          onPress={() => setActiveMainSection('ratings')}
+          style={[
+            styles.mainToggleBtn,
+            { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: colors.cardBorder },
+            activeMainSection === 'ratings' && [styles.mainToggleBtnActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+          ]}
+          activeOpacity={0.85}
+        >
+          <MaterialIcons name="star" size={17} color={activeMainSection === 'ratings' ? '#FFFFFF' : '#F59E0B'} style={{ marginRight: 6 }} />
+          <Text style={[styles.mainToggleText, { color: activeMainSection === 'ratings' ? '#FFFFFF' : colors.textSecondary }]}>
+            Classificações ({ratingsData.total})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 3. CONTEÚDO: SEÇÃO DE PUBLICAÇÕES */}
+      {activeMainSection === 'posts' && (
+        <View style={styles.postsSection}>
+          {/* Filtros em Abas de Pets */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
+            {[
+              { key: 'all', label: `Todos (${userItems.length})` },
+              { key: 'lost', label: `Perdidos (${lostPosts.length})` },
+              { key: 'found', label: `Encontrados (${foundPosts.length})` },
+              { key: 'adoption', label: `Adoção (${adoptionPosts.length})` },
+              { key: 'resolved', label: `Reencontrados (${resolvedPosts.length})` },
+            ].map((tab) => {
+              const isSelected = activePostTab === tab.key;
+              return (
+                <TouchableOpacity
+                  key={tab.key}
+                  onPress={() => setActivePostTab(tab.key)}
+                  style={[
+                    styles.tabChip,
+                    { backgroundColor: isDark ? '#1E293B' : '#E2E8F0', borderColor: isDark ? '#334155' : '#E2E8F0' },
+                    isSelected && [styles.tabChipActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.tabChipText, { color: isDark ? '#94A3B8' : '#475569' }, isSelected && styles.tabChipTextActive]}>
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          {/* Lista de Pets */}
+          {filteredItems.length === 0 ? (
+            <View style={[styles.emptyPostsCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+              <MaterialIcons name="pets" size={38} color={colors.textMuted} style={{ marginBottom: 8 }} />
+              <Text style={[styles.emptyPostsTitle, { color: colors.text }]}>Nenhuma publicação nesta categoria</Text>
+              <Text style={[styles.emptyPostsSubtitle, { color: colors.textSecondary }]}>
+                {displayName.split(' ')[0]} não possui anúncios com este status no momento.
+              </Text>
+            </View>
+          ) : (
+            filteredItems.map((item) => {
+              const isAdoption = Boolean(item.extra_fields?.is_direct_adoption || itemsService.isPetAvailableForAdoption(item));
+              const isResolved = item.resolved || item.status === 'resolved';
+              const isFound = !isAdoption && !isResolved && item.status === 'found';
+
+              const statusBg = isResolved
+                ? (isDark ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5')
+                : isAdoption
+                ? (isDark ? 'rgba(219, 39, 119, 0.2)' : '#FDF2F8')
+                : isFound
+                ? (isDark ? 'rgba(16, 185, 129, 0.2)' : '#ECFDF5')
+                : (isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEF2F2');
+
+              const statusTextColor = isResolved
+                ? '#059669'
+                : isAdoption
+                ? '#DB2777'
+                : isFound
+                ? '#059669'
+                : '#DC2626';
+
+              const statusLabel = isResolved
+                ? 'Reencontrado 🎉'
+                : isAdoption
+                ? 'Para Adoção'
+                : isFound
+                ? 'Encontrado'
+                : 'Perdido';
+
+              const photoUrl = item.item_photos?.[0]?.url || item.photos?.[0] || item.photo_url || null;
+
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.petCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
+                  onPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
+                  activeOpacity={0.88}
+                >
+                  <View style={styles.petCardContent}>
+                    <View style={[styles.petImageContainer, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]}>
+                      {photoUrl ? (
+                        <OptimizedImage uri={photoUrl} style={styles.petImage} resizeMode="cover" />
+                      ) : (
+                        <MaterialIcons name="pets" size={30} color={colors.textMuted} />
+                      )}
+                    </View>
+
+                    <View style={styles.petInfoContainer}>
+                      <View style={styles.petStatusRow}>
+                        <View style={[styles.petStatusBadge, { backgroundColor: statusBg }]}>
+                          <Text style={[styles.petStatusBadgeText, { color: statusTextColor }]}>{statusLabel}</Text>
+                        </View>
+                        {item.species ? (
+                          <Text style={[styles.petSpeciesText, { color: colors.textMuted }]}>
+                            {item.species.toUpperCase()}
+                          </Text>
+                        ) : null}
+                      </View>
+
+                      <Text style={[styles.petTitle, { color: colors.text }]} numberOfLines={1}>
+                        {item.title || item.species || 'Animal'}
+                      </Text>
+
+                      {item.breed ? (
+                        <Text style={[styles.petBreed, { color: colors.textSecondary }]} numberOfLines={1}>
+                          Raça: {item.breed}
+                        </Text>
+                      ) : null}
+
+                      <View style={styles.petLocationRow}>
+                        <MaterialIcons name="location-on" size={13} color={colors.primary} />
+                        <Text style={[styles.petLocationText, { color: colors.textMuted }]} numberOfLines={1}>
+                          {item.city && item.state ? `${item.city} - ${item.state}` : (item.city || item.state || 'Local não informado')}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ alignSelf: 'center' }} />
+                  </View>
+                </TouchableOpacity>
+              );
+            })
+          )}
         </View>
       )}
 
-      {/* 3. LISTA DE ANIMAIS / PUBLICAÇÕES */}
-      <View style={styles.postsSection}>
-        <View style={styles.postsHeaderRow}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Publicações de {displayName.split(' ')[0]}
-          </Text>
-          <Text style={{ fontSize: 12, color: colors.textSecondary, fontWeight: '600' }}>
-            {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'itens'}
-          </Text>
-        </View>
+      {/* 4. CONTEÚDO: SEÇÃO DE CLASSIFICAÇÕES & AVALIAÇÕES */}
+      {activeMainSection === 'ratings' && (
+        <View style={styles.ratingsSection}>
+          {/* Card Resumo de Avaliações */}
+          <View style={[styles.ratingSummaryCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+            <View style={styles.ratingSummaryLeft}>
+              <Text style={[styles.ratingBigScore, { color: colors.text }]}>{ratingsData.average.toFixed(1)}</Text>
+              <View style={styles.starsRow}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <MaterialIcons
+                    key={star}
+                    name={star <= Math.round(ratingsData.average) ? 'star' : 'star-border'}
+                    size={20}
+                    color="#F59E0B"
+                  />
+                ))}
+              </View>
+              <Text style={[styles.ratingTotalText, { color: colors.textMuted }]}>
+                {ratingsData.total} {ratingsData.total === 1 ? 'classificação' : 'classificações'}
+              </Text>
+            </View>
 
-        {/* Filtros em Abas */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
-          {[
-            { key: 'all', label: `Todos (${userItems.length})` },
-            { key: 'lost', label: `Perdidos (${lostPosts.length})` },
-            { key: 'found', label: `Encontrados (${foundPosts.length})` },
-            { key: 'adoption', label: `Adoção (${adoptionPosts.length})` },
-            { key: 'resolved', label: `Reencontrados (${resolvedPosts.length})` },
-          ].map((tab) => {
-            const isSelected = activeTab === tab.key;
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                onPress={() => setActiveTab(tab.key)}
-                style={[
-                  styles.tabChip,
-                  { backgroundColor: isDark ? '#1E293B' : '#E2E8F0', borderColor: isDark ? '#334155' : '#E2E8F0' },
-                  isSelected && [styles.tabChipActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
-                ]}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.tabChipText, { color: isDark ? '#94A3B8' : '#475569' }, isSelected && styles.tabChipTextActive]}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-
-        {/* Lista de Pets */}
-        {filteredItems.length === 0 ? (
-          <View style={[styles.emptyPostsCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-            <MaterialIcons name="pets" size={38} color={colors.textMuted} style={{ marginBottom: 8 }} />
-            <Text style={[styles.emptyPostsTitle, { color: colors.text }]}>Nenhuma publicação nesta categoria</Text>
-            <Text style={[styles.emptyPostsSubtitle, { color: colors.textSecondary }]}>
-              {displayName.split(' ')[0]} não possui anúncios com este status no momento.
-            </Text>
+            <View style={styles.ratingBreakdownContainer}>
+              {[5, 4, 3, 2, 1].map((s) => {
+                const count = ratingsData.breakdown[s] || 0;
+                const percentage = ratingsData.total > 0 ? (count / ratingsData.total) * 100 : 0;
+                return (
+                  <View key={s} style={styles.breakdownRow}>
+                    <Text style={[styles.breakdownStarLabel, { color: colors.textSecondary }]}>{s}★</Text>
+                    <View style={[styles.breakdownBarTrack, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
+                      <View style={[styles.breakdownBarFill, { width: `${percentage}%`, backgroundColor: '#F59E0B' }]} />
+                    </View>
+                    <Text style={[styles.breakdownCountText, { color: colors.textMuted }]}>{count}</Text>
+                  </View>
+                );
+              })}
+            </View>
           </View>
-        ) : (
-          filteredItems.map((item) => {
-            const isAdoption = Boolean(item.extra_fields?.is_direct_adoption || itemsService.isPetAvailableForAdoption(item));
-            const isResolved = item.resolved || item.status === 'resolved';
-            const isFound = !isAdoption && !isResolved && item.status === 'found';
-            const isLost = !isAdoption && !isResolved && item.status === 'lost';
 
-            const statusBg = isResolved
-              ? (isDark ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5')
-              : isAdoption
-              ? (isDark ? 'rgba(219, 39, 119, 0.2)' : '#FDF2F8')
-              : isFound
-              ? (isDark ? 'rgba(16, 185, 129, 0.2)' : '#ECFDF5')
-              : (isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEF2F2');
+          {/* Botão de Avaliar */}
+          {!isOwnProfile && (
+            <TouchableOpacity
+              onPress={handleOpenRatingModal}
+              style={[styles.leaveReviewCTA, { backgroundColor: colors.primary }]}
+              activeOpacity={0.88}
+            >
+              <MaterialIcons name="rate-review" size={19} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Text style={styles.leaveReviewCTAText}>
+                {existingMyRating ? 'Editar Minha Classificação' : 'Classificar Experiência com este Membro'}
+              </Text>
+            </TouchableOpacity>
+          )}
 
-            const statusTextColor = isResolved
-              ? '#059669'
-              : isAdoption
-              ? '#DB2777'
-              : isFound
-              ? '#059669'
-              : '#DC2626';
-
-            const statusLabel = isResolved
-              ? 'Reencontrado 🎉'
-              : isAdoption
-              ? 'Para Adoção'
-              : isFound
-              ? 'Encontrado'
-              : 'Perdido';
-
-            const photoUrl = item.item_photos?.[0]?.url || item.photos?.[0] || item.photo_url || null;
-
-            return (
-              <TouchableOpacity
-                key={item.id}
-                style={[styles.petCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
-                onPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
-                activeOpacity={0.88}
-              >
-                <View style={styles.petCardContent}>
-                  {/* Foto do Pet */}
-                  <View style={[styles.petImageContainer, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]}>
-                    {photoUrl ? (
-                      <OptimizedImage uri={photoUrl} style={styles.petImage} resizeMode="cover" />
+          {/* Lista de Depoimentos de Avaliação */}
+          {ratingsData.ratings.length === 0 ? (
+            <View style={[styles.emptyPostsCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+              <MaterialIcons name="stars" size={42} color="#F59E0B" style={{ marginBottom: 8 }} />
+              <Text style={[styles.emptyPostsTitle, { color: colors.text }]}>Ainda sem avaliações</Text>
+              <Text style={[styles.emptyPostsSubtitle, { color: colors.textSecondary }]}>
+                Seja o primeiro a avaliar e compartilhar sua experiência de contato ou reencontro com {displayName.split(' ')[0]}!
+              </Text>
+            </View>
+          ) : (
+            ratingsData.ratings.map((rating) => (
+              <View key={rating.id} style={[styles.reviewCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+                {/* Topo do Review: Avatar, Nome, Estrelas e Data */}
+                <View style={styles.reviewHeader}>
+                  <View style={[styles.reviewerAvatar, { backgroundColor: colors.primaryLight }]}>
+                    {rating.reviewerAvatar ? (
+                      <Image source={{ uri: rating.reviewerAvatar }} style={styles.reviewerAvatarImg} />
                     ) : (
-                      <MaterialIcons name="pets" size={30} color={colors.textMuted} />
+                      <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13 }}>
+                        {rating.reviewerName.trim()[0]?.toUpperCase() || 'U'}
+                      </Text>
                     )}
                   </View>
 
-                  {/* Informações do Pet */}
-                  <View style={styles.petInfoContainer}>
-                    <View style={styles.petStatusRow}>
-                      <View style={[styles.petStatusBadge, { backgroundColor: statusBg }]}>
-                        <Text style={[styles.petStatusBadgeText, { color: statusTextColor }]}>{statusLabel}</Text>
-                      </View>
-                      {item.species ? (
-                        <Text style={[styles.petSpeciesText, { color: colors.textMuted }]}>
-                          {item.species.toUpperCase()}
-                        </Text>
-                      ) : null}
-                    </View>
-
-                    <Text style={[styles.petTitle, { color: colors.text }]} numberOfLines={1}>
-                      {item.title || item.species || 'Animal'}
+                  <View style={{ flex: 1, marginLeft: 10 }}>
+                    <Text style={[styles.reviewerName, { color: colors.text }]} numberOfLines={1}>
+                      {rating.reviewerName}
                     </Text>
-
-                    {item.breed ? (
-                      <Text style={[styles.petBreed, { color: colors.textSecondary }]} numberOfLines={1}>
-                        Raça: {item.breed}
-                      </Text>
-                    ) : null}
-
-                    <View style={styles.petLocationRow}>
-                      <MaterialIcons name="location-on" size={13} color={colors.primary} />
-                      <Text style={[styles.petLocationText, { color: colors.textMuted }]} numberOfLines={1}>
-                        {item.city && item.state ? `${item.city} - ${item.state}` : (item.city || item.state || 'Local não informado')}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                      <View style={{ flexDirection: 'row' }}>
+                        {[1, 2, 3, 4, 5].map((st) => (
+                          <MaterialIcons
+                            key={st}
+                            name={st <= rating.stars ? 'star' : 'star-border'}
+                            size={14}
+                            color="#F59E0B"
+                          />
+                        ))}
+                      </View>
+                      <Text style={[styles.reviewDate, { color: colors.textMuted }]}>
+                        {formatReviewDate(rating.createdAt)}
                       </Text>
                     </View>
                   </View>
-
-                  <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ alignSelf: 'center' }} />
                 </View>
+
+                {/* Tags Elogios */}
+                {Array.isArray(rating.tags) && rating.tags.length > 0 ? (
+                  <View style={styles.reviewTagsRow}>
+                    {rating.tags.map((t, idx) => (
+                      <View key={idx} style={[styles.reviewTagBadge, { backgroundColor: isDark ? '#1E293B' : '#FEF3C7', borderColor: '#FDE68A' }]}>
+                        <Text style={[styles.reviewTagText, { color: isDark ? '#FBBF24' : '#92400E' }]}>{t}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+
+                {/* Comentário */}
+                {rating.comment ? (
+                  <Text style={[styles.reviewCommentText, { color: isDark ? '#E2E8F0' : '#334155' }]}>
+                    "{rating.comment}"
+                  </Text>
+                ) : null}
+              </View>
+            ))
+          )}
+        </View>
+      )}
+
+      {/* MODAL INTERATIVO PARA CLASSIFICAR / AVALIAR */}
+      <Modal
+        visible={ratingModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setRatingModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+            {/* Header do Modal */}
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <MaterialIcons name="star-half" size={22} color="#F59E0B" />
+                <Text style={[styles.modalTitle, { color: colors.text }]}>Classificar Experiência</Text>
+              </View>
+              <TouchableOpacity onPress={() => setRatingModalVisible(false)} style={styles.modalCloseBtn}>
+                <MaterialIcons name="close" size={22} color={colors.textMuted} />
               </TouchableOpacity>
-            );
-          })
-        )}
-      </View>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: Dimensions.get('window').height * 0.7 }}>
+              <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+                Como foi seu contato, negociação ou experiência de reencontro com <Text style={{ fontWeight: '700', color: colors.text }}>{displayName}</Text>?
+              </Text>
+
+              {/* Seletor de Estrelas */}
+              <View style={styles.starsPickerContainer}>
+                <View style={styles.starsPickerRow}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <TouchableOpacity
+                      key={star}
+                      onPress={() => setSelectedStars(star)}
+                      activeOpacity={0.7}
+                      style={{ padding: 6 }}
+                    >
+                      <MaterialIcons
+                        name={star <= selectedStars ? 'star' : 'star-border'}
+                        size={40}
+                        color="#F59E0B"
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Text style={[styles.starFeedbackText, { color: '#D97706' }]}>
+                  {getStarLabel(selectedStars)}
+                </Text>
+              </View>
+
+              {/* Elogios e Destaques */}
+              <Text style={[styles.formLabel, { color: colors.text }]}>
+                Destaques da sua experiência (opcional):
+              </Text>
+              <View style={styles.tagsContainer}>
+                {ratingsService.POPULAR_RATING_TAGS.map((tag) => {
+                  const isSelected = selectedTags.includes(tag);
+                  return (
+                    <TouchableOpacity
+                      key={tag}
+                      onPress={() => handleToggleTag(tag)}
+                      style={[
+                        styles.tagChip,
+                        { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#E2E8F0' },
+                        isSelected && [styles.tagChipSelected, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.25)' : '#FEF3C7', borderColor: '#F59E0B' }],
+                      ]}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[
+                        styles.tagChipText,
+                        { color: isDark ? '#94A3B8' : '#475569' },
+                        isSelected && { color: isDark ? '#FBBF24' : '#B45309', fontWeight: '800' },
+                      ]}>
+                        {tag}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Comentário / Relato */}
+              <Text style={[styles.formLabel, { color: colors.text }]}>
+                Deixe um comentário ou depoimento (opcional):
+              </Text>
+              <TextInput
+                style={[
+                  styles.commentInput,
+                  {
+                    backgroundColor: isDark ? colors.card : '#F8FAFC',
+                    borderColor: colors.border,
+                    color: colors.text,
+                  },
+                ]}
+                placeholder="Conte com mais detalhes como foi o atendimento, cuidado com o pet ou comunicação..."
+                placeholderTextColor={colors.textMuted}
+                value={reviewComment}
+                onChangeText={setReviewComment}
+                multiline
+                numberOfLines={4}
+                maxLength={400}
+              />
+
+              {/* Botões de Ação */}
+              <View style={styles.modalActionsRow}>
+                <TouchableOpacity
+                  onPress={() => setRatingModalVisible(false)}
+                  style={[styles.modalCancelBtn, { borderColor: colors.border }]}
+                  disabled={submittingRating}
+                >
+                  <Text style={[styles.modalCancelText, { color: colors.textSecondary }]}>Cancelar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={handleSubmitRating}
+                  style={[styles.modalSubmitBtn, { backgroundColor: colors.primary }]}
+                  disabled={submittingRating}
+                  activeOpacity={0.85}
+                >
+                  {submittingRating ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.modalSubmitText}>Salvar Avaliação</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -550,24 +918,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: -0.3,
   },
-  roleBadge: {
+  reputationBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     marginTop: 6,
-    marginBottom: 10,
+    marginBottom: 8,
+    gap: 4,
   },
-  roleBadgeText: {
+  reputationScore: {
+    fontSize: 13.5,
+    fontWeight: '900',
+  },
+  reputationCount: {
     fontSize: 11.5,
     fontWeight: '700',
   },
   metaRow: {
     alignItems: 'center',
     gap: 4,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   metaItem: {
     flexDirection: 'row',
@@ -583,14 +956,14 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     lineHeight: 19,
-    marginVertical: 8,
+    marginVertical: 6,
     paddingHorizontal: 12,
   },
   actionButtonsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 10,
+    marginTop: 8,
     marginBottom: 16,
     width: '100%',
     justifyContent: 'center',
@@ -600,7 +973,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     borderRadius: 14,
     flex: 1,
     shadowColor: '#2563EB',
@@ -611,26 +984,38 @@ const styles = StyleSheet.create({
   },
   primaryActionBtnText: {
     color: '#FFFFFF',
-    fontSize: 13.5,
+    fontSize: 13,
     fontWeight: '800',
   },
-  whatsappActionBtn: {
+  rateActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     borderRadius: 14,
+    borderWidth: 1,
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  rateActionBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  whatsappActionBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#25D366',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 3,
-  },
-  whatsappActionBtnText: {
-    color: '#FFFFFF',
-    fontSize: 13.5,
-    fontWeight: '800',
   },
   iconActionBtn: {
     width: 42,
@@ -656,7 +1041,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   statNumber: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
   },
   statLabel: {
@@ -664,40 +1049,34 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 2,
   },
-  socialCard: {
-    marginHorizontal: 14,
-    marginBottom: 14,
-    padding: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    letterSpacing: -0.2,
-    marginBottom: 10,
-  },
-  socialRow: {
+  mainToggleContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    paddingHorizontal: 14,
+    marginBottom: 14,
+    gap: 10,
   },
-  socialChip: {
+  mainToggleBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 14,
     borderWidth: 1,
+  },
+  mainToggleBtnActive: {
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  mainToggleText: {
+    fontSize: 13,
+    fontWeight: '800',
   },
   postsSection: {
     paddingHorizontal: 14,
-  },
-  postsHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
   },
   tabsScroll: {
     flexDirection: 'row',
@@ -721,7 +1100,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   emptyPostsCard: {
-    padding: 24,
+    padding: 26,
     borderRadius: 20,
     borderWidth: 1,
     alignItems: 'center',
@@ -729,8 +1108,8 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   emptyPostsTitle: {
-    fontSize: 14.5,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
     textAlign: 'center',
     marginBottom: 4,
   },
@@ -807,6 +1186,249 @@ const styles = StyleSheet.create({
   },
   petLocationText: {
     fontSize: 11.5,
+  },
+  ratingsSection: {
+    paddingHorizontal: 14,
+  },
+  ratingSummaryCard: {
+    flexDirection: 'row',
+    padding: 18,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginBottom: 14,
+    alignItems: 'center',
+  },
+  ratingSummaryLeft: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingRight: 16,
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(150, 150, 150, 0.2)',
+  },
+  ratingBigScore: {
+    fontSize: 34,
+    fontWeight: '900',
+    lineHeight: 38,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    marginVertical: 4,
+  },
+  ratingTotalText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  ratingBreakdownContainer: {
+    flex: 1,
+    paddingLeft: 16,
+    gap: 4,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  breakdownStarLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    width: 20,
+  },
+  breakdownBarTrack: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  breakdownBarFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  breakdownCountText: {
+    fontSize: 11,
+    width: 16,
+    textAlign: 'right',
+  },
+  leaveReviewCTA: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 16,
+    marginBottom: 14,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  leaveReviewCTAText: {
+    color: '#FFFFFF',
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+  reviewCard: {
+    padding: 16,
+    borderRadius: 18,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  reviewerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  reviewerAvatarImg: {
+    width: 36,
+    height: 36,
+  },
+  reviewerName: {
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+  reviewDate: {
+    fontSize: 11,
+  },
+  reviewTagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginVertical: 6,
+  },
+  reviewTagBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  reviewTagText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  reviewCommentText: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalCard: {
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
+    borderTopWidth: 1,
+    padding: 22,
+    maxHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  modalCloseBtn: {
+    padding: 4,
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 16,
+  },
+  starsPickerContainer: {
+    alignItems: 'center',
+    marginVertical: 8,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+  },
+  starsPickerRow: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  starFeedbackText: {
+    fontSize: 13,
+    fontWeight: '800',
+    marginTop: 4,
+  },
+  formLabel: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    marginTop: 14,
+    marginBottom: 8,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  tagChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  tagChipSelected: {},
+  tagChipText: {
+    fontSize: 11.5,
+    fontWeight: '600',
+  },
+  commentInput: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    fontSize: 13.5,
+    textAlignVertical: 'top',
+    minHeight: 80,
+  },
+  modalActionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelText: {
+    fontSize: 13.5,
+    fontWeight: '700',
+  },
+  modalSubmitBtn: {
+    flex: 1.5,
+    paddingVertical: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  modalSubmitText: {
+    color: '#FFFFFF',
+    fontSize: 13.5,
+    fontWeight: '800',
   },
 });
 
