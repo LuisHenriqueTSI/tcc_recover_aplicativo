@@ -109,6 +109,49 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
   }
 };
 
+// Export getItems para o Painel Administrativo e consultas completas
+export const getItems = async (filters = {}) => {
+  try {
+    let query = supabase
+      .from('items')
+      .select('*, profiles!owner_id(name, email, whatsapp, phone), item_photos(id, url), rewards(id, amount, currency, status, description)')
+      .order('created_at', { ascending: false });
+
+    if (filters.limit) {
+      query = query.limit(filters.limit);
+    }
+    if (filters.status && filters.status !== 'all') {
+      query = query.eq('status', filters.status);
+    }
+    if (filters.owner_id) {
+      query = query.eq('owner_id', filters.owner_id);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.log('[getItems] Erro query:', error.message);
+      return [];
+    }
+
+    return (data || []).map((item) => {
+      const itemPhotos = Array.isArray(item.item_photos)
+        ? item.item_photos
+        : item.item_photos
+        ? [item.item_photos]
+        : [];
+      return {
+        ...item,
+        item_photos: itemPhotos.filter((p) => p && p.url),
+        rewards: normalizeItemRewards(item),
+        renewalInfo: getRenewalInfo(item),
+      };
+    });
+  } catch (error) {
+    console.log('[getItems] Exceção:', error.message);
+    return [];
+  }
+};
+
 const listItemsWithPhotosAndOwnerFallback = async (filters = {}) => {
   try {
     let query = supabase
