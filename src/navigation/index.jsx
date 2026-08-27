@@ -648,25 +648,12 @@ const RootNavigator = () => {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background || '#FFFFFF', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
+      <View style={{ flex: 1, backgroundColor: colors.background || '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
         <Image
           source={require('../assets/logo_wefind.png')}
-          style={{ width: 140, height: 140, marginBottom: 16 }}
+          style={{ width: 220, height: 220 }}
           resizeMode="contain"
         />
-        <Text
-          style={{
-            fontSize: 14.5,
-            color: colors.textSecondary || '#64748B',
-            textAlign: 'center',
-            fontWeight: '600',
-            maxWidth: 290,
-            lineHeight: 22,
-            letterSpacing: 0.2,
-          }}
-        >
-          Plataforma para divulgação de animais encontrados e perdidos
-        </Text>
       </View>
     );
   }
