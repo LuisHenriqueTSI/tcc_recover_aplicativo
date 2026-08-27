@@ -28,55 +28,6 @@ const formatBrazilianPhone = (value = '') => {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 };
 
-const RegisterScreen = ({ navigation }) => {
-  const { signUp, confirmSignUp, loading, user } = useAuth();
-  const { colors, isDark } = useTheme();
-
-  // Captura o botão físico de voltar do Android e redireciona para a tela inicial
-  useFocusEffect(
-    useCallback(() => {
-      const onHardwareBackPress = () => {
-        if (navigation.canGoBack()) {
-          navigation.goBack();
-        } else {
-          navigation.reset({
-            index: 0,
-            routes: [{ name: user ? 'MainApp' : 'PublicApp' }],
-          });
-        }
-        return true;
-      };
-
-      const subscription = BackHandler.addEventListener('hardwareBackPress', onHardwareBackPress);
-      return () => subscription.remove();
-    }, [navigation, user])
-  );
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [whatsappConsent, setWhatsappConsent] = useState(true);
-
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pendingVerification, setPendingVerification] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [pendingSignupData, setPendingSignupData] = useState(null);
-  const [resendCooldown, setResendCooldown] = useState(0);
-
-  const scrollRef = useRef(null);
-
-  useEffect(() => {
-    let timer;
-    if (resendCooldown > 0) {
-      timer = setInterval(() => {
-        setResendCooldown(prev => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [resendCooldown]);
-
 export const calculatePasswordStrength = (pwd = '') => {
   const hasMinLength = pwd.length >= 8;
   const hasUpperCase = /[A-Z]/.test(pwd);
@@ -129,6 +80,55 @@ export const calculatePasswordStrength = (pwd = '') => {
     },
   };
 };
+
+const RegisterScreen = ({ navigation }) => {
+  const { signUp, confirmSignUp, loading, user } = useAuth();
+  const { colors, isDark } = useTheme();
+
+  // Captura o botão físico de voltar do Android e redireciona para a tela inicial
+  useFocusEffect(
+    useCallback(() => {
+      const onHardwareBackPress = () => {
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: user ? 'MainApp' : 'PublicApp' }],
+          });
+        }
+        return true;
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onHardwareBackPress);
+      return () => subscription.remove();
+    }, [navigation, user])
+  );
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [whatsappConsent, setWhatsappConsent] = useState(true);
+
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [pendingSignupData, setPendingSignupData] = useState(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    let timer;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   const validateForm = () => {
     const newErrors = {};
