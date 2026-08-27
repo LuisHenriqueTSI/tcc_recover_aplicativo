@@ -201,8 +201,13 @@ const MapScreen = ({ route, navigation }) => {
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [routeInfo, setRouteInfo] = useState(null);
   const [loadingRoute, setLoadingRoute] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const isNavigatingRef = useRef(false);
+  const handledRouteParamRef = useRef(null);
 
-  const calculateRoute = useCallback(async (fromCoords, toCoords) => {
+  const locationSubRef = useRef(null);
+
+  const calculateRoute = useCallback(async (fromCoords, toCoords, autoFit = true) => {
     if (!fromCoords?.latitude || !toCoords?.latitude) return;
     setLoadingRoute(true);
     try {
@@ -220,12 +225,15 @@ const MapScreen = ({ route, navigation }) => {
           durationMin: Math.max(1, Math.round(data.routes[0].duration / 60)),
         });
 
-        if (mapRef.current && coords.length > 0) {
+        // Só ajusta visão geral se NÃO estiver no modo de navegação ativa
+        if (autoFit && !isNavigatingRef.current && mapRef.current && coords.length > 0) {
           setTimeout(() => {
-            mapRef.current?.fitToCoordinates([fromCoords, toCoords, ...coords], {
-              edgePadding: { top: 140, right: 60, bottom: 440, left: 60 },
-              animated: true,
-            });
+            if (!isNavigatingRef.current) {
+              mapRef.current?.fitToCoordinates([fromCoords, toCoords, ...coords], {
+                edgePadding: { top: 140, right: 60, bottom: 440, left: 60 },
+                animated: true,
+              });
+            }
           }, 300);
         }
         return;
@@ -242,23 +250,166 @@ const MapScreen = ({ route, navigation }) => {
       { latitude: Number(toCoords.latitude), longitude: Number(toCoords.longitude) },
     ];
     setRouteCoordinates(fallbackCoords);
-    if (mapRef.current) {
+    if (autoFit && !isNavigatingRef.current && mapRef.current) {
       setTimeout(() => {
-        mapRef.current?.fitToCoordinates(fallbackCoords, {
-          edgePadding: { top: 140, right: 60, bottom: 440, left: 60 },
-          animated: true,
-        });
+        if (!isNavigatingRef.current) {
+          mapRef.current?.fitToCoordinates(fallbackCoords, {
+            edgePadding: { top: 140, right: 60, bottom: 440, left: 60 },
+            animated: true,
+          });
+        }
       }, 300);
     }
   }, []);
 
-  // Ao receber focusItemId ou showRoute, centraliza e traça a rota na hora!
+  // Inicia a navegação aproximando a câmera do usuário automaticamente (estilo Google Maps)
+  const startNavigation = useCallback(async (overrideCoords = null) => {
+    isNavigatingRef.current = true;
+    setIsNavigating(true);
+
+    let coords = overrideCoords || userCoords;
+
+    if (!coords) {
+      try {
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+        if (loc?.coords) {
+          coords = {
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+          };
+          setUserCoords(coords);
+        }
+      } catch (e) {}
+    }
+
+    if (coords && mapRef.current) {
+      let heading = 0;
+      if (selectedItem?.latitude && selectedItem?.longitude) {
+        const dLng = (Number(selectedItem.longitude) - coords.longitude) * (Math.PI / 180);
+        const lat1 = coords.latitude * (Math.PI / 180);
+        const lat2 = Number(selectedItem.latitude) * (Math.PI / 180);
+        const y = Math.sin(dLng) * Math.cos(lat2);
+        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+        heading = (Math.atan2(y, x) * 180) / Math.PI;
+        if (heading < 0) heading += 360;
+      }
+
+      // Recentraliza e aproxima a câmera automaticamente na posição do usuário
+      mapRef.current.animateToRegion({
+        latitude: Number(coords.latitude),
+        longitude: Number(coords.longitude),
+        latitudeDelta: 0.003,
+        longitudeDelta: 0.003,
+      }, 500);
+
+      try {
+        mapRef.current.animateCamera({
+          center: {
+            latitude: Number(coords.latitude),
+            longitude: Number(coords.longitude),
+          },
+          pitch: 50,
+          heading: Math.round(heading) || 0,
+          zoom: 18,
+        }, { duration: 600 });
+      } catch (e) {}
+    }
+  }, [userCoords, selectedItem]);
+
+  // Encerra o modo de navegação
+  const stopNavigation = useCallback(() => {
+    isNavigatingRef.current = false;
+    setIsNavigating(false);
+    setRouteCoordinates([]);
+    setRouteInfo(null);
+    if (mapRef.current && userCoords) {
+      mapRef.current.animateToRegion({
+        latitude: userCoords.latitude,
+        longitude: userCoords.longitude,
+        latitudeDelta: 0.04,
+        longitudeDelta: 0.04,
+      }, 600);
+    }
+  }, [userCoords]);
+
+  // Visão geral de toda a rota
+  const fitRouteOverview = useCallback(() => {
+    if (mapRef.current && userCoords && selectedItem) {
+      mapRef.current.fitToCoordinates(
+        [userCoords, { latitude: Number(selectedItem.latitude), longitude: Number(selectedItem.longitude) }, ...routeCoordinates],
+        {
+          edgePadding: { top: 140, right: 60, bottom: isNavigating ? 260 : 440, left: 60 },
+          animated: true,
+        }
+      );
+    }
+  }, [userCoords, selectedItem, routeCoordinates, isNavigating]);
+
+  // Monitora a localização do usuário em tempo real quando uma rota estiver ativa
+  useEffect(() => {
+    const hasActiveRoute = (routeCoordinates.length > 0 || isNavigating) && selectedItem?.latitude && selectedItem?.longitude;
+    if (hasActiveRoute && locationStatus === 'granted') {
+      let isSubscribed = true;
+
+      Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 2500,
+          distanceInterval: 8, // Atualiza a cada 8 metros percorridos
+        },
+        (loc) => {
+          if (!isSubscribed) return;
+          const newCoord = {
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+          };
+          setUserCoords(newCoord);
+
+          // Se estiver navegando, acompanha a posição do usuário suavemente
+          if (isNavigatingRef.current && mapRef.current) {
+            mapRef.current.animateToRegion({
+              latitude: newCoord.latitude,
+              longitude: newCoord.longitude,
+              latitudeDelta: 0.003,
+              longitudeDelta: 0.003,
+            }, 600);
+          }
+
+          // Atualiza o traçado da rota e o tempo estimado em tempo real (autoFit = false)
+          calculateRoute(newCoord, {
+            latitude: Number(selectedItem.latitude),
+            longitude: Number(selectedItem.longitude),
+          }, false);
+        }
+      ).then((sub) => {
+        locationSubRef.current = sub;
+      }).catch((e) => console.log('[MapScreen] Erro no watchPosition:', e));
+
+      return () => {
+        isSubscribed = false;
+        if (locationSubRef.current) {
+          locationSubRef.current.remove();
+          locationSubRef.current = null;
+        }
+      };
+    } else {
+      if (locationSubRef.current) {
+        locationSubRef.current.remove();
+        locationSubRef.current = null;
+      }
+    }
+  }, [routeCoordinates.length > 0, isNavigating, selectedItem?.id, locationStatus, calculateRoute]);
+
+  // Ao receber focusItemId ou showRoute, centraliza e traça a rota UMA VEZ
   useEffect(() => {
     const focusId = route?.params?.focusItemId;
     const showRoute = route?.params?.showRoute;
     const targetCoordsParam = route?.params?.targetCoords;
+    const routeKey = `${focusId || ''}-${showRoute ? '1' : '0'}`;
 
-    if ((focusId || targetCoordsParam) && items.length > 0) {
+    if ((focusId || targetCoordsParam) && items.length > 0 && handledRouteParamRef.current !== routeKey) {
+      handledRouteParamRef.current = routeKey;
+
       const target = items.find(i => String(i.id) === String(focusId)) || {
         id: focusId || 'temp',
         latitude: targetCoordsParam?.latitude,
@@ -288,7 +439,7 @@ const MapScreen = ({ route, navigation }) => {
               calculateRoute(current, {
                 latitude: Number(target.latitude),
                 longitude: Number(target.longitude),
-              });
+              }, true);
             } else {
               mapRef.current?.animateToRegion({
                 latitude: Number(target.latitude),
@@ -308,7 +459,7 @@ const MapScreen = ({ route, navigation }) => {
         }
       }
     }
-  }, [route?.params?.focusItemId, route?.params?.showRoute, items, calculateRoute, userCoords]);
+  }, [route?.params?.focusItemId, route?.params?.showRoute, items, calculateRoute]);
 
   // Ao buscar, recentraliza suavemente no primeiro animal correspondente encontrado
   useEffect(() => {
@@ -494,9 +645,7 @@ const MapScreen = ({ route, navigation }) => {
       <MapView
         ref={mapRef}
         style={styles.map}
-        initialRegion={region}
-        region={region}
-        onRegionChangeComplete={setRegion}
+        initialRegion={BRAZIL_REGION}
         showsUserLocation={locationStatus === 'granted'}
         showsMyLocationButton={false}
         showsPointsOfInterest={false}
@@ -505,7 +654,7 @@ const MapScreen = ({ route, navigation }) => {
         mapPadding={{
           top: Math.max(insets.top + 68, 104),
           right: 12,
-          bottom: selectedItem ? 370 : 110,
+          bottom: isNavigating ? 150 : (selectedItem ? 370 : 110),
           left: 12,
         }}
         customMapStyle={PETS_ONLY_MAP_STYLE}
@@ -537,35 +686,51 @@ const MapScreen = ({ route, navigation }) => {
         ))}
       </MapView>
 
-      {/* Banner de Rota Ativa */}
-      {routeInfo && (
+      {/* Banner Superior de Rota Ativa com botão Iniciar Navegação */}
+      {routeInfo && !isNavigating && (
         <View style={[styles.activeRouteBanner, { top: Math.max(insets.top + 64, 100) }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
-              <MaterialIcons name="directions-car" size={16} color="#FFFFFF" />
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
+            <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
+              <MaterialIcons name="directions-car" size={18} color="#FFFFFF" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 12, fontWeight: '800', color: '#1E293B' }} numberOfLines={1}>
-                Rota até {selectedItem?.title || 'o animal'}
+              <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#1E293B' }} numberOfLines={1}>
+                {routeInfo.distanceKm} km • ~{routeInfo.durationMin} min
               </Text>
-              <Text style={{ fontSize: 11, fontWeight: '700', color: '#2563EB' }}>
-                {routeInfo.distanceKm} km • aprox. {routeInfo.durationMin} min
+              <Text style={{ fontSize: 11, fontWeight: '600', color: '#64748B' }} numberOfLines={1}>
+                Até {selectedItem?.title || 'o animal'}
               </Text>
             </View>
           </View>
-          <TouchableOpacity
-            onPress={() => {
-              setRouteCoordinates([]);
-              setRouteInfo(null);
-            }}
-            style={{ padding: 6, borderRadius: 12, backgroundColor: '#F1F5F9' }}
-          >
-            <MaterialIcons name="close" size={16} color="#64748B" />
-          </TouchableOpacity>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <TouchableOpacity
+              onPress={() => startNavigation()}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#16A34A',
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 10,
+              }}
+              activeOpacity={0.85}
+            >
+              <MaterialIcons name="navigation" size={15} color="#FFFFFF" style={{ marginRight: 3 }} />
+              <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 11.5 }}>Iniciar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={stopNavigation}
+              style={{ padding: 6, borderRadius: 10, backgroundColor: '#F1F5F9' }}
+            >
+              <MaterialIcons name="close" size={16} color="#64748B" />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
-      {selectedItem && (
+      {selectedItem && !isNavigating && (
         <View style={styles.infoCard}>
           <TouchableOpacity style={styles.infoClose} onPress={() => setSelectedItem(null)} activeOpacity={0.7}>
             <MaterialIcons name="close" size={18} color="#64748B" />
@@ -853,53 +1018,152 @@ const MapScreen = ({ route, navigation }) => {
               <MaterialIcons name="chevron-right" size={18} color="#FFFFFF" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
 
+            {routeCoordinates.length > 0 ? (
+              <TouchableOpacity
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#16A34A',
+                  borderRadius: 12,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                  shadowColor: '#16A34A',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}
+                onPress={() => startNavigation()}
+                activeOpacity={0.85}
+              >
+                <MaterialIcons name="navigation" size={18} color="#FFFFFF" style={{ marginRight: 4 }} />
+                <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#FFFFFF' }}>
+                  Iniciar Rota
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#EFF6FF',
+                  borderColor: '#BFDBFE',
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  paddingHorizontal: 12,
+                  paddingVertical: 10,
+                }}
+                onPress={() => {
+                  if (userCoords && selectedItem?.latitude && selectedItem?.longitude) {
+                    calculateRoute(userCoords, {
+                      latitude: Number(selectedItem.latitude),
+                      longitude: Number(selectedItem.longitude),
+                    });
+                  } else {
+                    requestUserLocation().then((coords) => {
+                      if (coords && selectedItem?.latitude && selectedItem?.longitude) {
+                        calculateRoute(coords, {
+                          latitude: Number(selectedItem.latitude),
+                          longitude: Number(selectedItem.longitude),
+                        });
+                      }
+                    });
+                  }
+                }}
+                activeOpacity={0.85}
+              >
+                <MaterialIcons name="directions" size={18} color="#2563EB" style={{ marginRight: 4 }} />
+                <Text style={{ fontSize: 12.5, fontWeight: '700', color: '#1D4ED8' }}>
+                  Traçar Rota
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      )}
+
+      {/* 8. HUD Flutuante de Navegação Ativa em Tempo Real (Estilo Google Maps) */}
+      {isNavigating && (
+        <View style={styles.navigationHudCard}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <View style={{ flex: 1, marginRight: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+                <Text style={{ fontSize: 24, fontWeight: '900', color: '#16A34A' }}>
+                  {routeInfo?.durationMin || 5} min
+                </Text>
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#64748B' }}>
+                  ({routeInfo?.distanceKm || 1.2} km)
+                </Text>
+              </View>
+              <Text style={{ fontSize: 12.5, fontWeight: '700', color: '#1E293B', marginTop: 1 }} numberOfLines={1}>
+                Indo até {selectedItem?.title || 'o animal'}
+              </Text>
+            </View>
+
+            <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: '#DCFCE7', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#BBF7D0' }}>
+              <MaterialIcons name="navigation" size={24} color="#16A34A" />
+            </View>
+          </View>
+
+          {/* Botões de Ação da Navegação */}
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#F8FAFC',
+                borderWidth: 1,
+                borderColor: '#E2E8F0',
+                borderRadius: 12,
+                paddingVertical: 10,
+              }}
+              onPress={() => startNavigation()}
+              activeOpacity={0.75}
+            >
+              <MaterialIcons name="my-location" size={18} color="#2563EB" style={{ marginRight: 4 }} />
+              <Text style={{ fontSize: 12.5, fontWeight: '700', color: '#1E40AF' }}>Recentralizar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#F8FAFC',
+                borderWidth: 1,
+                borderColor: '#E2E8F0',
+                borderRadius: 12,
+                paddingVertical: 10,
+              }}
+              onPress={fitRouteOverview}
+              activeOpacity={0.75}
+            >
+              <MaterialIcons name="map" size={18} color="#475569" style={{ marginRight: 4 }} />
+              <Text style={{ fontSize: 12.5, fontWeight: '700', color: '#334155' }}>Visão Geral</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: routeCoordinates.length > 0 ? '#F1F5F9' : '#EFF6FF',
-                borderColor: routeCoordinates.length > 0 ? '#CBD5E1' : '#BFDBFE',
+                backgroundColor: '#FEF2F2',
                 borderWidth: 1,
+                borderColor: '#FECACA',
                 borderRadius: 12,
-                paddingHorizontal: 12,
+                paddingHorizontal: 14,
                 paddingVertical: 10,
               }}
-              onPress={() => {
-                if (routeCoordinates.length > 0) {
-                  setRouteCoordinates([]);
-                  setRouteInfo(null);
-                } else if (userCoords && selectedItem?.latitude && selectedItem?.longitude) {
-                  calculateRoute(userCoords, {
-                    latitude: Number(selectedItem.latitude),
-                    longitude: Number(selectedItem.longitude),
-                  });
-                } else {
-                  requestUserLocation().then((coords) => {
-                    if (coords && selectedItem?.latitude && selectedItem?.longitude) {
-                      calculateRoute(coords, {
-                        latitude: Number(selectedItem.latitude),
-                        longitude: Number(selectedItem.longitude),
-                      });
-                    }
-                  });
-                }
-              }}
-              activeOpacity={0.85}
+              onPress={stopNavigation}
+              activeOpacity={0.75}
             >
-              <MaterialIcons
-                name={routeCoordinates.length > 0 ? 'close' : 'directions'}
-                size={18}
-                color={routeCoordinates.length > 0 ? '#64748B' : '#2563EB'}
-                style={{ marginRight: 4 }}
-              />
-              <Text style={{
-                fontSize: 12.5,
-                fontWeight: '700',
-                color: routeCoordinates.length > 0 ? '#64748B' : '#1D4ED8',
-              }}>
-                {routeCoordinates.length > 0 ? 'Limpar Rota' : 'Traçar Rota'}
-              </Text>
+              <MaterialIcons name="close" size={18} color="#DC2626" style={{ marginRight: 3 }} />
+              <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#DC2626' }}>Encerrar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -907,7 +1171,10 @@ const MapScreen = ({ route, navigation }) => {
 
       {locationStatus === 'granted' && (
         <TouchableOpacity
-          style={[styles.centerLocationButton, selectedItem && styles.centerLocationButtonRaised]}
+          style={[
+            styles.centerLocationButton,
+            isNavigating ? { bottom: 155 } : (selectedItem ? styles.centerLocationButtonRaised : null),
+          ]}
           onPress={handleCenterOnUser}
           accessibilityLabel="Voltar para minha localização"
         >
@@ -1015,6 +1282,23 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: '600',
     flex: 1,
+  },
+  navigationHudCard: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 22,
+    padding: 16,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.24,
+    shadowRadius: 14,
+    elevation: 8,
+    borderWidth: 1.5,
+    borderColor: '#BBF7D0',
+    zIndex: 60,
   },
   activeRouteBanner: {
     position: 'absolute',
