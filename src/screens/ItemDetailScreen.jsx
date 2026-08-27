@@ -18,14 +18,13 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { MaterialIcons, FontAwesome, FontAwesome5, Entypo } from '@expo/vector-icons';
+import { MaterialIcons, FontAwesome, Feather, Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useFocusEffect } from '@react-navigation/native';
 import * as itemsService from '../services/items';
 import { formatarDataMembro } from './_dateUtils';
 
-import Card from '../components/Card';
-import Button from '../components/Button';
 import ShareButton from '../components/ShareButton';
 import ShareFlyerModal from '../components/ShareFlyerModal';
 
@@ -76,6 +75,7 @@ const formatStreetNumberNeighborhood = (item) => {
 const ItemDetailScreen = ({ route, navigation }) => {
   const { itemId } = route.params;
   const { user, userProfile, isAdmin } = useAuth();
+  const { colors, isDark } = useTheme();
   const [item, setItem] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [owner, setOwner] = useState(null);
@@ -116,30 +116,20 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     navigation.setOptions({
-      title: 'Detalhes do Animal',
+      title: 'Detalhes',
       headerStyle: {
-        backgroundColor: '#2563EB',
+        backgroundColor: colors.headerBg || '#1E3A8A',
       },
       headerTintColor: '#fff',
       headerTitleStyle: {
         fontWeight: 'bold',
         color: '#fff',
+        fontSize: 18,
       },
       headerLeft: () => (
         <TouchableOpacity
           onPress={handleSafeGoBack}
-          style={{
-            width: 38,
-            height: 38,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginLeft: 12,
-            marginRight: 8,
-            borderRadius: 19,
-            backgroundColor: 'rgba(255, 255, 255, 0.14)',
-            borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.28)',
-          }}
+          style={styles.navBackBtn}
           accessibilityLabel="Voltar"
           activeOpacity={0.75}
         >
@@ -147,8 +137,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
         </TouchableOpacity>
       ),
     });
-  }, [navigation, handleSafeGoBack]);
-
+  }, [navigation, handleSafeGoBack, colors.headerBg]);
 
   useFocusEffect(
     useCallback(() => {
@@ -160,7 +149,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const loadSightings = async () => {
     try {
       const data = await sightingsService.getSightings(itemId);
-      setSightings(data);
+      setSightings(data || []);
     } catch (e) {
       setSightings([]);
     }
@@ -172,28 +161,11 @@ const ItemDetailScreen = ({ route, navigation }) => {
       const itemData = await itemsService.getItemDetails(itemId);
       if (itemData) {
         setItem(itemData);
-        if (isOwner && itemData && itemData.owner_id === user?.id) {
+        if (user && itemData.owner_id === user.id) {
           const renewalInfo = getRenewalInfo(itemData);
           if (renewalInfo.needsRenewal) {
             await createRenewalReminderNotification(itemData, user.id);
           }
-        }
-        // Log para depuração do array de fotos
-        if (itemData.item_photos && Array.isArray(itemData.item_photos)) {
-          console.log('[ItemDetailScreen] Fotos retornadas:', itemData.item_photos);
-          itemData.item_photos.forEach((photo, idx) => {
-            console.log(`[ItemDetailScreen] Foto[${idx}]:`, photo);
-          });
-        } else {
-          console.log('[ItemDetailScreen] Nenhuma foto retornada ou formato inesperado:', itemData.item_photos);
-        }
-        // Log para depuração das recompensas
-        console.log('[ItemDetailScreen] Rewards retornadas:', itemData.rewards);
-        // Log para depuração do created_at do owner
-        if (itemData.profiles) {
-          console.log('[ItemDetailScreen] Owner created_at:', itemData.profiles.created_at);
-        } else {
-          console.log('[ItemDetailScreen] Owner não encontrado');
         }
         setPhotos(itemData.item_photos || []);
         setOwner(itemData.profiles);
@@ -213,10 +185,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleEditItem = () => {
     if (!item) return;
-    console.log('[Editar publicação] Navegando para edição com item:', item);
     navigation.navigate('RegisterItem', {
       editItem: item,
-      modo: 'editar', // opcional: pode ser útil para debug
+      modo: 'editar',
     });
   };
 
@@ -224,24 +195,26 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleDeleteItem = () => {
     Alert.alert(
-      'Excluir Pet',
-      'Tem certeza que deseja excluir este pet?',
+      'Excluir Publicação',
+      'Tem certeza que deseja excluir esta publicação? Esta ação não pode ser desfeita.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Excluir', style: 'destructive', onPress: async () => {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
             setDeleting(true);
             try {
               await itemsService.deleteItem(itemId);
-              Alert.alert('Sucesso', 'Pet excluído com sucesso!');
-              navigation.goBack();
+              Alert.alert('Sucesso', 'Publicação excluída com sucesso!');
+              handleSafeGoBack();
             } catch (error) {
-              Alert.alert('Erro', 'Falha ao excluir pet: ' + error.message);
+              Alert.alert('Erro', 'Falha ao excluir publicação: ' + error.message);
             } finally {
               setDeleting(false);
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
@@ -260,7 +233,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
     }
   };
 
-  // Abrir modal de edição
   const handleEditComment = (comment) => {
     setEditCommentObj(comment);
     setEditCommentText(comment.description || '');
@@ -272,73 +244,47 @@ const ItemDetailScreen = ({ route, navigation }) => {
     setEditModalVisible(true);
   };
 
-  // Salvar edição
   const handleSaveEditComment = async () => {
     if (!editCommentObj || !editCommentText.trim()) {
       setEditModalVisible(false);
       return;
     }
     let photoUrlToSave = editCommentPhotoUrl;
-    // Só tenta upload se a foto for local e diferente da original
     const isLocalPhoto = photoUrlToSave && photoUrlToSave.startsWith('file:///');
-    let uploadError = null;
     if (isLocalPhoto && photoUrlToSave !== editCommentObj.photo_url) {
       try {
         if (sightingsService.uploadSightingPhoto) {
-          console.log('[handleSaveEditComment] Chamando uploadSightingPhoto com:', photoUrlToSave);
           const uploadedUrl = await sightingsService.uploadSightingPhoto(editCommentObj.id, photoUrlToSave);
-          console.log('[handleSaveEditComment] URL retornada do upload:', uploadedUrl);
           if (uploadedUrl && !uploadedUrl.startsWith('file:///')) {
             photoUrlToSave = uploadedUrl;
           } else {
-            // Upload não retornou URL pública, mantém anterior
             photoUrlToSave = editCommentObj.photo_url;
           }
         }
       } catch (err) {
-        uploadError = err;
         photoUrlToSave = editCommentObj.photo_url;
       }
     }
-    // Nunca salva file:/// no banco
-    if (photoUrlToSave && photoUrlToSave.startsWith('file:///')) {
-      photoUrlToSave = editCommentObj.photo_url;
-    }
-    // Se não houve alteração de foto, mantém a anterior
-    if (!photoUrlToSave && editCommentObj.photo_url) {
-      photoUrlToSave = editCommentObj.photo_url;
-    }
-    console.log('[handleSaveEditComment] Valor final de photoUrlToSave:', photoUrlToSave);
+
     try {
       await sightingsService.updateSighting(editCommentObj.id, {
         description: editCommentText.trim(),
-        location: editCommentLocation,
+        location: editCommentLocation.trim(),
         contact_info: {
-          instagram: editCommentInstagram,
-          whatsapp: editCommentWhatsapp,
-          facebook: editCommentFacebook,
+          instagram: editCommentInstagram.trim(),
+          whatsapp: editCommentWhatsapp.trim(),
+          facebook: editCommentFacebook.trim(),
         },
         photo_url: photoUrlToSave,
       });
       setEditModalVisible(false);
-      setEditCommentObj(null);
-      setEditCommentText('');
-      setEditCommentLocation('');
-      setEditCommentInstagram('');
-      setEditCommentWhatsapp('');
-      setEditCommentFacebook('');
-      setEditCommentPhotoUrl('');
-      await loadSightings();
-      await loadItemDetails();
-      if (uploadError) {
-        Alert.alert('Comentário atualizado', 'Foto não foi atualizada devido a erro de upload.');
-      }
+      loadSightings();
+      Alert.alert('Sucesso', 'Comentário atualizado com sucesso!');
     } catch (error) {
-      Alert.alert('Erro', 'Falha ao editar comentário: ' + error.message);
+      Alert.alert('Erro', 'Falha ao atualizar comentário: ' + error.message);
     }
   };
 
-  // Cancelar edição
   const handleCancelEditComment = () => {
     setEditModalVisible(false);
     setEditCommentObj(null);
@@ -348,27 +294,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
     setEditCommentWhatsapp('');
     setEditCommentFacebook('');
     setEditCommentPhotoUrl('');
-  };
-  const handleMarkAsResolved = () => {
-    Alert.alert(
-      'Marcar como Resolvido',
-      'Confirma que este pet foi encontrado/devolvido?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Confirmar',
-          onPress: async () => {
-            try {
-              await itemsService.markItemAsResolved(itemId);
-              Alert.alert('Sucesso', 'Pet marcado como resolvido!');
-              loadItemDetails();
-            } catch (error) {
-              Alert.alert('Erro', 'Falha ao marcar como resolvido: ' + error.message);
-            }
-          },
-        },
-      ]
-    );
   };
 
   const handleSendMessage = () => {
@@ -390,12 +315,11 @@ const ItemDetailScreen = ({ route, navigation }) => {
       return;
     }
 
-    // Mensagem automática depende do status do pet
     let initialMessage = '';
     if (item.status === 'lost') {
-      initialMessage = 'Oi, eu encontrei seu pet!';
+      initialMessage = 'Oi, eu tenho informações sobre o seu pet!';
     } else if (item.status === 'found') {
-      initialMessage = 'Oi, você achou meu pet?';
+      initialMessage = 'Oi, você encontrou meu pet?';
     }
 
     navigation.navigate('ChatScreen', {
@@ -406,7 +330,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
         avatarUrl: owner?.avatar_url || null,
         itemTitle: item.title || item.species || 'Animal',
         initialMessage,
-      }
+      },
     });
   };
 
@@ -432,7 +356,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
     if (!isCurrentlyAdoption && waitingDays > 0) {
       Alert.alert(
         'Período Prioritário de Busca',
-        `Este animal foi encontrado na rua e está no período prioritário de busca pelo tutor original. Faltam ${waitingDays} dia${waitingDays === 1 ? '' : 's'} para a liberação oficial de adoção. Deseja liberar a adoção agora caso já tenha certeza que o animal não possui tutor?`,
+        `Este animal foi encontrado na rua e está no período de busca pelo tutor. Faltam ${waitingDays} dia(s) para liberação oficial. Deseja liberar a adoção agora?`,
         [
           { text: 'Aguardar Prazo', style: 'cancel' },
           {
@@ -448,7 +372,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
       isCurrentlyAdoption ? 'Pausar Adoção' : 'Disponibilizar para Adoção',
       isCurrentlyAdoption
         ? 'Deseja remover este pet da listagem de adoção?'
-        : 'Ao disponibilizar para adoção responsável, outros membros da comunidade poderão entrar em contato para adotar o pet. Deseja continuar?',
+        : 'Ao disponibilizar para adoção responsável, outros membros poderão entrar em contato para adotá-lo. Continuar?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -525,7 +449,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
       setReportModalVisible(false);
       setReportReason('');
       setReportDetails('');
-      Alert.alert('Denúncia enviada', 'A equipe administrativa analisará esta publicação.');
+      Alert.alert('Denúncia enviada', 'A equipe administrativa analisará esta publicação com prioridade.');
     } catch (error) {
       Alert.alert('Não foi possível denunciar', error.message || 'Tente novamente.');
     } finally {
@@ -534,10 +458,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
   };
 
   const handleSubmitSighting = async (form) => {
-    console.log('[ItemDetailScreen.handleSubmitSighting] ➡️ Iniciando com form:', form);
     setSightingLoading(true);
     try {
-      const created = await sightingsService.createSighting({
+      await sightingsService.createSighting({
         item_id: itemId,
         user_id: user.id,
         location: form.location,
@@ -545,18 +468,13 @@ const ItemDetailScreen = ({ route, navigation }) => {
         contact_info: form.contact_info,
         photo_url: form.photo_url,
       });
-      console.log('[ItemDetailScreen.handleSubmitSighting] ✓ Informação criada no banco:', created);
       setSightingModalVisible(false);
       loadSightings();
 
-      console.log('[ItemDetailScreen.handleSubmitSighting] item atual:', { itemId, owner_id: item?.owner_id, title: item?.title });
-
-      // Notifica o tutor do pet sobre a nova informação (inclusive por WhatsApp se opt-in)
       if (item?.owner_id) {
         try {
           const { createNotification } = require('../services/notifications');
           const commenterName = userProfile?.name || user?.user_metadata?.name || 'Um membro da comunidade';
-          console.log('[ItemDetailScreen] Disparando notificação de informação para o tutor:', { ownerId: item.owner_id, commenter: commenterName });
 
           let mapsLink = '';
           if (form.coordinate?.latitude && form.coordinate?.longitude) {
@@ -566,45 +484,27 @@ const ItemDetailScreen = ({ route, navigation }) => {
           }
 
           let notificationMessage = `${commenterName} compartilhou uma nova informação sobre o pet em: ${form.location || 'Local informado'}.\n\nDetalhes: "${form.description || ''}"`;
-
           if (mapsLink) {
             notificationMessage += `\n\n📍 *Ver localização no Google Maps:*\n${mapsLink}`;
           }
 
-          notificationMessage += `\n\n🐾 *Acesse o aplicativo WeFIND para conferir mais detalhes.*`;
-
-          const notifRes = await createNotification({
+          await createNotification({
             user_id: item.owner_id,
             type: 'sighting',
-            title: `🐾 Nova informação sobre ${item.title || 'seu pet'}!`,
+            title: `🐾 Nova pista sobre ${item.title || 'seu pet'}!`,
             message: notificationMessage,
             item_id: item.id,
           });
-          console.log('[ItemDetailScreen] Resultado da createNotification:', notifRes);
         } catch (notifErr) {
           console.error('[ItemDetailScreen] Falha ao enviar notificação de informação:', notifErr);
         }
-      } else {
-        console.warn('[ItemDetailScreen] ⚠️ item.owner_id não encontrado!', item);
       }
 
       Alert.alert('Sucesso', 'Informações compartilhadas com sucesso!');
     } catch (e) {
-      console.error('[ItemDetailScreen.handleSubmitSighting] ❌ Erro:', e);
       Alert.alert('Erro', 'Não foi possível enviar as informações.');
     } finally {
       setSightingLoading(false);
-    }
-  };
-
-  // Excluir comentário
-  const handleDeleteCommentConfirmed = async (comment) => {
-    try {
-      await sightingsService.deleteSighting(comment.id);
-      setSightings(prev => prev.filter(c => c.id !== comment.id));
-      loadSightings();
-    } catch (error) {
-      console.error('Falha ao excluir comentário:', error);
     }
   };
 
@@ -615,896 +515,764 @@ const ItemDetailScreen = ({ route, navigation }) => {
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Excluir', style: 'destructive', onPress: () => handleDeleteCommentConfirmed(comment) }
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await sightingsService.deleteSighting(comment.id);
+              setSightings(prev => prev.filter(c => c.id !== comment.id));
+              loadSightings();
+            } catch (error) {
+              console.error('Falha ao excluir comentário:', error);
+            }
+          },
+        },
       ]
     );
   };
 
   const isOwner = user && item && item.owner_id === user.id;
-  const canDelete = isOwner || isAdmin;
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#2563EB" />
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Carregando detalhes...</Text>
       </View>
     );
   }
 
   if (!item) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>Animal não encontrado</Text>
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <MaterialIcons name="pets" size={54} color={colors.textMuted} />
+        <Text style={[styles.errorText, { color: colors.text }]}>Animal não encontrado</Text>
       </View>
     );
   }
 
-  // NOVO DESIGN INSPIRADO NO ANEXO
+  const isAdoption = Boolean(item.extra_fields?.is_direct_adoption);
+  const isFound = item.status === 'found';
+
   return (
-    <ScrollView style={styles.detailPage} showsVerticalScrollIndicator={false}>
-      <View style={{ padding: 0, margin: 0 }}>
-        {/* Fotos do animal no topo */}
-        <View style={styles.heroImage}>
-          {photos && photos.length > 0 ? (
-            <View style={{ width: '100%', height: 280, position: 'relative' }}>
-              <ScrollView
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onMomentumScrollEnd={(e) => {
-                  const newIndex = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
-                  setActivePhotoIndex(newIndex);
-                }}
-                style={{ width: screenWidth, height: 280 }}
-              >
-                {photos.map((photo, idx) => (
-                  <TouchableOpacity
-                    key={photo.id || idx}
-                    activeOpacity={0.95}
-                    onPress={() => {
-                      setFullScreenIndex(idx);
-                      setFullScreenPhotoModal(true);
-                    }}
-                    style={{ width: screenWidth, height: 280 }}
-                  >
-                    <Image
-                      source={{ uri: photo.url }}
-                      style={{ width: screenWidth, height: 280, backgroundColor: '#F3F4F6' }}
-                      resizeMode="cover"
-                    />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+    <ScrollView style={[styles.detailPage, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
+      {/* 1. HERO PHOTO SHOWCASE */}
+      <View style={styles.heroContainer}>
+        {photos && photos.length > 0 ? (
+          <View style={{ width: '100%', height: 320, position: 'relative' }}>
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) => {
+                const newIndex = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
+                setActivePhotoIndex(newIndex);
+              }}
+              style={{ width: screenWidth, height: 320 }}
+            >
+              {photos.map((photo, idx) => (
+                <TouchableOpacity
+                  key={photo.id || idx}
+                  activeOpacity={0.95}
+                  onPress={() => {
+                    setFullScreenIndex(idx);
+                    setFullScreenPhotoModal(true);
+                  }}
+                  style={{ width: screenWidth, height: 320 }}
+                >
+                  <Image
+                    source={{ uri: photo.url }}
+                    style={styles.heroImageItem}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
 
-              {/* Contador de fotos */}
-              {photos.length > 1 && (
-                <View style={{ position: 'absolute', top: 16, left: 16, backgroundColor: 'rgba(0, 0, 0, 0.65)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4, zIndex: 10 }}>
-                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>
-                    {activePhotoIndex + 1}/{photos.length}
-                  </Text>
-                </View>
-              )}
-
-              {/* Indicador de toque para ampliar */}
-              <View style={{ position: 'absolute', bottom: 12, right: 16, backgroundColor: 'rgba(0, 0, 0, 0.6)', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 4, flexDirection: 'row', alignItems: 'center', gap: 4, zIndex: 10 }}>
-                <MaterialIcons name="zoom-in" size={16} color="#FFFFFF" />
-                <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '600' }}>Toque para ampliar</Text>
+            {/* Contador de fotos (Glassmorphism) */}
+            {photos.length > 1 && (
+              <View style={styles.photoCountBadge}>
+                <Feather name="image" size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
+                <Text style={styles.photoCountText}>
+                  {activePhotoIndex + 1} / {photos.length}
+                </Text>
               </View>
+            )}
 
-              {/* Pontos de Paginação */}
-              {photos.length > 1 && (
-                <View style={{ position: 'absolute', bottom: 12, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, zIndex: 10 }}>
-                  {photos.map((_, dotIndex) => (
-                    <View
-                      key={dotIndex}
-                      style={{
-                        width: activePhotoIndex === dotIndex ? 18 : 6,
-                        height: 6,
-                        borderRadius: 3,
-                        backgroundColor: activePhotoIndex === dotIndex ? '#FFFFFF' : 'rgba(255, 255, 255, 0.5)',
-                      }}
-                    />
-                  ))}
-                </View>
-              )}
-            </View>
-          ) : (
-            <View style={{ width: '100%', height: 280, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F3F4F6' }}>
-              <MaterialIcons name="image-not-supported" size={48} color="#D1D5DB" />
-              <Text style={{ marginTop: 8, color: '#9CA3AF', fontSize: 14 }}>Sem foto</Text>
-            </View>
-          )}
-          <View style={styles.detailShareButton}>
-            <ShareButton item={item} imageUrl={photos?.[0]?.url} />
-          </View>
-        </View>
+            {/* Botão de Zoom */}
+            <TouchableOpacity
+              onPress={() => {
+                setFullScreenIndex(activePhotoIndex);
+                setFullScreenPhotoModal(true);
+              }}
+              style={styles.zoomButton}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="zoom-in" size={18} color="#FFFFFF" />
+            </TouchableOpacity>
 
-
-        {/* Título, descrição e recompensa */}
-        <View style={styles.introSection}>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-            <View style={[styles.statusPill, item.extra_fields?.is_direct_adoption ? { backgroundColor: '#FCE7F3', marginBottom: 0 } : (item.status === 'found' ? [styles.foundPill, { marginBottom: 0 }] : [styles.lostPill, { marginBottom: 0 }])]}>
-              <MaterialIcons
-                name={item.extra_fields?.is_direct_adoption ? 'favorite-border' : (item.status === 'found' ? 'search' : 'priority-high')}
-                size={14}
-                color={item.extra_fields?.is_direct_adoption ? '#BE185D' : (item.status === 'found' ? '#047857' : '#C2410C')}
-              />
-              <Text style={[styles.statusPillText, { color: item.extra_fields?.is_direct_adoption ? '#BE185D' : (item.status === 'found' ? '#047857' : '#C2410C') }]}>
-                {item.extra_fields?.is_direct_adoption ? 'Para Adoção' : (item.status === 'found' ? 'Encontrado' : 'Perdido')}
-              </Text>
-            </View>
-
-            {/* Badges minimalistas dos atributos do pet ao lado do status com emojis */}
-            {item.category === 'animal' && (
-              <>
-                {(item.species || item.extra_fields?.species) && (
-                  <View style={styles.miniTag}>
-                    <Text style={styles.miniTagEmoji}>🐾</Text>
-                    <Text style={styles.miniTagText}>{item.species || item.extra_fields?.species}</Text>
-                  </View>
-                )}
-                {(item.breed || item.extra_fields?.breed) && (
-                  <View style={styles.miniTag}>
-                    <Text style={styles.miniTagEmoji}>🏷️</Text>
-                    <Text style={styles.miniTagText}>{item.breed || item.extra_fields?.breed}</Text>
-                  </View>
-                )}
-                {(item.gender || item.extra_fields?.gender) && (item.gender || item.extra_fields?.gender) !== 'Não informado' && (
-                  <View style={styles.miniTag}>
-                    <Text style={styles.miniTagEmoji}>⚧</Text>
-                    <Text style={styles.miniTagText}>{item.gender || item.extra_fields?.gender}</Text>
-                  </View>
-                )}
-                {(item.age || item.extra_fields?.age) && (item.age || item.extra_fields?.age) !== 'Não informado' && (
-                  <View style={styles.miniTag}>
-                    <Text style={styles.miniTagEmoji}>🎂</Text>
-                    <Text style={styles.miniTagText}>{item.age || item.extra_fields?.age}</Text>
-                  </View>
-                )}
-                {(item.size || item.extra_fields?.size) && (item.size || item.extra_fields?.size) !== 'Não informado' && (
-                  <View style={styles.miniTag}>
-                    <Text style={styles.miniTagEmoji}>📏</Text>
-                    <Text style={styles.miniTagText}>{item.size || item.extra_fields?.size}</Text>
-                  </View>
-                )}
-                {(item.color || item.extra_fields?.color) && (
-                  <View style={styles.miniTag}>
-                    <Text style={styles.miniTagEmoji}>🎨</Text>
-                    <Text style={styles.miniTagText}>{item.color || item.extra_fields?.color}</Text>
-                  </View>
-                )}
-              </>
+            {/* Barra de Paginação Flutuante */}
+            {photos.length > 1 && (
+              <View style={styles.paginationRow}>
+                {photos.map((_, dotIndex) => (
+                  <View
+                    key={dotIndex}
+                    style={[
+                      styles.paginationDot,
+                      activePhotoIndex === dotIndex && styles.paginationDotActive,
+                    ]}
+                  />
+                ))}
+              </View>
             )}
           </View>
-          <Text style={styles.detailTitle}>{item.title}</Text>
-          {item.description ? <Text style={styles.detailDescription}>{item.description}</Text> : null}
-          {/* Bloco de recompensa */}
-          {Array.isArray(rewards) && rewards.some(reward => reward?.status === 'active') && (
-            <View style={{ backgroundColor: '#FEF3C7', borderRadius: 10, padding: 16, marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <MaterialIcons name="emoji-events" size={28} color="#F59E42" style={{ marginRight: 8 }} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 16 }}>Recompensa oferecida</Text>
-                {rewards
-                  .filter(reward => reward?.status === 'active')
-                  .map((reward, index) => (
-                    <Text key={reward?.id || index} style={{ color: '#B45309', fontSize: 15, marginTop: 2 }}>
-                      {reward?.amount ? `R$ ${parseFloat(reward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : ''}{reward?.description ? ` - ${reward.description}` : ''}
-                    </Text>
-                  ))}
+        ) : (
+          <View style={[styles.noPhotoHero, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+            <MaterialIcons name="pets" size={54} color={colors.textMuted} />
+            <Text style={[styles.noPhotoText, { color: colors.textMuted }]}>Sem fotos cadastradas</Text>
+          </View>
+        )}
+
+        {/* Botão Flutuante de Compartilhamento Rápido */}
+        <View style={styles.floatingShareBtn}>
+          <ShareButton item={item} imageUrl={photos?.[0]?.url} />
+        </View>
+      </View>
+
+      {/* 2. CABEÇALHO PRINCIPAL DO PET: STATUS + ATRIBUTOS */}
+      <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        {/* Status Pill */}
+        <View style={styles.statusRow}>
+          <View
+            style={[
+              styles.statusPill,
+              isAdoption
+                ? styles.adoptionPill
+                : isFound
+                ? styles.foundPill
+                : styles.lostPill,
+            ]}
+          >
+            <Ionicons
+              name={isAdoption ? 'heart' : isFound ? 'checkmark-circle' : 'alert-circle'}
+              size={15}
+              color={isAdoption ? '#BE185D' : isFound ? '#047857' : '#C2410C'}
+              style={{ marginRight: 5 }}
+            />
+            <Text
+              style={[
+                styles.statusPillText,
+                { color: isAdoption ? '#BE185D' : isFound ? '#047857' : '#C2410C' },
+              ]}
+            >
+              {isAdoption ? 'Para Adoção Responsável' : isFound ? 'Animal Encontrado' : 'Animal Perdido'}
+            </Text>
+          </View>
+        </View>
+
+        {/* Título do Pet */}
+        <Text style={[styles.petMainTitle, { color: colors.text }]}>{item.title || 'Sem nome informado'}</Text>
+
+        {/* Grid de Chips de Atributos */}
+        <View style={styles.attributeGrid}>
+          {(item.species || item.extra_fields?.species) ? (
+            <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
+              <Text style={styles.attrChipEmoji}>🐾</Text>
+              <View>
+                <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Espécie</Text>
+                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.species || item.extra_fields?.species}</Text>
+              </View>
+            </View>
+          ) : null}
+
+          {(item.breed || item.extra_fields?.breed) ? (
+            <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
+              <Text style={styles.attrChipEmoji}>🏷️</Text>
+              <View>
+                <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Raça</Text>
+                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.breed || item.extra_fields?.breed}</Text>
+              </View>
+            </View>
+          ) : null}
+
+          {(item.gender || item.extra_fields?.gender) && (item.gender || item.extra_fields?.gender) !== 'Não informado' ? (
+            <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
+              <Text style={styles.attrChipEmoji}>⚧</Text>
+              <View>
+                <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Sexo</Text>
+                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.gender || item.extra_fields?.gender}</Text>
+              </View>
+            </View>
+          ) : null}
+
+          {(item.age || item.extra_fields?.age) && (item.age || item.extra_fields?.age) !== 'Não informado' ? (
+            <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
+              <Text style={styles.attrChipEmoji}>🎂</Text>
+              <View>
+                <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Idade</Text>
+                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.age || item.extra_fields?.age}</Text>
+              </View>
+            </View>
+          ) : null}
+
+          {(item.size || item.extra_fields?.size) && (item.size || item.extra_fields?.size) !== 'Não informado' ? (
+            <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
+              <Text style={styles.attrChipEmoji}>📏</Text>
+              <View>
+                <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Porte</Text>
+                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.size || item.extra_fields?.size}</Text>
+              </View>
+            </View>
+          ) : null}
+
+          {(item.color || item.extra_fields?.color) && (
+            <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
+              <Text style={styles.attrChipEmoji}>🎨</Text>
+              <View>
+                <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Cor</Text>
+                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.color || item.extra_fields?.color}</Text>
               </View>
             </View>
           )}
         </View>
 
-        {/* Card de Adoção Direta (Animal sem tutor prévio) */}
-        {item.extra_fields?.is_direct_adoption && (
-          <View
-            style={{
-              marginHorizontal: 16,
-              marginTop: 10,
-              padding: 14,
-              borderRadius: 12,
-              borderWidth: 1.5,
-              backgroundColor: '#FDF2F8',
-              borderColor: '#F472B6',
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
-              <MaterialIcons name="favorite" size={18} color="#DB2777" />
-              <Text style={{ fontSize: 14, fontWeight: '800', color: '#9D174D' }}>
-                Disponível para Adoção Responsável
-              </Text>
-            </View>
-            <Text style={{ fontSize: 12.5, lineHeight: 18, color: '#BE185D' }}>
-              Este animal não tem tutor conhecido e está pronto para adoção imediata. Fale diretamente com quem o resgatou pelo chat para combinar o encontro!
-            </Text>
+        {/* Descrição Detalhada */}
+        {item.description ? (
+          <View style={[styles.descriptionBlock, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
+            <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>Descrição & Características</Text>
+            <Text style={[styles.descriptionText, { color: colors.text }]}>{item.description}</Text>
           </View>
-        )}
+        ) : null}
 
-        {/* Card de Custódia para Pet Encontrado */}
-        {item.status === 'found' && !item.extra_fields?.is_direct_adoption && (
-          <View
-            style={{
-              marginHorizontal: 16,
-              marginTop: 10,
-              padding: 14,
-              borderRadius: 12,
-              borderWidth: 1,
-              backgroundColor: item.extra_fields?.found_custody === 'spotted' ? '#FFFBEB' : '#ECFDF5',
-              borderColor: item.extra_fields?.found_custody === 'spotted' ? '#FDE68A' : '#A7F3D0',
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
-              <MaterialIcons
-                name={item.extra_fields?.found_custody === 'spotted' ? 'visibility' : 'home'}
-                size={18}
-                color={item.extra_fields?.found_custody === 'spotted' ? '#D97706' : '#059669'}
-              />
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: '800',
-                  color: item.extra_fields?.found_custody === 'spotted' ? '#B45309' : '#047857',
-                }}
-              >
-                {item.extra_fields?.found_custody === 'spotted'
-                  ? 'Animal Avistado na Rua'
-                  : 'Animal sob Cuidados / Lar Temporário'}
-              </Text>
+        {/* Bloco de Recompensa (Se ativa) */}
+        {Array.isArray(rewards) && rewards.some(r => r?.status === 'active') && (
+          <View style={styles.rewardBanner}>
+            <View style={styles.rewardIconBadge}>
+              <MaterialIcons name="emoji-events" size={24} color="#D97706" />
             </View>
-            <Text
-              style={{
-                fontSize: 12.5,
-                lineHeight: 18,
-                color: item.extra_fields?.found_custody === 'spotted' ? '#92400E' : '#065F46',
-              }}
-            >
-              {item.extra_fields?.found_custody === 'spotted'
-                ? 'Quem publicou apenas viu o animal no local informado e tirou a foto, mas não está com o animal. Se for ao local, compartilhe pistas nos comentários.'
-                : 'Quem encontrou acolheu o animal em sua casa ou espaço seguro enquanto o tutor é procurado pela comunidade.'}
-            </Text>
-          </View>
-        )}
-
-        {/* Card de Período de Busca vs Adoção Liberada para Animal Encontrado com Intenção de Adoção */}
-        {item.status === 'found' && !item.extra_fields?.is_direct_adoption && (
-          itemsService.isPetAvailableForAdoption(item) ? (
-            <View
-              style={{
-                marginHorizontal: 16,
-                marginTop: 10,
-                padding: 14,
-                borderRadius: 12,
-                borderWidth: 1.5,
-                backgroundColor: '#FDF2F8',
-                borderColor: '#F472B6',
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
-                <MaterialIcons name="favorite" size={18} color="#DB2777" />
-                <Text style={{ fontSize: 14, fontWeight: '800', color: '#9D174D' }}>
-                  Período de busca encerrado - Liberado para Adoção!
-                </Text>
-              </View>
-              <Text style={{ fontSize: 12.5, lineHeight: 18, color: '#BE185D' }}>
-                O período prioritário de 7 dias de busca pelo tutor foi concluído sem localização do dono original. O animal agora está aberto para adoção responsável com amor!
-              </Text>
-            </View>
-          ) : (
-            item.extra_fields?.adoption_intent && itemsService.getAdoptionWaitingDays(item) > 0 ? (
-              <View
-                style={{
-                  marginHorizontal: 16,
-                  marginTop: 10,
-                  padding: 14,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  backgroundColor: '#FFFBEB',
-                  borderColor: '#FDE68A',
-                }}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
-                  <MaterialIcons name="schedule" size={18} color="#D97706" />
-                  <Text style={{ fontSize: 14, fontWeight: '800', color: '#B45309' }}>
-                    Período Prioritário de Busca pelo Tutor (Faltam {itemsService.getAdoptionWaitingDays(item)} dia{itemsService.getAdoptionWaitingDays(item) === 1 ? '' : 's'})
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rewardTitle}>Recompensa Oferecida</Text>
+              {rewards
+                .filter(r => r?.status === 'active')
+                .map((r, index) => (
+                  <Text key={r?.id || index} style={styles.rewardAmount}>
+                    {r?.amount ? `R$ ${parseFloat(r.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : ''}
+                    {r?.description ? ` • ${r.description}` : ''}
                   </Text>
-                </View>
-                <Text style={{ fontSize: 12.5, lineHeight: 18, color: '#92400E' }}>
-                  Este animal foi encontrado na rua e está na primeira semana obrigatória de busca pelo tutor original. Caso o dono não apareça até o final deste prazo, a adoção responsável será oficialmente liberada.
-                </Text>
-              </View>
-            ) : null
-          )
+                ))}
+            </View>
+          </View>
         )}
+      </View>
 
-        {/* Local onde foi visto / encontrado (largura total) com data integrada em texto */}
-        <View style={styles.fullWidthLocationCard}>
-          <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: 'bold', marginBottom: 3 }}>
-            {item.status === 'lost' ? 'Última vez visto' : 'Local onde foi encontrado'}
+      {/* 3. ADOÇÃO E CUSTÓDIA (AVISOS IMPORTANTES) */}
+      {isAdoption && (
+        <View style={styles.adoptionNoticeCard}>
+          <View style={styles.noticeHeader}>
+            <MaterialIcons name="favorite" size={20} color="#DB2777" />
+            <Text style={styles.adoptionNoticeTitle}>Disponível para Adoção Responsável</Text>
+          </View>
+          <Text style={styles.adoptionNoticeText}>
+            Este animal não possui tutor conhecido e está sob acolhimento temporário. Caso queira adotar, envie uma mensagem ao protetor pelo chat!
           </Text>
-          <Text style={{ fontSize: 16, color: '#1F2937', fontWeight: 'bold', lineHeight: 22 }}>
+        </View>
+      )}
+
+      {isFound && !isAdoption && (
+        <View style={[
+          styles.custodyNoticeCard,
+          item.extra_fields?.found_custody === 'spotted' ? styles.custodySpotted : styles.custodyHome,
+        ]}>
+          <View style={styles.noticeHeader}>
+            <MaterialIcons
+              name={item.extra_fields?.found_custody === 'spotted' ? 'visibility' : 'home'}
+              size={20}
+              color={item.extra_fields?.found_custody === 'spotted' ? '#D97706' : '#059669'}
+            />
+            <Text style={[
+              styles.custodyNoticeTitle,
+              { color: item.extra_fields?.found_custody === 'spotted' ? '#B45309' : '#047857' },
+            ]}>
+              {item.extra_fields?.found_custody === 'spotted'
+                ? 'Animal Avistado na Rua'
+                : 'Animal sob Cuidados / Lar Temporário'}
+            </Text>
+          </View>
+          <Text style={[
+            styles.custodyNoticeText,
+            { color: item.extra_fields?.found_custody === 'spotted' ? '#92400E' : '#065F46' },
+          ]}>
+            {item.extra_fields?.found_custody === 'spotted'
+              ? 'Quem publicou apenas avistou o animal no local informado. Se você estiver na região, compartilhe novas pistas nos comentários.'
+              : 'O animal foi acolhido com segurança enquanto a comunidade busca pelo seu tutor original.'}
+          </Text>
+        </View>
+      )}
+
+      {/* 4. CARD DE LOCALIZAÇÃO E DATA */}
+      <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.sectionHeaderRow}>
+          <View style={[styles.sectionIconWrap, { backgroundColor: colors.primaryLight }]}>
+            <MaterialIcons name="place" size={20} color={colors.primary} />
+          </View>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {item.status === 'lost' ? 'Último Local Visto' : 'Local Onde Foi Encontrado'}
+          </Text>
+        </View>
+
+        <View style={styles.locationBody}>
+          <Text style={[styles.locationCityText, { color: colors.text }]}>
             {formatCityState(item)}
           </Text>
           {formatStreetNumberNeighborhood(item) ? (
-            <Text style={{ fontSize: 13.5, color: '#4B5569', marginTop: 4, lineHeight: 18 }}>
+            <Text style={[styles.locationStreetText, { color: colors.textSecondary }]}>
               {formatStreetNumberNeighborhood(item)}
             </Text>
           ) : null}
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#F3F4F6' }}>
-            <MaterialIcons name="event" size={15} color="#6B7280" style={{ marginRight: 6 }} />
-            <Text style={{ fontSize: 13.5, color: '#6B7280' }}>
-              <Text style={{ fontWeight: '600' }}>
-                {item.status === 'lost' ? 'Data em que perdi: ' : 'Data em que encontrei: '}
+          {item.date ? (
+            <View style={[styles.dateRow, { borderTopColor: colors.border }]}>
+              <MaterialIcons name="event" size={16} color={colors.textMuted} style={{ marginRight: 6 }} />
+              <Text style={[styles.dateLabel, { color: colors.textMuted }]}>
+                {item.status === 'lost' ? 'Data do desaparecimento: ' : 'Data do encontro: '}
+                <Text style={[styles.dateValue, { color: colors.text }]}>{formatItemDate(item.date)}</Text>
               </Text>
-              <Text style={{ color: '#1F2937', fontWeight: 'bold' }}>
-                {formatItemDate(item.date)}
-              </Text>
-            </Text>
-          </View>
+            </View>
+          ) : null}
         </View>
+      </View>
 
+      {/* 5. CARD DO TUTOR / QUEM PUBLICOU */}
+      {owner && (
+        <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.ownerHeader}>
+            {(() => {
+              const ownerAvatar = (isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || owner.avatar_url || owner.avatarUrl || null;
+              const ownerDisplayName = (isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário');
+              const ownerInitial = ownerDisplayName.trim()[0]?.toUpperCase() || 'U';
 
-
-        {/* Informações do Tutor / Dono Real quando publicado por terceiro */}
-        {item.extra_fields?.third_party_owner?.active && item.extra_fields?.third_party_owner?.name && (
-          <View style={{ backgroundColor: '#F0FDF4', borderRadius: 14, marginHorizontal: 16, marginTop: 16, marginBottom: 0, padding: 16, borderWidth: 1.5, borderColor: '#BBF7D0' }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-              <MaterialIcons name="person-pin" size={20} color="#16A34A" />
-              <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#166534' }}>
-                {item.status === 'lost' ? 'Tutor do Animal' : 'Responsável pelo Animal'}
-              </Text>
-            </View>
-            <Text style={{ fontSize: 16, fontWeight: '800', color: '#0F172A', marginBottom: 2 }}>
-              {item.extra_fields.third_party_owner.name}
-            </Text>
-            {item.extra_fields.third_party_owner.phone ? (
-              <Text style={{ fontSize: 15, fontWeight: '700', color: '#15803D' }}>
-                📞 {item.extra_fields.third_party_owner.phone}
-              </Text>
-            ) : null}
-            <Text style={{ fontSize: 12, color: '#15803D', opacity: 0.8, marginTop: 4 }}>
-              * Anúncio realizado por terceiro em nome do tutor acima.
-            </Text>
-          </View>
-        )}
-
-        {/* Publicado por */}
-        {owner && (
-          <View style={{ backgroundColor: '#fff', borderRadius: 14, marginHorizontal: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
-            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937', marginBottom: 10 }}>Publicado por</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-              {(() => {
-                const ownerAvatar = (isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || owner.avatar_url || owner.avatarUrl || null;
-                const ownerDisplayName = (isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário');
-                const ownerInitial = ownerDisplayName.trim()[0]?.toUpperCase() || 'U';
-
-                if (ownerAvatar) {
-                  return (
-                    <Image
-                      source={{ uri: ownerAvatar }}
-                      style={{ width: 44, height: 44, borderRadius: 22, marginRight: 12, backgroundColor: '#EFF6FF' }}
-                    />
-                  );
-                }
-
+              if (ownerAvatar) {
                 return (
-                  <View
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 22,
-                      marginRight: 12,
-                      backgroundColor: '#2563EB',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '800' }}>
-                      {ownerInitial}
-                    </Text>
-                  </View>
+                  <Image source={{ uri: ownerAvatar }} style={styles.ownerAvatarImage} />
                 );
-              })()}
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937' }}>
-                  {(isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário')}
+              }
+
+              return (
+                <View style={[styles.ownerAvatarFallback, { backgroundColor: colors.primary }]}>
+                  <Text style={styles.ownerAvatarInitial}>{ownerInitial}</Text>
+                </View>
+              );
+            })()}
+
+            <View style={styles.ownerInfoTextContainer}>
+              <Text style={[styles.ownerLabel, { color: colors.textMuted }]}>Publicado por</Text>
+              <Text style={[styles.ownerName, { color: colors.text }]} numberOfLines={1}>
+                {(isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário')}
+              </Text>
+              {owner.created_at && formatarDataMembro(owner.created_at) && formatarDataMembro(owner.created_at) !== 'não informado' ? (
+                <Text style={[styles.ownerMeta, { color: colors.textMuted }]}>
+                  Membro desde {formatarDataMembro(owner.created_at)}
                 </Text>
-                {owner.created_at && formatarDataMembro(owner.created_at) && formatarDataMembro(owner.created_at) !== 'não informado' && (
-                  <Text style={{ fontSize: 13, color: '#6B7280' }}>Membro desde {formatarDataMembro(owner.created_at)}</Text>
-                )}
-                {item.created_at && (
-                  <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>
-                    {(() => {
-                      const data = new Date(item.created_at);
-                      const dia = data.getDate().toString().padStart(2, '0');
-                      const mes = data.toLocaleString('pt-BR', { month: 'long' });
-                      const ano = data.getFullYear();
-                      const hora = data.getHours().toString().padStart(2, '0');
-                      const minuto = data.getMinutes().toString().padStart(2, '0');
-                      return `Publicado em ${dia} de ${mes} de ${ano} às ${hora}:${minuto}`;
-                    })()}
-                  </Text>
-                )}
-                {isOwner && renewalInfo.canRenew && Number.isFinite(renewalInfo.daysRemaining) && (
-                  <Text style={{ fontSize: 13, color: '#F59E0B', marginTop: 2 }}>
-                    {renewalInfo.expired ? 'Esta publicação expirou.' : `Expira em ${renewalInfo.daysRemaining} dia${renewalInfo.daysRemaining === 1 ? '' : 's'}`}
-                  </Text>
-                )}
-              </View>
+              ) : null}
             </View>
-            {(isOwner || isAdmin) && (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  gap: 8,
-                  marginTop: 12,
-                  paddingTop: 12,
-                  borderTopWidth: 1,
-                  borderTopColor: '#F3F4F6',
-                }}
-              >
-                {isOwner && (
-                  <TouchableOpacity
-                    style={{
-                      flex: 1,
-                      minWidth: '45%',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#EFF6FF',
-                      borderRadius: 8,
-                      paddingVertical: 10,
-                      paddingHorizontal: 10,
-                    }}
-                    onPress={handleEditItem}
-                  >
-                    <MaterialIcons name="edit" size={16} color="#2563EB" />
-                    <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 13, marginLeft: 6 }}>
-                      Editar
-                    </Text>
-                  </TouchableOpacity>
-                )}
-
-                {isOwner && item.status === 'found' && item.extra_fields?.found_custody !== 'spotted' && (
-                  itemsService.getAdoptionWaitingDays(item) > 0 && !item.extra_fields?.available_for_adoption ? (
-                    <View
-                      style={{
-                        flex: 1,
-                        minWidth: '45%',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: '#FEF3C7',
-                        borderRadius: 8,
-                        paddingVertical: 10,
-                        paddingHorizontal: 10,
-                        borderWidth: 1,
-                        borderColor: '#FDE68A',
-                      }}
-                    >
-                      <MaterialIcons name="schedule" size={16} color="#B45309" />
-                      <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 12, marginLeft: 6 }}>
-                        Busca ({itemsService.getAdoptionWaitingDays(item)}d)
-                      </Text>
-                    </View>
-                  ) : (
-                    <TouchableOpacity
-                      style={{
-                        flex: 1,
-                        minWidth: '45%',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: item.extra_fields?.available_for_adoption ? '#FDF2F8' : '#ECFDF5',
-                        borderWidth: 1,
-                        borderColor: item.extra_fields?.available_for_adoption ? '#F472B6' : '#A7F3D0',
-                        borderRadius: 8,
-                        paddingVertical: 10,
-                        paddingHorizontal: 10,
-                      }}
-                      onPress={handleToggleAdoption}
-                      disabled={togglingAdoption}
-                    >
-                      <MaterialIcons
-                        name="favorite"
-                        size={16}
-                        color={item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669'}
-                      />
-                      <Text
-                        style={{
-                          color: item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669',
-                          fontWeight: 'bold',
-                          fontSize: 12.5,
-                          marginLeft: 6,
-                        }}
-                      >
-                        {togglingAdoption
-                          ? 'Atualizando...'
-                          : item.extra_fields?.available_for_adoption
-                          ? 'Pausar Adoção'
-                          : 'Colocar p/ Adoção'}
-                      </Text>
-                    </TouchableOpacity>
-                  )
-                )}
-
-                {isOwner && renewalInfo.canRenew && (
-                  <TouchableOpacity
-                    style={{
-                      flex: 1,
-                      minWidth: '45%',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#F59E0B',
-                      borderRadius: 8,
-                      paddingVertical: 10,
-                      paddingHorizontal: 10,
-                    }}
-                    onPress={handleRenewItem}
-                    disabled={renewing}
-                  >
-                    <MaterialIcons name="refresh" size={16} color="#fff" />
-                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13, marginLeft: 6 }}>
-                      {renewing ? 'Renovando...' : 'Renovar'}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-
-                <TouchableOpacity
-                  style={{
-                    flex: 1,
-                    minWidth: '45%',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#FEE2E2',
-                    borderRadius: 8,
-                    paddingVertical: 10,
-                    paddingHorizontal: 10,
-                    borderWidth: 1,
-                    borderColor: '#FECACA',
-                  }}
-                  onPress={handleDeleteItem}
-                  disabled={deleting}
-                >
-                  <MaterialIcons name="delete-outline" size={16} color="#DC2626" />
-                  <Text style={{ color: '#DC2626', fontWeight: 'bold', fontSize: 13, marginLeft: 6 }}>
-                    {deleting ? 'Excluindo...' : 'Excluir'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            {!isOwner && !isAdmin && (
-              <View style={{ marginTop: 8 }}>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#2563EB',
-                    borderRadius: 10,
-                    paddingVertical: 13,
-                    alignItems: 'center',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    shadowColor: '#2563EB',
-                    shadowOpacity: 0.25,
-                    shadowRadius: 6,
-                    elevation: 3,
-                  }}
-                  onPress={handleSendMessage}
-                >
-                  <MaterialIcons name="chat" size={19} color="#FFFFFF" style={{ marginRight: 8 }} />
-                  <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 15 }}>
-                    Enviar Mensagem
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            {!isOwner && !isAdmin && (
-              <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 14, paddingVertical: 8 }}
-                onPress={handleOpenReport}
-              >
-                <MaterialIcons name="flag" size={17} color="#B91C1C" />
-                <Text style={{ color: '#B91C1C', fontWeight: '700', fontSize: 13, marginLeft: 6 }}>Denunciar publicação</Text>
-              </TouchableOpacity>
-            )}
           </View>
-        )}
 
-        {/* Botão de Compartilhar Cartaz Destacado */}
-        <View style={{ marginHorizontal: 16, marginTop: 14 }}>
+          {/* Se for terceiro anunciando em nome do tutor */}
+          {item.extra_fields?.third_party_owner?.active && item.extra_fields?.third_party_owner?.name ? (
+            <View style={styles.thirdPartyOwnerBox}>
+              <Text style={styles.thirdPartyOwnerTitle}>
+                {item.status === 'lost' ? 'Tutor Oficial do Pet:' : 'Responsável pelo Pet:'}
+              </Text>
+              <Text style={styles.thirdPartyOwnerName}>{item.extra_fields.third_party_owner.name}</Text>
+              {item.extra_fields.third_party_owner.phone ? (
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(`tel:${item.extra_fields.third_party_owner.phone}`)}
+                  style={styles.thirdPartyPhoneRow}
+                >
+                  <MaterialIcons name="phone" size={16} color="#15803D" />
+                  <Text style={styles.thirdPartyPhoneText}>{item.extra_fields.third_party_owner.phone}</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          ) : null}
+
+          {/* AÇÕES PARA VISITANTES (ENVIAR MENSAGEM CTA) */}
+          {!isOwner && !isAdmin && (
+            <View style={styles.visitorActionsBlock}>
+              <TouchableOpacity
+                style={[styles.primaryChatCta, { backgroundColor: colors.primary }]}
+                onPress={handleSendMessage}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="chatbubble-ellipses" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                <Text style={styles.primaryChatCtaText}>Enviar Mensagem ao Tutor</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.reportBtn}
+                onPress={handleOpenReport}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="flag" size={16} color="#DC2626" style={{ marginRight: 4 }} />
+                <Text style={styles.reportBtnText}>Denunciar publicação</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* AÇÕES PARA O AUTOR / ADMIN */}
+          {(isOwner || isAdmin) && (
+            <View style={[styles.ownerActionsGrid, { borderTopColor: colors.border }]}>
+              {isOwner && (
+                <TouchableOpacity
+                  style={[styles.ownerActionBtn, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: colors.border }]}
+                  onPress={handleEditItem}
+                >
+                  <MaterialIcons name="edit" size={17} color={colors.primary} />
+                  <Text style={[styles.ownerActionText, { color: colors.primary }]}>Editar</Text>
+                </TouchableOpacity>
+              )}
+
+              {isOwner && item.status === 'found' && item.extra_fields?.found_custody !== 'spotted' && (
+                <TouchableOpacity
+                  style={[styles.ownerActionBtn, { backgroundColor: item.extra_fields?.available_for_adoption ? '#FDF2F8' : '#ECFDF5', borderColor: item.extra_fields?.available_for_adoption ? '#F472B6' : '#A7F3D0' }]}
+                  onPress={handleToggleAdoption}
+                  disabled={togglingAdoption}
+                >
+                  <MaterialIcons
+                    name="favorite"
+                    size={17}
+                    color={item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669'}
+                  />
+                  <Text
+                    style={[styles.ownerActionText, { color: item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669' }]}
+                  >
+                    {togglingAdoption ? 'Salvando...' : item.extra_fields?.available_for_adoption ? 'Pausar Adoção' : 'P/ Adoção'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {isOwner && renewalInfo.canRenew && (
+                <TouchableOpacity
+                  style={[styles.ownerActionBtn, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}
+                  onPress={handleRenewItem}
+                  disabled={renewing}
+                >
+                  <MaterialIcons name="refresh" size={17} color="#D97706" />
+                  <Text style={[styles.ownerActionText, { color: '#B45309' }]}>
+                    {renewing ? 'Renovando...' : 'Renovar'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                style={[styles.ownerActionBtn, { backgroundColor: '#FEE2E2', borderColor: '#FECACA' }]}
+                onPress={handleDeleteItem}
+                disabled={deleting}
+              >
+                <MaterialIcons name="delete-outline" size={17} color="#DC2626" />
+                <Text style={[styles.ownerActionText, { color: '#DC2626' }]}>
+                  {deleting ? 'Excluindo...' : 'Excluir'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* 6. BOTÃO DE CARTAZ DESTACADO */}
+      <View style={styles.flyerBannerWrap}>
+        <TouchableOpacity
+          style={[styles.flyerBannerBtn, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: colors.primary }]}
+          onPress={() => setShareFlyerVisible(true)}
+          activeOpacity={0.85}
+        >
+          <View style={[styles.flyerIconCircle, { backgroundColor: colors.primary }]}>
+            <MaterialIcons name="share" size={20} color="#FFFFFF" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.flyerBtnTitle, { color: colors.primary }]}>Compartilhar Cartaz do Pet</Text>
+            <Text style={[styles.flyerBtnSub, { color: colors.textSecondary }]}>Gere uma imagem com foto e contatos para postar nas redes</Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color={colors.primary} />
+        </TouchableOpacity>
+      </View>
+
+      {/* 7. COMENTÁRIOS E PISTAS DA COMUNIDADE */}
+      <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border, marginBottom: 40 }]}>
+        <View style={styles.commentsHeaderRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={[styles.commentsTitle, { color: colors.text }]}>Pistas & Comentários</Text>
+            <View style={[styles.commentsCountBadge, { backgroundColor: colors.primaryLight }]}>
+              <Text style={[styles.commentsCountText, { color: colors.primary }]}>{sightings.length}</Text>
+            </View>
+          </View>
+
           <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#EFF6FF',
-              borderWidth: 1.5,
-              borderColor: '#2563EB',
-              borderRadius: 12,
-              paddingVertical: 12,
-              gap: 8,
-            }}
-            onPress={() => setShareFlyerVisible(true)}
-            activeOpacity={0.85}
+            style={[styles.addCommentBtn, { backgroundColor: colors.primary }]}
+            onPress={handleReportSighting}
+            activeOpacity={0.8}
           >
-            <MaterialIcons name="share" size={20} color="#2563EB" />
-            <Text style={{ color: '#2563EB', fontWeight: '800', fontSize: 15 }}>
-              Compartilhar Cartaz do Pet
-            </Text>
+            <MaterialIcons name="add-comment" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
+            <Text style={styles.addCommentBtnText}>Comentar</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Comentários */}
-        <View style={{ backgroundColor: '#fff', borderRadius: 14, margin: 16, marginTop: 16, marginBottom: 0, padding: 20, borderWidth: 1, borderColor: '#F3F4F6' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1F2937' }}>Comentários ({sightings.length})</Text>
-            <TouchableOpacity style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }} onPress={handleReportSighting}>
-              <MaterialIcons name="add-comment" size={18} color="#2563EB" />
-              <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 13, marginLeft: 4 }}>Comentar</Text>
-            </TouchableOpacity>
+        {sightings.length === 0 ? (
+          <View style={styles.emptyCommentsBox}>
+            <MaterialIcons name="forum" size={40} color={colors.textMuted} />
+            <Text style={[styles.emptyCommentsText, { color: colors.textMuted }]}>
+              Nenhum comentário ou pista ainda.
+            </Text>
+            <Text style={[styles.emptyCommentsSub, { color: colors.textMuted }]}>
+              Viu este animal? Compartilhe informações para ajudar o tutor!
+            </Text>
           </View>
-          {sightings.length === 0 ? (
-            <Text style={{ color: '#6B7280', textAlign: 'center', marginVertical: 16 }}>Nenhum comentário ainda. Seja o primeiro a comentar!</Text>
-          ) : (
-            sightings.map((s, idx) => {
-              let instagram = '', whatsapp = '', facebook = '', contatoExtra = '';
-              if (s.contact_info && typeof s.contact_info === 'object') {
-                instagram = s.contact_info.instagram || '';
-                whatsapp = s.contact_info.whatsapp || '';
-                facebook = s.contact_info.facebook || '';
-              } else if (typeof s.contact_info === 'string' && s.contact_info.trim() !== '') {
-                contatoExtra = s.contact_info;
-              }
-              return (
-                <React.Fragment key={s.id || idx}>
-                  <View style={{ backgroundColor: '#F9FAFB', borderRadius: 10, padding: 12, marginBottom: 12 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                      {(() => {
-                        const sAvatar = s.profiles?.avatar_url || s.profiles?.avatarUrl || null;
-                        const sName = s.profiles?.name || 'Usuário';
-                        const sInitial = sName.trim()[0]?.toUpperCase() || 'U';
+        ) : (
+          sightings.map((s, idx) => {
+            let instagram = '', whatsapp = '', facebook = '', contatoExtra = '';
+            if (s.contact_info && typeof s.contact_info === 'object') {
+              instagram = s.contact_info.instagram || '';
+              whatsapp = s.contact_info.whatsapp || '';
+              facebook = s.contact_info.facebook || '';
+            } else if (typeof s.contact_info === 'string' && s.contact_info.trim() !== '') {
+              contatoExtra = s.contact_info;
+            }
 
-                        if (sAvatar) {
-                          return (
-                            <Image
-                              source={{ uri: sAvatar }}
-                              style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8, backgroundColor: '#E5E7EB' }}
-                            />
-                          );
-                        }
+            const isAuthor = user && s.user_id === user.id;
 
-                        return (
-                          <View
-                            style={{
-                              width: 32,
-                              height: 32,
-                              borderRadius: 16,
-                              marginRight: 8,
-                              backgroundColor: '#2563EB',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '800' }}>
-                              {sInitial}
-                            </Text>
-                          </View>
-                        );
-                      })()}
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontWeight: 'bold', color: '#1F2937', fontSize: 14 }}>{s.profiles?.name || 'Usuário'}</Text>
-                        <Text style={{ color: '#6B7280', fontSize: 11 }}>{new Date(s.created_at).toLocaleString('pt-BR')}</Text>
+            return (
+              <View
+                key={s.id || idx}
+                style={[
+                  styles.commentBubble,
+                  {
+                    backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <View style={styles.commentHeaderRow}>
+                  {(() => {
+                    const sAvatar = s.profiles?.avatar_url || s.profiles?.avatarUrl || null;
+                    const sName = s.profiles?.name || 'Usuário';
+                    const sInitial = sName.trim()[0]?.toUpperCase() || 'U';
+
+                    if (sAvatar) {
+                      return <Image source={{ uri: sAvatar }} style={styles.commentAvatarImg} />;
+                    }
+                    return (
+                      <View style={[styles.commentAvatarFallback, { backgroundColor: colors.primary }]}>
+                        <Text style={styles.commentAvatarInitial}>{sInitial}</Text>
                       </View>
-                      {/* Botões de editar/excluir se o usuário for o autor */}
-                      {user && s.user_id === user.id && (
-                        <View style={{ flexDirection: 'row', marginLeft: 8 }}>
-                          <TouchableOpacity onPress={() => handleEditComment(s)} style={{ marginRight: 8 }}>
-                            <MaterialIcons name="edit" size={18} color="#2563EB" />
-                          </TouchableOpacity>
-                          <TouchableOpacity onPress={() => handleDeleteComment(s)}>
-                            <MaterialIcons name="delete" size={18} color="#EF4444" />
-                          </TouchableOpacity>
-                        </View>
-                      )}
+                    );
+                  })()}
+
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.commentAuthorName, { color: colors.text }]}>{s.profiles?.name || 'Usuário'}</Text>
+                    <Text style={[styles.commentTimestamp, { color: colors.textMuted }]}>
+                      {new Date(s.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                  </View>
+
+                  {isAuthor && (
+                    <View style={styles.commentActionsWrap}>
+                      <TouchableOpacity onPress={() => handleEditComment(s)} style={{ padding: 4, marginRight: 4 }}>
+                        <MaterialIcons name="edit" size={17} color={colors.primary} />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleDeleteComment(s)} style={{ padding: 4 }}>
+                        <MaterialIcons name="delete-outline" size={17} color="#EF4444" />
+                      </TouchableOpacity>
                     </View>
-                    <Text style={{ color: '#374151', marginBottom: 4, fontSize: 13 }}>{s.description}</Text>
-                    {s.location ? (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, marginVertical: 4, alignSelf: 'flex-start' }}>
-                        <MaterialIcons name="location-on" size={14} color="#2563EB" style={{ marginRight: 4 }} />
-                        <Text style={{ color: '#1E40AF', fontSize: 12, fontWeight: '600' }}>{s.location}</Text>
+                  )}
+                </View>
+
+                <Text style={[styles.commentContentText, { color: colors.text }]}>{s.description}</Text>
+
+                {s.location ? (
+                  <View style={[styles.commentLocationChip, { backgroundColor: isDark ? '#0F172A' : '#EFF6FF' }]}>
+                    <MaterialIcons name="location-on" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                    <Text style={[styles.commentLocationText, { color: colors.primary }]}>{s.location}</Text>
+                  </View>
+                ) : null}
+
+                {s.photo_url ? (
+                  <Image source={{ uri: s.photo_url }} style={styles.commentAttachedImage} resizeMode="cover" />
+                ) : null}
+
+                {(instagram || whatsapp || facebook || contatoExtra) ? (
+                  <View style={styles.commentContactsContainer}>
+                    {whatsapp ? (
+                      <TouchableOpacity
+                        onPress={() => Linking.openURL(`https://wa.me/55${whatsapp.replace(/\D/g, '')}`)}
+                        style={[styles.contactTag, { backgroundColor: '#DCFCE7' }]}
+                      >
+                        <FontAwesome name="whatsapp" size={14} color="#15803D" style={{ marginRight: 4 }} />
+                        <Text style={[styles.contactTagText, { color: '#15803D' }]}>{whatsapp}</Text>
+                      </TouchableOpacity>
+                    ) : null}
+
+                    {instagram ? (
+                      <TouchableOpacity
+                        onPress={() => Linking.openURL(`https://instagram.com/${instagram.replace('@', '')}`)}
+                        style={[styles.contactTag, { backgroundColor: '#FCE7F3' }]}
+                      >
+                        <FontAwesome name="instagram" size={14} color="#BE185D" style={{ marginRight: 4 }} />
+                        <Text style={[styles.contactTagText, { color: '#BE185D' }]}>@{instagram.replace('@', '')}</Text>
+                      </TouchableOpacity>
+                    ) : null}
+
+                    {facebook ? (
+                      <View style={[styles.contactTag, { backgroundColor: '#DBEAFE' }]}>
+                        <FontAwesome name="facebook-square" size={14} color="#1D4ED8" style={{ marginRight: 4 }} />
+                        <Text style={[styles.contactTagText, { color: '#1D4ED8' }]}>{facebook}</Text>
                       </View>
                     ) : null}
-                    {(instagram || whatsapp || facebook || contatoExtra) ? (
-                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-                        {instagram ? (
-                          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
-                            <FontAwesome name="instagram" size={14} color="#C13584" style={{ marginRight: 4 }} />
-                            <Text style={{ color: '#2563EB', fontSize: 12, marginLeft: 2 }}>@{instagram}</Text>
-                          </View>
-                        ) : null}
-                        {whatsapp ? (
-                          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
-                            <FontAwesome name="whatsapp" size={14} color="#25D366" style={{ marginRight: 4 }} />
-                            <Text style={{ color: '#2563EB', fontSize: 12, marginLeft: 2 }}>{whatsapp}</Text>
-                          </View>
-                        ) : null}
-                        {facebook ? (
-                          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
-                            <FontAwesome name="facebook-square" size={14} color="#1877F3" style={{ marginRight: 4 }} />
-                            <Text style={{ color: '#2563EB', fontSize: 12, marginLeft: 2 }}>{facebook}</Text>
-                          </View>
-                        ) : null}
-                        {contatoExtra ? (
-                          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginRight: 6, marginBottom: 4 }}>
-                            <Text style={{ color: '#2563EB', fontSize: 12, marginLeft: 2 }}>{contatoExtra}</Text>
-                          </View>
-                        ) : null}
+
+                    {contatoExtra ? (
+                      <View style={[styles.contactTag, { backgroundColor: '#F1F5F9' }]}>
+                        <Text style={[styles.contactTagText, { color: colors.textSecondary }]}>{contatoExtra}</Text>
                       </View>
                     ) : null}
                   </View>
-                  {idx < sightings.length - 1 && <Separator />}
-                </React.Fragment>
-              );
-            })
-          )}
-        </View>
-
-        <SightingModal
-          visible={sightingModalVisible}
-          onClose={() => setSightingModalVisible(false)}
-          onSubmit={handleSubmitSighting}
-          loading={sightingLoading}
-        />
-
-        <Modal
-          visible={reportModalVisible}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setReportModalVisible(false)}
-        >
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', padding: 20 }}>
-            <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20 }}>
-              <Text style={{ fontSize: 19, fontWeight: '800', color: '#1F2937', marginBottom: 6 }}>Denunciar publicação</Text>
-              <Text style={{ color: '#6B7280', fontSize: 13, marginBottom: 14 }}>Escolha o motivo para enviar à equipe administrativa.</Text>
-              {['Conteúdo falso ou enganoso', 'Conteúdo inadequado', 'Informações de contato suspeitas', 'Outro'].map(reason => (
-                <TouchableOpacity
-                  key={reason}
-                  onPress={() => setReportReason(reason)}
-                  style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10 }}
-                >
-                  <MaterialIcons name={reportReason === reason ? 'radio-button-checked' : 'radio-button-unchecked'} size={21} color={reportReason === reason ? '#2563EB' : '#9CA3AF'} />
-                  <Text style={{ color: '#374151', fontSize: 14, marginLeft: 9 }}>{reason}</Text>
-                </TouchableOpacity>
-              ))}
-              <TextInput
-                value={reportDetails}
-                onChangeText={setReportDetails}
-                placeholder="Detalhes adicionais (opcional)"
-                multiline
-                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 9, padding: 10, minHeight: 70, marginTop: 8, textAlignVertical: 'top' }}
-              />
-              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 16, marginTop: 16 }}>
-                <TouchableOpacity onPress={() => setReportModalVisible(false)} style={{ paddingVertical: 9 }}>
-                  <Text style={{ color: '#6B7280', fontWeight: '700' }}>Cancelar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleSubmitReport} disabled={reporting} style={{ backgroundColor: '#B91C1C', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9 }}>
-                  <Text style={{ color: '#fff', fontWeight: '800' }}>{reporting ? 'Enviando...' : 'Enviar denúncia'}</Text>
-                </TouchableOpacity>
+                ) : null}
               </View>
-            </View>
-          </View>
-        </Modal>
-
-        {/* Modal de edição de comentário */}
-        <Modal
-          visible={editModalVisible}
-          transparent
-          animationType="fade"
-          onRequestClose={handleCancelEditComment}
-        >
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
-              <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                style={{ width: '100%', maxWidth: 440, alignItems: 'center' }}
-              >
-                <TouchableWithoutFeedback onPress={() => {}}>
-                  <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, width: '100%', maxWidth: 440 }}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>Editar comentário</Text>
-              <TextInput
-                value={editCommentText}
-                onChangeText={setEditCommentText}
-                multiline
-                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 10, minHeight: 60, marginBottom: 10, fontSize: 15 }}
-                placeholder="Digite seu comentário"
-              />
-              <TextInput
-                value={editCommentLocation}
-                onChangeText={setEditCommentLocation}
-                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 15 }}
-                placeholder="Local (opcional)"
-              />
-              <TextInput
-                value={editCommentFacebook}
-                onChangeText={setEditCommentFacebook}
-                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 15 }}
-                placeholder="Facebook (opcional)"
-                autoCapitalize="none"
-              />
-              <TextInput
-                value={editCommentInstagram}
-                onChangeText={setEditCommentInstagram}
-                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 15 }}
-                placeholder="Instagram (opcional)"
-                autoCapitalize="none"
-              />
-              <TextInput
-                value={editCommentWhatsapp}
-                onChangeText={text => setEditCommentWhatsapp(text.replace(/[^0-9]/g, ''))}
-                style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 15 }}
-                placeholder="WhatsApp (apenas números)"
-                keyboardType="numeric"
-                maxLength={15}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity
-                onPress={async () => {
-                  const { launchImageLibraryAsync, requestMediaLibraryPermissionsAsync, MediaTypeOptions } = await import('expo-image-picker');
-                  const permissionResult = await requestMediaLibraryPermissionsAsync();
-                  if (!permissionResult.granted) {
-                    alert('Permissão para acessar fotos é necessária!');
-                    return;
-                  }
-                  setEditUploading(true);
-                  let pickerResult = await launchImageLibraryAsync({
-                    mediaTypes: MediaTypeOptions.Images,
-                    allowsEditing: true,
-                    quality: 0.7,
-                  });
-                  setEditUploading(false);
-                  if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
-                    setEditCommentPhotoUrl(pickerResult.assets[0].uri);
-                  }
-                }}
-                style={{ marginBottom: 10, backgroundColor: '#E5E7EB', borderRadius: 8, padding: 10, alignItems: 'center' }}
-              >
-                <Text style={{ color: '#2563EB', fontWeight: 'bold' }}>{editUploading ? 'Abrindo galeria...' : (editCommentPhotoUrl ? 'Trocar foto' : 'Adicionar foto')}</Text>
-              </TouchableOpacity>
-              {editCommentPhotoUrl ? (
-                <Image source={{ uri: editCommentPhotoUrl }} style={{ width: '100%', height: 110, borderRadius: 8, marginBottom: 10 }} />
-              ) : null}
-              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 12 }}>
-                <TouchableOpacity onPress={handleCancelEditComment} style={{ paddingVertical: 8, paddingHorizontal: 16 }}>
-                  <Text style={{ color: '#6B7280', fontWeight: 'bold', fontSize: 15 }}>Cancelar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleSaveEditComment} style={{ paddingVertical: 8, paddingHorizontal: 16 }}>
-                  <Text style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 15 }}>Salvar</Text>
-                </TouchableOpacity>
-              </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </KeyboardAvoidingView>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
-
-        <View style={{ height: 40 }} />
+            );
+          })
+        )}
       </View>
 
-      {/* Modal de visualização de foto em tela cheia */}
+      {/* MODAL DE SIGHTING / PISTAS */}
+      <SightingModal
+        visible={sightingModalVisible}
+        onClose={() => setSightingModalVisible(false)}
+        onSubmit={handleSubmitSighting}
+        loading={sightingLoading}
+      />
+
+      {/* MODAL DE DENÚNCIA */}
+      <Modal
+        visible={reportModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setReportModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Denunciar Publicação</Text>
+            <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+              Escolha o motivo da denúncia para análise de moderação.
+            </Text>
+            {['Conteúdo falso ou enganoso', 'Conteúdo inadequado', 'Informações de contato suspeitas', 'Outro'].map(reason => (
+              <TouchableOpacity
+                key={reason}
+                onPress={() => setReportReason(reason)}
+                style={styles.radioOptionRow}
+              >
+                <MaterialIcons
+                  name={reportReason === reason ? 'radio-button-checked' : 'radio-button-unchecked'}
+                  size={20}
+                  color={reportReason === reason ? colors.primary : colors.textMuted}
+                />
+                <Text style={[styles.radioOptionText, { color: colors.text }]}>{reason}</Text>
+              </TouchableOpacity>
+            ))}
+            <TextInput
+              value={reportDetails}
+              onChangeText={setReportDetails}
+              placeholder="Detalhes adicionais (opcional)"
+              placeholderTextColor={colors.textMuted}
+              multiline
+              style={[styles.modalInput, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+            />
+            <View style={styles.modalActionButtons}>
+              <TouchableOpacity onPress={() => setReportModalVisible(false)} style={styles.modalCancelBtn}>
+                <Text style={[styles.modalCancelText, { color: colors.textSecondary }]}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSubmitReport}
+                disabled={reporting}
+                style={[styles.modalSubmitBtn, { backgroundColor: '#DC2626' }]}
+              >
+                <Text style={styles.modalSubmitText}>{reporting ? 'Enviando...' : 'Enviar Denúncia'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL DE EDIÇÃO DE COMENTÁRIO */}
+      <Modal
+        visible={editModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCancelEditComment}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+              style={{ width: '100%', maxWidth: 440, alignItems: 'center' }}
+            >
+              <TouchableWithoutFeedback onPress={() => {}}>
+                <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
+                  <Text style={[styles.modalTitle, { color: colors.text }]}>Editar Comentário</Text>
+                  <TextInput
+                    value={editCommentText}
+                    onChangeText={setEditCommentText}
+                    multiline
+                    style={[styles.modalInput, { minHeight: 60, backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+                    placeholder="Digite seu comentário"
+                    placeholderTextColor={colors.textMuted}
+                  />
+                  <TextInput
+                    value={editCommentLocation}
+                    onChangeText={setEditCommentLocation}
+                    style={[styles.modalInput, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+                    placeholder="Local onde viu o pet (opcional)"
+                    placeholderTextColor={colors.textMuted}
+                  />
+                  <TextInput
+                    value={editCommentWhatsapp}
+                    onChangeText={t => setEditCommentWhatsapp(t.replace(/[^0-9]/g, ''))}
+                    style={[styles.modalInput, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+                    placeholder="WhatsApp para contato (opcional)"
+                    placeholderTextColor={colors.textMuted}
+                    keyboardType="numeric"
+                  />
+                  <TextInput
+                    value={editCommentInstagram}
+                    onChangeText={setEditCommentInstagram}
+                    style={[styles.modalInput, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+                    placeholder="Instagram (opcional)"
+                    placeholderTextColor={colors.textMuted}
+                    autoCapitalize="none"
+                  />
+                  <View style={styles.modalActionButtons}>
+                    <TouchableOpacity onPress={handleCancelEditComment} style={styles.modalCancelBtn}>
+                      <Text style={[styles.modalCancelText, { color: colors.textSecondary }]}>Cancelar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleSaveEditComment} style={[styles.modalSubmitBtn, { backgroundColor: colors.primary }]}>
+                      <Text style={styles.modalSubmitText}>Salvar</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* MODAL DE FOTO EM TELA CHEIA */}
       <Modal
         visible={fullScreenPhotoModal}
         transparent={true}
         animationType="fade"
         onRequestClose={() => setFullScreenPhotoModal(false)}
       >
-        <View style={{ flex: 1, backgroundColor: '#000000', justifyContent: 'center', alignItems: 'center' }}>
+        <View style={styles.fullScreenModalBg}>
           <TouchableOpacity
             onPress={() => setFullScreenPhotoModal(false)}
-            style={{ position: 'absolute', top: 48, right: 20, zIndex: 20, backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 20, padding: 8 }}
+            style={styles.fullScreenCloseBtn}
           >
             <MaterialIcons name="close" size={24} color="#FFFFFF" />
           </TouchableOpacity>
@@ -1530,6 +1298,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
         </View>
       </Modal>
 
+      {/* MODAL DE CARTAZ */}
       <ShareFlyerModal
         visible={shareFlyerVisible}
         onClose={() => setShareFlyerVisible(false)}
@@ -1538,491 +1307,160 @@ const ItemDetailScreen = ({ route, navigation }) => {
       />
     </ScrollView>
   );
-// Componente InfoRow para exibir label e valor alinhados (usado para outros tipos)
-function InfoRow({ label, value }) {
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-      <Text style={{ fontSize: 15, color: '#6B7280', minWidth: 90 }}>{label}</Text>
-      <Text style={{ fontSize: 15, color: '#1F2937', fontWeight: 'bold', marginLeft: 8 }}>{value || 'não informado'}</Text>
-    </View>
-  );
-}
-
-// Componente AnimalInfoRow para exibir campo com ícone, label, valor, fonte e fallback
-function AnimalInfoRow({ icon, label, value }) {
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: 36 }}>
-      <View style={{ width: 28, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
-      <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: '500' }}>{label}</Text>
-        <Text style={{ fontSize: 15, color: '#1F2937', fontWeight: 600 }}>{value && value.trim() ? value : 'não informado'}</Text>
-      </View>
-    </View>
-  );
-}
-
-// Linha separadora
-function Separator() {
-  return <View style={{ height: 1, backgroundColor: '#F3F4F6', marginVertical: 6 }} />;
-}
 };
 
 const styles = StyleSheet.create({
-  detailPage: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  heroImage: {
-    width: '100%',
-    height: 280,
-    backgroundColor: '#E2E8F0',
-    overflow: 'hidden',
-  },
-  heroImageItem: {
-    width: '100%',
-    height: 280,
-  },
-  detailShareButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    zIndex: 2,
-  },
-  introSection: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 8,
-  },
-  statusPill: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginBottom: 10,
-  },
-  miniTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F1F5F9',
-    borderRadius: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  miniTagEmoji: {
-    fontSize: 12,
-  },
-  miniTagText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#334155',
-  },
-  foundPill: { backgroundColor: '#DCFCE7' },
+  detailPage: { flex: 1 },
+  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  loadingText: { marginTop: 12, fontSize: 14, fontWeight: '600' },
+  errorText: { marginTop: 12, fontSize: 16, fontWeight: 'bold' },
+  navBackBtn: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center', marginLeft: 12, marginRight: 8, borderRadius: 19, backgroundColor: 'rgba(255, 255, 255, 0.14)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.28)' },
+
+  // Hero Section
+  heroContainer: { position: 'relative', width: '100%', height: 320, backgroundColor: '#E2E8F0', overflow: 'hidden' },
+  heroImageItem: { width: '100%', height: 320 },
+  noPhotoHero: { width: '100%', height: 320, justifyContent: 'center', alignItems: 'center' },
+  noPhotoText: { marginTop: 8, fontSize: 14, fontWeight: '600' },
+  photoCountBadge: { position: 'absolute', top: 16, left: 16, backgroundColor: 'rgba(0, 0, 0, 0.65)', borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, flexDirection: 'row', alignItems: 'center', zIndex: 10 },
+  photoCountText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
+  zoomButton: { position: 'absolute', bottom: 16, right: 16, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0, 0, 0, 0.6)', alignItems: 'center', justifyContent: 'center', zIndex: 10 },
+  paginationRow: { position: 'absolute', bottom: 16, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, zIndex: 10 },
+  paginationDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255, 255, 255, 0.45)' },
+  paginationDotActive: { width: 20, height: 6, borderRadius: 3, backgroundColor: '#FFFFFF' },
+  floatingShareBtn: { position: 'absolute', top: 16, right: 16, zIndex: 12 },
+
+  // Card Section Container
+  cardSection: { marginHorizontal: 16, marginTop: 14, borderRadius: 18, padding: 18, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+
+  // Status and Title
+  statusRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  statusPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   lostPill: { backgroundColor: '#FFEDD5' },
-  statusPillText: { fontSize: 12, fontWeight: '800' },
-  detailTitle: {
-    color: '#0F172A',
-    fontSize: 25,
-    lineHeight: 31,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  detailDescription: {
-    color: '#64748B',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  fullWidthLocationCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 4,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  locationGrid: {
-    flexDirection: 'row',
-    gap: 10,
-    paddingHorizontal: 20,
-    marginTop: 12,
-    marginBottom: 10,
-  },
-  locationCard: {
-    flex: 1,
-    minHeight: 82,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 14,
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  infoSection: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    marginHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 0,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  sectionTitle: {
-    color: '#0F172A',
-    fontSize: 17,
-    fontWeight: '800',
-    marginBottom: 12,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  bannerContainer: {
-    position: 'relative',
-    width: '100%',
-    height: 220,
-    backgroundColor: '#E5E7EB',
-    marginBottom: 8,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    overflow: 'hidden',
-  },
-  bannerImage: {
-    width: '100%',
-    height: 220,
-  },
-  badgesRow: {
-    position: 'absolute',
-    top: 16,
-    left: 16,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  badge: {
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    marginRight: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E5E7EB',
-  },
-  badgeLost: {
-    backgroundColor: '#FEE2E2',
-  },
-  badgeFound: {
-    backgroundColor: '#DCFCE7',
-  },
-  badgeText: {
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-  badgeLostText: {
-    color: '#DC2626',
-  },
-  badgeFoundText: {
-    color: '#059669',
-  },
-  badgeCategory: {
-    backgroundColor: '#DBEAFE',
-  },
-  badgeCategoryText: {
-    color: '#2563EB',
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-  noPhotoContainer: {
-    flex: 1,
-    height: 220,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-  },
-  noPhotoText: {
-    marginTop: 8,
-    color: '#9CA3AF',
-    fontSize: 14,
-  },
-  contentContainer: {
-    padding: 18,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 2,
-  },
-  shortDescription: {
-    fontSize: 15,
-    color: '#6B7280',
-    marginBottom: 10,
-  },
-  infoRowGroup: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
-  },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginRight: 8,
-  },
-  infoBoxText: {
-    fontSize: 13,
-    color: '#374151',
-    marginLeft: 4,
-  },
-  sectionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 6,
-  },
-  description: {
-    fontSize: 14,
-    color: '#4B5563',
-    lineHeight: 20,
-  },
-  extraFieldRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  fieldLabel: {
-    fontSize: 13,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  fieldValue: {
-    fontSize: 13,
-    color: '#1F2937',
-    fontWeight: '500',
-  },
-  ownerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 10,
-    backgroundColor: '#E5E7EB',
-  },
-  avatarPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 10,
-    backgroundColor: '#E5E7EB',
-  },
-  ownerName: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-  ownerSince: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  messageButton: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingVertical: 10,
-    alignItems: 'center',
-    marginTop: 8,
-    opacity: 1,
-  },
-  messageButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-  callButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#22C55E',
-    borderRadius: 8,
-    paddingVertical: 10,
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  callButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 15,
-    marginLeft: 8,
-  },
-  ownerActionsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-    justifyContent: 'flex-end',
-  },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EFF6FF',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginRight: 8,
-  },
-  editButtonText: {
-    color: '#2563EB',
-    fontWeight: 'bold',
-    fontSize: 15,
-    marginLeft: 6,
-  },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#DC2626',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  deleteButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 15,
-    marginLeft: 6,
-  },
-  commentsCountBadge: {
-    backgroundColor: '#DBEAFE',
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    marginLeft: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 22,
-  },
-  commentsCountText: {
-    color: '#2563EB',
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-  addCommentButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 'auto',
-    backgroundColor: '#EFF6FF',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  addCommentButtonText: {
-    color: '#2563EB',
-    fontWeight: 'bold',
-    fontSize: 13,
-    marginLeft: 4,
-  },
-  commentCard: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
-  },
-  commentHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  commentAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginRight: 8,
-    backgroundColor: '#E5E7EB',
-  },
-  commentAvatarPlaceholder: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginRight: 8,
-    backgroundColor: '#E5E7EB',
-  },
-  commentAuthor: {
-    fontWeight: 'bold',
-    color: '#1F2937',
-    fontSize: 14,
-  },
-  commentDate: {
-    color: '#6B7280',
-    fontSize: 11,
-  },
-  commentText: {
-    color: '#374151',
-    marginBottom: 4,
-    fontSize: 13,
-  },
-  commentImage: {
-    width: '100%',
-    height: 110,
-    borderRadius: 8,
-    marginBottom: 4,
-  },
-  commentLocation: {
-    color: '#6B7280',
-    fontSize: 12,
-    marginBottom: 2,
-  },
-  commentContactsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 4,
-  },
-  commentContactTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginRight: 6,
-    marginBottom: 4,
-  },
-  commentContactText: {
-    color: '#2563EB',
-    fontSize: 12,
-    marginLeft: 2,
-  },
-  spacer: {
-    height: 40,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#6B7280',
-  },
+  foundPill: { backgroundColor: '#DCFCE7' },
+  adoptionPill: { backgroundColor: '#FCE7F3' },
+  statusPillText: { fontSize: 12.5, fontWeight: '800' },
+  petMainTitle: { fontSize: 24, fontWeight: '800', lineHeight: 30, marginBottom: 14 },
+
+  // Attribute Chips Grid
+  attributeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
+  attrChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, borderWidth: 1, minWidth: '47%', flex: 1 },
+  attrChipEmoji: { fontSize: 18, marginRight: 8 },
+  attrChipLabel: { fontSize: 10.5, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.3 },
+  attrChipValue: { fontSize: 13.5, fontWeight: '700' },
+
+  // Description Block
+  descriptionBlock: { borderRadius: 12, padding: 12, borderWidth: 1, marginTop: 4 },
+  sectionSubtitle: { fontSize: 11.5, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 6 },
+  descriptionText: { fontSize: 14.5, lineHeight: 21 },
+
+  // Reward Banner
+  rewardBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF3C7', borderRadius: 14, padding: 14, marginTop: 12, borderWidth: 1, borderColor: '#FDE68A' },
+  rewardIconBadge: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FDE68A', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  rewardTitle: { fontSize: 13, fontWeight: '800', color: '#92400E', textTransform: 'uppercase', letterSpacing: 0.3 },
+  rewardAmount: { fontSize: 16, fontWeight: '800', color: '#B45309', marginTop: 2 },
+
+  // Adoption & Custody Notice Cards
+  adoptionNoticeCard: { marginHorizontal: 16, marginTop: 12, backgroundColor: '#FDF2F8', borderRadius: 14, padding: 14, borderWidth: 1.5, borderColor: '#F472B6' },
+  custodyNoticeCard: { marginHorizontal: 16, marginTop: 12, borderRadius: 14, padding: 14, borderWidth: 1 },
+  custodySpotted: { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' },
+  custodyHome: { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' },
+  noticeHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
+  adoptionNoticeTitle: { fontSize: 13.5, fontWeight: '800', color: '#9D174D' },
+  adoptionNoticeText: { fontSize: 12.5, lineHeight: 18, color: '#BE185D' },
+  custodyNoticeTitle: { fontSize: 13.5, fontWeight: '800' },
+  custodyNoticeText: { fontSize: 12.5, lineHeight: 18 },
+
+  // Location Card
+  sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  sectionIconWrap: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+  sectionTitle: { fontSize: 16, fontWeight: '800' },
+  locationBody: { paddingLeft: 4 },
+  locationCityText: { fontSize: 16, fontWeight: '700', lineHeight: 22 },
+  locationStreetText: { fontSize: 13.5, lineHeight: 19, marginTop: 3 },
+  dateRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTopWidth: 1 },
+  dateLabel: { fontSize: 13 },
+  dateValue: { fontWeight: '700' },
+
+  // Owner Card
+  ownerHeader: { flexDirection: 'row', alignItems: 'center' },
+  ownerAvatarImage: { width: 46, height: 46, borderRadius: 23, marginRight: 12, backgroundColor: '#EFF6FF' },
+  ownerAvatarFallback: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  ownerAvatarInitial: { color: '#FFFFFF', fontSize: 19, fontWeight: '800' },
+  ownerInfoTextContainer: { flex: 1 },
+  ownerLabel: { fontSize: 11, textTransform: 'uppercase', fontWeight: '700', letterSpacing: 0.3 },
+  ownerName: { fontSize: 15.5, fontWeight: '800', marginTop: 1 },
+  ownerMeta: { fontSize: 12, marginTop: 2 },
+
+  // Third Party Owner
+  thirdPartyOwnerBox: { backgroundColor: '#F0FDF4', borderRadius: 12, padding: 12, marginTop: 12, borderWidth: 1, borderColor: '#BBF7D0' },
+  thirdPartyOwnerTitle: { fontSize: 12, fontWeight: '700', color: '#166534' },
+  thirdPartyOwnerName: { fontSize: 15, fontWeight: '800', color: '#0F172A', marginTop: 1 },
+  thirdPartyPhoneRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 },
+  thirdPartyPhoneText: { fontSize: 14, fontWeight: '700', color: '#15803D' },
+
+  // Action CTAs
+  visitorActionsBlock: { marginTop: 14 },
+  primaryChatCta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 14, paddingVertical: 14, shadowColor: '#2563EB', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 4 },
+  primaryChatCtaText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
+  reportBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 12, paddingVertical: 6 },
+  reportBtnText: { color: '#DC2626', fontSize: 12.5, fontWeight: '700' },
+
+  ownerActionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14, paddingTop: 14, borderTopWidth: 1 },
+  ownerActionBtn: { flex: 1, minWidth: '45%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 10, paddingVertical: 10, borderWidth: 1, gap: 6 },
+  ownerActionText: { fontSize: 13, fontWeight: '800' },
+
+  // Flyer Banner
+  flyerBannerWrap: { marginHorizontal: 16, marginTop: 14 },
+  flyerBannerBtn: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: 14, borderWidth: 1.5, gap: 12 },
+  flyerIconCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  flyerBtnTitle: { fontSize: 14.5, fontWeight: '800' },
+  flyerBtnSub: { fontSize: 11.5, marginTop: 2, lineHeight: 16 },
+
+  // Comments Section
+  commentsHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  commentsTitle: { fontSize: 16, fontWeight: '800' },
+  commentsCountBadge: { borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2, marginLeft: 6 },
+  commentsCountText: { fontSize: 12, fontWeight: '800' },
+  addCommentBtn: { flexDirection: 'row', alignItems: 'center', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7 },
+  addCommentBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+  emptyCommentsBox: { alignItems: 'center', paddingVertical: 20 },
+  emptyCommentsText: { fontSize: 14, fontWeight: '700', marginTop: 8 },
+  emptyCommentsSub: { fontSize: 12, textAlign: 'center', marginTop: 4, paddingHorizontal: 20 },
+
+  // Comment Bubble
+  commentBubble: { borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1 },
+  commentHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  commentAvatarImg: { width: 34, height: 34, borderRadius: 17, marginRight: 8, backgroundColor: '#EFF6FF' },
+  commentAvatarFallback: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginRight: 8 },
+  commentAvatarInitial: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  commentAuthorName: { fontSize: 13.5, fontWeight: '700' },
+  commentTimestamp: { fontSize: 11 },
+  commentActionsWrap: { flexDirection: 'row', alignItems: 'center' },
+  commentContentText: { fontSize: 13.5, lineHeight: 19 },
+  commentLocationChip: { flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, marginTop: 6, alignSelf: 'flex-start' },
+  commentLocationText: { fontSize: 12, fontWeight: '700' },
+  commentAttachedImage: { width: '100%', height: 140, borderRadius: 10, marginTop: 8 },
+  commentContactsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  contactTag: { flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+  contactTagText: { fontSize: 11.5, fontWeight: '700' },
+
+  // Modals
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.45)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalCard: { borderRadius: 20, padding: 20, width: '100%', maxWidth: 440 },
+  modalTitle: { fontSize: 18, fontWeight: '800', marginBottom: 4 },
+  modalSubtitle: { fontSize: 13, marginBottom: 14 },
+  radioOptionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
+  radioOptionText: { fontSize: 14, marginLeft: 8, fontWeight: '600' },
+  modalInput: { borderWidth: 1, borderRadius: 10, padding: 12, fontSize: 14, marginBottom: 10 },
+  modalActionButtons: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 14 },
+  modalCancelBtn: { paddingVertical: 9, paddingHorizontal: 14 },
+  modalCancelText: { fontSize: 14, fontWeight: '700' },
+  modalSubmitBtn: { borderRadius: 10, paddingVertical: 9, paddingHorizontal: 16 },
+  modalSubmitText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+
+  // Full Screen Photo Modal
+  fullScreenModalBg: { flex: 1, backgroundColor: '#000000', justifyContent: 'center', alignItems: 'center' },
+  fullScreenCloseBtn: { position: 'absolute', top: 48, right: 20, zIndex: 20, backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 20, padding: 8 },
 });
 
 export default ItemDetailScreen;

@@ -225,7 +225,7 @@ const PublicStack = () => {
       <Stack.Screen
         name="ItemDetail"
         component={ItemDetailScreen}
-        options={{ title: 'Detalhes do Animal' }}
+        options={{ title: 'Detalhes' }}
       />
       <Stack.Screen
         name="RecoveredPets"
@@ -559,7 +559,7 @@ const MainStack = () => {
       <Stack.Screen
         name="ItemDetail"
         component={ItemDetailScreen}
-        options={{ title: 'Detalhes do Animal' }}
+        options={{ title: 'Detalhes' }}
       />
       <Stack.Screen
         name="ChatScreen"
