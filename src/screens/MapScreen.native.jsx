@@ -297,38 +297,65 @@ const MapScreen = ({ navigation }) => {
 
       {selectedItem && (
         <View style={styles.infoCard}>
-          <TouchableOpacity style={styles.infoClose} onPress={() => setSelectedItem(null)}>
-            <Text style={styles.infoCloseText}>✕</Text>
+          <TouchableOpacity style={styles.infoClose} onPress={() => setSelectedItem(null)} activeOpacity={0.7}>
+            <MaterialIcons name="close" size={18} color="#64748B" />
           </TouchableOpacity>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
             {selectedItem.item_photos?.[0]?.url ? (
               <Image
                 source={{ uri: selectedItem.item_photos[0].url }}
-                style={{ width: 56, height: 56, borderRadius: 10, marginRight: 12, backgroundColor: '#E2E8F0' }}
+                style={{ width: 64, height: 64, borderRadius: 14, marginRight: 12, backgroundColor: '#E2E8F0' }}
                 resizeMode="cover"
               />
             ) : (
-              <View style={{ width: 56, height: 56, borderRadius: 10, marginRight: 12, backgroundColor: statusColor + '20', alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 26 }}>🐾</Text>
+              <View style={{ width: 64, height: 64, borderRadius: 14, marginRight: 12, backgroundColor: statusColor + '18', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 30 }}>🐾</Text>
               </View>
             )}
-            <View style={{ flex: 1 }}>
+
+            <View style={{ flex: 1, paddingRight: 20 }}>
               <Text style={styles.infoTitle} numberOfLines={1}>{selectedItem.title || 'Animal'}</Text>
-              <Text style={[styles.infoStatus, { color: statusColor, marginTop: 2 }]}>
-                {statusLabel}
-              </Text>
+              <View style={{
+                alignSelf: 'flex-start',
+                backgroundColor: statusColor + '18',
+                borderColor: statusColor + '40',
+                borderWidth: 1,
+                borderRadius: 8,
+                paddingHorizontal: 7,
+                paddingVertical: 2.5,
+                marginTop: 4,
+              }}>
+                <Text style={{ color: statusColor, fontWeight: '800', fontSize: 11 }}>
+                  {statusLabel}
+                </Text>
+              </View>
             </View>
           </View>
 
-          <Text style={{ fontSize: 11, fontWeight: '700', color: statusColor }}>
-            {isFound ? 'Local onde foi encontrado:' : (isAdoption ? 'Local para adoção:' : 'Última vez visto em:')}
-          </Text>
-          <Text style={styles.infoLocation} numberOfLines={1}>
-            {[selectedItem.neighborhood, selectedItem.city, selectedItem.state].filter(Boolean).join(' - ') || 'Localização no mapa'}
-          </Text>
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#F8FAFC',
+            padding: 8,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: '#E2E8F0',
+            marginBottom: 10,
+          }}>
+            <MaterialIcons name="place" size={16} color="#2563EB" style={{ marginRight: 6 }} />
+            <Text style={{ fontSize: 12.5, color: '#334155', fontWeight: '600', flex: 1 }} numberOfLines={1}>
+              {[selectedItem.neighborhood, selectedItem.city, selectedItem.state].filter(Boolean).join(' - ') || 'Localização marcada'}
+            </Text>
+          </View>
 
-          <TouchableOpacity style={styles.detailsButton} onPress={() => navigation.navigate('ItemDetail', { itemId: selectedItem.id })}>
-            <Text style={styles.detailsButtonText}>Ver informações completas</Text>
+          <TouchableOpacity
+            style={styles.detailsButton}
+            onPress={() => navigation.navigate('ItemDetail', { itemId: selectedItem.id })}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.detailsButtonText}>Ver Detalhes</Text>
+            <MaterialIcons name="chevron-right" size={18} color="#FFFFFF" style={{ marginLeft: 4 }} />
           </TouchableOpacity>
         </View>
       )}
@@ -460,21 +487,44 @@ const styles = StyleSheet.create({
     right: 16,
     bottom: 22,
     padding: 16,
-    borderRadius: 14,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    elevation: 7,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
-  infoClose: { position: 'absolute', top: 8, right: 10, padding: 6 },
-  infoCloseText: { color: '#6B7280', fontWeight: '700' },
-  infoTitle: { color: '#111827', fontSize: 17, fontWeight: '700', paddingRight: 24 },
+  infoClose: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 6,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    zIndex: 10,
+  },
+  infoTitle: { color: '#0F172A', fontSize: 16.5, fontWeight: '800' },
   infoStatus: { fontWeight: '700', marginTop: 4 },
-  infoLocation: { color: '#4B5563', marginTop: 7 },
-  infoDescription: { color: '#6B7280', marginTop: 6, lineHeight: 18 },
-  detailsButton: { marginTop: 12, paddingVertical: 10, borderRadius: 8, backgroundColor: '#2563EB', alignItems: 'center' },
-  detailsButtonText: { color: '#FFFFFF', fontWeight: '700' },
+  infoLocation: { color: '#475569', marginTop: 7 },
+  infoDescription: { color: '#64748B', marginTop: 6, lineHeight: 18 },
+  detailsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
+    paddingVertical: 11,
+    borderRadius: 12,
+    backgroundColor: '#2563EB',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  detailsButtonText: { color: '#FFFFFF', fontWeight: '800', fontSize: 13.5 },
   callout: { width: 190, padding: 4 },
   calloutTitle: { color: '#111827', fontWeight: '700', fontSize: 15 },
   calloutStatus: { color: '#2563EB', marginTop: 3 },

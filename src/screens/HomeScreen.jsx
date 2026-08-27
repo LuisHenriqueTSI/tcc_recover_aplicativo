@@ -136,45 +136,51 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
   const { colors, isDark } = useTheme();
   const [carouselIndex, setCarouselIndex] = React.useState(0);
   const [cardWidth, setCardWidth] = React.useState(0);
-  // Cores para status e categoria
-  const statusColor = item.status === 'lost' ? '#F87171' : '#34D399';
-  const statusLabel = item.status === 'lost' ? 'Perdido' : 'Encontrado';
-  const animalLabel = String(item.species || 'Animal').trim() || 'Animal';
-  const categoryColors = {
-    animal: { bg: '#DBEAFE', text: '#2563EB', label: animalLabel },
-    other: { bg: '#F3F4F6', text: '#6B7280', label: animalLabel },
-  };
-  const cat = categoryColors[item.category] || categoryColors.other;
+
+  const isAdoption = Boolean(item.extra_fields?.is_direct_adoption || itemsService.isPetAvailableForAdoption(item));
+  const isFound = !isAdoption && item.status === 'found';
+  const isLost = !isAdoption && item.status === 'lost';
+
+  const statusBg = isAdoption ? (isDark ? 'rgba(190, 24, 93, 0.2)' : '#FDF2F8') : isFound ? (isDark ? 'rgba(4, 120, 87, 0.2)' : '#ECFDF5') : (isDark ? 'rgba(220, 38, 38, 0.2)' : '#FEF2F2');
+  const statusBorder = isAdoption ? '#F472B6' : isFound ? '#A7F3D0' : '#FECACA';
+  const statusTextColor = isAdoption ? '#DB2777' : isFound ? '#059669' : '#DC2626';
+  const statusIcon = isAdoption ? 'favorite' : isFound ? 'check-circle' : 'error-outline';
+  const statusLabel = isAdoption ? 'Para Adoção' : isFound ? 'Encontrado' : 'Perdido';
+
+  const animalSpecies = String(item.species || item.extra_fields?.species || '').trim();
+  const animalBreed = String(item.breed || item.extra_fields?.breed || '').trim();
+  const animalGender = String(item.gender || item.extra_fields?.gender || '').trim();
+  const animalColor = String(item.color || item.extra_fields?.color || '').trim();
+
   const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
-  const IMAGE_HEIGHT = 195;
-  // Defensive string conversion for all text props
-  const safeTitle = item.title != null ? String(item.title) : '';
+  const IMAGE_HEIGHT = 215;
+
+  const safeTitle = item.title != null ? String(item.title) : (animalSpecies || 'Animal');
   const safeDescription = item.description != null ? String(item.description) : '';
-  const safeOwnerName = item.owner_name != null ? String(item.owner_name) : '';
-  const safeCity = item.city != null ? String(item.city) : '';
-  const safeState = item.state != null ? String(item.state) : '';
-  const safeNeighborhood = item.neighborhood != null ? String(item.neighborhood) : '';
+  const safeOwnerName = item.owner_name != null ? String(item.owner_name) : (item.profiles?.name || 'Tutor');
   const activeReward = Array.isArray(item.rewards)
     ? item.rewards.find(reward => reward?.status === 'active')
     : null;
+
   return (
     <Card style={{
       padding: 0,
-      marginHorizontal: 12,
-      marginVertical: 6,
-      borderRadius: 16,
+      marginHorizontal: 14,
+      marginVertical: 8,
+      borderRadius: 20,
       overflow: 'hidden',
-      backgroundColor: isDark ? '#161F30' : '#F8FAFC',
+      backgroundColor: isDark ? '#161F30' : '#FFFFFF',
       borderWidth: 1,
       borderColor: isDark ? '#243248' : '#E2E8F0',
       shadowColor: '#000',
-      shadowOpacity: isDark ? 0.25 : 0.04,
-      shadowRadius: 6,
-      elevation: 2,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: isDark ? 0.35 : 0.08,
+      shadowRadius: 10,
+      elevation: 4,
     }}>
-      {/* Imagem / Carrossel de Fotos */}
+      {/* 1. CARROSSEL DE FOTOS / IMAGEM HERO */}
       <View
-        style={{ position: 'relative', width: '100%', height: IMAGE_HEIGHT }}
+        style={{ position: 'relative', width: '100%', height: IMAGE_HEIGHT, backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }}
         onLayout={(e) => setCardWidth(e.nativeEvent.layout.width)}
       >
         {photos.length > 0 ? (
@@ -193,7 +199,7 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
                 <View key={photo.id || index} style={{ width: cardWidth, height: IMAGE_HEIGHT }}>
                   <OptimizedImage
                     uri={photo.url}
-                    style={{ width: cardWidth, height: IMAGE_HEIGHT, backgroundColor: isDark ? '#0F172A' : '#E2E8F0' }}
+                    style={{ width: cardWidth, height: IMAGE_HEIGHT }}
                     resizeMode="cover"
                     resizeMethod="resize"
                   />
@@ -203,71 +209,94 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
           ) : (
             <OptimizedImage
               uri={photos[0].url}
-              style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: isDark ? '#0F172A' : '#E2E8F0' }}
+              style={{ width: '100%', height: IMAGE_HEIGHT }}
               resizeMode="cover"
               resizeMethod="resize"
             />
           )
         ) : (
-          <View style={{ width: '100%', height: IMAGE_HEIGHT, backgroundColor: isDark ? '#0F172A' : '#F1F5F9', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: colors.textMuted, fontSize: 13 }}>Sem foto</Text>
+          <View style={{ width: '100%', height: IMAGE_HEIGHT, justifyContent: 'center', alignItems: 'center' }}>
+            <MaterialIcons name="pets" size={44} color={colors.textMuted} />
+            <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 4 }}>Sem foto</Text>
           </View>
         )}
 
-        {/* Badges */}
-        <View style={{ position: 'absolute', top: 10, left: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 5, zIndex: 10, maxWidth: cardWidth > 0 ? cardWidth - 65 : 240 }}>
-          {Boolean(item.extra_fields?.is_direct_adoption || itemsService.isPetAvailableForAdoption(item)) ? (
-            <View style={{ backgroundColor: '#FCE7F3', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
-              <Text style={{ color: '#BE185D', fontWeight: 'bold', fontSize: 11.5 }}>🐾 Para Adoção</Text>
-            </View>
-          ) : (
-            <View style={{ backgroundColor: statusColor, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 11.5 }}>{statusLabel}</Text>
-            </View>
-          )}
+        {/* Badges Flutuantes Superiores */}
+        <View style={{ position: 'absolute', top: 10, left: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 6, zIndex: 10, maxWidth: cardWidth > 0 ? cardWidth - 65 : 240 }}>
+          {/* Status Badge Principal */}
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: statusBg,
+            borderColor: statusBorder,
+            borderWidth: 1,
+            borderRadius: 12,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 3,
+            elevation: 2,
+          }}>
+            <MaterialIcons name={statusIcon} size={13} color={statusTextColor} style={{ marginRight: 4 }} />
+            <Text style={{ color: statusTextColor, fontWeight: '800', fontSize: 11.5 }}>
+              {statusLabel}
+            </Text>
+          </View>
 
-          {!item.extra_fields?.is_direct_adoption && !itemsService.isPetAvailableForAdoption(item) && item.status === 'found' && (
-            item.extra_fields?.found_custody === 'spotted' ? (
-              <View style={{ backgroundColor: '#FEF3C7', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
-                <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 11 }}>👀 Visto na Rua</Text>
-              </View>
-            ) : (
-              <View style={{ backgroundColor: '#DCFCE7', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
-                <Text style={{ color: '#15803D', fontWeight: 'bold', fontSize: 11 }}>🏠 Em Lar Temp.</Text>
-              </View>
-            )
-          )}
-
-          {!item.extra_fields?.is_direct_adoption && !itemsService.isPetAvailableForAdoption(item) && item.status === 'found' && item.extra_fields?.adoption_intent && itemsService.getAdoptionWaitingDays(item) > 0 ? (
-            <View style={{ backgroundColor: '#FEF3C7', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
-              <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 11 }}>
-                ⏳ Busca ({itemsService.getAdoptionWaitingDays(item)}d)
+          {/* Espécie */}
+          {animalSpecies ? (
+            <View style={{
+              backgroundColor: 'rgba(15, 23, 42, 0.72)',
+              borderRadius: 12,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.22)',
+            }}>
+              <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 11 }}>
+                🐾 {animalSpecies}
               </Text>
             </View>
           ) : null}
 
-          <View style={{ backgroundColor: cat.bg, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
-            <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 11.5 }}>{cat.label}</Text>
-          </View>
+          {/* Custódia (se encontrado e não for adoção) */}
+          {!isAdoption && item.status === 'found' && (
+            item.extra_fields?.found_custody === 'spotted' ? (
+              <View style={{ backgroundColor: '#FEF3C7', borderColor: '#FDE68A', borderWidth: 1, borderRadius: 12, paddingHorizontal: 8, paddingVertical: 4 }}>
+                <Text style={{ color: '#B45309', fontWeight: '700', fontSize: 11 }}>👀 Visto na Rua</Text>
+              </View>
+            ) : (
+              <View style={{ backgroundColor: '#DCFCE7', borderColor: '#BBF7D0', borderWidth: 1, borderRadius: 12, paddingHorizontal: 8, paddingVertical: 4 }}>
+                <Text style={{ color: '#15803D', fontWeight: '700', fontSize: 11 }}>🏠 Em Lar Temp.</Text>
+              </View>
+            )
+          )}
         </View>
 
-        {/* Contador de fotos (se houver mais de 1 foto) */}
+        {/* Botão de Compartilhar Glassmorphism */}
+        <View style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>
+          <ShareButton item={item} imageUrl={photos[0]?.url} />
+        </View>
+
+        {/* Contador de fotos */}
         {photos.length > 1 && (
-          <View style={{ position: 'absolute', top: 10, right: 48, backgroundColor: 'rgba(0, 0, 0, 0.65)', borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2, zIndex: 10 }}>
+          <View style={{ position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(0, 0, 0, 0.65)', borderRadius: 10, paddingHorizontal: 7, paddingVertical: 3, zIndex: 10 }}>
             <Text style={{ color: '#FFFFFF', fontSize: 10.5, fontWeight: '700' }}>
-              {carouselIndex + 1}/{photos.length}
+              📷 {carouselIndex + 1}/{photos.length}
             </Text>
           </View>
         )}
 
-        {/* Pontos de Paginação na parte inferior da foto */}
+        {/* Indicadores de Paginação */}
         {photos.length > 1 && (
-          <View style={{ position: 'absolute', bottom: 8, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4, zIndex: 10 }}>
+          <View style={{ position: 'absolute', bottom: 10, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4, zIndex: 10 }}>
             {photos.map((_, dotIndex) => (
               <View
                 key={dotIndex}
                 style={{
-                  width: carouselIndex === dotIndex ? 14 : 5,
+                  width: carouselIndex === dotIndex ? 16 : 5,
                   height: 5,
                   borderRadius: 2.5,
                   backgroundColor: carouselIndex === dotIndex ? '#FFFFFF' : 'rgba(255, 255, 255, 0.5)',
@@ -276,107 +305,105 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
             ))}
           </View>
         )}
-
-        {item.owner_id === user?.id && item.renewalInfo?.needsRenewal && Number.isFinite(item.renewalInfo?.daysRemaining) && (
-          <View style={{ position: 'absolute', bottom: 8, left: 8, right: 8, backgroundColor: 'rgba(245, 158, 11, 0.95)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6, zIndex: 10 }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>
-              Renove esta publicação em {item.renewalInfo.daysRemaining} dia{item.renewalInfo.daysRemaining === 1 ? '' : 's'}
-            </Text>
-          </View>
-        )}
-        {/* Botão de Compartilhar no canto superior direito */}
-        <View style={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}>
-          <ShareButton item={item} imageUrl={photos[0]?.url} />
-        </View>
       </View>
-      {/* Conteúdo */}
-      <View style={{ padding: 12, paddingBottom: 10 }}>
-        {/* Título */}
-        <Text style={{ fontSize: 16, fontWeight: '700', color: isDark ? '#F8FAFC' : '#0F172A', marginBottom: safeDescription?.trim() ? 4 : 6 }}>
-          {safeTitle}
-        </Text>
 
-        {/* Descrição (renderiza apenas se existir texto) */}
+      {/* 2. CONTEÚDO PRINCIPAL */}
+      <View style={{ padding: 14 }}>
+        {/* Título & Distância */}
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
+          <Text style={{ flex: 1, fontSize: 17, fontWeight: '800', color: isDark ? '#F8FAFC' : '#0F172A', letterSpacing: -0.2 }} numberOfLines={1}>
+            {safeTitle}
+          </Text>
+
+          {item._distanceKm != null ? (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: isDark ? 'rgba(59, 130, 246, 0.18)' : '#EFF6FF',
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: isDark ? 'rgba(59, 130, 246, 0.35)' : '#DBEAFE',
+              marginLeft: 8,
+            }}>
+              <MaterialIcons name="near-me" size={11} color={colors.primary} style={{ marginRight: 3 }} />
+              <Text style={{ fontSize: 11, fontWeight: '800', color: isDark ? '#93C5FD' : '#1D4ED8' }}>
+                {item._distanceKm < 1 ? '< 1 km' : `${item._distanceKm < 10 ? item._distanceKm.toFixed(1) : Math.round(item._distanceKm)} km`}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+
+        {/* Chips de Atributos Rápidos (Raça, Sexo, Cor) */}
+        {(animalBreed || (animalGender && animalGender !== 'Não informado') || animalColor) ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+            {animalBreed && animalBreed !== 'Sem raça definida' ? (
+              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2.5 }}>
+                <Text style={{ fontSize: 11, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>🏷️ {animalBreed}</Text>
+              </View>
+            ) : null}
+
+            {animalGender && animalGender !== 'Não informado' ? (
+              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2.5 }}>
+                <Text style={{ fontSize: 11, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>⚧ {animalGender}</Text>
+              </View>
+            ) : null}
+
+            {animalColor && animalColor !== 'Cor não informada' ? (
+              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2.5 }}>
+                <Text style={{ fontSize: 11, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>🎨 {animalColor}</Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+
+        {/* Descrição Curta (se houver) */}
         {safeDescription?.trim() ? (
-          <Text style={{ fontSize: 13, color: isDark ? '#94A3B8' : '#475569', lineHeight: 18, marginBottom: 8 }} numberOfLines={2}>
+          <Text style={{ fontSize: 13, color: isDark ? '#94A3B8' : '#64748B', lineHeight: 18, marginBottom: 10 }} numberOfLines={2}>
             {safeDescription}
           </Text>
         ) : null}
 
-        {/* Recompensa (se houver) */}
+        {/* Banner de Recompensa (se ativa) */}
         {activeReward && (
-          <View style={[styles.rewardBadge, { marginBottom: 8, paddingVertical: 4, paddingHorizontal: 8 }]}>
+          <View style={[styles.rewardBadge, { marginBottom: 10, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 8 }]}>
             <Text style={styles.rewardBadgeText}>
-              {activeReward.amount ? `Recompensa: R$ ${parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Recompensa oferecida'}
+              🏆 {activeReward.amount ? `Recompensa: R$ ${parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Recompensa oferecida'}
               {activeReward.description ? ` • ${activeReward.description}` : ''}
             </Text>
           </View>
         )}
 
-        {/* Bloco de Localização e Data Moderno */}
+        {/* Card de Localização & Data */}
         <View style={{
-          backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
-          borderRadius: 10,
-          paddingVertical: 8,
-          paddingHorizontal: 10,
+          backgroundColor: isDark ? '#0F172A' : '#F8FAFC',
+          borderRadius: 12,
+          padding: 10,
           borderWidth: 1,
           borderColor: isDark ? '#243248' : '#E2E8F0',
-          marginBottom: 8,
+          marginBottom: 10,
         }}>
-          {/* Cabeçalho do bloco: Rótulo de Status à esquerda e Data à direita */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <MaterialIcons
-                name="place"
-                size={14}
-                color={item.status === 'lost' ? '#D97706' : '#16A34A'}
-              />
-              <Text style={{
-                fontSize: 10.5,
-                fontWeight: '700',
-                color: item.status === 'lost' ? '#D97706' : '#16A34A',
-                textTransform: 'uppercase',
-                letterSpacing: 0.4,
-              }}>
-                {item.status === 'lost' ? 'Última vez visto' : 'Local onde foi encontrado'}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1, marginRight: 6 }}>
+              <MaterialIcons name="place" size={15} color={colors.primary} />
+              <Text style={{ fontSize: 13.5, fontWeight: '800', color: isDark ? '#F8FAFC' : '#1E293B' }} numberOfLines={1}>
+                {formatCityState(item)}
               </Text>
             </View>
+
             {item.date ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                <MaterialIcons name="event" size={12} color={colors.textMuted} />
-                <Text style={{ fontSize: 11.5, color: colors.textSecondary, fontWeight: '500' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                <MaterialIcons name="event" size={13} color={colors.textMuted} />
+                <Text style={{ fontSize: 11.5, color: colors.textSecondary, fontWeight: '600' }}>
                   {formatItemDate(item.date)}
                 </Text>
               </View>
             ) : null}
           </View>
 
-          {/* Endereço: Cidade - Estado, Complemento e Distância */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 1 }}>
-            <Text style={{ fontSize: 14, fontWeight: '700', color: isDark ? '#F8FAFC' : '#1E293B', lineHeight: 18, flex: 1 }} numberOfLines={1}>
-              {formatCityState(item)}
-            </Text>
-            {item._distanceKm != null ? (
-              <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: isDark ? 'rgba(59, 130, 246, 0.18)' : '#EFF6FF',
-                paddingHorizontal: 7,
-                paddingVertical: 2.5,
-                borderRadius: 6,
-                borderWidth: 1,
-                borderColor: isDark ? 'rgba(59, 130, 246, 0.35)' : '#DBEAFE',
-                marginLeft: 6,
-              }}>
-                <MaterialIcons name="near-me" size={11} color={colors.primary} style={{ marginRight: 3 }} />
-                <Text style={{ fontSize: 11, fontWeight: '800', color: isDark ? '#93C5FD' : '#1D4ED8' }}>
-                  {item._distanceKm < 1 ? '< 1 km' : `a ${item._distanceKm < 10 ? item._distanceKm.toFixed(1) : Math.round(item._distanceKm)} km`}
-                </Text>
-              </View>
-            ) : null}
-          </View>
           {formatStreetNumberNeighborhood(item) ? (
-            <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2, lineHeight: 16 }}>
+            <Text style={{ fontSize: 12, color: colors.textSecondary, marginLeft: 19 }} numberOfLines={1}>
               {formatStreetNumberNeighborhood(item)}
             </Text>
           ) : null}
@@ -388,10 +415,10 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: isDark ? 'rgba(22, 163, 74, 0.15)' : '#F0FDF4',
-            borderRadius: 7,
+            borderRadius: 8,
             paddingHorizontal: 8,
-            paddingVertical: 4,
-            marginBottom: 8,
+            paddingVertical: 5,
+            marginBottom: 10,
             borderWidth: 1,
             borderColor: isDark ? 'rgba(22, 163, 74, 0.3)' : '#DCFCE7',
           }}>
@@ -404,28 +431,49 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
           </View>
         ) : null}
 
-        {/* Rodapé: Dono e Ação */}
+        {/* Rodapé: Autor e Botão CTA */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1, marginRight: 8 }}>
-            <Text style={{ fontSize: 12, color: colors.textMuted }}>Por </Text>
-            <Text style={{ fontSize: 12, color: isDark ? '#F8FAFC' : '#1E293B', fontWeight: '600' }} numberOfLines={1}>
-              {safeOwnerName || 'Usuário'}
-            </Text>
+            <View style={{
+              width: 26,
+              height: 26,
+              borderRadius: 13,
+              backgroundColor: colors.primaryLight,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 6,
+            }}>
+              <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 12 }}>
+                {safeOwnerName.trim()[0]?.toUpperCase() || 'U'}
+              </Text>
+            </View>
+            <View>
+              <Text style={{ fontSize: 10.5, color: colors.textMuted }}>Publicado por</Text>
+              <Text style={{ fontSize: 12.5, color: isDark ? '#F8FAFC' : '#1E293B', fontWeight: '700' }} numberOfLines={1}>
+                {safeOwnerName}
+              </Text>
+            </View>
           </View>
+
           <TouchableOpacity
             onPress={onPress}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF',
-              borderRadius: 16,
-              paddingHorizontal: 12,
-              paddingVertical: 5,
+              backgroundColor: colors.primary,
+              borderRadius: 18,
+              paddingHorizontal: 14,
+              paddingVertical: 7,
+              shadowColor: colors.primary,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 3,
             }}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
-            <MaterialIcons name="visibility" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>Ver detalhes</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '800', marginRight: 2 }}>Ver Detalhes</Text>
+            <MaterialIcons name="chevron-right" size={16} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       </View>
