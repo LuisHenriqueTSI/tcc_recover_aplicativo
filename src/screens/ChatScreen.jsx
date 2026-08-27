@@ -56,10 +56,13 @@ const ChatScreen = (props) => {
   useEffect(() => {
     const onKeyboardShow = (e) => {
       setIsKeyboardOpen(true);
-      const keyboardHeight = e?.endCoordinates?.height || 0;
+      const rawHeight = e?.endCoordinates?.height || 0;
+      // No Android com Edge-to-Edge ou barra de navegação de 3 botões, compensamos a barra inferior
+      const extraOffset = Platform.OS === 'android' ? Math.max(insets.bottom, 32) : 0;
+      const targetHeight = rawHeight + extraOffset;
 
       Animated.timing(keyboardHeightAnim, {
-        toValue: keyboardHeight,
+        toValue: targetHeight,
         duration: Platform.OS === 'ios' ? (e.duration || 250) : 100,
         useNativeDriver: false,
       }).start();
@@ -89,7 +92,7 @@ const ChatScreen = (props) => {
       showSub.remove();
       hideSub.remove();
     };
-  }, []);
+  }, [insets.bottom]);
 
   // Busca dados faltantes do pet ou do usuário (ex: quando aberto via notificação ou link)
   useEffect(() => {
