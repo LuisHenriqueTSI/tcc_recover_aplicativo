@@ -20,6 +20,7 @@ import {
 } from '../services/supabaseAuth';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { calculatePasswordStrength } from './RegisterScreen';
 
 export default function EsqueciSenhaScreen({ navigation, route }) {
   const { user } = useAuth();
@@ -136,8 +137,12 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
 
   // PASSO 3: Salvar a nova senha
   const handleSaveNewPassword = async () => {
-    if (!newPassword || newPassword.length < 6) {
-      Alert.alert('Senha Curta', 'A nova senha deve conter pelo menos 6 caracteres.');
+    if (!newPassword || newPassword.length < 8) {
+      Alert.alert('Senha Fraca', 'A nova senha deve conter pelo menos 8 caracteres.');
+      return;
+    }
+    if (!/[0-9]/.test(newPassword) || !/[A-Za-z]/.test(newPassword)) {
+      Alert.alert('Senha Fraca', 'A nova senha deve conter pelo menos uma letra e um número.');
       return;
     }
 
@@ -429,7 +434,7 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                   <MaterialIcons name="lock-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
                   <TextInput
                     style={[styles.input, { color: colors.text }]}
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder="Mínimo 8 caracteres"
                     placeholderTextColor={colors.textMuted}
                     secureTextEntry={!showPassword}
                     value={newPassword}
@@ -449,6 +454,46 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                   </TouchableOpacity>
                 </View>
               </View>
+
+              {/* Indicador de Força da Senha */}
+              {newPassword.length > 0 && (() => {
+                const pwdStrength = calculatePasswordStrength(newPassword);
+                return (
+                  <View style={{ marginBottom: 12, padding: 10, borderRadius: 12, borderWidth: 1, borderColor: colors.border, backgroundColor: isDark ? '#0F172A' : '#F8FAFC' }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <Text style={{ fontSize: 11.5, color: colors.textSecondary }}>Força da senha:</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: pwdStrength.color }}>{pwdStrength.label}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', gap: 4, marginBottom: 8 }}>
+                      {[1, 2, 3, 4].map((seg) => (
+                        <View
+                          key={seg}
+                          style={{
+                            flex: 1,
+                            height: 4,
+                            borderRadius: 2,
+                            backgroundColor: seg <= pwdStrength.level ? pwdStrength.color : (isDark ? '#334155' : '#E2E8F0'),
+                          }}
+                        />
+                      ))}
+                    </View>
+                    <View style={{ gap: 3 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <MaterialIcons name={pwdStrength.rules.hasMinLength ? 'check-circle' : 'radio-button-unchecked'} size={13} color={pwdStrength.rules.hasMinLength ? '#10B981' : colors.textMuted} />
+                        <Text style={{ fontSize: 11, color: pwdStrength.rules.hasMinLength ? '#059669' : colors.textMuted }}>Mínimo 8 caracteres</Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <MaterialIcons name={pwdStrength.rules.hasNumber ? 'check-circle' : 'radio-button-unchecked'} size={13} color={pwdStrength.rules.hasNumber ? '#10B981' : colors.textMuted} />
+                        <Text style={{ fontSize: 11, color: pwdStrength.rules.hasNumber ? '#059669' : colors.textMuted }}>Pelo menos um número</Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <MaterialIcons name={pwdStrength.rules.hasLetters ? 'check-circle' : 'radio-button-unchecked'} size={13} color={pwdStrength.rules.hasLetters ? '#10B981' : colors.textMuted} />
+                        <Text style={{ fontSize: 11, color: pwdStrength.rules.hasLetters ? '#059669' : colors.textMuted }}>Letras maiúsculas e minúsculas</Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })()}
 
               {/* Campo Confirmar Nova Senha */}
               <View style={styles.inputGroup}>
@@ -477,62 +522,36 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                 </View>
               </View>
 
-              {/* Checklist de Validações em Tempo Real */}
-              <View style={[styles.validationBox, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border }]}>
-                <View style={styles.validationRow}>
+              {/* Feedback de Confirmação */}
+              {confirmPassword.length > 0 && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: -4, marginBottom: 12, paddingHorizontal: 2 }}>
                   <MaterialIcons
-                    name={newPassword.length >= 6 ? 'check-circle' : 'radio-button-unchecked'}
-                    size={16}
-                    color={newPassword.length >= 6 ? '#16A34A' : colors.textMuted}
-                    style={{ marginRight: 6 }}
+                    name={newPassword === confirmPassword ? 'check-circle' : 'cancel'}
+                    size={14}
+                    color={newPassword === confirmPassword ? '#10B981' : '#EF4444'}
+                    style={{ marginRight: 5 }}
                   />
                   <Text
-                    style={[
-                      styles.validationText,
-                      { color: colors.textSecondary },
-                      newPassword.length >= 6 && styles.validationTextSuccess,
-                    ]}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: '600',
+                      color: newPassword === confirmPassword ? '#059669' : '#EF4444',
+                    }}
                   >
-                    Pelo menos 6 caracteres
+                    {newPassword === confirmPassword ? 'As senhas conferem!' : 'As senhas não conferem.'}
                   </Text>
                 </View>
-
-                <View style={styles.validationRow}>
-                  <MaterialIcons
-                    name={
-                      newPassword && newPassword === confirmPassword
-                        ? 'check-circle'
-                        : 'radio-button-unchecked'
-                    }
-                    size={16}
-                    color={
-                      newPassword && newPassword === confirmPassword ? '#16A34A' : colors.textMuted
-                    }
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text
-                    style={[
-                      styles.validationText,
-                      { color: colors.textSecondary },
-                      newPassword &&
-                        newPassword === confirmPassword &&
-                        styles.validationTextSuccess,
-                    ]}
-                  >
-                    As duas senhas são iguais
-                  </Text>
-                </View>
-              </View>
+              )}
 
               <TouchableOpacity
                 style={[
                   styles.primaryButton,
                   { backgroundColor: colors.primary },
-                  (loading || newPassword.length < 6 || newPassword !== confirmPassword) &&
+                  (loading || newPassword.length < 8 || !/[0-9]/.test(newPassword) || newPassword !== confirmPassword) &&
                     styles.buttonDisabled,
                 ]}
                 onPress={handleSaveNewPassword}
-                disabled={loading || newPassword.length < 6 || newPassword !== confirmPassword}
+                disabled={loading || newPassword.length < 8 || !/[0-9]/.test(newPassword) || newPassword !== confirmPassword}
                 activeOpacity={0.85}
               >
                 {loading ? (

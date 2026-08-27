@@ -77,6 +77,59 @@ const RegisterScreen = ({ navigation }) => {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
+export const calculatePasswordStrength = (pwd = '') => {
+  const hasMinLength = pwd.length >= 8;
+  const hasUpperCase = /[A-Z]/.test(pwd);
+  const hasLowerCase = /[a-z]/.test(pwd);
+  const hasNumber = /[0-9]/.test(pwd);
+  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(pwd);
+
+  let score = 0;
+  if (pwd.length >= 6) score += 1;
+  if (hasMinLength) score += 1;
+  if (hasUpperCase && hasLowerCase) score += 1;
+  if (hasNumber) score += 1;
+  if (hasSpecial) score += 1;
+
+  let label = 'Muito fraca';
+  let color = '#EF4444';
+  let level = 1;
+
+  if (score <= 1) {
+    label = 'Muito fraca';
+    color = '#EF4444';
+    level = 1;
+  } else if (score === 2) {
+    label = 'Fraca';
+    color = '#F97316';
+    level = 2;
+  } else if (score === 3) {
+    label = 'Boa';
+    color = '#F59E0B';
+    level = 3;
+  } else if (score >= 4) {
+    label = 'Forte e segura 🛡️';
+    color = '#10B981';
+    level = 4;
+  }
+
+  const isValid = hasMinLength && (hasUpperCase || hasLowerCase) && hasNumber;
+
+  return {
+    score,
+    level,
+    label,
+    color,
+    isValid,
+    rules: {
+      hasMinLength,
+      hasLetters: hasUpperCase && hasLowerCase,
+      hasNumber,
+      hasSpecial,
+    },
+  };
+};
+
   const validateForm = () => {
     const newErrors = {};
     if (!name.trim()) {
@@ -89,8 +142,12 @@ const RegisterScreen = ({ navigation }) => {
     }
     if (!password) {
       newErrors.password = 'Senha é obrigatória';
-    } else if (password.length < 6) {
-      newErrors.password = 'Senha deve ter no mínimo 6 caracteres';
+    } else if (password.length < 8) {
+      newErrors.password = 'A senha deve ter no mínimo 8 caracteres';
+    } else if (!/[0-9]/.test(password)) {
+      newErrors.password = 'A senha deve conter pelo menos um número';
+    } else if (!/[A-Za-z]/.test(password)) {
+      newErrors.password = 'A senha deve conter pelo menos uma letra';
     }
     if (!whatsapp.trim()) {
       newErrors.whatsapp = 'WhatsApp é obrigatório';
@@ -291,7 +348,7 @@ const RegisterScreen = ({ navigation }) => {
 
           <Input
             label="Senha"
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Crie uma senha forte (mín. 8 caracteres)"
             value={password}
             onChangeText={setPassword}
             secureTextEntry={true}
@@ -301,6 +358,82 @@ const RegisterScreen = ({ navigation }) => {
             inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
             returnKeyType="next"
           />
+
+          {/* INDICADOR DE FORÇA DA SENHA EM TEMPO REAL */}
+          {password.length > 0 && !pendingVerification && (() => {
+            const pwdStrength = calculatePasswordStrength(password);
+            return (
+              <View style={[styles.passwordStrengthBox, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#F8FAFC', borderColor: colors.cardBorder }]}>
+                {/* Linha com classificação de força */}
+                <View style={styles.strengthHeaderRow}>
+                  <Text style={[styles.strengthLabelTitle, { color: colors.textSecondary }]}>Força da senha:</Text>
+                  <Text style={[styles.strengthBadgeText, { color: pwdStrength.color }]}>{pwdStrength.label}</Text>
+                </View>
+
+                {/* Barra de 4 segmentos */}
+                <View style={styles.strengthBarRow}>
+                  {[1, 2, 3, 4].map((seg) => (
+                    <View
+                      key={seg}
+                      style={[
+                        styles.strengthBarSegment,
+                        {
+                          backgroundColor: seg <= pwdStrength.level ? pwdStrength.color : (isDark ? '#334155' : '#E2E8F0'),
+                        },
+                      ]}
+                    />
+                  ))}
+                </View>
+
+                {/* Critérios em Tempo Real */}
+                <View style={styles.criteriaContainer}>
+                  <View style={styles.criteriaItem}>
+                    <MaterialIcons
+                      name={pwdStrength.rules.hasMinLength ? 'check-circle' : 'radio-button-unchecked'}
+                      size={14}
+                      color={pwdStrength.rules.hasMinLength ? '#10B981' : colors.textMuted}
+                    />
+                    <Text style={[styles.criteriaText, { color: pwdStrength.rules.hasMinLength ? (isDark ? '#34D399' : '#059669') : colors.textMuted }]}>
+                      Pelo menos 8 caracteres
+                    </Text>
+                  </View>
+
+                  <View style={styles.criteriaItem}>
+                    <MaterialIcons
+                      name={pwdStrength.rules.hasLetters ? 'check-circle' : 'radio-button-unchecked'}
+                      size={14}
+                      color={pwdStrength.rules.hasLetters ? '#10B981' : colors.textMuted}
+                    />
+                    <Text style={[styles.criteriaText, { color: pwdStrength.rules.hasLetters ? (isDark ? '#34D399' : '#059669') : colors.textMuted }]}>
+                      Letras maiúsculas e minúsculas
+                    </Text>
+                  </View>
+
+                  <View style={styles.criteriaItem}>
+                    <MaterialIcons
+                      name={pwdStrength.rules.hasNumber ? 'check-circle' : 'radio-button-unchecked'}
+                      size={14}
+                      color={pwdStrength.rules.hasNumber ? '#10B981' : colors.textMuted}
+                    />
+                    <Text style={[styles.criteriaText, { color: pwdStrength.rules.hasNumber ? (isDark ? '#34D399' : '#059669') : colors.textMuted }]}>
+                      Pelo menos um número (0-9)
+                    </Text>
+                  </View>
+
+                  <View style={styles.criteriaItem}>
+                    <MaterialIcons
+                      name={pwdStrength.rules.hasSpecial ? 'check-circle' : 'radio-button-unchecked'}
+                      size={14}
+                      color={pwdStrength.rules.hasSpecial ? '#10B981' : colors.textMuted}
+                    />
+                    <Text style={[styles.criteriaText, { color: pwdStrength.rules.hasSpecial ? (isDark ? '#34D399' : '#059669') : colors.textMuted }]}>
+                      Caractere especial (!@#$...) (opcional)
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })()}
 
           <Input
             label="Confirmar Senha"
@@ -314,6 +447,27 @@ const RegisterScreen = ({ navigation }) => {
             inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
             returnKeyType="done"
           />
+
+          {/* Feedback de Confirmação de Senha em Tempo Real */}
+          {confirmPassword.length > 0 && !pendingVerification && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: -6, marginBottom: 12, paddingHorizontal: 2 }}>
+              <MaterialIcons
+                name={password === confirmPassword ? 'check-circle' : 'cancel'}
+                size={14}
+                color={password === confirmPassword ? '#10B981' : '#EF4444'}
+                style={{ marginRight: 5 }}
+              />
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '600',
+                  color: password === confirmPassword ? (isDark ? '#34D399' : '#059669') : '#EF4444',
+                }}
+              >
+                {password === confirmPassword ? 'As senhas conferem!' : 'As senhas não conferem.'}
+              </Text>
+            </View>
+          )}
 
           {/* Checkbox de Consentimento de Notificações por WhatsApp */}
           {!pendingVerification && (
@@ -469,6 +623,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 15,
     height: 48,
+  },
+  passwordStrengthBox: {
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginTop: -4,
+    marginBottom: 14,
+  },
+  strengthHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  strengthLabelTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  strengthBadgeText: {
+    fontSize: 12.5,
+    fontWeight: '800',
+  },
+  strengthBarRow: {
+    flexDirection: 'row',
+    gap: 5,
+    marginBottom: 8,
+  },
+  strengthBarSegment: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+  },
+  criteriaContainer: {
+    gap: 3,
+    marginTop: 2,
+  },
+  criteriaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  criteriaText: {
+    fontSize: 11.5,
+    fontWeight: '500',
   },
   codeInputField: {
     borderColor: '#FDBA74',
