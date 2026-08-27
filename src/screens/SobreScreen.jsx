@@ -33,6 +33,14 @@ const SobreScreen = ({ navigation }) => {
     navigation.navigate('Register');
   };
 
+  const handleGoToMap = () => {
+    if (user) {
+      navigation.navigate('MainApp', { screen: 'MapTab' });
+    } else {
+      navigation.navigate('PublicApp', { screen: 'MapTab' });
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]} edges={['top', 'left', 'right', 'bottom']}>
       <ScrollView
@@ -223,7 +231,7 @@ const SobreScreen = ({ navigation }) => {
 
             <TouchableOpacity
               style={[styles.wefindStepBtn, { backgroundColor: '#D97706' }]}
-              onPress={() => navigation.navigate('Map')}
+              onPress={handleGoToMap}
               activeOpacity={0.85}
             >
               <Text style={styles.wefindStepBtnText}>Explorar Mapa Interativo</Text>

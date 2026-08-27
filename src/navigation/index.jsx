@@ -617,6 +617,11 @@ const MainStack = () => {
         options={{ title: 'Animais Reencontrados' }}
       />
       <Stack.Screen
+        name="Map"
+        component={MapScreen}
+        options={{ title: 'Mapa Interativo' }}
+      />
+      <Stack.Screen
         name="EsqueciSenha"
         component={require('../screens/EsqueciSenhaScreen').default}
         options={{ headerShown: false }}
