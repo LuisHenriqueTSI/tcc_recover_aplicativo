@@ -1149,7 +1149,7 @@ const HomeScreen = ({ navigation, route }) => {
         allItems = await itemsService.searchItems(searchTerm.trim());
       } else {
         const baseFilters = {};
-        if (filters.status !== 'all') baseFilters.status = filters.status;
+        if (filters.status !== 'all' && filters.status !== 'adoption') baseFilters.status = filters.status;
         if (filters.category !== 'all') baseFilters.category = filters.category;
         if (filters.animalType && filters.animalType !== 'all') baseFilters.species = filters.animalType;
         if (filters.showMyItems && user) baseFilters.owner_id = user.id;
@@ -1236,6 +1236,10 @@ const HomeScreen = ({ navigation, route }) => {
     if (filters.status && filters.status !== 'all') {
       if (filters.status === 'adoption') {
         filtered = filtered.filter(item => itemsService.isPetAvailableForAdoption(item));
+      } else if (filters.status === 'found') {
+        filtered = filtered.filter(item => item.status === 'found' && !itemsService.isPetAvailableForAdoption(item));
+      } else if (filters.status === 'lost') {
+        filtered = filtered.filter(item => item.status === 'lost' && !itemsService.isPetAvailableForAdoption(item));
       } else {
         filtered = filtered.filter(item => item.status === filters.status);
       }
