@@ -79,11 +79,41 @@ const SobreScreen = ({ navigation }) => {
           {!user && (
             <TouchableOpacity
               onPress={() => navigation.navigate('Login')}
-              style={styles.headerLoginBtn}
-              activeOpacity={0.8}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.16)',
+                borderRadius: 20,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.28)',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+                elevation: 2,
+              }}
+              activeOpacity={0.75}
+              accessibilityLabel="Entrar na conta"
             >
-              <MaterialIcons name="login" size={15} color="#FFFFFF" style={{ marginRight: 4 }} />
-              <Text style={styles.headerLoginBtnText}>Entrar</Text>
+              <View
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: '#FEA937',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 6,
+                }}
+              >
+                <MaterialIcons name="person" size={15} color="#FFFFFF" />
+              </View>
+              <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13, letterSpacing: 0.2 }}>
+                Entrar
+              </Text>
+              <MaterialIcons name="chevron-right" size={16} color="rgba(255, 255, 255, 0.75)" style={{ marginLeft: 2 }} />
             </TouchableOpacity>
           )}
         </View>

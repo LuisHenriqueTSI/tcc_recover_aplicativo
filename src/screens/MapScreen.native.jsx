@@ -6,6 +6,7 @@ import MapView, { Callout, Marker } from 'react-native-maps';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import * as itemsService from '../services/items';
+import { useAuth } from '../contexts/AuthContext';
 
 const BRAZIL_REGION = {
   latitude: -14.235,
@@ -65,6 +66,7 @@ const geocodeItemLocation = async (item) => {
 };
 
 const MapScreen = ({ navigation }) => {
+  const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const mapRef = useRef(null);
   const [items, setItems] = useState([]);
@@ -239,25 +241,65 @@ const MapScreen = ({ navigation }) => {
     <View style={styles.container}>
       {/* Barra de Pesquisa Flutuante de Animais */}
       <View style={[styles.searchContainer, { top: Math.max(insets.top + 8, 44) }]}>
-        <View style={styles.searchBar}>
-          <MaterialIcons name="search" size={22} color="#2563EB" style={{ marginRight: 8 }} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Nome, raça, espécie ou cidade..."
-            placeholderTextColor="#94A3B8"
-            value={searchTerm}
-            onChangeText={setSearchTerm}
-            returnKeyType="search"
-            autoCorrect={false}
-          />
-          {searchTerm.length > 0 ? (
-            <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearSearchBtn} activeOpacity={0.7}>
-              <MaterialIcons name="close" size={18} color="#64748B" />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%' }}>
+          <View style={[styles.searchBar, { flex: 1 }]}>
+            <MaterialIcons name="search" size={22} color="#2563EB" style={{ marginRight: 8 }} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Nome, raça, espécie..."
+              placeholderTextColor="#94A3B8"
+              value={searchTerm}
+              onChangeText={setSearchTerm}
+              returnKeyType="search"
+              autoCorrect={false}
+            />
+            {searchTerm.length > 0 ? (
+              <TouchableOpacity onPress={() => setSearchTerm('')} style={styles.clearSearchBtn} activeOpacity={0.7}>
+                <MaterialIcons name="close" size={18} color="#64748B" />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.countBadge}>
+                <Text style={styles.countBadgeText}>{filteredItems.length}</Text>
+              </View>
+            )}
+          </View>
+
+          {!user && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Login')}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#2563EB',
+                borderRadius: 16,
+                paddingHorizontal: 12,
+                height: 48,
+                shadowColor: '#2563EB',
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.25,
+                shadowRadius: 5,
+                elevation: 4,
+              }}
+              activeOpacity={0.8}
+              accessibilityLabel="Entrar na conta"
+            >
+              <View
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 11,
+                  backgroundColor: '#FEA937',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 6,
+                }}
+              >
+                <MaterialIcons name="person" size={14} color="#FFFFFF" />
+              </View>
+              <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13 }}>
+                Entrar
+              </Text>
             </TouchableOpacity>
-          ) : (
-            <View style={styles.countBadge}>
-              <Text style={styles.countBadgeText}>{filteredItems.length}</Text>
-            </View>
           )}
         </View>
 
