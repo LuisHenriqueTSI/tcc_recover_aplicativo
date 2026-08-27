@@ -79,20 +79,9 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     if (route?.params?.openSendModal) {
-      if (!user) {
-        Alert.alert(
-          'Login Necessário',
-          'Você precisa estar conectado com sua conta para enviar um relato de reencontro para o mural.',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Entrar', onPress: () => navigation.navigate('Login') },
-          ]
-        );
-      } else {
-        setShowStoryModal(true);
-      }
+      setShowStoryModal(true);
     }
-  }, [route?.params?.openSendModal, user]);
+  }, [route?.params?.openSendModal]);
   const [petNameInput, setPetNameInput] = useState('');
   const [authorInput, setAuthorInput] = useState(userProfile?.name || '');
   const [locationInput, setLocationInput] = useState(
