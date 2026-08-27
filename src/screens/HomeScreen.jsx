@@ -496,34 +496,40 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
 });
 
 const HomeScreen = ({ navigation, route }) => {
-    // Limpa filtros ao sair da HomeScreen (para visitante, reseta localidade para Todo o Brasil)
-    useEffect(() => {
-      const unsubscribe = navigation.addListener('blur', () => {
-        setFilters({ status: 'all', category: 'all', showMyItems: false });
-        setSearchTerm('');
-        setEditNeighborhood('');
-        if (!user) {
-          // Usuário deslogado: volta para "Todo o Brasil" ao sair da tela/fazer outra ação
-          setSessionCity('');
-          setSessionState('');
-          setSessionDistrict('');
-          setSessionStreet('');
-          setSessionAddressText('');
-          setProfileEditCity('');
-          setProfileEditState('');
-          setProfileEditDistrict('');
-          setProfileEditStreet('');
-          setProfileEditAddressText('');
-          setProfileEditCoords(null);
-          setUserCoords(null);
-          setLocationFilter('');
-          setLocationFilterTouched(false);
-        }
-      });
-      return unsubscribe;
-    }, [navigation, user, userProfile]);
   const { user, userProfile, isAdmin, refreshProfile, setUserProfile, signOut } = useAuth();
   const { colors, isDark } = useTheme();
+
+  // Estados principais de filtros e itens
+  const [filters, setFilters] = useState({
+    status: 'all',
+    category: 'animal',
+    animalType: 'all',
+    showMyItems: false,
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editNeighborhood, setEditNeighborhood] = useState('');
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Status dinâmico para raio de busca
+  const radiusStatusText = useMemo(() => {
+    const currentStatus = filters?.status || 'all';
+    switch (currentStatus) {
+      case 'lost':
+        return 'animais perdidos';
+      case 'found':
+        return 'animais encontrados';
+      case 'adoption':
+        return 'animais para adoção';
+      case 'resolved':
+        return 'animais reencontrados';
+      case 'all':
+      default:
+        return 'TODOS os animais';
+    }
+  }, [filters?.status]);
+
   // Corrige erro: garantir estado do modal de perfil
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   // Localidade do perfil e sessão com endereço completo
@@ -546,6 +552,42 @@ const HomeScreen = ({ navigation, route }) => {
   const [profileEditRadiusKm, setProfileEditRadiusKm] = useState(60);
   const [showQuickRadiusModal, setShowQuickRadiusModal] = useState(false);
   const [selectedQuickRadius, setSelectedQuickRadius] = useState(60);
+
+  // Localidade padrão do usuário, mas permite alterar livremente
+  const [locationFilter, setLocationFilter] = useState('');
+  const [locationFilterTouched, setLocationFilterTouched] = useState(false);
+  // Modal de edição de localidade
+  const [editLocationModal, setEditLocationModal] = useState(false);
+  // Estado e cidade do perfil, fixos para filtro
+  const [editState, setEditState] = useState(userProfile?.state || '');
+  const [editCity, setEditCity] = useState(userProfile?.city || '');
+
+  // Limpa filtros ao sair da HomeScreen (para visitante, reseta localidade para Todo o Brasil)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      setFilters({ status: 'all', category: 'all', showMyItems: false });
+      setSearchTerm('');
+      setEditNeighborhood('');
+      if (!user) {
+        // Usuário deslogado: volta para "Todo o Brasil" ao sair da tela/fazer outra ação
+        setSessionCity('');
+        setSessionState('');
+        setSessionDistrict('');
+        setSessionStreet('');
+        setSessionAddressText('');
+        setProfileEditCity('');
+        setProfileEditState('');
+        setProfileEditDistrict('');
+        setProfileEditStreet('');
+        setProfileEditAddressText('');
+        setProfileEditCoords(null);
+        setUserCoords(null);
+        setLocationFilter('');
+        setLocationFilterTouched(false);
+      }
+    });
+    return unsubscribe;
+  }, [navigation, user, userProfile]);
 
   useEffect(() => {
     const loadInitialLocation = async () => {
@@ -797,43 +839,6 @@ const HomeScreen = ({ navigation, route }) => {
     }
     setShowProfileLocationModal(false);
   };
-
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [filters, setFilters] = useState({
-    status: 'all',
-    category: 'animal',
-    animalType: 'all',
-    showMyItems: false,
-  });
-
-  const radiusStatusText = useMemo(() => {
-    const currentStatus = filters?.status || 'all';
-    switch (currentStatus) {
-      case 'lost':
-        return 'animais perdidos';
-      case 'found':
-        return 'animais encontrados';
-      case 'adoption':
-        return 'animais para adoção';
-      case 'resolved':
-        return 'animais reencontrados';
-      case 'all':
-      default:
-        return 'TODOS os animais';
-    }
-  }, [filters?.status]);
-  const [searchTerm, setSearchTerm] = useState('');
-  // Localidade padrão do usuário, mas permite alterar livremente
-  const [locationFilter, setLocationFilter] = useState('');
-  const [locationFilterTouched, setLocationFilterTouched] = useState(false);
-  // Modal de edição de localidade
-  const [editLocationModal, setEditLocationModal] = useState(false);
-  // Estado e cidade do perfil, fixos para filtro
-  const [editState, setEditState] = useState(userProfile?.state || '');
-  const [editCity, setEditCity] = useState(userProfile?.city || '');
-  const [editNeighborhood, setEditNeighborhood] = useState('');
 
   // Carrega do cache E do servidor em paralelo, mas aplica o servidor como fonte de verdade
   // O cache serve apenas como warmup do estado sem acionar renderização separada de filtros
