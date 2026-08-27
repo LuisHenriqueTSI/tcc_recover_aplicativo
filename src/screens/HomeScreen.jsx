@@ -989,7 +989,7 @@ const HomeScreen = ({ navigation, route }) => {
 
   // Abre o chat com o dono do item
   // Preenche mensagem automática ao abrir o chat diretamente
-  const handleSendMessage = async (ownerId, itemId, itemStatus) => {
+  const handleSendMessage = async (ownerId, itemId, itemStatus, itemTitle, otherName, avatarUrl) => {
     if (!user) {
       Alert.alert(
         'Login necessário',
@@ -1016,6 +1016,9 @@ const HomeScreen = ({ navigation, route }) => {
       conversation: {
         otherId: ownerId,
         itemId: itemId,
+        otherName: otherName || 'Tutor',
+        avatarUrl: avatarUrl || null,
+        itemTitle: itemTitle || 'Animal',
       },
       draftMessage: autoMessage,
     });

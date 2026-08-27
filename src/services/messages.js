@@ -112,6 +112,7 @@ export const getConversations = async (userId) => {
     // Agrupa por conversa (par sender/receiver)
     const conversations = new Map();
     const userCache = {};
+    const itemCache = {};
     if (data) {
       for (const msg of data) {
         const otherId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
@@ -122,19 +123,41 @@ export const getConversations = async (userId) => {
           let otherUser = userCache[otherId];
           if (!otherUser) {
             const profile = await getUserById(otherId);
-            otherUser = profile || { name: 'Usuário indefinido', avatarUrl: null };
+            otherUser = profile || { name: 'Usuário', avatarUrl: null };
             userCache[otherId] = otherUser;
           }
+
+          // Busca dados do pet/item (cache para evitar múltiplas queries)
+          let itemTitle = '';
+          if (msg.item_id) {
+            if (itemCache[msg.item_id] !== undefined) {
+              itemTitle = itemCache[msg.item_id];
+            } else {
+              try {
+                const { data: itemData } = await supabase
+                  .from('items')
+                  .select('id, title, species')
+                  .eq('id', msg.item_id)
+                  .maybeSingle();
+                itemTitle = itemData?.title || itemData?.species || '';
+                itemCache[msg.item_id] = itemTitle;
+              } catch (e) {
+                console.log('[getConversations] Erro ao buscar pet:', e.message);
+                itemCache[msg.item_id] = '';
+              }
+            }
+          }
+
           conversations.set(key, {
             otherId,
-            otherName: otherUser.name || 'Usuário indefinido',
+            otherName: otherUser.name || 'Usuário',
             avatarUrl: otherUser.avatarUrl || null,
             lastMessage: msg.content,
             lastPhotoUrl: msg.photo_url || null,
             lastMessageAt: msg.sent_at,
             unread: msg.receiver_id === userId && !msg.read,
             itemId: msg.item_id,
-            itemTitle: msg.item_title || '',
+            itemTitle: itemTitle,
           });
         }
       }

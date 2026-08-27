@@ -402,7 +402,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
       conversation: {
         otherId: item.owner_id,
         itemId: itemId,
-        otherName: owner?.name || 'Usuário',
+        otherName: owner?.name || 'Tutor',
+        avatarUrl: owner?.avatar_url || null,
+        itemTitle: item.title || item.species || 'Animal',
         initialMessage,
       }
     });

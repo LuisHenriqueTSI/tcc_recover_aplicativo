@@ -30,6 +30,10 @@ const ChatScreen = (props) => {
   const [error, setError] = useState('');
   const [input, setInput] = useState(draftMessage || initialMessage || '');
 
+  const [petTitle, setPetTitle] = useState(conversation?.itemTitle || '');
+  const [otherName, setOtherName] = useState(conversation?.otherName || '');
+  const [avatarUrl, setAvatarUrl] = useState(conversation?.avatarUrl || null);
+
   const [sending, setSending] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
@@ -37,6 +41,46 @@ const ChatScreen = (props) => {
 
   const otherId = conversation?.otherId;
   const itemId = conversation?.itemId;
+
+  // Busca dados faltantes do pet ou do usuário (ex: quando aberto via notificação ou link)
+  useEffect(() => {
+    let isMounted = true;
+    const fetchMissingDetails = async () => {
+      if (!petTitle && itemId) {
+        try {
+          const { data: itemData } = await supabase
+            .from('items')
+            .select('id, title, species')
+            .eq('id', itemId)
+            .maybeSingle();
+          if (itemData && isMounted) {
+            setPetTitle(itemData.title || itemData.species || 'Animal');
+          }
+        } catch (e) {
+          console.log('[ChatScreen] Erro ao buscar título do pet:', e.message);
+        }
+      }
+
+      if ((!otherName || otherName === 'Usuário' || otherName === 'Tutor') && otherId) {
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('id, name, avatar_url')
+            .eq('id', otherId)
+            .maybeSingle();
+          if (profileData && isMounted) {
+            if (profileData.name) setOtherName(profileData.name);
+            if (profileData.avatar_url) setAvatarUrl(profileData.avatar_url);
+          }
+        } catch (e) {
+          console.log('[ChatScreen] Erro ao buscar perfil do outro usuário:', e.message);
+        }
+      }
+    };
+
+    fetchMissingDetails();
+    return () => { isMounted = false; };
+  }, [itemId, otherId, petTitle, otherName]);
 
   // Carrega mensagens apenas no início (primeiro render)
   // Carregamento inicial e canal real-time só uma vez por conversa
@@ -258,18 +302,18 @@ const ChatScreen = (props) => {
 
             <View style={styles.chatAvatar}>
               <Image
-                source={conversation?.avatarUrl ? { uri: conversation.avatarUrl } : require('../assets/logo_wefind.png')}
+                source={avatarUrl ? { uri: avatarUrl } : require('../assets/logo_wefind.png')}
                 style={styles.chatAvatarImage}
               />
             </View>
 
             <View style={styles.chatHeaderContent}>
               <Text style={[styles.chatHeaderName, { color: colors.headerText }]} numberOfLines={1}>
-                {conversation?.otherName || 'Usuário'}
+                {otherName || 'Usuário'}
               </Text>
-              {conversation?.itemTitle ? (
+              {petTitle ? (
                 <Text style={[styles.chatHeaderPet, { color: colors.headerSubText }]} numberOfLines={1}>
-                  Pet: {conversation.itemTitle}
+                  Pet: {petTitle}
                 </Text>
               ) : null}
             </View>
