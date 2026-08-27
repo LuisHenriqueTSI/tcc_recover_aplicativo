@@ -438,9 +438,11 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#F97316');
   const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
 
-  const SIZE = isSelected ? 60 : 48;
+  // Tamanhos com buffer de segurança transparente para evitar qualquer corte nativo
+  const CIRCLE_SIZE = isSelected ? 60 : 48;
+  const CANVAS_SIZE = CIRCLE_SIZE + 24; // Buffer transparente de 12px em cada lado
   const BORDER = 3.5;
-  const PHOTO = SIZE - BORDER * 2;
+  const PHOTO = CIRCLE_SIZE - BORDER * 2;
 
   return (
     <Marker
@@ -449,46 +451,62 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
       onCalloutPress={onCalloutPress}
       tracksViewChanges={true}
       anchor={{ x: 0.5, y: 0.5 }}
-      style={{ width: SIZE, height: SIZE }}
+      style={{ width: CANVAS_SIZE, height: CANVAS_SIZE }}
     >
+      {/*
+        Wrapper transparente com buffer de 12px:
+        Garante que o Android AirMapMarker tenha espaço de sobra no canvas nativo,
+        eliminando 100% qualquer chance de corte em meia-lua nas bordas.
+      */}
       <View
         collapsable={false}
         style={{
-          width: SIZE,
-          height: SIZE,
-          borderRadius: SIZE / 2,
-          borderWidth: BORDER,
-          borderColor: statusColor,
-          backgroundColor: '#FFFFFF',
+          width: CANVAS_SIZE,
+          height: CANVAS_SIZE,
           alignItems: 'center',
           justifyContent: 'center',
+          backgroundColor: 'transparent',
         }}
       >
-        {photoUrl ? (
-          <Image
-            source={{ uri: photoUrl }}
-            style={{
-              width: PHOTO,
-              height: PHOTO,
-              borderRadius: PHOTO / 2,
-              backgroundColor: '#E2E8F0',
-            }}
-            resizeMode="cover"
-          />
-        ) : (
-          <View
-            style={{
-              width: PHOTO,
-              height: PHOTO,
-              borderRadius: PHOTO / 2,
-              backgroundColor: statusColor + '20',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ fontSize: 16 }}>🐾</Text>
-          </View>
-        )}
+        {/* Círculo com borda colorida exatamente no centro do canvas */}
+        <View
+          style={{
+            width: CIRCLE_SIZE,
+            height: CIRCLE_SIZE,
+            borderRadius: CIRCLE_SIZE / 2,
+            borderWidth: BORDER,
+            borderColor: statusColor,
+            backgroundColor: '#FFFFFF',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {photoUrl ? (
+            <Image
+              source={{ uri: photoUrl }}
+              style={{
+                width: PHOTO,
+                height: PHOTO,
+                borderRadius: PHOTO / 2,
+                backgroundColor: '#E2E8F0',
+              }}
+              resizeMode="cover"
+            />
+          ) : (
+            <View
+              style={{
+                width: PHOTO,
+                height: PHOTO,
+                borderRadius: PHOTO / 2,
+                backgroundColor: statusColor + '20',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 16 }}>🐾</Text>
+            </View>
+          )}
+        </View>
       </View>
       <Callout>
         <View style={styles.callout}>
