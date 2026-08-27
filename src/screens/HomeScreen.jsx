@@ -526,7 +526,7 @@ const HomeScreen = ({ navigation, route }) => {
         return 'animais reencontrados';
       case 'all':
       default:
-        return 'TODOS os animais';
+        return 'todos os animais';
     }
   }, [filters?.status]);
 
