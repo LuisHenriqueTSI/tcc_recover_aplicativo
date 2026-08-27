@@ -1352,10 +1352,10 @@ const HomeScreen = ({ navigation, route }) => {
           <View />
         </TouchableOpacity>
       )}
-      {/* App Bar ajustada: centralizado quando deslogado (Explorar), alinhado à esquerda quando logado */}
+      {/* App Bar ajustada: nome WeFIND e localização à esquerda; sino/avatar ou logo do sistema à direita */}
       <View style={{ backgroundColor: colors.headerBg, paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: user ? 'space-between' : 'center', minHeight: 48 }}>
-          <View style={{ flex: 1, flexDirection: 'column', alignItems: user ? 'flex-start' : 'center', marginRight: user ? 12 : 0 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48 }}>
+          <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start', marginRight: 12 }}>
             <Text style={{ color: '#fff', fontWeight: '900', fontSize: 23, letterSpacing: 0.8, marginBottom: 2 }}>WeFIND</Text>
             <TouchableOpacity
               style={{
@@ -1396,7 +1396,7 @@ const HomeScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           </View>
 
-          {user && (
+          {user ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0 }}>
               <NotificationBell />
               <TouchableOpacity
@@ -1412,6 +1412,14 @@ const HomeScreen = ({ navigation, route }) => {
                   </View>
                 )}
               </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={{ flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
+              <Image
+                source={require('../assets/logo_wefind.png')}
+                style={{ width: 44, height: 44, borderRadius: 22 }}
+                resizeMode="contain"
+              />
             </View>
           )}
           {user && showProfileMenu && (
