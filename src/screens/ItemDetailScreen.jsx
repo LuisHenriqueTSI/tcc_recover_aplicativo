@@ -551,8 +551,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
     );
   }
 
-  const isAdoption = Boolean(item.extra_fields?.is_direct_adoption);
-  const isFound = item.status === 'found';
+  const isAdoption = Boolean(item.extra_fields?.is_direct_adoption || itemsService.isPetAvailableForAdoption(item));
+  const isFound = item.status === 'found' && !isAdoption;
 
   return (
     <ScrollView style={[styles.detailPage, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
@@ -979,25 +979,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
         </View>
       )}
 
-      {/* 6. BOTÃO DE CARTAZ DESTACADO */}
-      <View style={styles.flyerBannerWrap}>
-        <TouchableOpacity
-          style={[styles.flyerBannerBtn, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: colors.primary }]}
-          onPress={() => setShareFlyerVisible(true)}
-          activeOpacity={0.85}
-        >
-          <View style={[styles.flyerIconCircle, { backgroundColor: colors.primary }]}>
-            <MaterialIcons name="share" size={20} color="#FFFFFF" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.flyerBtnTitle, { color: colors.primary }]}>Compartilhar Cartaz do Pet</Text>
-            <Text style={[styles.flyerBtnSub, { color: colors.textSecondary }]}>Gere uma imagem com foto e contatos para postar nas redes</Text>
-          </View>
-          <MaterialIcons name="chevron-right" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
-
-      {/* 7. COMENTÁRIOS E PISTAS DA COMUNIDADE */}
+      {/* 6. COMENTÁRIOS E PISTAS DA COMUNIDADE */}
       <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border, marginBottom: 40 }]}>
         <View style={styles.commentsHeaderRow}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>

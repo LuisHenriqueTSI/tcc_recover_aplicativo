@@ -216,12 +216,17 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
 
         {/* Badges */}
         <View style={{ position: 'absolute', top: 10, left: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 5, zIndex: 10, maxWidth: cardWidth > 0 ? cardWidth - 65 : 240 }}>
-          <View style={{ backgroundColor: statusColor, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 11.5 }}>
-              {item.extra_fields?.is_direct_adoption ? 'Para Adoção' : statusLabel}
-            </Text>
-          </View>
-          {item.status === 'found' && !item.extra_fields?.is_direct_adoption && (
+          {Boolean(item.extra_fields?.is_direct_adoption || itemsService.isPetAvailableForAdoption(item)) ? (
+            <View style={{ backgroundColor: '#FCE7F3', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
+              <Text style={{ color: '#BE185D', fontWeight: 'bold', fontSize: 11.5 }}>🐾 Para Adoção</Text>
+            </View>
+          ) : (
+            <View style={{ backgroundColor: statusColor, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 11.5 }}>{statusLabel}</Text>
+            </View>
+          )}
+
+          {!item.extra_fields?.is_direct_adoption && !itemsService.isPetAvailableForAdoption(item) && item.status === 'found' && (
             item.extra_fields?.found_custody === 'spotted' ? (
               <View style={{ backgroundColor: '#FEF3C7', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
                 <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 11 }}>👀 Visto na Rua</Text>
@@ -232,19 +237,15 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
               </View>
             )
           )}
-          {itemsService.isPetAvailableForAdoption(item) ? (
-            <View style={{ backgroundColor: '#FCE7F3', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
-              <Text style={{ color: '#BE185D', fontWeight: 'bold', fontSize: 11 }}>🐾 Para Adoção</Text>
+
+          {!item.extra_fields?.is_direct_adoption && !itemsService.isPetAvailableForAdoption(item) && item.status === 'found' && item.extra_fields?.adoption_intent && itemsService.getAdoptionWaitingDays(item) > 0 ? (
+            <View style={{ backgroundColor: '#FEF3C7', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
+              <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 11 }}>
+                ⏳ Busca ({itemsService.getAdoptionWaitingDays(item)}d)
+              </Text>
             </View>
-          ) : (
-            item.status === 'found' && item.extra_fields?.adoption_intent && itemsService.getAdoptionWaitingDays(item) > 0 ? (
-              <View style={{ backgroundColor: '#FEF3C7', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
-                <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 11 }}>
-                  ⏳ Busca ({itemsService.getAdoptionWaitingDays(item)}d)
-                </Text>
-              </View>
-            ) : null
-          )}
+          ) : null}
+
           <View style={{ backgroundColor: cat.bg, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 }}>
             <Text style={{ color: cat.text, fontWeight: 'bold', fontSize: 11.5 }}>{cat.label}</Text>
           </View>
@@ -481,6 +482,8 @@ const HomeScreen = ({ navigation, route }) => {
   const [userCoords, setUserCoords] = useState(null);
   const [searchRadiusKm, setSearchRadiusKm] = useState(60);
   const [profileEditRadiusKm, setProfileEditRadiusKm] = useState(60);
+  const [showQuickRadiusModal, setShowQuickRadiusModal] = useState(false);
+  const [selectedQuickRadius, setSelectedQuickRadius] = useState(60);
 
   useEffect(() => {
     const loadInitialLocation = async () => {
@@ -669,6 +672,41 @@ const HomeScreen = ({ navigation, route }) => {
       }
     }
     setShowProfileLocationModal(false);
+  };
+
+  const handleSaveQuickRadius = async (newRadius) => {
+    const val = Number(newRadius);
+    if (!val || Number.isNaN(val)) return;
+    setSearchRadiusKm(val);
+    setProfileEditRadiusKm(val);
+    try {
+      await AsyncStorage.setItem('@wefind/search_radius', String(val));
+      const storedLoc = await AsyncStorage.getItem('@wefind/saved_location');
+      if (storedLoc) {
+        try {
+          const parsed = JSON.parse(storedLoc);
+          await AsyncStorage.setItem(
+            '@wefind/saved_location',
+            JSON.stringify({ ...parsed, radiusKm: val })
+          );
+        } catch (_) {}
+      }
+      if (user?.id) {
+        await supabase
+          .from('profiles')
+          .update({
+            search_radius_km: val,
+            extra_fields: {
+              ...(userProfile?.extra_fields || {}),
+              search_radius_km: val,
+            },
+          })
+          .eq('id', user.id);
+      }
+    } catch (e) {
+      console.log('[HomeScreen] Erro ao salvar raio rápido:', e.message);
+    }
+    setShowQuickRadiusModal(false);
   };
 
   // Limpar filtro de localidade e voltar para "Brasil"
@@ -1387,16 +1425,6 @@ const HomeScreen = ({ navigation, route }) => {
                   style={{ flex: 1, minHeight: 46 }}
                 />
               </View>
-              {(sessionCity || userProfile?.city || locationFilter) ? (
-                <TouchableOpacity
-                  onPress={handleResetToBrazil}
-                  style={{ marginTop: 12, alignItems: 'center', paddingVertical: 6 }}
-                >
-                  <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600', textDecorationLine: 'underline' }}>
-                    🇧🇷 Ver publicações de todo o Brasil
-                  </Text>
-                </TouchableOpacity>
-              ) : null}
             </View>
           </View>
         </Modal>
@@ -1708,7 +1736,7 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
         </View>
       )}
-      {/* Banner Informativo do Raio de 60 km */}
+      {/* Banner Informativo do Raio de Busca */}
       {Boolean(locationFilter) && (
         <View style={[styles.radiusBanner, { backgroundColor: isDark ? '#161F30' : '#EFF6FF', borderColor: isDark ? '#243248' : '#BFDBFE' }]}>
           <View style={styles.radiusBannerLeft}>
@@ -1725,14 +1753,92 @@ const HomeScreen = ({ navigation, route }) => {
             </View>
           </View>
           <TouchableOpacity
-            onPress={handleResetToBrazil}
-            style={[styles.radiusResetButton, { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', borderColor: isDark ? '#243248' : '#93C5FD' }]}
+            onPress={() => {
+              setSelectedQuickRadius(searchRadiusKm);
+              setShowQuickRadiusModal(true);
+            }}
+            style={[styles.radiusResetButton, { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', borderColor: isDark ? '#243248' : '#93C5FD', flexDirection: 'row', alignItems: 'center', gap: 4 }]}
             activeOpacity={0.8}
           >
-            <Text style={[styles.radiusResetText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>Ver Brasil todo</Text>
+            <MaterialIcons name="tune" size={14} color={colors.primary} />
+            <Text style={[styles.radiusResetText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>Ajustar Raio</Text>
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Modal Rápida de Ajuste do Raio de Busca */}
+      <Modal
+        visible={showQuickRadiusModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowQuickRadiusModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: colors.surface, borderRadius: 20, padding: 22, width: '100%', maxWidth: 380, borderWidth: 1, borderColor: colors.cardBorder }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+              <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
+                <MaterialIcons name="radar" size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontWeight: '800', fontSize: 17, color: colors.text }}>
+                  Ajustar Raio de Busca
+                </Text>
+                <Text style={{ color: colors.textMuted, fontSize: 12 }}>
+                  Alcance atual: <Text style={{ fontWeight: '800', color: colors.primary }}>{selectedQuickRadius} km</Text>
+                </Text>
+              </View>
+            </View>
+
+            <Text style={{ color: colors.textSecondary, fontSize: 13, marginVertical: 12, lineHeight: 18 }}>
+              Escolha a distância máxima para exibir publicações ao redor de <Text style={{ fontWeight: '700', color: colors.text }}>{headerLocationSummary}</Text>:
+            </Text>
+
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+              {[15, 30, 60, 100, 150, 250, 500].map((r) => {
+                const isSelected = selectedQuickRadius === r;
+                return (
+                  <TouchableOpacity
+                    key={r}
+                    onPress={() => setSelectedQuickRadius(r)}
+                    activeOpacity={0.75}
+                    style={{
+                      paddingHorizontal: 14,
+                      paddingVertical: 9,
+                      borderRadius: 12,
+                      borderWidth: 1.5,
+                      borderColor: isSelected ? colors.primary : colors.border,
+                      backgroundColor: isSelected ? colors.primary : (isDark ? '#1E293B' : '#F8FAFC'),
+                    }}
+                  >
+                    <Text style={{
+                      fontSize: 13.5,
+                      fontWeight: isSelected ? '800' : '600',
+                      color: isSelected ? '#FFFFFF' : colors.text,
+                    }}>
+                      {r} km
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <Button
+                title="Cancelar"
+                variant="secondary"
+                onPress={() => setShowQuickRadiusModal(false)}
+                style={{ flex: 1, minHeight: 46 }}
+              />
+              <Button
+                title="Salvar e Aplicar"
+                variant="primary"
+                onPress={() => handleSaveQuickRadius(selectedQuickRadius)}
+                style={{ flex: 1.3, minHeight: 46 }}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Quantidade de animais encontrados e Lista de Itens com Virtualização de Alta Performance */}
       <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
