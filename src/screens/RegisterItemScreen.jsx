@@ -1562,6 +1562,28 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     </TouchableOpacity>
                   </View>
 
+                  {/* Aviso de Proteção e Privacidade do Protetor */}
+                  {foundCustody === 'with_me' && (
+                    <View style={{
+                      flexDirection: 'row',
+                      alignItems: 'flex-start',
+                      backgroundColor: isDark ? 'rgba(5, 150, 105, 0.12)' : '#ECFDF5',
+                      borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0',
+                      borderWidth: 1,
+                      borderRadius: 12,
+                      padding: 10,
+                      marginTop: 8,
+                      marginBottom: 4,
+                      gap: 8,
+                    }}>
+                      <MaterialIcons name="security" size={17} color="#059669" style={{ marginTop: 1 }} />
+                      <Text style={{ flex: 1, fontSize: 11.5, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 16 }}>
+                        <Text style={{ fontWeight: '800' }}>Privacidade Protegida: </Text>
+                        O número da sua residência e sua rua exata NÃO serão exibidos publicamente. Apenas seu bairro aproximado será visível para o tutor entrar em contato pelo chat.
+                      </Text>
+                    </View>
+                  )}
+
                   {/* Opção de Intenção de Adoção (após período mínimo de 7 dias de busca pelo tutor) */}
                   {foundCustody === 'with_me' && (
                     <TouchableOpacity

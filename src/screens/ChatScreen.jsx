@@ -369,6 +369,23 @@ const ChatScreen = (props) => {
         </View>
       </SafeAreaView>
 
+      {/* Banner de Segurança & Comprovação de Posse */}
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : '#ECFDF5',
+        borderBottomWidth: 1,
+        borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0',
+        paddingHorizontal: 14,
+        paddingVertical: 7,
+        gap: 8,
+      }}>
+        <MaterialIcons name="security" size={17} color="#059669" />
+        <Text style={{ flex: 1, fontSize: 11.5, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 15 }}>
+          <Text style={{ fontWeight: '800' }}>Dica de Segurança:</Text> Só combine locais de entrega após o tutor apresentar fotos antigas ou características que comprovem que é o dono.
+        </Text>
+      </View>
+
       {/* Lista de Mensagens */}
       <FlatList
         ref={flatListRef}

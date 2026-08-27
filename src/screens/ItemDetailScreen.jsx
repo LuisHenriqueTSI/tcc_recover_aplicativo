@@ -29,10 +29,12 @@ import ShareButton from '../components/ShareButton';
 import ShareFlyerModal from '../components/ShareFlyerModal';
 
 import SightingModal from '../components/SightingModal';
+import ProofUploadModal from '../components/ProofUploadModal';
 import * as sightingsService from '../services/sightings';
 import { getRenewalInfo } from '../services/itemExpiration';
 import { createRenewalReminderNotification } from '../services/notifications';
 import * as reportsService from '../services/reports';
+import { getVerificationStatus } from '../services/proofVerification';
 import * as Location from 'expo-location';
 
 const formatItemDate = (value) => {
@@ -52,11 +54,18 @@ const formatCityState = (item) => {
   return item?.neighborhood || item?.extra_fields?.location_details?.district || 'Localização não informada';
 };
 
-const formatStreetNumberNeighborhood = (item) => {
+const formatStreetNumberNeighborhood = (item, isAuthorized = false) => {
+  const isFoundHome = item?.status === 'found' && item?.extra_fields?.found_custody !== 'spotted';
   const details = item?.extra_fields?.location_details;
+  const district = (details?.district || item?.neighborhood || '').trim();
+
+  // Se o animal foi acolhido em casa / lar temporário e NÃO tem autorização/aprovação, protege a privacidade ocultando rua e número
+  if (isFoundHome && !isAuthorized) {
+    return district ? `Região do Bairro ${district} (Endereço protegido)` : 'Região do Bairro (Endereço protegido)';
+  }
+
   const street = (details?.street || item?.street || '').trim();
   const number = (details?.number || item?.house_number || '').trim();
-  const district = (details?.district || item?.neighborhood || '').trim();
 
   const streetPart = street && number ? `${street}, ${number}` : street || (number ? `Nº ${number}` : '');
   const parts = [streetPart, district].filter(Boolean);
@@ -70,7 +79,7 @@ const formatStreetNumberNeighborhood = (item) => {
     return rawText;
   }
 
-  return '';
+  return district || '';
 };
 
 const ItemDetailScreen = ({ route, navigation }) => {
@@ -86,6 +95,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [sightings, setSightings] = useState([]);
   const [sightingModalVisible, setSightingModalVisible] = useState(false);
   const [sightingLoading, setSightingLoading] = useState(false);
+  const [proofModalVisible, setProofModalVisible] = useState(false);
+  const [verificationState, setVerificationState] = useState({ status: null, claim: null });
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editCommentText, setEditCommentText] = useState('');
   const [editCommentObj, setEditCommentObj] = useState(null);
@@ -146,8 +157,19 @@ const ItemDetailScreen = ({ route, navigation }) => {
     useCallback(() => {
       loadItemDetails();
       loadSightings();
-    }, [itemId])
+      loadVerification();
+    }, [itemId, user?.id])
   );
+
+  const loadVerification = async () => {
+    if (!itemId || !user?.id) return;
+    try {
+      const res = await getVerificationStatus(itemId, user.id);
+      setVerificationState(res || { status: null, claim: null });
+    } catch (e) {
+      console.log('[ItemDetailScreen] Erro ao buscar status de verificação:', e.message);
+    }
+  };
 
   const loadSightings = async () => {
     try {
@@ -367,6 +389,39 @@ const ItemDetailScreen = ({ route, navigation }) => {
     } else if (item.status === 'found') {
       initialMessage = 'Oi, você encontrou meu pet?';
     }
+
+    navigation.navigate('ChatScreen', {
+      conversation: {
+        otherId: item.owner_id,
+        itemId: itemId,
+        otherName: owner?.name || 'Tutor',
+        avatarUrl: owner?.avatar_url || null,
+        itemTitle: item.title || item.species || 'Animal',
+        initialMessage,
+      },
+    });
+  };
+
+  const handleOfferFoster = () => {
+    if (!user) {
+      Alert.alert(
+        'Login necessário',
+        'Entre ou crie uma conta para oferecer lar temporário para este animal.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+        ]
+      );
+      return;
+    }
+
+    if (isOwner) {
+      Alert.alert('Aviso', 'Você é o autor desta publicação.');
+      return;
+    }
+
+    const title = item.title || item.species || 'este pet';
+    const initialMessage = `Olá! Vi a publicação de ${title} no WeFIND e tenho disponibilidade para ser Lar Temporário dele(a) até encontrarmos o tutor ou um lar definitivo! 🏡🐾`;
 
     navigation.navigate('ChatScreen', {
       conversation: {
@@ -1047,14 +1102,30 @@ const ItemDetailScreen = ({ route, navigation }) => {
           <Text style={[styles.locationCityText, { color: colors.text }]}>
             {formatCityState(item)}
           </Text>
-          {formatStreetNumberNeighborhood(item) ? (
+          {formatStreetNumberNeighborhood(
+            item,
+            Boolean(
+              isOwner ||
+              isAdmin ||
+              verificationState?.status === 'approved' ||
+              (item?.status !== 'found' || item?.extra_fields?.found_custody === 'spotted')
+            )
+          ) ? (
             <Text style={[styles.locationStreetText, { color: colors.textSecondary, marginBottom: 8 }]}>
-              {formatStreetNumberNeighborhood(item)}
+              {formatStreetNumberNeighborhood(
+                item,
+                Boolean(
+                  isOwner ||
+                  isAdmin ||
+                  verificationState?.status === 'approved' ||
+                  (item?.status !== 'found' || item?.extra_fields?.found_custody === 'spotted')
+                )
+              )}
             </Text>
           ) : null}
 
           {item.date ? (
-            <View style={[styles.dateRow, { borderTopColor: colors.border, marginBottom: 12 }]}>
+            <View style={[styles.dateRow, { borderTopColor: colors.border, marginBottom: 10 }]}>
               <MaterialIcons name="event" size={16} color={colors.textMuted} style={{ marginRight: 6 }} />
               <Text style={[styles.dateLabel, { color: colors.textMuted }]}>
                 {item.status === 'lost' ? 'Data do desaparecimento: ' : 'Data do encontro: '}
@@ -1062,6 +1133,144 @@ const ItemDetailScreen = ({ route, navigation }) => {
               </Text>
             </View>
           ) : null}
+
+          {/* Avisos de Proteção de Endereço e Comprovação de Tutor para Animais Acolhidos */}
+          {item.status === 'found' && item.extra_fields?.found_custody !== 'spotted' && (
+            <View style={{ marginBottom: 12 }}>
+              {verificationState?.status === 'approved' && !isOwner && !isAdmin && (
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  backgroundColor: isDark ? 'rgba(5, 150, 105, 0.18)' : '#ECFDF5',
+                  borderColor: isDark ? 'rgba(5, 150, 105, 0.4)' : '#A7F3D0',
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  padding: 11,
+                  gap: 8,
+                }}>
+                  <MaterialIcons name="verified" size={20} color="#059669" style={{ marginTop: 1 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 12.5, fontWeight: '800', color: isDark ? '#34D399' : '#047857' }}>
+                      Comprovação Aprovada • Endereço Liberado
+                    </Text>
+                    <Text style={{ fontSize: 11.5, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 16, marginTop: 2 }}>
+                      Sua comprovação de tutor foi verificada com sucesso! O endereço exato foi revelado acima para combinar a devolução do pet.
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {verificationState?.status === 'pending' && !isOwner && !isAdmin && (
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  backgroundColor: isDark ? 'rgba(217, 119, 6, 0.15)' : '#FFFBEB',
+                  borderColor: isDark ? 'rgba(217, 119, 6, 0.35)' : '#FDE68A',
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  padding: 11,
+                  gap: 8,
+                }}>
+                  <MaterialIcons name="hourglass-top" size={20} color="#D97706" style={{ marginTop: 1 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 12.5, fontWeight: '800', color: isDark ? '#FBBF24' : '#B45309' }}>
+                      Comprovação em Análise ⏳
+                    </Text>
+                    <Text style={{ fontSize: 11.5, color: isDark ? '#FEF3C7' : '#78350F', lineHeight: 16, marginTop: 2 }}>
+                      Suas fotos e justificativa foram enviadas para moderação. Assim que aprovadas, o endereço completo e a rota exata serão desbloqueados aqui.
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {verificationState?.status === 'rejected' && !isOwner && !isAdmin && (
+                <View style={{
+                  flexDirection: 'column',
+                  backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2',
+                  borderColor: isDark ? 'rgba(239, 68, 68, 0.35)' : '#FECACA',
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  padding: 11,
+                  gap: 6,
+                }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <MaterialIcons name="error-outline" size={18} color="#DC2626" />
+                    <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#DC2626' }}>
+                      Comprovação Anterior Não Aprovada
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 11.5, color: isDark ? '#FCA5A5' : '#991B1B', lineHeight: 16 }}>
+                    {verificationState?.claim?.rejection_reason || 'A documentação enviada não pôde confirmar a posse do animal. Você pode enviar novas fotos ou documentos tocando abaixo.'}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setProofModalVisible(true)}
+                    style={{
+                      alignSelf: 'flex-start',
+                      backgroundColor: '#DC2626',
+                      borderRadius: 8,
+                      paddingVertical: 6,
+                      paddingHorizontal: 12,
+                      marginTop: 4,
+                    }}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontSize: 11.5, fontWeight: '700' }}>Enviar Nova Comprovação</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {!verificationState?.status && !isOwner && !isAdmin && (
+                <View style={{
+                  flexDirection: 'column',
+                  backgroundColor: isDark ? 'rgba(5, 150, 105, 0.12)' : '#ECFDF5',
+                  borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0',
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  padding: 11,
+                  gap: 8,
+                }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <MaterialIcons name="security" size={18} color="#059669" />
+                    <Text style={{ fontSize: 12.5, fontWeight: '800', color: isDark ? '#34D399' : '#065F46' }}>
+                      Endereço Protegido por Segurança
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 11.5, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 16 }}>
+                    O endereço exato e o número da residência estão ocultos para proteger a família acolhedora. Se este é o seu animal, envie uma comprovação de tutor (fotos anteriores ou carteirinha) para desbloquear a localização completa.
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (!user) {
+                        Alert.alert('Login necessário', 'Entre ou crie uma conta para solicitar a comprovação de tutor.', [
+                          { text: 'Cancelar', style: 'cancel' },
+                          { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+                        ]);
+                        return;
+                      }
+                      setProofModalVisible(true);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: isDark ? 'rgba(5, 150, 105, 0.25)' : '#D1FAE5',
+                      borderColor: isDark ? '#059669' : '#10B981',
+                      borderWidth: 1,
+                      borderRadius: 10,
+                      paddingVertical: 9,
+                      paddingHorizontal: 12,
+                      marginTop: 2,
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <MaterialIcons name="verified-user" size={17} color={isDark ? '#34D399' : '#065F46'} style={{ marginRight: 6 }} />
+                    <Text style={{ color: isDark ? '#34D399' : '#065F46', fontWeight: '800', fontSize: 12.5 }}>
+                      Solicitar Endereço Exato (Comprovar Posse)
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
 
           {/* Botão de Ver Rota GPS */}
           <TouchableOpacity
@@ -1172,6 +1381,30 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 <Ionicons name="chatbubble-ellipses" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
                 <Text style={styles.primaryChatCtaText}>Enviar Mensagem ao Tutor</Text>
               </TouchableOpacity>
+
+              {/* Ação Especial: Oferecer Lar Temporário Solidário */}
+              {(item.status === 'lost' || (item.status === 'found' && !isAdoption)) && (
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: isDark ? 'rgba(22, 163, 74, 0.15)' : '#F0FDF4',
+                    borderColor: isDark ? 'rgba(22, 163, 74, 0.3)' : '#BBF7D0',
+                    borderWidth: 1.5,
+                    borderRadius: 14,
+                    paddingVertical: 12,
+                    marginTop: 10,
+                  }}
+                  onPress={handleOfferFoster}
+                  activeOpacity={0.85}
+                >
+                  <MaterialIcons name="home-work" size={19} color="#16A34A" style={{ marginRight: 6 }} />
+                  <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#15803D' }}>
+                    🏡 Oferecer Lar Temporário
+                  </Text>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
                 style={styles.reportBtn}
@@ -1580,6 +1813,17 @@ const ItemDetailScreen = ({ route, navigation }) => {
           ) : null}
         </View>
       </Modal>
+
+      {/* MODAL DE COMPROVAÇÃO DE TUTOR / LIBERAÇÃO DE ENDEREÇO */}
+      <ProofUploadModal
+        visible={proofModalVisible}
+        onClose={() => setProofModalVisible(false)}
+        item={item}
+        userId={user?.id}
+        onSuccess={() => {
+          loadVerification();
+        }}
+      />
 
       {/* MODAL DE CARTAZ */}
       <ShareFlyerModal

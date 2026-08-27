@@ -111,10 +111,17 @@ const formatCityState = (item) => {
 };
 
 const formatStreetNumberNeighborhood = (item) => {
+  const isFoundHome = item?.status === 'found' && item?.extra_fields?.found_custody !== 'spotted';
   const details = item?.extra_fields?.location_details;
+  const district = (details?.district || item?.neighborhood || '').trim();
+
+  // Se o animal foi acolhido em casa / lar temporário, protege a privacidade ocultando rua e número
+  if (isFoundHome) {
+    return district ? `Região do Bairro ${district} (Endereço protegido)` : 'Região do Bairro (Endereço protegido)';
+  }
+
   const street = (details?.street || item?.street || '').trim();
   const number = (details?.number || item?.house_number || item?.number || '').trim();
-  const district = (details?.district || item?.neighborhood || '').trim();
 
   const streetPart = street && number ? `${street}, ${number}` : street || (number ? `Nº ${number}` : '');
   const parts = [streetPart, district].filter(Boolean);

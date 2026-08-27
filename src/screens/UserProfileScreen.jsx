@@ -20,6 +20,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import * as userService from '../services/user';
 import * as itemsService from '../services/items';
 import * as ratingsService from '../services/ratings';
+import { getFosterProfile } from '../services/foster';
 import OptimizedImage from '../components/OptimizedImage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -31,6 +32,7 @@ const UserProfileScreen = ({ route, navigation }) => {
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
+  const [fosterProfile, setFosterProfile] = useState(null);
   const [userItems, setUserItems] = useState([]);
   const [ratingsData, setRatingsData] = useState({ ratings: [], average: 5.0, total: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
   const [activeMainSection, setActiveMainSection] = useState('posts'); // 'posts' | 'ratings'
@@ -52,12 +54,14 @@ const UserProfileScreen = ({ route, navigation }) => {
       return;
     }
     try {
-      const [profileData, itemsData, userRatings] = await Promise.all([
+      const [profileData, itemsData, userRatings, fosterData] = await Promise.all([
         userService.getUserById(userId),
         itemsService.getUserItems(userId),
         ratingsService.getUserRatings(userId),
+        getFosterProfile(userId),
       ]);
       setProfile(profileData || { name: initialName, avatar_url: initialAvatar });
+      setFosterProfile(fosterData);
       setUserItems(itemsData || []);
       setRatingsData(userRatings || { ratings: [], average: 5.0, total: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
 
@@ -509,6 +513,31 @@ const UserProfileScreen = ({ route, navigation }) => {
               <MaterialIcons name="share" size={18} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
+
+          {/* INSÍGNIA DE LAR TEMPORÁRIO SOLIDÁRIO */}
+          {fosterProfile?.isActive && (
+            <View style={{
+              marginTop: 12,
+              padding: 12,
+              borderRadius: 14,
+              backgroundColor: isDark ? 'rgba(22, 163, 74, 0.12)' : '#F0FDF4',
+              borderWidth: 1,
+              borderColor: isDark ? 'rgba(22, 163, 74, 0.3)' : '#BBF7D0',
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: '#DCFCE7', alignItems: 'center', justifyContent: 'center' }}>
+                  <MaterialIcons name="home-work" size={15} color="#16A34A" />
+                </View>
+                <Text style={{ fontSize: 13, fontWeight: '800', color: '#15803D' }}>
+                  Voluntário de Lar Temporário
+                </Text>
+              </View>
+              <Text style={{ fontSize: 12, color: isDark ? '#CBD5E1' : '#166534', lineHeight: 16 }}>
+                Disponível para acolher: {fosterProfile.species?.map(s => s === 'dogs' ? '🐶 Cães' : (s === 'cats' ? '🐱 Gatos' : (s === 'birds' ? '🦜 Aves' : '🐾 Outros'))).join(', ') || 'Pets'}.
+                {fosterProfile.neighborhood ? ` • ${fosterProfile.neighborhood}` : ''}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Grid de Estatísticas de Impacto */}

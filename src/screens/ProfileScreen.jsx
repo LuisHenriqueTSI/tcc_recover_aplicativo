@@ -16,6 +16,8 @@ import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import * as itemsService from '../services/items';
+import FosterVolunteerModal from '../components/FosterVolunteerModal';
+import { getFosterProfile } from '../services/foster';
 
 const ProfileScreen = ({ navigation }) => {
   const { userProfile, user, signOut, refreshProfile } = useAuth();
@@ -25,6 +27,8 @@ const ProfileScreen = ({ navigation }) => {
   const [uploading, setUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [localSavedLocation, setLocalSavedLocation] = useState(null);
+  const [fosterModalVisible, setFosterModalVisible] = useState(false);
+  const [fosterProfile, setFosterProfile] = useState(null);
 
   useEffect(() => {
     const loadProfileData = async () => {
@@ -35,8 +39,12 @@ const ProfileScreen = ({ navigation }) => {
       } catch (e) {}
       if (user) {
         await refreshProfile();
-        const items = await itemsService.getUserItems(user.id);
+        const [items, fosterData] = await Promise.all([
+          itemsService.getUserItems(user.id),
+          getFosterProfile(user.id),
+        ]);
         setUserItems(items || []);
+        setFosterProfile(fosterData);
       }
       setLoading(false);
     };
@@ -298,9 +306,51 @@ const ProfileScreen = ({ navigation }) => {
         <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ marginLeft: 4 }} />
       </TouchableOpacity>
 
-      {/* 4. GRUPO: COMUNIDADE */}
-      <Text style={[styles.groupTitle, { color: colors.textSecondary }]}>COMUNIDADE</Text>
+      {/* 4. GRUPO: COMUNIDADE & IMPACTO */}
+      <Text style={[styles.groupTitle, { color: colors.textSecondary }]}>COMUNIDADE & IMPACTO</Text>
       <View style={[styles.menuGroup, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+        {/* Item Especial: Lar Temporário Solidário */}
+        <TouchableOpacity
+          style={styles.menuRow}
+          onPress={() => setFosterModalVisible(true)}
+          activeOpacity={0.75}
+        >
+          <View style={[styles.menuIconBox, { backgroundColor: fosterProfile?.isActive ? (isDark ? 'rgba(22, 163, 74, 0.2)' : '#DCFCE7') : (isDark ? 'rgba(255, 255, 255, 0.08)' : '#F0FDF4') }]}>
+            <MaterialIcons
+              name="home-work"
+              size={20}
+              color={fosterProfile?.isActive ? '#16A34A' : '#059669'}
+            />
+          </View>
+          <View style={styles.menuTextBox}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={[styles.menuTitle, { color: colors.text }]}>Lar Temporário Solidário</Text>
+              <View style={{
+                paddingHorizontal: 6,
+                paddingVertical: 1.5,
+                borderRadius: 6,
+                backgroundColor: fosterProfile?.isActive ? '#DCFCE7' : (isDark ? '#334155' : '#E2E8F0'),
+              }}>
+                <Text style={{
+                  fontSize: 10,
+                  fontWeight: '800',
+                  color: fosterProfile?.isActive ? '#15803D' : colors.textSecondary,
+                }}>
+                  {fosterProfile?.isActive ? 'ATIVO' : 'INATIVO'}
+                </Text>
+              </View>
+            </View>
+            <Text style={[styles.menuDescription, { color: colors.textSecondary }]} numberOfLines={1}>
+              {fosterProfile?.isActive
+                ? `Acolhe: ${fosterProfile.species?.map(s => s === 'dogs' ? '🐶 Cães' : (s === 'cats' ? '🐱 Gatos' : '🐾 Outros')).join(', ') || 'Pets'}`
+                : 'Ofereça abrigo temporário a pets resgatados'}
+            </Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={20} color={colors.textMuted} />
+        </TouchableOpacity>
+
+        <View style={[styles.menuDivider, { backgroundColor: colors.divider }]} />
+
         {communityLinks.map((item, index) => (
           <React.Fragment key={item.route}>
             <TouchableOpacity
@@ -365,6 +415,13 @@ const ProfileScreen = ({ navigation }) => {
         <Feather name="log-out" size={16} color="#DC2626" style={{ marginRight: 8 }} />
         <Text style={styles.logoutButtonText}>Sair da conta</Text>
       </TouchableOpacity>
+
+      {/* Modal de Lar Temporário Solidário */}
+      <FosterVolunteerModal
+        visible={fosterModalVisible}
+        onClose={() => setFosterModalVisible(false)}
+        onSaved={(updated) => setFosterProfile(updated)}
+      />
     </ScrollView>
   );
 };

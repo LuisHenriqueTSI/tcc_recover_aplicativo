@@ -21,14 +21,20 @@ import * as itemsService from '../services/items';
 import * as userService from '../services/user';
 import * as storiesService from '../services/stories';
 import * as notificationsService from '../services/notifications';
+import {
+  listPendingVerifications,
+  approveVerification,
+  rejectVerification,
+} from '../services/proofVerification';
 
 const AdminScreen = ({ navigation }) => {
   const { user, isAdmin } = useAuth();
   const { colors, isDark } = useTheme();
 
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'items' | 'users' | 'stories'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'verifications' | 'items' | 'users' | 'stories'
   const [statistics, setStatistics] = useState(null);
   const [reports, setReports] = useState([]);
+  const [verifications, setVerifications] = useState([]);
   const [stories, setStories] = useState([]);
   const [items, setItems] = useState([]);
   const [usersList, setUsersList] = useState([]);
@@ -45,15 +51,17 @@ const AdminScreen = ({ navigation }) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
     try {
-      const [stats, pendingReports, successStories, allItems, allUsers] = await Promise.all([
+      const [stats, pendingReports, pendingVerifs, successStories, allItems, allUsers] = await Promise.all([
         getStatistics(),
         listPendingReports(),
+        listPendingVerifications(),
         storiesService.listSuccessStories(),
         itemsService.getItems({ limit: 100 }),
         userService.listAllProfiles('', 100),
       ]);
       setStatistics(stats || {});
       setReports(pendingReports || []);
+      setVerifications(pendingVerifs || []);
       setStories(successStories || []);
       setItems(allItems || []);
       setUsersList(allUsers || []);
@@ -98,6 +106,69 @@ const AdminScreen = ({ navigation }) => {
               Alert.alert('Sucesso', removePublication ? 'Publicação excluída.' : 'Denúncia finalizada.');
             } catch (error) {
               Alert.alert('Erro', error.message || 'Não foi possível atualizar a denúncia.');
+            } finally {
+              setProcessingId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleApproveVerification = (verif) => {
+    Alert.alert(
+      'Aprovar Comprovação de Tutor',
+      `Deseja confirmar a aprovação da posse do pet para "${verif.profiles?.name || 'o requerente'}"? O endereço exato do animal será liberado para este usuário.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Aprovar e Liberar',
+          onPress: async () => {
+            setProcessingId(verif.id);
+            try {
+              await approveVerification(verif.id, {
+                itemId: verif.item_id,
+                claimantId: verif.claimant_id,
+                itemTitle: verif.items?.title || 'o pet',
+              });
+              setVerifications((prev) =>
+                prev.map((v) => (v.id === verif.id ? { ...v, status: 'approved' } : v))
+              );
+              Alert.alert('Sucesso! 🎉', 'Comprovação aprovada. O endereço exato foi liberado para o tutor.');
+            } catch (err) {
+              Alert.alert('Erro ao aprovar', err.message || 'Não foi possível concluir.');
+            } finally {
+              setProcessingId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleRejectVerification = (verif) => {
+    Alert.alert(
+      'Rejeitar Comprovação',
+      `Deseja rejeitar o pedido de comprovação de posse de "${verif.profiles?.name || 'o requerente'}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Rejeitar',
+          style: 'destructive',
+          onPress: async () => {
+            setProcessingId(verif.id);
+            try {
+              await rejectVerification(verif.id, 'Documentação ou fotos insuficientes para comprovar a posse.', {
+                itemId: verif.item_id,
+                claimantId: verif.claimant_id,
+                itemTitle: verif.items?.title || 'o pet',
+              });
+              setVerifications((prev) =>
+                prev.map((v) => (v.id === verif.id ? { ...v, status: 'rejected' } : v))
+              );
+              Alert.alert('Rejeitado', 'O pedido foi rejeitado e o usuário foi notificado.');
+            } catch (err) {
+              Alert.alert('Erro ao rejeitar', err.message || 'Não foi possível concluir.');
             } finally {
               setProcessingId(null);
             }
@@ -354,6 +425,20 @@ const AdminScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          onPress={() => setActiveTab('verifications')}
+          style={[
+            styles.tabButton,
+            { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: colors.cardBorder },
+            activeTab === 'verifications' && [styles.tabButtonActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+          ]}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.tabButtonText, { color: activeTab === 'verifications' ? '#FFFFFF' : colors.textSecondary }]}>
+            Comprovações ({verifications.length})
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           onPress={() => setActiveTab('items')}
           style={[
             styles.tabButton,
@@ -363,7 +448,7 @@ const AdminScreen = ({ navigation }) => {
           activeOpacity={0.8}
         >
           <Text style={[styles.tabButtonText, { color: activeTab === 'items' ? '#FFFFFF' : colors.textSecondary }]}>
-            Publicações ({items.length})
+            Pets ({items.length})
           </Text>
         </TouchableOpacity>
 
@@ -497,6 +582,108 @@ const AdminScreen = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
           </View>
+        </View>
+      )}
+
+      {/* CONTEÚDO DA ABA COMPROVAÇÕES DE TUTORES */}
+      {activeTab === 'verifications' && (
+        <View>
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Comprovações de Tutela</Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
+                Solicitações para liberação de endereço e devolução de pets
+              </Text>
+            </View>
+          </View>
+
+          {verifications.length === 0 ? (
+            <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+              <MaterialIcons name="verified-user" size={36} color="#059669" style={{ marginBottom: 6 }} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhuma comprovação pendente</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                Todas as solicitações de posse de animais foram analisadas.
+              </Text>
+            </View>
+          ) : (
+            verifications.map((v) => (
+              <View key={String(v.id)} style={[styles.reportCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+                <View style={styles.reportTopRow}>
+                  <View style={[styles.reportIcon, { backgroundColor: '#ECFDF5' }]}>
+                    <MaterialIcons name="verified-user" size={19} color="#059669" />
+                  </View>
+                  <View style={styles.reportMain}>
+                    <Text style={[styles.reportTitle, { color: colors.text }]}>
+                      {v.items?.title || 'Animal'}
+                    </Text>
+                    <Text style={[styles.reportMeta, { color: colors.textMuted }]}>
+                      Requerido por {v.profiles?.name || v.profiles?.email || 'Usuário'} • {new Date(v.created_at).toLocaleDateString('pt-BR')}
+                    </Text>
+                  </View>
+                  <View style={[styles.statusBadge, { backgroundColor: v.status === 'approved' ? '#ECFDF5' : (v.status === 'rejected' ? '#FEF2F2' : '#FFFBEB') }]}>
+                    <Text style={{ fontSize: 10, fontWeight: '800', color: v.status === 'approved' ? '#059669' : (v.status === 'rejected' ? '#DC2626' : '#D97706') }}>
+                      {(v.status || 'PENDENTE').toUpperCase()}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Justificativa do Usuário */}
+                <View style={[styles.reasonBox, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.cardBorder }]}>
+                  <Text style={[styles.reasonLabel, { color: colors.primary }]}>Justificativa de Posse:</Text>
+                  <Text style={[styles.reasonText, { color: colors.text }]}>{v.message}</Text>
+                </View>
+
+                {/* Foto(s) de comprovação anexada(s) */}
+                {v.proof_photo_url ? (
+                  <View style={{ marginBottom: 10 }}>
+                    <Text style={{ fontSize: 11.5, fontWeight: '700', color: colors.textMuted, marginBottom: 4 }}>
+                      Foto de Comprovação Anexada:
+                    </Text>
+                    <Image
+                      source={{ uri: v.proof_photo_url }}
+                      style={{ width: '100%', height: 160, borderRadius: 10, backgroundColor: '#E2E8F0' }}
+                      resizeMode="cover"
+                    />
+                  </View>
+                ) : null}
+
+                {/* Botões de Ação */}
+                <View style={styles.reviewActions}>
+                  <TouchableOpacity
+                    style={[styles.actionOutlineBtn, { borderColor: colors.cardBorder }]}
+                    onPress={() => navigation.navigate('ItemDetail', { itemId: v.item_id })}
+                  >
+                    <MaterialIcons name="visibility" size={16} color={colors.primary} style={{ marginRight: 4 }} />
+                    <Text style={{ fontSize: 12.5, fontWeight: '700', color: colors.primary }}>Ver Pet</Text>
+                  </TouchableOpacity>
+
+                  {v.status === 'pending' && (
+                    <>
+                      <TouchableOpacity
+                        style={[styles.actionOutlineBtn, { borderColor: '#FECACA', backgroundColor: '#FEF2F2' }]}
+                        onPress={() => handleRejectVerification(v)}
+                        disabled={processingId === v.id}
+                      >
+                        <MaterialIcons name="close" size={16} color="#DC2626" style={{ marginRight: 4 }} />
+                        <Text style={{ fontSize: 12.5, fontWeight: '700', color: '#DC2626' }}>Rejeitar</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[styles.keepButton, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}
+                        onPress={() => handleApproveVerification(v)}
+                        disabled={processingId === v.id}
+                      >
+                        <MaterialIcons name="check" size={16} color="#059669" style={{ marginRight: 4 }} />
+                        <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#059669' }}>
+                          {processingId === v.id ? 'Aprovando...' : 'Aprovar Tutela'}
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              </View>
+            ))
+          )}
         </View>
       )}
 
