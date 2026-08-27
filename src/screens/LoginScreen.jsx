@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,19 +8,41 @@ import {
   TouchableOpacity,
   Platform,
   Keyboard,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import { getFriendlyAuthErrorMessage } from '../utils/authErrors';
 
 const LoginScreen = ({ navigation }) => {
-  const { signIn, loading } = useAuth();
+  const { signIn, loading, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
+
+  // Captura o botão físico de voltar do Android e redireciona para a tela inicial
+  useFocusEffect(
+    useCallback(() => {
+      const onHardwareBackPress = () => {
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: user ? 'MainApp' : 'PublicApp' }],
+          });
+        }
+        return true;
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onHardwareBackPress);
+      return () => subscription.remove();
+    }, [navigation, user])
+  );
 
   const validateForm = () => {
     const newErrors = {};

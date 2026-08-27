@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,11 @@ import {
   TouchableOpacity,
   Keyboard,
   Platform,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
@@ -26,7 +28,27 @@ const formatBrazilianPhone = (value = '') => {
 };
 
 const RegisterScreen = ({ navigation }) => {
-  const { signUp, confirmSignUp, loading } = useAuth();
+  const { signUp, confirmSignUp, loading, user } = useAuth();
+
+  // Captura o botão físico de voltar do Android e redireciona para a tela inicial
+  useFocusEffect(
+    useCallback(() => {
+      const onHardwareBackPress = () => {
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: user ? 'MainApp' : 'PublicApp' }],
+          });
+        }
+        return true;
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onHardwareBackPress);
+      return () => subscription.remove();
+    }, [navigation, user])
+  );
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
