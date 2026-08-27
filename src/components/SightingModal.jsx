@@ -89,7 +89,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
     }
     setUploading(true);
     let pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       quality: 0.7,
     });
