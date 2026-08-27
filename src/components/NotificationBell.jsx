@@ -188,9 +188,8 @@ export default function NotificationBell({ style }) {
 const styles = StyleSheet.create({
   bellButton: {
     padding: 4,
-    marginRight: 8,
-    minWidth: 40,
-    minHeight: 40,
+    minWidth: 38,
+    minHeight: 38,
     alignItems: 'center',
     justifyContent: 'center',
   },

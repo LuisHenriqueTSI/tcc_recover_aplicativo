@@ -1200,7 +1200,7 @@ const HomeScreen = ({ navigation, route }) => {
               <NotificationBell />
               <TouchableOpacity
                 onPress={() => setShowProfileMenu((prev) => !prev)}
-                style={{ borderWidth: 2, borderColor: '#fff', borderRadius: 22, padding: 2, marginLeft: 8 }}
+                style={{ borderWidth: 2, borderColor: '#fff', borderRadius: 22, padding: 2, marginLeft: 4 }}
                 accessibilityLabel="Abrir menu do perfil"
               >
                 {userProfile?.avatar_url ? (
