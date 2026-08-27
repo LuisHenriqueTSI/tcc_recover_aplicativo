@@ -238,19 +238,33 @@ const MapScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.infoClose} onPress={() => setSelectedItem(null)}>
             <Text style={styles.infoCloseText}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.infoTitle} numberOfLines={1}>{selectedItem.title || 'Animal'}</Text>
-          <Text style={[styles.infoStatus, { color: statusColor }]}>
-            {statusLabel}
-          </Text>
-          <Text style={{ fontSize: 12, fontWeight: '700', color: statusColor, marginTop: 4 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            {selectedItem.item_photos?.[0]?.url ? (
+              <Image
+                source={{ uri: selectedItem.item_photos[0].url }}
+                style={{ width: 56, height: 56, borderRadius: 10, marginRight: 12, backgroundColor: '#E2E8F0' }}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={{ width: 56, height: 56, borderRadius: 10, marginRight: 12, backgroundColor: statusColor + '20', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 26 }}>🐾</Text>
+              </View>
+            )}
+            <View style={{ flex: 1 }}>
+              <Text style={styles.infoTitle} numberOfLines={1}>{selectedItem.title || 'Animal'}</Text>
+              <Text style={[styles.infoStatus, { color: statusColor, marginTop: 2 }]}>
+                {statusLabel}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={{ fontSize: 11, fontWeight: '700', color: statusColor }}>
             {isFound ? 'Local onde foi encontrado:' : (isAdoption ? 'Local para adoção:' : 'Última vez visto em:')}
           </Text>
           <Text style={styles.infoLocation} numberOfLines={1}>
-            {[selectedItem.city, selectedItem.state, selectedItem.neighborhood].filter(Boolean).join(' - ') || 'Localização escolhida no mapa'}
+            {[selectedItem.neighborhood, selectedItem.city, selectedItem.state].filter(Boolean).join(' - ') || 'Localização no mapa'}
           </Text>
-          {selectedItem.description ? (
-            <Text style={styles.infoDescription} numberOfLines={2}>{selectedItem.description}</Text>
-          ) : null}
+
           <TouchableOpacity style={styles.detailsButton} onPress={() => navigation.navigate('ItemDetail', { itemId: selectedItem.id })}>
             <Text style={styles.detailsButtonText}>Ver informações completas</Text>
           </TouchableOpacity>
@@ -430,83 +444,98 @@ const styles = StyleSheet.create({
   loadingText: { color: '#374151' },
 });
 
+const getSpeciesEmoji = (item) => {
+  const species = (item.species || item.extra_fields?.species || '').toLowerCase();
+  const title = (item.title || '').toLowerCase();
+
+  if (species.includes('cachorro') || species.includes('cao') || species.includes('cão') || title.includes('cachorro') || title.includes('cão')) {
+    return '🐶';
+  }
+  if (species.includes('gato') || title.includes('gato')) {
+    return '🐱';
+  }
+  if (species.includes('ave') || species.includes('passaro') || species.includes('pássaro') || species.includes('calopsita') || species.includes('papagaio')) {
+    return '🦜';
+  }
+  if (species.includes('cavalo') || species.includes('equino') || species.includes('egua') || species.includes('égua')) {
+    return '🐴';
+  }
+  if (species.includes('bovino') || species.includes('vaca') || species.includes('boi')) {
+    return '🐮';
+  }
+  if (species.includes('coelho')) {
+    return '🐰';
+  }
+  return '🐾';
+};
+
 const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) => {
-  const photoUrl = item.item_photos?.[0]?.url;
   const coordinate = { latitude: Number(item.latitude), longitude: Number(item.longitude) };
   const isAdoption = itemsService.isPetAvailableForAdoption(item);
   const isFound = !isAdoption && item.status === 'found';
   const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#F97316');
   const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
+  const emoji = getSpeciesEmoji(item);
 
-  // Tamanhos com buffer de segurança transparente para evitar qualquer corte nativo
-  const CIRCLE_SIZE = isSelected ? 60 : 48;
-  const CANVAS_SIZE = CIRCLE_SIZE + 24; // Buffer transparente de 12px em cada lado
-  const BORDER = 3.5;
-  const PHOTO = CIRCLE_SIZE - BORDER * 2;
+  const PIN_SIZE = isSelected ? 48 : 40;
+  const INNER_SIZE = isSelected ? 38 : 32;
 
   return (
     <Marker
       coordinate={coordinate}
       onPress={onPress}
       onCalloutPress={onCalloutPress}
-      tracksViewChanges={true}
-      anchor={{ x: 0.5, y: 0.5 }}
-      style={{ width: CANVAS_SIZE, height: CANVAS_SIZE }}
+      tracksViewChanges={false}
+      anchor={{ x: 0.5, y: 1.0 }}
     >
-      {/*
-        Wrapper transparente com buffer de 12px:
-        Garante que o Android AirMapMarker tenha espaço de sobra no canvas nativo,
-        eliminando 100% qualquer chance de corte em meia-lua nas bordas.
-      */}
-      <View
-        collapsable={false}
-        style={{
-          width: CANVAS_SIZE,
-          height: CANVAS_SIZE,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'transparent',
-        }}
-      >
-        {/* Círculo com borda colorida exatamente no centro do canvas */}
+      <View collapsable={false} style={{ alignItems: 'center', justifyContent: 'center' }}>
+        {/* Cabeça da Gota (Círculo colorido com sombra) */}
         <View
           style={{
-            width: CIRCLE_SIZE,
-            height: CIRCLE_SIZE,
-            borderRadius: CIRCLE_SIZE / 2,
-            borderWidth: BORDER,
-            borderColor: statusColor,
-            backgroundColor: '#FFFFFF',
+            width: PIN_SIZE,
+            height: PIN_SIZE,
+            borderRadius: PIN_SIZE / 2,
+            backgroundColor: statusColor,
             alignItems: 'center',
             justifyContent: 'center',
+            borderWidth: 2,
+            borderColor: '#FFFFFF',
+            shadowColor: statusColor,
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.4,
+            shadowRadius: 4,
+            elevation: 5,
           }}
         >
-          {photoUrl ? (
-            <Image
-              source={{ uri: photoUrl }}
-              style={{
-                width: PHOTO,
-                height: PHOTO,
-                borderRadius: PHOTO / 2,
-                backgroundColor: '#E2E8F0',
-              }}
-              resizeMode="cover"
-            />
-          ) : (
-            <View
-              style={{
-                width: PHOTO,
-                height: PHOTO,
-                borderRadius: PHOTO / 2,
-                backgroundColor: statusColor + '20',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 16 }}>🐾</Text>
-            </View>
-          )}
+          {/* Núcleo Branco com Ícone da Espécie */}
+          <View
+            style={{
+              width: INNER_SIZE,
+              height: INNER_SIZE,
+              borderRadius: INNER_SIZE / 2,
+              backgroundColor: '#FFFFFF',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={{ fontSize: isSelected ? 20 : 16 }}>{emoji}</Text>
+          </View>
         </View>
+
+        {/* Ponta da Lágrima virada para baixo */}
+        <View
+          style={{
+            width: 0,
+            height: 0,
+            borderLeftWidth: 5,
+            borderRightWidth: 5,
+            borderTopWidth: 7,
+            borderLeftColor: 'transparent',
+            borderRightColor: 'transparent',
+            borderTopColor: statusColor,
+            marginTop: -2,
+          }}
+        />
       </View>
       <Callout>
         <View style={styles.callout}>
