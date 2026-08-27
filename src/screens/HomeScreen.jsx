@@ -149,6 +149,7 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
   const { colors, isDark } = useTheme();
   const [carouselIndex, setCarouselIndex] = React.useState(0);
   const [cardWidth, setCardWidth] = React.useState(0);
+  const [expandedAttributes, setExpandedAttributes] = React.useState(false);
 
   const isAdoption = Boolean(item.extra_fields?.is_direct_adoption || itemsService.isPetAvailableForAdoption(item));
   const isFound = !isAdoption && item.status === 'found';
@@ -180,6 +181,43 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
   const activeReward = Array.isArray(item.rewards)
     ? item.rewards.find(reward => reward?.status === 'active')
     : null;
+
+  const petAttributeChips = React.useMemo(() => {
+    const list = [];
+    if (animalBreed && animalBreed !== 'Sem raça definida') {
+      list.push({ key: 'breed', text: `🏷️ ${animalBreed}` });
+    }
+    if (animalGender && animalGender !== 'Não informado') {
+      list.push({
+        key: 'gender',
+        text: animalGender.toLowerCase().includes('f') ? '♀️ Fêmea' : '♂️ Macho',
+      });
+    }
+    if (animalSize && animalSize !== 'Não informado') {
+      list.push({ key: 'size', text: `📏 ${animalSize.replace(/porte\s*/i, '')}` });
+    }
+    if (animalAge && animalAge !== 'Não informado') {
+      list.push({
+        key: 'age',
+        text: animalAge.toLowerCase().includes('filhote') ? '🍼 Filhote' : animalAge.toLowerCase().includes('idoso') ? '👴 Idoso' : '🐕 Adulto',
+      });
+    }
+    if (animalColor && animalColor !== 'Cor não informada') {
+      list.push({
+        key: 'color',
+        isColor: true,
+        colorHex: getColorHex(animalColor),
+        text: animalColor,
+      });
+    }
+    if (hasCollar) {
+      list.push({ key: 'collar', isCollar: true, text: '📿 Coleira' });
+    }
+    if (isNeutered) {
+      list.push({ key: 'neutered', isNeutered: true, text: '✂️ Castrado' });
+    }
+    return list;
+  }, [animalBreed, animalGender, animalSize, animalAge, animalColor, hasCollar, isNeutered]);
 
   return (
     <Card style={{
@@ -354,82 +392,146 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
           ) : null}
         </View>
 
-        {/* Chips de Atributos Minimalistas com Emojis e Bolinha de Cor */}
-        {(animalBreed || (animalGender && animalGender !== 'Não informado') || (animalSize && animalSize !== 'Não informado') || (animalAge && animalAge !== 'Não informado') || (animalColor && animalColor !== 'Cor não informada') || hasCollar || isNeutered) ? (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-            {/* Raça */}
-            {animalBreed && animalBreed !== 'Sem raça definida' ? (
-              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>🏷️ {animalBreed}</Text>
-              </View>
-            ) : null}
+        {/* Chips de Atributos Minimalistas em Linha Única com Expansão '•••' */}
+        {petAttributeChips.length > 0 ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+            {(expandedAttributes ? petAttributeChips : petAttributeChips.slice(0, 3)).map((chip) => {
+              if (chip.isColor) {
+                return (
+                  <View
+                    key={chip.key}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+                      borderRadius: 8,
+                      paddingHorizontal: 8,
+                      paddingVertical: 3.5,
+                      borderWidth: 1,
+                      borderColor: isDark ? '#334155' : '#E2E8F0',
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 9,
+                        height: 9,
+                        borderRadius: 4.5,
+                        backgroundColor: chip.colorHex,
+                        marginRight: 5,
+                        borderWidth: chip.colorHex === '#FFFFFF' ? 1 : 0.5,
+                        borderColor: isDark ? '#64748B' : '#94A3B8',
+                      }}
+                    />
+                    <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>
+                      {chip.text}
+                    </Text>
+                  </View>
+                );
+              }
 
-            {/* Sexo com Emoji */}
-            {animalGender && animalGender !== 'Não informado' ? (
-              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>
-                  {animalGender.toLowerCase().includes('f') ? '♀️ Fêmea' : '♂️ Macho'}
+              if (chip.isCollar) {
+                return (
+                  <View
+                    key={chip.key}
+                    style={{
+                      backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF',
+                      borderRadius: 8,
+                      paddingHorizontal: 8,
+                      paddingVertical: 3.5,
+                      borderWidth: 1,
+                      borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : '#BFDBFE',
+                    }}
+                  >
+                    <Text style={{ fontSize: 11.5, color: isDark ? '#93C5FD' : '#1E40AF', fontWeight: '600' }}>
+                      {chip.text}
+                    </Text>
+                  </View>
+                );
+              }
+
+              if (chip.isNeutered) {
+                return (
+                  <View
+                    key={chip.key}
+                    style={{
+                      backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5',
+                      borderRadius: 8,
+                      paddingHorizontal: 8,
+                      paddingVertical: 3.5,
+                      borderWidth: 1,
+                      borderColor: isDark ? 'rgba(16, 185, 129, 0.3)' : '#A7F3D0',
+                    }}
+                  >
+                    <Text style={{ fontSize: 11.5, color: isDark ? '#6EE7B7' : '#047857', fontWeight: '600' }}>
+                      {chip.text}
+                    </Text>
+                  </View>
+                );
+              }
+
+              return (
+                <View
+                  key={chip.key}
+                  style={{
+                    backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+                    borderRadius: 8,
+                    paddingHorizontal: 8,
+                    paddingVertical: 3.5,
+                    borderWidth: 1,
+                    borderColor: isDark ? '#334155' : '#E2E8F0',
+                  }}
+                >
+                  <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>
+                    {chip.text}
+                  </Text>
+                </View>
+              );
+            })}
+
+            {/* Botão de Ver Mais '•••' quando exceder a linha inicial */}
+            {!expandedAttributes && petAttributeChips.length > 3 ? (
+              <TouchableOpacity
+                onPress={() => setExpandedAttributes(true)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={{
+                  backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+                  borderRadius: 8,
+                  paddingHorizontal: 8,
+                  paddingVertical: 3.5,
+                  borderWidth: 1,
+                  borderColor: isDark ? '#334155' : '#CBD5E1',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 11, color: isDark ? '#93C5FD' : '#2563EB', fontWeight: '800', letterSpacing: 1.5 }}>
+                  •••
                 </Text>
-              </View>
+              </TouchableOpacity>
             ) : null}
 
-            {/* Porte com Emoji */}
-            {animalSize && animalSize !== 'Não informado' ? (
-              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>
-                  📏 {animalSize.replace(/porte\s*/i, '')}
+            {/* Botão de Recolher '✕' quando estiver expandido */}
+            {expandedAttributes && petAttributeChips.length > 3 ? (
+              <TouchableOpacity
+                onPress={() => setExpandedAttributes(false)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={{
+                  backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+                  borderRadius: 8,
+                  paddingHorizontal: 7,
+                  paddingVertical: 3.5,
+                  borderWidth: 1,
+                  borderColor: isDark ? '#334155' : '#CBD5E1',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700' }}>
+                  ✕
                 </Text>
-              </View>
-            ) : null}
-
-            {/* Idade com Emoji */}
-            {animalAge && animalAge !== 'Não informado' ? (
-              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>
-                  {animalAge.toLowerCase().includes('filhote') ? '🍼 Filhote' : animalAge.toLowerCase().includes('idoso') ? '👴 Idoso' : '🐕 Adulto'}
-                </Text>
-              </View>
-            ) : null}
-
-            {/* Cor com Bolinha Colorida */}
-            {animalColor && animalColor !== 'Cor não informada' ? (
-              <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
-                borderRadius: 8,
-                paddingHorizontal: 8,
-                paddingVertical: 3.5,
-                borderWidth: 1,
-                borderColor: isDark ? '#334155' : '#E2E8F0',
-              }}>
-                <View style={{
-                  width: 9,
-                  height: 9,
-                  borderRadius: 4.5,
-                  backgroundColor: getColorHex(animalColor),
-                  marginRight: 5,
-                  borderWidth: getColorHex(animalColor) === '#FFFFFF' ? 1 : 0.5,
-                  borderColor: isDark ? '#64748B' : '#94A3B8',
-                }} />
-                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>
-                  {animalColor}
-                </Text>
-              </View>
-            ) : null}
-
-            {/* Coleira */}
-            {hasCollar ? (
-              <View style={{ backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : '#BFDBFE' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#93C5FD' : '#1E40AF', fontWeight: '600' }}>📿 Coleira</Text>
-              </View>
-            ) : null}
-
-            {/* Castrado */}
-            {isNeutered ? (
-              <View style={{ backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? 'rgba(16, 185, 129, 0.3)' : '#A7F3D0' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#6EE7B7' : '#047857', fontWeight: '600' }}>✂️ Castrado</Text>
-              </View>
+              </TouchableOpacity>
             ) : null}
           </View>
         ) : null}
