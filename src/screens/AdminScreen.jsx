@@ -20,6 +20,7 @@ import { listPendingReports, resolveReport } from '../services/reports';
 import * as itemsService from '../services/items';
 import * as userService from '../services/user';
 import * as storiesService from '../services/stories';
+import * as notificationsService from '../services/notifications';
 
 const AdminScreen = ({ navigation }) => {
   const { user, isAdmin } = useAuth();
@@ -204,6 +205,21 @@ const AdminScreen = ({ navigation }) => {
         },
       ]
     );
+  };
+
+  const handleSendTestWhatsAppNotification = async () => {
+    try {
+      await notificationsService.createNotification({
+        user_id: user.id,
+        type: 'test',
+        title: '🐾 Teste de Notificação WeFIND',
+        message: 'Esta é uma notificação de teste enviada a partir do Painel Administrativo WeFIND para validação do webhook e disparo WhatsApp.',
+        item_id: null,
+      });
+      Alert.alert('Teste Disparado! 📲', 'A notificação de teste foi gravada no banco e encaminhada para os disparadores configurados.');
+    } catch (error) {
+      Alert.alert('Erro ao disparar teste', error?.message || 'Não foi possível processar o teste.');
+    }
   };
 
   if (!isAdmin) {
@@ -449,6 +465,38 @@ const AdminScreen = ({ navigation }) => {
               </View>
             ))
           )}
+
+          {/* FERRAMENTAS DE TESTE & DIAGNÓSTICO (EXCLUSIVO ADMIN) */}
+          <View style={[styles.testSectionCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder, marginTop: 16 }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+              <MaterialIcons name="science" size={20} color="#2563EB" style={{ marginRight: 6 }} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Testes & Diagnóstico</Text>
+            </View>
+            <Text style={[styles.sectionSubtitle, { color: colors.textSecondary, marginBottom: 12 }]}>
+              Validação de webhooks, disparadores e notificações do sistema.
+            </Text>
+
+            <TouchableOpacity
+              onPress={handleSendTestWhatsAppNotification}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF',
+                borderWidth: 1,
+                borderColor: isDark ? '#2563EB' : '#BFDBFE',
+                borderRadius: 12,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="send" size={17} color="#2563EB" style={{ marginRight: 6 }} />
+              <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#2563EB' }}>
+                Testar Disparo de Notificação / WhatsApp
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -727,6 +775,7 @@ const styles = StyleSheet.create({
   storyIconBox: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   storyPetTitle: { fontSize: 14, fontWeight: '800' },
   storyTestimonial: { fontSize: 12, fontStyle: 'italic', marginTop: 4 },
+  testSectionCard: { padding: 14, borderRadius: 16, borderWidth: 1 },
 });
 
 export default AdminScreen;

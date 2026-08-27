@@ -1513,14 +1513,6 @@ const HomeScreen = ({ navigation, route }) => {
             </View>
           )}
         </View>
-        {isAdmin && (
-          <TouchableOpacity
-            onPress={handleSendTestNotification}
-            style={{ marginTop: 12, backgroundColor: '#fff', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14, alignItems: 'center', borderWidth: 1, borderColor: '#BFDBFE' }}
-          >
-            <Text style={{ color: '#2563EB', fontWeight: '700', fontSize: 14 }}>Testar WhatsApp</Text>
-          </TouchableOpacity>
-        )}
 
         {/* Modal para atualizar localidade do perfil ou filtrar por região */}
         <Modal
