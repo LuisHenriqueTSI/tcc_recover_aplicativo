@@ -3,9 +3,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { getMessages } from '../services/messages';
 import { Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, TextInput, Alert } from 'react-native';
-import { getConversations, hideConversation } from '../services/messages';
-import { getItemById } from '../services/items';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, TextInput, Alert, RefreshControl } from 'react-native';
+import { getConversations, getCachedConversations, hideConversation, getMessages } from '../services/messages';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
@@ -19,72 +18,81 @@ const InboxScreen = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [selectedConversationKey, setSelectedConversationKey] = useState(null);
 
-  const loadConversations = useCallback(async () => {
-    setLoading(true);
+  const loadConversations = useCallback(async (isSilent = false) => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    if (!isSilent && conversations.length === 0) {
+      setLoading(true);
+    }
     setError('');
+
     try {
-      if (!user?.id) throw new Error('Usuário não autenticado');
-      const convs = await getConversations(user.id);
-      const convsWithTitles = await Promise.all(convs.map(async (conv) => {
-        if (!conv.itemTitle && conv.itemId) {
-          const item = await getItemById(conv.itemId);
-          return { ...conv, itemTitle: item?.title || '' };
+      // 1. Tenta carregar do cache instantâneo se a lista estiver vazia
+      if (conversations.length === 0) {
+        const cached = await getCachedConversations(user.id);
+        if (cached && cached.length > 0) {
+          setConversations(cached);
+          setFiltered(cached);
+          setLoading(false);
         }
-        return conv;
-      }));
-      setConversations(convsWithTitles);
-      setFiltered(convsWithTitles);
+      }
+
+      // 2. Busca do servidor de forma ultra-rápida (batch queries)
+      const convs = await getConversations(user.id);
+      setConversations(convs || []);
+      setFiltered(convs || []);
     } catch (err) {
-      setError(err.message || 'Erro ao carregar conversas');
+      console.log('[InboxScreen] Erro ao carregar conversas:', err.message);
+      if (conversations.length === 0) {
+        setError(err.message || 'Erro ao carregar conversas');
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [user]);
+  }, [user?.id, conversations.length]);
 
   useEffect(() => {
     loadConversations();
-  }, [loadConversations]);
+  }, [user?.id]);
 
   useFocusEffect(
     useCallback(() => {
-      loadConversations();
-    }, [loadConversations])
+      // Ao focar na tela, atualiza silenciosamente sem travar a interface
+      loadConversations(true);
+    }, [user?.id])
   );
 
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadConversations(true);
+  };
+
   useEffect(() => {
-    let cancelled = false;
-    async function searchMessages() {
-      if (!search.trim()) {
-        setFiltered(conversations);
-        setSearchResults([]);
-        setSearching(false);
-        return;
-      }
-      setSearching(true);
-      const s = search.trim().toLowerCase();
-      let results = [];
-      for (const c of conversations) {
-        try {
-          const msgs = await getMessages(user.id, c.otherId, 200);
-          msgs.forEach(m => {
-            if ((m.content || '').toLowerCase().includes(s)) {
-              results.push({ conversation: c, message: m });
-            }
-          });
-        } catch (e) {}
-      }
-      if (!cancelled) {
-        setSearchResults(results);
-        setSearching(false);
-      }
+    if (!search.trim()) {
+      setFiltered(conversations);
+      setSearchResults([]);
+      setSearching(false);
+      return;
     }
-    searchMessages();
-    return () => { cancelled = true; };
-  }, [search, conversations, user?.id]);
+
+    const s = search.trim().toLowerCase();
+    // Filtro instantâneo em memória por nome do contato, título do pet ou última mensagem
+    const directMatches = conversations.filter(c =>
+      (c.otherName || '').toLowerCase().includes(s) ||
+      (c.itemTitle || '').toLowerCase().includes(s) ||
+      (c.lastMessage || '').toLowerCase().includes(s)
+    );
+    setFiltered(directMatches);
+  }, [search, conversations]);
 
   const handleDeleteConversation = (conversation) => {
     Alert.alert(
@@ -273,6 +281,9 @@ const InboxScreen = () => {
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 24, paddingTop: 4 }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} tintColor={colors.primary} />
+          }
         />
       ) : (
         <View style={styles.emptyState}>

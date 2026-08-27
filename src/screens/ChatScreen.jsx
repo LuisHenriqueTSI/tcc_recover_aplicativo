@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMessages, sendMessage, markMessagesAsRead, uploadMessagePhoto } from '../services/messages';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -98,35 +99,60 @@ const ChatScreen = (props) => {
       setLoading(false);
       return;
     }
+    const cacheKey = `@wefind_chat_cache_${user.id}_${otherId}_${itemId || 'all'}`;
+
     const load = async () => {
+      // 1. Tenta carregar do cache local imediatamente para abrir em 0ms
       try {
-        setLoading(true);
-        const msgs = await getMessages(user.id, otherId, itemId);
-        setMessages(msgs || []);
-        await markMessagesAsRead(user.id, otherId);
+        const cachedRaw = await AsyncStorage.getItem(cacheKey);
+        if (cachedRaw) {
+          const parsed = JSON.parse(cachedRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setMessages(parsed);
+            setLoading(false);
+            setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 30);
+          }
+        }
+      } catch (e) {}
+
+      // 2. Busca mensagens do servidor em paralelo
+      try {
+        const [msgs] = await Promise.all([
+          getMessages(user.id, otherId, itemId || 50),
+          markMessagesAsRead(user.id, otherId).catch(() => {}),
+        ]);
+
+        if (Array.isArray(msgs)) {
+          setMessages(msgs);
+          AsyncStorage.setItem(cacheKey, JSON.stringify(msgs.slice(-50))).catch(() => {});
+        }
 
         if (!conversation?.otherName || !conversation?.avatarUrl) {
-          const { data: profile } = await supabase
+          supabase
             .from('profiles')
             .select('name, avatar_url')
             .eq('id', otherId)
-            .single();
-          if (profile) {
-            setOtherName(profile.name);
-            setAvatarUrl(profile.avatar_url);
-          }
+            .single()
+            .then(({ data: profile }) => {
+              if (profile) {
+                if (profile.name) setOtherName(profile.name);
+                if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
+              }
+            }).catch(() => {});
         }
 
         if (!conversation?.itemTitle && itemId) {
-          const { data: itemData } = await supabase
+          supabase
             .from('items')
             .select('title')
             .eq('id', itemId)
-            .single();
-          if (itemData) setPetTitle(itemData.title);
+            .single()
+            .then(({ data: itemData }) => {
+              if (itemData?.title) setPetTitle(itemData.title);
+            }).catch(() => {});
         }
       } catch (err) {
-        setError(err.message || 'Erro ao carregar mensagens');
+        console.log('[ChatScreen] Erro ao carregar mensagens:', err.message);
       } finally {
         setLoading(false);
       }

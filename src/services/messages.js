@@ -92,89 +92,124 @@ export const sendMessage = async (messageData) => {
   }
 };
 
+export const getCachedConversations = async (userId) => {
+  if (!userId) return [];
+  try {
+    const raw = await AsyncStorage.getItem(`@wefind_conversations_cache_${userId}`);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {}
+  return [];
+};
+
 export const getConversations = async (userId) => {
   try {
-    // Busca mensagens sem join (compatível com todos os ambientes)
-    const { data, error } = await supabase
+    // 1. Busca as mensagens mais recentes do usuário
+    const { data: messages, error } = await supabase
       .from('messages')
       .select('*')
       .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
       .order('sent_at', { ascending: false })
-      .limit(100);
+      .limit(120);
 
     if (error) {
       console.log('[getConversations] Erro:', error.message);
-      return [];
+      return await getCachedConversations(userId);
     }
+
+    if (!messages || messages.length === 0) return [];
 
     const hiddenKeys = await getHiddenConversationKeys(userId);
 
-    // Agrupa por conversa (par sender/receiver)
-    const conversations = new Map();
-    const userCache = {};
-    const itemCache = {};
-    if (data) {
-      for (const msg of data) {
-        const otherId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
-        const key = [userId, otherId].sort().join('_');
-        if (hiddenKeys.includes(key)) continue;
-        if (!conversations.has(key)) {
-          // Busca dados do outro usuário (cache para evitar múltiplas queries)
-          let otherUser = userCache[otherId];
-          if (!otherUser) {
-            const profile = await getUserById(otherId);
-            otherUser = profile || { name: 'Usuário', avatarUrl: null };
-            userCache[otherId] = otherUser;
-          }
+    // 2. Agrupa conversas únicas e coleta IDs para busca em lote (BATCH)
+    const rawConvs = new Map();
+    const otherUserIds = new Set();
+    const itemIds = new Set();
 
-          // Busca dados do pet/item (cache para evitar múltiplas queries)
-          let itemTitle = '';
-          if (msg.item_id) {
-            if (itemCache[msg.item_id] !== undefined) {
-              itemTitle = itemCache[msg.item_id];
-            } else {
-              try {
-                const { data: itemData } = await supabase
-                  .from('items')
-                  .select('id, title, species')
-                  .eq('id', msg.item_id)
-                  .maybeSingle();
-                itemTitle = itemData?.title || itemData?.species || '';
-                itemCache[msg.item_id] = itemTitle;
-              } catch (e) {
-                console.log('[getConversations] Erro ao buscar pet:', e.message);
-                itemCache[msg.item_id] = '';
-              }
-            }
-          }
+    for (const msg of messages) {
+      const otherId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+      if (!otherId) continue;
+      const key = [userId, otherId].sort().join('_');
+      if (hiddenKeys.includes(key)) continue;
 
-          conversations.set(key, {
-            otherId,
-            otherName: otherUser.name || 'Usuário',
-            avatarUrl: otherUser.avatarUrl || null,
-            lastMessage: msg.content,
-            lastPhotoUrl: msg.photo_url || null,
-            lastMessageAt: msg.sent_at,
-            unread: msg.receiver_id === userId && !msg.read,
-            itemId: msg.item_id,
-            itemTitle: itemTitle,
-          });
-        }
+      if (!rawConvs.has(key)) {
+        rawConvs.set(key, { otherId, msg });
+        otherUserIds.add(otherId);
+        if (msg.item_id) itemIds.add(msg.item_id);
       }
     }
-    return Array.from(conversations.values());
+
+    // 3. Executa queries em LOTE e em PARALELO (apenas 2 queries ultra-rápidas)
+    const [profilesRes, itemsRes] = await Promise.all([
+      otherUserIds.size > 0
+        ? supabase.from('profiles').select('id, name, avatar_url').in('id', Array.from(otherUserIds))
+        : Promise.resolve({ data: [] }),
+      itemIds.size > 0
+        ? supabase.from('items').select('id, title, species').in('id', Array.from(itemIds))
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const profileMap = new Map();
+    (profilesRes?.data || []).forEach(p => profileMap.set(p.id, p));
+
+    const itemMap = new Map();
+    (itemsRes?.data || []).forEach(i => itemMap.set(i.id, i.title || i.species || ''));
+
+    // 4. Monta o resultado final instantaneamente
+    const result = [];
+    for (const [key, { otherId, msg }] of rawConvs.entries()) {
+      const prof = profileMap.get(otherId);
+      const itemTitle = msg.item_id ? (itemMap.get(msg.item_id) || '') : '';
+
+      result.push({
+        otherId,
+        otherName: prof?.name || 'Membro WeFIND',
+        avatarUrl: prof?.avatar_url || null,
+        lastMessage: msg.content,
+        lastPhotoUrl: msg.photo_url || null,
+        lastMessageAt: msg.sent_at,
+        unread: msg.receiver_id === userId && !msg.read,
+        itemId: msg.item_id,
+        itemTitle,
+      });
+    }
+
+    // Atualiza o cache local silenciosamente para abertura em 0ms
+    AsyncStorage.setItem(`@wefind_conversations_cache_${userId}`, JSON.stringify(result)).catch(() => {});
+
+    return result;
   } catch (error) {
     console.log('[getConversations] Exceção:', error.message);
-    return [];
+    return await getCachedConversations(userId);
   }
 };
 
-export const getMessages = async (userId, otherUserId, limit = 50) => {
+export const getMessages = async (userId, otherUserId, options = 50) => {
   try {
-    const { data, error } = await supabase
+    let limit = 50;
+    let itemId = null;
+
+    if (typeof options === 'number') {
+      limit = options;
+    } else if (typeof options === 'object' && options !== null) {
+      limit = options.limit || 50;
+      itemId = options.itemId || null;
+    } else if (typeof options === 'string' && options.length > 5 && isNaN(Number(options))) {
+      itemId = options;
+    }
+
+    let query = supabase
       .from('messages')
       .select('*')
-      .or(`and(sender_id.eq.${userId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${userId})`)
+      .or(`and(sender_id.eq.${userId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${userId})`);
+
+    if (itemId) {
+      query = query.eq('item_id', itemId);
+    }
+
+    const { data, error } = await query
       .order('sent_at', { ascending: false })
       .limit(limit);
 
