@@ -605,11 +605,9 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const isAdoption = itemsService.isPetAvailableForAdoption(item);
   const isFound = !isAdoption && item.status === 'found';
   const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#EA580C');
-  const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
+  const statusLabel = isAdoption ? 'Adoção' : (isFound ? 'Encontrado' : 'Perdido');
+  const statusIcon = isAdoption ? '💖' : (isFound ? '🟢' : '🔴');
   const emoji = getSpeciesEmoji(item);
-
-  const PIN_SIZE = isSelected ? 62 : 52;
-  const INNER_SIZE = isSelected ? 46 : 38;
 
   return (
     <Marker
@@ -617,64 +615,56 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
       onPress={onPress}
       onCalloutPress={onCalloutPress}
       tracksViewChanges={tracksViewChanges}
-      anchor={{ x: 0.5, y: 1.0 }}
+      anchor={{ x: 0.5, y: 0.5 }}
     >
-      <View collapsable={false} style={{ alignItems: 'center', justifyContent: 'center', paddingBottom: 4 }}>
-        {/* Badge Principal com Cor de Status */}
-        <View
-          style={{
-            width: PIN_SIZE,
-            height: PIN_SIZE,
-            borderRadius: PIN_SIZE / 2,
-            backgroundColor: statusColor,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 3,
-            borderColor: '#FFFFFF',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.35,
-            shadowRadius: 5,
-            elevation: 8,
-          }}
-        >
-          {/* Núcleo Branco Interno com Emoji da Espécie */}
-          <View
-            style={{
-              width: INNER_SIZE,
-              height: INNER_SIZE,
-              borderRadius: INNER_SIZE / 2,
-              backgroundColor: '#FFFFFF',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ fontSize: isSelected ? 24 : 20 }}>{emoji}</Text>
-          </View>
-        </View>
-
-        {/* Ponteiro Triangular */}
+      <View
+        collapsable={false}
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 2,
+          transform: [{ scale: isSelected ? 1.25 : 1.0 }],
+        }}
+      >
+        {/* Triângulo Minimalista de Status Acima do Animal */}
         <View
           style={{
             width: 0,
             height: 0,
             backgroundColor: 'transparent',
             borderStyle: 'solid',
-            borderLeftWidth: 6,
-            borderRightWidth: 6,
+            borderLeftWidth: 4.5,
+            borderRightWidth: 4.5,
             borderBottomWidth: 0,
-            borderTopWidth: 8,
+            borderTopWidth: 6,
             borderLeftColor: 'transparent',
             borderRightColor: 'transparent',
             borderTopColor: statusColor,
-            marginTop: -1,
+            marginBottom: 1.5,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.3,
+            shadowRadius: 1.5,
+            elevation: 2,
           }}
         />
+
+        {/* Emoji da Espécie */}
+        <Text
+          style={{
+            fontSize: isSelected ? 28 : 22,
+            textShadowColor: 'rgba(0, 0, 0, 0.25)',
+            textShadowOffset: { width: 0, height: 1.5 },
+            textShadowRadius: 2.5,
+          }}
+        >
+          {emoji}
+        </Text>
       </View>
       <Callout tooltip={false}>
         <View style={styles.callout}>
           <Text style={styles.calloutTitle} numberOfLines={1}>{item.title || 'Animal'}</Text>
-          <Text style={[styles.calloutStatus, { color: statusColor }]}>{statusLabel}</Text>
+          <Text style={[styles.calloutStatus, { color: statusColor }]}>{isAdoption ? 'Para Adoção' : (isFound ? 'Animal Encontrado' : 'Animal Perdido')}</Text>
           <Text style={styles.calloutAction}>Toque para ver detalhes</Text>
         </View>
       </Callout>
