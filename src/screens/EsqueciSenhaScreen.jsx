@@ -170,8 +170,10 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                 setCode('');
               } else if (step === 3) {
                 setStep(2);
-              } else {
+              } else if (navigation.canGoBack()) {
                 navigation.goBack();
+              } else {
+                navigation.navigate('Login');
               }
             }}
             style={styles.backButton}
@@ -547,8 +549,10 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
               <TouchableOpacity
                 style={styles.primaryButton}
                 onPress={() => {
-                  if (user) {
+                  if (navigation.canGoBack()) {
                     navigation.goBack();
+                  } else if (user) {
+                    navigation.navigate('MainApp');
                   } else {
                     navigation.navigate('Login');
                   }

@@ -241,7 +241,11 @@ const EditProfileScreen = ({ navigation }) => {
 
       await refreshProfile();
       Alert.alert('Perfil Atualizado', 'Suas informações foram salvas com sucesso!');
-      navigation.goBack();
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('MainApp');
+      }
     } catch (error) {
       setErrorMsg(error.message || 'Erro ao salvar perfil.');
     } finally {
@@ -611,7 +615,13 @@ const EditProfileScreen = ({ navigation }) => {
         <Button
           title="Cancelar"
           variant="secondary"
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('MainApp');
+            }
+          }}
           style={styles.footerBtn}
         />
         <Button

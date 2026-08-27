@@ -102,6 +102,14 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [shareFlyerVisible, setShareFlyerVisible] = useState(false);
   const screenWidth = Dimensions.get('window').width;
 
+  const handleSafeGoBack = useCallback(() => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('MainApp');
+    }
+  }, [navigation]);
+
   useEffect(() => {
     navigation.setOptions({
       title: 'Detalhes do Animal',
@@ -115,7 +123,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
       },
       headerLeft: () => (
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={handleSafeGoBack}
           style={{
             width: 38,
             height: 38,
@@ -135,7 +143,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
         </TouchableOpacity>
       ),
     });
-  }, [navigation]);
+  }, [navigation, handleSafeGoBack]);
 
 
   useFocusEffect(
@@ -188,12 +196,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
         setRewards(itemData.rewards || []);
       } else {
         Alert.alert('Erro', 'Pet não encontrado');
-        navigation.goBack();
+        handleSafeGoBack();
       }
     } catch (error) {
       console.error('[ItemDetailScreen] Erro ao carregar:', error);
       Alert.alert('Erro', 'Falha ao carregar detalhes do pet');
-      navigation.goBack();
+      handleSafeGoBack();
     } finally {
       setLoading(false);
     }

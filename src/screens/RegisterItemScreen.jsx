@@ -1204,7 +1204,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
           {
             text: 'OK',
             onPress: () => {
-              navigation.goBack();
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation.navigate('MainApp');
+              }
             },
           },
         ]);
