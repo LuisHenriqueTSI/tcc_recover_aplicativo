@@ -330,6 +330,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [animalSize, setAnimalSize] = useState(editItem?.size || editItem?.extra_fields?.size || '');
   const [animalAge, setAnimalAge] = useState(editItem?.age || editItem?.extra_fields?.age || '');
   const [animalCollar, setAnimalCollar] = useState(editItem?.collar || editItem?.extra_fields?.collar || '');
+  const [animalNeutered, setAnimalNeutered] = useState(editItem?.neutered || editItem?.extra_fields?.neutered || '');
   
   // Publicação em nome de terceiro
   const [isThirdPartyOwner, setIsThirdPartyOwner] = useState(
@@ -1154,6 +1155,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         size: toNull(animalSize),
         age: toNull(animalAge),
         collar: toNull(animalCollar),
+        neutered: toNull(animalNeutered),
         // Adicionar extra_fields para dados flexíveis
         extra_fields: {
           brand: toNull(brand),
@@ -1165,6 +1167,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           size: toNull(animalSize),
           age: toNull(animalAge),
           collar: toNull(animalCollar),
+          neutered: toNull(animalNeutered),
           is_direct_adoption: isDirectAdoption,
           found_custody: status === 'found' ? foundCustody : (isDirectAdoption ? 'with_me' : null),
           adoption_intent: status === 'found' && foundCustody === 'with_me' ? Boolean(adoptionIntent) : false,
@@ -1664,6 +1667,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
               <SelectionChips label="Sexo / Gênero" options={PET_GENDER_OPTIONS} value={animalGender} onChange={setAnimalGender} />
               <SelectionChips label="Porte" options={PET_SIZE_OPTIONS} value={animalSize} onChange={setAnimalSize} />
               <SelectionChips label="Idade" options={PET_AGE_OPTIONS} value={animalAge} onChange={setAnimalAge} />
+              <SelectionChips label="Castrado(a)?" options={['Sim', 'Não', 'Não sei']} value={animalNeutered} onChange={setAnimalNeutered} />
+              <SelectionChips label="Estava com coleira?" options={['Sim', 'Não', 'Não sei']} value={animalCollar} onChange={setAnimalCollar} />
               <SelectionChips label="Raça" options={PET_BREED_OPTIONS} value={animalBreed} onChange={setAnimalBreed} />
               <Input
                 label="Raça (opcional)"

@@ -131,6 +131,19 @@ const formatStreetNumberNeighborhood = (item) => {
   return '';
 };
 
+const getColorHex = (colorName = '') => {
+  const norm = String(colorName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (norm.includes('pret')) return '#1E293B';
+  if (norm.includes('branc')) return '#FFFFFF';
+  if (norm.includes('marrom') || norm.includes('marron')) return '#78350F';
+  if (norm.includes('caramel') || norm.includes('dourad')) return '#D97706';
+  if (norm.includes('cinza') || norm.includes('prat')) return '#94A3B8';
+  if (norm.includes('laranja') || norm.includes('ruiv') || norm.includes('vermelh')) return '#EA580C';
+  if (norm.includes('amarel')) return '#EAB308';
+  if (norm.includes('bege') || norm.includes('crem')) return '#FDE68A';
+  return '#64748B';
+};
+
 // ItemCard agora é um componente fora do HomeScreen
 const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress, onPressOwner }) => {
   const { colors, isDark } = useTheme();
@@ -153,9 +166,9 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
   const animalColor = String(item.color || item.extra_fields?.color || '').trim();
   const animalSize = String(item.size || item.extra_fields?.size || '').trim();
   const animalAge = String(item.age || item.extra_fields?.age || '').trim();
-  const hasCollar = Boolean(item.extra_fields?.collar || item.extra_fields?.has_collar);
-  const isNeutered = Boolean(item.extra_fields?.neutered || item.extra_fields?.castrated || item.extra_fields?.is_neutered);
-  const hasMicrochip = Boolean(item.extra_fields?.microchip || item.extra_fields?.has_microchip);
+  const hasCollar = String(item.collar || item.extra_fields?.collar || '').toLowerCase() === 'sim' || Boolean(item.extra_fields?.has_collar);
+  const isNeutered = String(item.neutered || item.extra_fields?.neutered || '').toLowerCase() === 'sim' || Boolean(item.extra_fields?.castrated || item.extra_fields?.is_neutered);
+  const hasMicrochip = String(item.microchip || item.extra_fields?.microchip || '').toLowerCase() === 'sim' || Boolean(item.extra_fields?.has_microchip);
 
   const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
   const IMAGE_HEIGHT = 215;
@@ -342,53 +355,87 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
           ) : null}
         </View>
 
-        {/* Chips de Atributos Minimalistas & Completos */}
+        {/* Chips de Atributos Minimalistas com Emojis e Bolinha de Cor */}
         {(animalBreed || (animalGender && animalGender !== 'Não informado') || (animalSize && animalSize !== 'Não informado') || (animalAge && animalAge !== 'Não informado') || (animalColor && animalColor !== 'Cor não informada') || hasCollar || isNeutered || hasMicrochip) ? (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+            {/* Raça */}
             {animalBreed && animalBreed !== 'Sem raça definida' ? (
-              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
+              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
                 <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>🏷️ {animalBreed}</Text>
               </View>
             ) : null}
 
+            {/* Sexo com Emoji */}
             {animalGender && animalGender !== 'Não informado' ? (
-              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>⚧ {animalGender}</Text>
+              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
+                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>
+                  {animalGender.toLowerCase().includes('f') ? '♀️ Fêmea' : '♂️ Macho'}
+                </Text>
               </View>
             ) : null}
 
+            {/* Porte com Emoji */}
             {animalSize && animalSize !== 'Não informado' ? (
-              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>📏 {animalSize.toLowerCase().startsWith('porte') ? animalSize : `Porte ${animalSize}`}</Text>
+              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
+                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>
+                  📏 {animalSize.replace(/porte\s*/i, '')}
+                </Text>
               </View>
             ) : null}
 
+            {/* Idade com Emoji */}
             {animalAge && animalAge !== 'Não informado' ? (
-              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>🎂 {animalAge}</Text>
+              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
+                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>
+                  {animalAge.toLowerCase().includes('filhote') ? '🍼 Filhote' : animalAge.toLowerCase().includes('idoso') ? '👴 Idoso' : '🐕 Adulto'}
+                </Text>
               </View>
             ) : null}
 
+            {/* Cor com Bolinha Colorida */}
             {animalColor && animalColor !== 'Cor não informada' ? (
-              <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>🎨 {animalColor}</Text>
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+                borderRadius: 8,
+                paddingHorizontal: 8,
+                paddingVertical: 3.5,
+                borderWidth: 1,
+                borderColor: isDark ? '#334155' : '#E2E8F0',
+              }}>
+                <View style={{
+                  width: 9,
+                  height: 9,
+                  borderRadius: 4.5,
+                  backgroundColor: getColorHex(animalColor),
+                  marginRight: 5,
+                  borderWidth: getColorHex(animalColor) === '#FFFFFF' ? 1 : 0.5,
+                  borderColor: isDark ? '#64748B' : '#94A3B8',
+                }} />
+                <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#475569', fontWeight: '600' }}>
+                  {animalColor}
+                </Text>
               </View>
             ) : null}
 
+            {/* Coleira */}
             {hasCollar ? (
-              <View style={{ backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : '#BFDBFE' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#93C5FD' : '#1E40AF', fontWeight: '600' }}>📿 Com coleira</Text>
+              <View style={{ backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : '#BFDBFE' }}>
+                <Text style={{ fontSize: 11.5, color: isDark ? '#93C5FD' : '#1E40AF', fontWeight: '600' }}>📿 Coleira</Text>
               </View>
             ) : null}
 
+            {/* Castrado */}
             {isNeutered ? (
-              <View style={{ backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: isDark ? 'rgba(16, 185, 129, 0.3)' : '#A7F3D0' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#6EE7B7' : '#047857', fontWeight: '600' }}>✨ Castrado(a)</Text>
+              <View style={{ backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? 'rgba(16, 185, 129, 0.3)' : '#A7F3D0' }}>
+                <Text style={{ fontSize: 11.5, color: isDark ? '#6EE7B7' : '#047857', fontWeight: '600' }}>✂️ Castrado</Text>
               </View>
             ) : null}
 
+            {/* Microchip */}
             {hasMicrochip ? (
-              <View style={{ backgroundColor: isDark ? 'rgba(168, 85, 247, 0.15)' : '#FAF5FF', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: isDark ? 'rgba(168, 85, 247, 0.3)' : '#E9D5FF' }}>
+              <View style={{ backgroundColor: isDark ? 'rgba(168, 85, 247, 0.15)' : '#FAF5FF', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? 'rgba(168, 85, 247, 0.3)' : '#E9D5FF' }}>
                 <Text style={{ fontSize: 11.5, color: isDark ? '#D8B4FE' : '#6B21A8', fontWeight: '600' }}>📡 Microchip</Text>
               </View>
             ) : null}
