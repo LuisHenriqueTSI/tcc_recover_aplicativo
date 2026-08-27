@@ -57,7 +57,6 @@ const ChatScreen = (props) => {
     const onKeyboardShow = (e) => {
       setIsKeyboardOpen(true);
       const rawHeight = e?.endCoordinates?.height || 0;
-      // No Android com Edge-to-Edge ou barra de navegação de 3 botões, compensamos a barra inferior
       const extraOffset = Platform.OS === 'android' ? Math.max(insets.bottom, 32) : 0;
       const targetHeight = rawHeight + extraOffset;
 
@@ -94,85 +93,60 @@ const ChatScreen = (props) => {
     };
   }, [insets.bottom]);
 
-  // Busca dados faltantes do pet ou do usuário (ex: quando aberto via notificação ou link)
   useEffect(() => {
-    let isMounted = true;
-    const fetchMissingDetails = async () => {
-      if (!petTitle && itemId) {
-        try {
+    if (!user?.id || !otherId) {
+      setLoading(false);
+      return;
+    }
+    const load = async () => {
+      try {
+        setLoading(true);
+        const msgs = await getMessages(user.id, otherId, itemId);
+        setMessages(msgs || []);
+        await markMessagesAsRead(user.id, otherId);
+
+        if (!conversation?.otherName || !conversation?.avatarUrl) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('name, avatar_url')
+            .eq('id', otherId)
+            .single();
+          if (profile) {
+            setOtherName(profile.name);
+            setAvatarUrl(profile.avatar_url);
+          }
+        }
+
+        if (!conversation?.itemTitle && itemId) {
           const { data: itemData } = await supabase
             .from('items')
-            .select('id, title, species')
+            .select('title')
             .eq('id', itemId)
-            .maybeSingle();
-          if (itemData && isMounted) {
-            setPetTitle(itemData.title || itemData.species || 'Animal');
-          }
-        } catch (e) {
-          console.log('[ChatScreen] Erro ao buscar título do pet:', e.message);
+            .single();
+          if (itemData) setPetTitle(itemData.title);
         }
-      }
-
-      if ((!otherName || otherName === 'Usuário' || otherName === 'Tutor') && otherId) {
-        try {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('id, name, avatar_url')
-            .eq('id', otherId)
-            .maybeSingle();
-          if (profileData && isMounted) {
-            if (profileData.name) setOtherName(profileData.name);
-            if (profileData.avatar_url) setAvatarUrl(profileData.avatar_url);
-          }
-        } catch (e) {
-          console.log('[ChatScreen] Erro ao buscar perfil do outro usuário:', e.message);
-        }
-      }
-    };
-
-    fetchMissingDetails();
-    return () => { isMounted = false; };
-  }, [itemId, otherId, petTitle, otherName]);
-
-  // Carrega mensagens apenas no início (primeiro render)
-  const loadedRef = useRef(false);
-  useEffect(() => {
-    let isMounted = true;
-    if (!user?.id || !otherId || loadedRef.current) return;
-    loadedRef.current = true;
-    const fetchInitialMessages = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const msgs = await getMessages(user.id, otherId);
-        if (isMounted) setMessages(msgs);
-        await markMessagesAsRead(user.id, otherId);
       } catch (err) {
-        if (isMounted) setError(err.message || 'Erro ao carregar mensagens');
+        setError(err.message || 'Erro ao carregar mensagens');
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     };
-    fetchInitialMessages();
-    return () => { isMounted = false; };
+    load();
   }, [user?.id, otherId, itemId]);
 
-  // Real-time subscription
-  const chatChannelRef = useRef(null);
   useEffect(() => {
-    if (!user?.id || !otherId || !itemId) return;
+    if (!user?.id || !otherId) return;
+
+    const channelName = `chat-room-${[user.id, otherId].sort().join('-')}-${itemId || 'general'}`;
+    const channel = supabase.channel(channelName);
 
     const cleanupChannel = () => {
-      if (chatChannelRef.current) {
-        supabase.removeChannel(chatChannelRef.current);
-        chatChannelRef.current = null;
+      try {
+        supabase.removeChannel(channel);
+      } catch (e) {
+        console.warn('Erro ao remover canal:', e);
       }
     };
-
-    cleanupChannel();
-
-    const channel = supabase.channel(`chat-messages-${user.id}-${otherId}-${itemId}`);
-    chatChannelRef.current = channel;
 
     channel
       .on(
@@ -181,19 +155,34 @@ const ChatScreen = (props) => {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `item_id=eq.${itemId}`,
+          filter: `sender_id=eq.${otherId}`,
         },
         (payload) => {
           const msg = payload.new;
-          if (
-            (msg.sender_id === user.id && msg.receiver_id === otherId) ||
-            (msg.sender_id === otherId && msg.receiver_id === user.id)
-          ) {
+          if (msg.receiver_id === user.id) {
             setMessages((prev) => {
               if (prev.some(m => m.id === msg.id)) return prev;
               return [...prev, msg].sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at));
             });
-            if (msg.receiver_id === user.id) markMessagesAsRead(user.id, otherId);
+            markMessagesAsRead(user.id, otherId);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `sender_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const msg = payload.new;
+          if (msg.receiver_id === otherId) {
+            setMessages((prev) => {
+              if (prev.some(m => m.id === msg.id)) return prev;
+              return [...prev, msg].sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at));
+            });
           }
         }
       )
@@ -300,7 +289,7 @@ const ChatScreen = (props) => {
 
   return (
     <Animated.View style={[styles.mainWrapper, { paddingBottom: keyboardHeightAnim, backgroundColor: colors.background }]}>
-      {/* Header Personalizado: Voltar + Foto do Usuário + Nome */}
+      {/* Header Personalizado: Voltar + Foto do Usuário + Nome (Clicável para abrir perfil) */}
       <SafeAreaView edges={['top']} style={{ backgroundColor: colors.headerBg }}>
         <View style={[styles.chatHeader, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}>
           <TouchableOpacity
@@ -318,23 +307,39 @@ const ChatScreen = (props) => {
             <MaterialIcons name="chevron-left" size={28} color="#FFFFFF" />
           </TouchableOpacity>
 
-          <View style={styles.chatAvatar}>
-            <Image
-              source={avatarUrl ? { uri: avatarUrl } : require('../assets/logo_wefind.png')}
-              style={styles.chatAvatarImage}
-            />
-          </View>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+            onPress={() => {
+              if (otherId) {
+                navigation.navigate('UserProfile', {
+                  userId: otherId,
+                  userName: otherName,
+                  avatarUrl: avatarUrl,
+                });
+              }
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={styles.chatAvatar}>
+              <Image
+                source={avatarUrl ? { uri: avatarUrl } : require('../assets/logo_wefind.png')}
+                style={styles.chatAvatarImage}
+              />
+            </View>
 
-          <View style={styles.chatHeaderContent}>
-            <Text style={[styles.chatHeaderName, { color: colors.headerText }]} numberOfLines={1}>
-              {otherName || 'Usuário'}
-            </Text>
-            {petTitle ? (
-              <Text style={[styles.chatHeaderPet, { color: colors.headerSubText }]} numberOfLines={1}>
-                Pet: {petTitle}
+            <View style={styles.chatHeaderContent}>
+              <Text style={[styles.chatHeaderName, { color: colors.headerText }]} numberOfLines={1}>
+                {otherName || 'Usuário'}
               </Text>
-            ) : null}
-          </View>
+              {petTitle ? (
+                <Text style={[styles.chatHeaderPet, { color: colors.headerSubText }]} numberOfLines={1}>
+                  Pet: {petTitle}
+                </Text>
+              ) : null}
+            </View>
+
+            <MaterialIcons name="chevron-right" size={20} color="rgba(255,255,255,0.7)" style={{ marginRight: 4 }} />
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
 

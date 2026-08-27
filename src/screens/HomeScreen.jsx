@@ -132,7 +132,7 @@ const formatStreetNumberNeighborhood = (item) => {
 };
 
 // ItemCard agora é um componente fora do HomeScreen
-const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress }) => {
+const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress, onPressOwner }) => {
   const { colors, isDark } = useTheme();
   const [carouselIndex, setCarouselIndex] = React.useState(0);
   const [cardWidth, setCardWidth] = React.useState(0);
@@ -433,27 +433,41 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
 
         {/* Rodapé: Autor e Botão CTA */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1, marginRight: 8 }}>
+          <TouchableOpacity
+            onPress={() => {
+              if (onPressOwner && item.owner_id) {
+                onPressOwner(item.owner_id, safeOwnerName, item.profiles?.avatar_url);
+              }
+            }}
+            activeOpacity={0.7}
+            style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1, marginRight: 8 }}
+          >
             <View style={{
-              width: 26,
-              height: 26,
-              borderRadius: 13,
+              width: 28,
+              height: 28,
+              borderRadius: 14,
               backgroundColor: colors.primaryLight,
               alignItems: 'center',
               justifyContent: 'center',
               marginRight: 6,
+              borderWidth: 1,
+              borderColor: isDark ? colors.cardBorder : '#BFDBFE',
             }}>
-              <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 12 }}>
-                {safeOwnerName.trim()[0]?.toUpperCase() || 'U'}
-              </Text>
+              {item.profiles?.avatar_url ? (
+                <Image source={{ uri: item.profiles.avatar_url }} style={{ width: 26, height: 26, borderRadius: 13 }} />
+              ) : (
+                <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 12 }}>
+                  {safeOwnerName.trim()[0]?.toUpperCase() || 'U'}
+                </Text>
+              )}
             </View>
-            <View>
+            <View style={{ flexShrink: 1 }}>
               <Text style={{ fontSize: 10.5, color: colors.textMuted }}>Publicado por</Text>
-              <Text style={{ fontSize: 12.5, color: isDark ? '#F8FAFC' : '#1E293B', fontWeight: '700' }} numberOfLines={1}>
+              <Text style={{ fontSize: 12.5, color: colors.primary, fontWeight: '700' }} numberOfLines={1}>
                 {safeOwnerName}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={onPress}
@@ -2244,6 +2258,13 @@ const HomeScreen = ({ navigation, route }) => {
             handleDeleteItem={handleDeleteItem}
             onPress={() => {
               navigation.navigate('ItemDetail', { itemId: item.id });
+            }}
+            onPressOwner={(ownerId, ownerName, ownerAvatar) => {
+              navigation.navigate('UserProfile', {
+                userId: ownerId,
+                userName: ownerName,
+                avatarUrl: ownerAvatar,
+              });
             }}
           />
         )}

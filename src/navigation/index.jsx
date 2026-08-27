@@ -35,6 +35,7 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 import SobreScreen from '../screens/SobreScreen';
 import MuralReencontrosScreen from '../screens/MuralReencontrosScreen';
 import RecoveredPetsScreen from '../screens/RecoveredPetsScreen';
+import UserProfileScreen from '../screens/UserProfileScreen';
 import { listItems } from '../services/items';
 import { buildRenewalAlerts } from '../services/notifications';
 
@@ -246,6 +247,11 @@ const PublicStack = () => {
         name="Sobre"
         component={SobreScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="UserProfile"
+        component={UserProfileScreen}
+        options={{ title: 'Perfil do Membro' }}
       />
     </Stack.Navigator>
   );
@@ -625,6 +631,11 @@ const MainStack = () => {
         name="EsqueciSenha"
         component={require('../screens/EsqueciSenhaScreen').default}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="UserProfile"
+        component={UserProfileScreen}
+        options={{ title: 'Perfil do Membro' }}
       />
     </Stack.Navigator>
   );

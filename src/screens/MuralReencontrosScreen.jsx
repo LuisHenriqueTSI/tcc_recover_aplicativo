@@ -391,9 +391,23 @@ const MuralReencontrosScreen = ({ navigation }) => {
                 {/* Corpo do Card com Autor, Estrelas, Local e Depoimento */}
                 <View style={styles.storyBodyBox}>
                   <View style={styles.authorRow}>
-                    <Text style={[styles.authorName, { color: colors.text }]} numberOfLines={1}>
-                      {story.author}
-                    </Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (story.userId) {
+                          navigation.navigate('UserProfile', {
+                            userId: story.userId,
+                            userName: story.author,
+                          });
+                        }
+                      }}
+                      disabled={!story.userId}
+                      activeOpacity={0.7}
+                      style={{ flex: 1, marginRight: 8 }}
+                    >
+                      <Text style={[styles.authorName, { color: story.userId ? colors.primary : colors.text }]} numberOfLines={1}>
+                        {story.author}
+                      </Text>
+                    </TouchableOpacity>
                     <View style={styles.starsRow}>
                       {[1, 2, 3, 4, 5].map((star) => (
                         <MaterialIcons

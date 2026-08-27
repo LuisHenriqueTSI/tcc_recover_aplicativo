@@ -845,7 +845,20 @@ const ItemDetailScreen = ({ route, navigation }) => {
       {/* 5. CARD DO TUTOR / QUEM PUBLICOU */}
       {owner && (
         <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.ownerHeader}>
+          <TouchableOpacity
+            style={styles.ownerHeader}
+            onPress={() => {
+              const targetId = item.owner_id || owner.id;
+              if (targetId) {
+                navigation.navigate('UserProfile', {
+                  userId: targetId,
+                  userName: (isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário'),
+                  avatarUrl: (isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || owner.avatar_url || owner.avatarUrl || null,
+                });
+              }
+            }}
+            activeOpacity={0.75}
+          >
             {(() => {
               const ownerAvatar = (isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || owner.avatar_url || owner.avatarUrl || null;
               const ownerDisplayName = (isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário');
@@ -866,7 +879,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
             <View style={styles.ownerInfoTextContainer}>
               <Text style={[styles.ownerLabel, { color: colors.textMuted }]}>Publicado por</Text>
-              <Text style={[styles.ownerName, { color: colors.text }]} numberOfLines={1}>
+              <Text style={[styles.ownerName, { color: colors.primary }]} numberOfLines={1}>
                 {(isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário')}
               </Text>
               {owner.created_at && formatarDataMembro(owner.created_at) && formatarDataMembro(owner.created_at) !== 'não informado' ? (
@@ -875,7 +888,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 </Text>
               ) : null}
             </View>
-          </View>
+
+            <MaterialIcons name="chevron-right" size={24} color={colors.textMuted} style={{ alignSelf: 'center' }} />
+          </TouchableOpacity>
 
           {/* Se for terceiro anunciando em nome do tutor */}
           {item.extra_fields?.third_party_owner?.active && item.extra_fields?.third_party_owner?.name ? (
