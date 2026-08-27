@@ -431,6 +431,7 @@ const styles = StyleSheet.create({
 });
 
 const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
   const photoUrl = item.item_photos?.[0]?.url;
   const coordinate = { latitude: Number(item.latitude), longitude: Number(item.longitude) };
   const isAdoption = itemsService.isPetAvailableForAdoption(item);
@@ -442,12 +443,16 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const BORDER = 3.5;
   const PHOTO = SIZE - BORDER * 2;
 
+  // A chave dinâmica força o Google Maps no Android a recriar o bitmap com a imagem 100% carregada
+  const markerKey = `marker-${item.id}-${imageLoaded ? 'loaded' : 'pending'}-${isSelected ? 'sel' : 'nor'}`;
+
   return (
     <Marker
+      key={markerKey}
       coordinate={coordinate}
       onPress={onPress}
       onCalloutPress={onCalloutPress}
-      tracksViewChanges={true}
+      tracksViewChanges={!imageLoaded}
       anchor={{ x: 0.5, y: 0.5 }}
       style={{ width: SIZE, height: SIZE }}
     >
@@ -467,6 +472,7 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
         {photoUrl ? (
           <Image
             source={{ uri: photoUrl }}
+            onLoadEnd={() => setImageLoaded(true)}
             style={{
               width: PHOTO,
               height: PHOTO,
