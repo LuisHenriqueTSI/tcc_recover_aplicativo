@@ -1,9 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import { getMessages } from '../services/messages';
-import { Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, TextInput, Alert, RefreshControl } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { Image, View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, TextInput, Alert, RefreshControl } from 'react-native';
 import { getConversations, getCachedConversations, hideConversation, getMessages } from '../services/messages';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
