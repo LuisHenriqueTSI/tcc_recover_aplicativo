@@ -59,7 +59,7 @@ const FALLBACK_REUNITED_AVATARS = [
   'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=200&auto=format&fit=crop&q=80',
 ];
 
-const MuralReencontrosScreen = ({ navigation }) => {
+const MuralReencontrosScreen = ({ navigation, route }) => {
   const { user, userProfile, isAdmin } = useAuth();
   const { colors, isDark } = useTheme();
   const [userStories, setUserStories] = useState([]);
@@ -76,6 +76,23 @@ const MuralReencontrosScreen = ({ navigation }) => {
 
   // Estado do Modal de Envio de História
   const [showStoryModal, setShowStoryModal] = useState(false);
+
+  useEffect(() => {
+    if (route?.params?.openSendModal) {
+      if (!user) {
+        Alert.alert(
+          'Login Necessário',
+          'Você precisa estar conectado com sua conta para enviar um relato de reencontro para o mural.',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+          ]
+        );
+      } else {
+        setShowStoryModal(true);
+      }
+    }
+  }, [route?.params?.openSendModal, user]);
   const [petNameInput, setPetNameInput] = useState('');
   const [authorInput, setAuthorInput] = useState(userProfile?.name || '');
   const [locationInput, setLocationInput] = useState(

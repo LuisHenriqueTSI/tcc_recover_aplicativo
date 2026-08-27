@@ -6,12 +6,10 @@ import {
   TouchableOpacity,
   Linking,
   StyleSheet,
-  Image,
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons, Feather, Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import * as storiesService from '../services/stories';
@@ -57,26 +55,40 @@ const SobreScreen = ({ navigation }) => {
     navigation.navigate('MuralReencontros');
   };
 
+  const handleSendStoryDirect = () => {
+    navigation.navigate('MuralReencontros', { openSendModal: true });
+  };
+
   const displayedStories = stories.slice(0, 4);
 
   return (
-    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
-      {/* HEADER SUPERIOR */}
-      <View style={[styles.topHeader, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}>
-        <View style={styles.topHeaderContent}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image
-              source={require('../assets/logo_wefind.png')}
-              style={styles.headerLogo}
-              resizeMode="contain"
-            />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={styles.headerTitle}>Conhecer o WeFIND</Text>
-              <Text style={styles.headerSubtitle}>Plataforma colaborativa animal</Text>
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      {/* HEADER SUPERIOR (Design Moderno e Harmonizado com o App) */}
+      <View style={{ backgroundColor: colors.headerBg, paddingTop: 40, paddingBottom: 10, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48 }}>
+          <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start', marginRight: 12 }}>
+            <Text style={{ color: '#fff', fontWeight: '900', fontSize: 23, letterSpacing: 0.8, marginBottom: 2 }}>WeFIND</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.16)',
+                borderRadius: 20,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                marginTop: 2,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.28)',
+              }}
+            >
+              <MaterialIcons name="auto-awesome" size={13} color="#FEA937" style={{ marginRight: 4 }} />
+              <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>
+                Conhecer a Plataforma
+              </Text>
             </View>
           </View>
 
-          {!user && (
+          {!user ? (
             <TouchableOpacity
               onPress={() => navigation.navigate('Login')}
               style={{
@@ -115,7 +127,7 @@ const SobreScreen = ({ navigation }) => {
               </Text>
               <MaterialIcons name="chevron-right" size={16} color="rgba(255, 255, 255, 0.75)" style={{ marginLeft: 2 }} />
             </TouchableOpacity>
-          )}
+          ) : null}
         </View>
       </View>
 
@@ -124,7 +136,7 @@ const SobreScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 1. HERO CARD COMPACTO & ELEGANTE */}
+        {/* 1. HERO CARD COMPACTO & LIMPO */}
         <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
           <View style={[styles.heroBadge, { backgroundColor: colors.primaryLight }]}>
             <MaterialIcons name="pets" size={14} color={colors.primary} style={{ marginRight: 5 }} />
@@ -138,22 +150,6 @@ const SobreScreen = ({ navigation }) => {
           <Text style={[styles.heroDescription, { color: colors.textSecondary }]}>
             O WeFIND conecta tutores, protetores e a vizinhança através de alertas geolocalizados, radar de busca em tempo real e divulgação facilitada.
           </Text>
-
-          {/* Destaques Rápidos */}
-          <View style={styles.pillsRow}>
-            <View style={[styles.featurePill, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.12)' : '#ECFDF5', borderColor: '#A7F3D0' }]}>
-              <MaterialIcons name="check-circle" size={14} color="#059669" style={{ marginRight: 4 }} />
-              <Text style={[styles.featurePillText, { color: '#047857' }]}>100% Gratuito</Text>
-            </View>
-            <View style={[styles.featurePill, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.12)' : '#EFF6FF', borderColor: '#BFDBFE' }]}>
-              <MaterialIcons name="my-location" size={14} color="#2563EB" style={{ marginRight: 4 }} />
-              <Text style={[styles.featurePillText, { color: '#1D4ED8' }]}>Radar com GPS</Text>
-            </View>
-            <View style={[styles.featurePill, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FFFBEB', borderColor: '#FDE68A' }]}>
-              <MaterialIcons name="campaign" size={14} color="#D97706" style={{ marginRight: 4 }} />
-              <Text style={[styles.featurePillText, { color: '#B45309' }]}>Cartaz Digital</Text>
-            </View>
-          </View>
         </View>
 
         {/* 2. MURAL DE REENCONTROS (DESTAQUE PRINCIPAL) */}
@@ -246,9 +242,9 @@ const SobreScreen = ({ navigation }) => {
             </View>
           )}
 
-          {/* CTA para o Mural */}
+          {/* CTA para Enviar História no Mural (Cai direto no envio) */}
           <TouchableOpacity
-            onPress={handleGoToMural}
+            onPress={handleSendStoryDirect}
             style={[styles.muralBannerCTA, { backgroundColor: isDark ? '#064E3B' : '#ECFDF5', borderColor: '#10B981' }]}
             activeOpacity={0.85}
           >
@@ -257,10 +253,10 @@ const SobreScreen = ({ navigation }) => {
                 Celebre o seu Reencontro
               </Text>
               <Text style={[styles.muralCTASubtitle, { color: isDark ? '#A7F3D0' : '#047857' }]}>
-                Envie fotos e depoimentos para o Mural oficial da comunidade
+                Toque aqui para enviar fotos e depoimento direto para o Mural
               </Text>
             </View>
-            <MaterialIcons name="arrow-forward" size={20} color={isDark ? '#6EE7B7' : '#059669'} />
+            <MaterialIcons name="add-photo-alternate" size={24} color={isDark ? '#6EE7B7' : '#059669'} />
           </TouchableOpacity>
         </View>
 
@@ -359,52 +355,13 @@ const SobreScreen = ({ navigation }) => {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-  },
-  topHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  topHeaderContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerLogo: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-  },
-  headerTitle: {
-    color: '#FFFFFF',
-    fontSize: 16.5,
-    fontWeight: '800',
-  },
-  headerSubtitle: {
-    color: 'rgba(255, 255, 255, 0.75)',
-    fontSize: 11.5,
-  },
-  headerLoginBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  headerLoginBtnText: {
-    color: '#FFFFFF',
-    fontSize: 12.5,
-    fontWeight: '800',
   },
   scrollView: {
     flex: 1,
@@ -449,24 +406,6 @@ const styles = StyleSheet.create({
   heroDescription: {
     fontSize: 13,
     lineHeight: 19,
-    marginBottom: 14,
-  },
-  pillsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  featurePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  featurePillText: {
-    fontSize: 11,
-    fontWeight: '700',
   },
   sectionWrapper: {
     marginBottom: 20,
