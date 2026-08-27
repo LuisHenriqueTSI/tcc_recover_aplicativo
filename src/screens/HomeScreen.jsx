@@ -2231,12 +2231,7 @@ const HomeScreen = ({ navigation, route }) => {
         </View>
       </Modal>
 
-      {/* Quantidade de animais encontrados e Lista de Itens com Virtualização de Alta Performance */}
-      <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
-        <Text style={{ color: colors.textSecondary, fontSize: 15 }}>
-          {`${finalDisplayItems.length} animais encontrados`}
-        </Text>
-      </View>
+      {/* Lista de Itens com Virtualização de Alta Performance */}
       <FlatList
         data={finalDisplayItems}
         renderItem={({ item }) => (
