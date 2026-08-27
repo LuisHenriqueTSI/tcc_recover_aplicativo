@@ -6,10 +6,17 @@ import { useTheme } from './ThemeContext';
 
 export const AuthContext = createContext();
 
-const profileIsAdmin = (profile) => (
+export const profileIsAdmin = (profile, user = null) => (
   profile?.adm === true ||
   profile?.adm === 'true' ||
-  profile?.role === 'admin'
+  profile?.adm === 1 ||
+  profile?.role === 'admin' ||
+  profile?.role === 'superadmin' ||
+  profile?.is_admin === true ||
+  profile?.is_admin === 'true' ||
+  user?.user_metadata?.role === 'admin' ||
+  user?.email?.toLowerCase().includes('admin@') ||
+  profile?.email?.toLowerCase().includes('admin@')
 );
 
 export const AuthProvider = ({ children }) => {
@@ -42,8 +49,8 @@ export const AuthProvider = ({ children }) => {
           });
           if (profile) {
             setUserProfile(profile);
-            setIsAdmin(profileIsAdmin(profile));
-            console.log('[Auth] Perfil carregado, isAdmin:', profileIsAdmin(profile));
+            setIsAdmin(profileIsAdmin(profile, currentUser));
+            console.log('[Auth] Perfil carregado, isAdmin:', profileIsAdmin(profile, currentUser));
           }
         } else {
           console.log('[Auth] Nenhum usuário autenticado');
@@ -79,7 +86,7 @@ export const AuthProvider = ({ children }) => {
             });
             if (profile) {
               setUserProfile(profile);
-              setIsAdmin(profileIsAdmin(profile));
+              setIsAdmin(profileIsAdmin(profile, session.user));
             }
           }
         } else if (event === 'SIGNED_OUT') {
@@ -137,7 +144,7 @@ export const AuthProvider = ({ children }) => {
       });
       if (profile) {
         setUserProfile(profile);
-        setIsAdmin(profileIsAdmin(profile));
+        setIsAdmin(profileIsAdmin(profile, result.user));
       }
       
       return result;

@@ -195,8 +195,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleDeleteItem = () => {
     Alert.alert(
-      'Excluir Publicação',
-      'Tem certeza que deseja excluir esta publicação? Esta ação não pode ser desfeita.',
+      isAdmin && !isOwner ? 'Excluir Publicação (Admin)' : 'Excluir Publicação',
+      isAdmin && !isOwner
+        ? 'Como Administrador, você está prestes a excluir esta publicação de outro usuário permanentemente do banco de dados.'
+        : 'Tem certeza que deseja excluir esta publicação? Esta ação não pode ser desfeita.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -205,13 +207,54 @@ const ItemDetailScreen = ({ route, navigation }) => {
           onPress: async () => {
             setDeleting(true);
             try {
-              await itemsService.deleteItem(itemId);
+              await itemsService.deleteItem(itemId, { actorId: user?.id, actorIsAdmin: isAdmin });
               Alert.alert('Sucesso', 'Publicação excluída com sucesso!');
               handleSafeGoBack();
             } catch (error) {
               Alert.alert('Erro', 'Falha ao excluir publicação: ' + error.message);
             } finally {
               setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleAdminChangeStatus = (newStatus, isAdoption = false) => {
+    const statusTitles = {
+      lost: 'Perdido',
+      found: 'Encontrado',
+      resolved: 'Reencontrado / Resolvido',
+    };
+    const targetLabel = isAdoption ? 'Disponível para Adoção' : (statusTitles[newStatus] || newStatus);
+
+    Alert.alert(
+      'Alterar Status (Moderação Admin)',
+      `Deseja forçar a alteração do status desta publicação para "${targetLabel}" no banco de dados?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Confirmar',
+          onPress: async () => {
+            try {
+              const updatedFields = {
+                ...(item.extra_fields || {}),
+                available_for_adoption: isAdoption,
+                is_direct_adoption: isAdoption,
+              };
+              await itemsService.updateItem(item.id, {
+                status: newStatus,
+                extra_fields: updatedFields,
+              });
+              setItem((prev) => ({
+                ...prev,
+                status: newStatus,
+                extra_fields: updatedFields,
+              }));
+              Alert.alert('Sucesso', `Status alterado para "${targetLabel}" com sucesso!`);
+            } catch (err) {
+              Alert.alert('Erro', 'Falha ao alterar status: ' + (err.message || 'Erro desconhecido'));
             }
           },
         },
@@ -934,20 +977,51 @@ const ItemDetailScreen = ({ route, navigation }) => {
             </View>
           )}
 
-          {/* AÇÕES PARA O AUTOR / ADMIN */}
+          {/* PAINEL DE CONTROLE PARA AUTOR E SUPER ADMIN */}
           {(isOwner || isAdmin) && (
             <View style={[styles.ownerActionsGrid, { borderTopColor: colors.border }]}>
-              {isOwner && (
+              {isAdmin && !isOwner && (
+                <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: isDark ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, marginBottom: 8, borderWidth: 1, borderColor: isDark ? '#D97706' : '#FDE68A' }}>
+                  <MaterialIcons name="admin-panel-settings" size={16} color="#D97706" style={{ marginRight: 6 }} />
+                  <Text style={{ fontSize: 11.5, fontWeight: '800', color: isDark ? '#FCD34D' : '#B45309' }}>
+                    Acesso Super Admin • Moderação Total
+                  </Text>
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={[styles.ownerActionBtn, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: colors.border }]}
+                onPress={handleEditItem}
+              >
+                <MaterialIcons name="edit" size={17} color={colors.primary} />
+                <Text style={[styles.ownerActionText, { color: colors.primary }]}>
+                  {isAdmin && !isOwner ? 'Editar (Admin)' : 'Editar'}
+                </Text>
+              </TouchableOpacity>
+
+              {isAdmin && (
                 <TouchableOpacity
-                  style={[styles.ownerActionBtn, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: colors.border }]}
-                  onPress={handleEditItem}
+                  style={[styles.ownerActionBtn, { backgroundColor: isDark ? '#1E293B' : '#FEF3C7', borderColor: '#FDE68A' }]}
+                  onPress={() => {
+                    Alert.alert(
+                      'Alterar Status (Admin)',
+                      'Selecione o novo status que deseja aplicar a esta publicação:',
+                      [
+                        { text: 'Cancelar', style: 'cancel' },
+                        { text: '🔴 Animal Perdido', onPress: () => handleAdminChangeStatus('lost', false) },
+                        { text: '🟢 Animal Encontrado', onPress: () => handleAdminChangeStatus('found', false) },
+                        { text: '💖 Para Adoção', onPress: () => handleAdminChangeStatus('found', true) },
+                        { text: '🎉 Reencontrado (Resolvido)', onPress: () => handleAdminChangeStatus('resolved', false) },
+                      ]
+                    );
+                  }}
                 >
-                  <MaterialIcons name="edit" size={17} color={colors.primary} />
-                  <Text style={[styles.ownerActionText, { color: colors.primary }]}>Editar</Text>
+                  <MaterialIcons name="swap-horiz" size={18} color="#D97706" />
+                  <Text style={[styles.ownerActionText, { color: '#B45309' }]}>Status</Text>
                 </TouchableOpacity>
               )}
 
-              {isOwner && item.status === 'found' && item.extra_fields?.found_custody !== 'spotted' && (
+              {isOwner && item.status === 'found' && item.extra_fields?.found_custody !== 'spotted' && !isAdmin && (
                 <TouchableOpacity
                   style={[styles.ownerActionBtn, { backgroundColor: item.extra_fields?.available_for_adoption ? '#FDF2F8' : '#ECFDF5', borderColor: item.extra_fields?.available_for_adoption ? '#F472B6' : '#A7F3D0' }]}
                   onPress={handleToggleAdoption}
@@ -986,7 +1060,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
               >
                 <MaterialIcons name="delete-outline" size={17} color="#DC2626" />
                 <Text style={[styles.ownerActionText, { color: '#DC2626' }]}>
-                  {deleting ? 'Excluindo...' : 'Excluir'}
+                  {deleting ? 'Excluindo...' : (isAdmin && !isOwner ? 'Excluir (Admin)' : 'Excluir')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1071,8 +1145,13 @@ const ItemDetailScreen = ({ route, navigation }) => {
                     </Text>
                   </View>
 
-                  {isAuthor && (
+                  {(isAuthor || isAdmin) && (
                     <View style={styles.commentActionsWrap}>
+                      {isAdmin && !isAuthor && (
+                        <View style={{ backgroundColor: isDark ? 'rgba(245, 158, 11, 0.2)' : '#FEF3C7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginRight: 4 }}>
+                          <Text style={{ fontSize: 9.5, fontWeight: '800', color: isDark ? '#FCD34D' : '#B45309' }}>ADMIN</Text>
+                        </View>
+                      )}
                       <TouchableOpacity onPress={() => handleEditComment(s)} style={{ padding: 4, marginRight: 4 }}>
                         <MaterialIcons name="edit" size={17} color={colors.primary} />
                       </TouchableOpacity>

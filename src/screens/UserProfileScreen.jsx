@@ -26,7 +26,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const UserProfileScreen = ({ route, navigation }) => {
   const { userId, userName: initialName, avatarUrl: initialAvatar } = route.params || {};
-  const { user: currentUser, userProfile: currentUserProfile } = useAuth();
+  const { user: currentUser, userProfile: currentUserProfile, isAdmin } = useAuth();
   const { colors, isDark } = useTheme();
 
   const [loading, setLoading] = useState(true);
@@ -170,6 +170,112 @@ const UserProfileScreen = ({ route, navigation }) => {
         itemTitle: 'Perfil do Usuário',
       },
     });
+  };
+
+  const handleDeleteReview = (rating) => {
+    const isReviewer = currentUser && rating.reviewerId === currentUser.id;
+    Alert.alert(
+      isAdmin && !isReviewer ? 'Excluir Avaliação (Super Admin)' : 'Excluir Minha Avaliação',
+      isAdmin && !isReviewer
+        ? 'Como Administrador, você está excluindo este relato de avaliação permanentemente do banco de dados.'
+        : 'Tem certeza de que deseja excluir sua avaliação sobre este membro?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await ratingsService.deleteUserRating(rating.id, userId);
+              Alert.alert('Sucesso', 'Avaliação excluída com sucesso.');
+              loadUserData();
+            } catch (error) {
+              Alert.alert('Erro', 'Não foi possível excluir a avaliação: ' + (error.message || 'Erro desconhecido'));
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleToggleAdminRole = () => {
+    const isTargetAdmin = profile?.adm === true || profile?.adm === 'true' || profile?.role === 'admin';
+    const newRole = isTargetAdmin ? 'user' : 'admin';
+    const actionLabel = isTargetAdmin ? 'Remover Privilégios de Administrador' : 'Promover para Super Administrador';
+
+    Alert.alert(
+      actionLabel,
+      `Deseja ${isTargetAdmin ? 'remover o cargo de Administrador de' : 'conceder acesso total de Administrador para'} "${profile?.name || 'este usuário'}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Confirmar',
+          onPress: async () => {
+            try {
+              await userService.updateUserRole(userId, newRole);
+              setProfile(prev => ({
+                ...prev,
+                role: newRole,
+                adm: !isTargetAdmin,
+              }));
+              Alert.alert('Sucesso', `Cargo do usuário atualizado para "${newRole}" com sucesso!`);
+            } catch (error) {
+              Alert.alert('Erro', 'Não foi possível atualizar o cargo: ' + (error.message || 'Erro desconhecido'));
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteUserAccount = () => {
+    Alert.alert(
+      'Excluir Conta do Usuário (Admin)',
+      `ATENÇÃO: Deseja excluir permanentemente o perfil de "${profile?.name || 'este usuário'}", todas as suas publicações, fotos e comentários? Esta ação NÃO pode ser desfeita.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir Permanentemente',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await userService.deleteUserProfile(userId);
+              Alert.alert('Sucesso', 'Usuário e todos os seus dados foram excluídos com sucesso.');
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation.navigate('MainApp');
+              }
+            } catch (error) {
+              Alert.alert('Erro', 'Não foi possível excluir o usuário: ' + (error.message || 'Erro desconhecido'));
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteUserItem = (targetItem) => {
+    Alert.alert(
+      'Excluir Publicação (Admin)',
+      `Deseja excluir a publicação "${targetItem.title || 'Pet'}" como Administrador?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await itemsService.deleteItem(targetItem.id, { actorId: currentUser?.id, actorIsAdmin: true });
+              setUserItems(prev => prev.filter(i => i.id !== targetItem.id));
+              Alert.alert('Sucesso', 'Publicação excluída com sucesso.');
+            } catch (error) {
+              Alert.alert('Erro', 'Não foi possível excluir a publicação.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleOpenWhatsApp = () => {
@@ -429,6 +535,49 @@ const UserProfileScreen = ({ route, navigation }) => {
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>Reputação</Text>
           </TouchableOpacity>
         </View>
+
+        {/* PAINEL DE MODERAÇÃO DE MEMBRO (SUPER ADMIN) */}
+        {isAdmin && !isOwnProfile && (
+          <View style={{ marginTop: 12, padding: 14, borderRadius: 16, backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FEF3C7', borderWidth: 1, borderColor: isDark ? '#D97706' : '#FDE68A' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <MaterialIcons name="admin-panel-settings" size={18} color="#D97706" />
+                <Text style={{ fontSize: 13, fontWeight: '800', color: isDark ? '#FCD34D' : '#92400E' }}>
+                  Moderação Super Admin
+                </Text>
+              </View>
+              <View style={{ backgroundColor: profile?.role === 'admin' || profile?.adm ? '#059669' : '#64748B', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                <Text style={{ color: '#FFFFFF', fontSize: 10.5, fontWeight: '800' }}>
+                  {profile?.role === 'admin' || profile?.adm ? 'ADMIN' : 'USUÁRIO'}
+                </Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity
+                onPress={handleToggleAdminRole}
+                style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: isDark ? '#1E293B' : '#FFFFFF', paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: colors.cardBorder }}
+                activeOpacity={0.8}
+              >
+                <MaterialIcons name="shield" size={15} color={colors.primary} style={{ marginRight: 4 }} />
+                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>
+                  {profile?.role === 'admin' || profile?.adm ? 'Revogar Admin' : 'Tornar Admin'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleDeleteUserAccount}
+                style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FEE2E2', paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#FECACA' }}
+                activeOpacity={0.8}
+              >
+                <MaterialIcons name="delete-forever" size={16} color="#DC2626" style={{ marginRight: 4 }} />
+                <Text style={{ fontSize: 12, fontWeight: '800', color: '#DC2626' }}>
+                  Excluir Conta
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
 
       {/* 2. CHIP TOGGLE PRINCIPAL: PUBLICAÇÕES VS AVALIAÇÕES */}
@@ -689,6 +838,16 @@ const UserProfileScreen = ({ route, navigation }) => {
                       </Text>
                     </View>
                   </View>
+
+                  {(isAdmin || (currentUser && rating.reviewerId === currentUser.id)) && (
+                    <TouchableOpacity
+                      onPress={() => handleDeleteReview(rating)}
+                      style={{ padding: 6, backgroundColor: '#FEE2E2', borderRadius: 8, marginLeft: 6 }}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialIcons name="delete-outline" size={16} color="#DC2626" />
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 {/* Tags Elogios */}

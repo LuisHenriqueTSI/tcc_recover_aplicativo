@@ -1,0 +1,8 @@
+# WeFIND: DESENVOLVIMENTO DE UM APLICATIVO MOBILE GEOLOCALIZADO PARA LOCALIZAÇÃO E REENCONTRO COMUNITÁRIO DE ANIMAIS PERDIDOS
+
+**Autor/a/es:** [Seu Nome Completo], [Nome da Professora Orientadora]  
+**Área Temática:** Ciências Exatas e da Terra  
+
+**RESUMO:** A perda e o abandono de animais domésticos geram grande impacto emocional aos tutores e sobrecarregam abrigos e a infraestrutura urbana. Os métodos tradicionais de busca, como cartazes impressos e grupos dispersos na internet, sofrem com a falta de alcance geográfico preciso e demora na comunicação. Para solucionar essa dificuldade, este trabalho apresenta o WeFIND, um aplicativo móvel colaborativo desenvolvido para conectar a comunidade e agilizar a localização, o resgate e a adoção de animais. A metodologia adotou práticas ágeis de engenharia de software e design centrado no usuário, integrando recursos de mapa interativo, geolocalização e notificações diretas. Como resultados, o aplicativo disponibiliza um feed ordenado por proximidade física, filtros personalizados por características do animal, geração de cartazes digitais para redes sociais, alertas no WhatsApp para os tutores e um mural comunitário com depoimentos de animais recuperados. Os testes práticos demonstraram que o aplicativo oferece respostas rápidas, navegação simples e intuitiva, além de maior eficiência no compartilhamento de informações e na conexão entre quem perdeu e quem encontrou um animal. Conclui-se que o WeFIND representa uma ferramenta social relevante, tornando o processo de busca mais organizado, ágil e solidário.
+
+**PALAVRAS-CHAVE:** Aplicativo Móvel; Animais Perdidos; Geolocalização; Adoção de Animais; Tecnologia Social.

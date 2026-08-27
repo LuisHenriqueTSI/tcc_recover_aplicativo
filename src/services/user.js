@@ -230,3 +230,83 @@ export const uploadAvatar = async (userId, photoUri) => {
     throw error;
   }
 };
+
+export const listAllProfiles = async (searchTerm = '', limit = 50) => {
+  try {
+    let query = supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (searchTerm && searchTerm.trim()) {
+      const term = searchTerm.trim();
+      query = query.or(`name.ilike.%${term}%,email.ilike.%${term}%,city.ilike.%${term}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.log('[listAllProfiles] Error:', error.message);
+      return [];
+    }
+    return data || [];
+  } catch (error) {
+    console.log('[listAllProfiles] Exception:', error.message);
+    return [];
+  }
+};
+
+export const updateUserRole = async (userId, role) => {
+  try {
+    const isAdm = role === 'admin';
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        role,
+        adm: isAdm,
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('[updateUserRole] Erro ao atualizar cargo:', error.message);
+    throw error;
+  }
+};
+
+export const deleteUserProfile = async (userId) => {
+  try {
+    // 1. Exclui itens do usuário
+    const { data: userItems } = await supabase
+      .from('items')
+      .select('id')
+      .eq('user_id', userId);
+
+    if (userItems && userItems.length > 0) {
+      for (const item of userItems) {
+        await supabase.from('item_photos').delete().eq('item_id', item.id);
+        await supabase.from('sightings').delete().eq('item_id', item.id);
+        await supabase.from('messages').delete().eq('item_id', item.id);
+        await supabase.from('items').delete().eq('id', item.id);
+      }
+    }
+
+    // 2. Exclui avaliações recebidas e enviadas
+    await supabase.from('user_ratings').delete().or(`target_user_id.eq.${userId},reviewer_id.eq.${userId}`);
+
+    // 3. Exclui perfil
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('[deleteUserProfile] Erro ao excluir perfil:', error.message);
+    throw error;
+  }
+};

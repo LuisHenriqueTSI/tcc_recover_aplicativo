@@ -144,3 +144,37 @@ export const submitUserRating = async ({
 
   return newRating;
 };
+
+export const deleteUserRating = async (ratingId, targetUserId) => {
+  try {
+    if (!ratingId) return false;
+    console.log('[ratings] Excluindo avaliação:', ratingId);
+
+    // 1. Tenta excluir do Supabase
+    try {
+      await supabase
+        .from('user_ratings')
+        .delete()
+        .eq('id', ratingId);
+    } catch (e) {
+      console.log('[ratings] Aviso ao excluir do Supabase:', e.message);
+    }
+
+    // 2. Exclui do AsyncStorage local
+    try {
+      const raw = await AsyncStorage.getItem(LOCAL_RATINGS_KEY);
+      if (raw) {
+        const existing = JSON.parse(raw);
+        const filtered = existing.filter(r => String(r.id) !== String(ratingId));
+        await AsyncStorage.setItem(LOCAL_RATINGS_KEY, JSON.stringify(filtered));
+      }
+    } catch (e) {
+      console.log('[ratings] Erro ao remover do AsyncStorage:', e.message);
+    }
+
+    return true;
+  } catch (error) {
+    console.error('[ratings] Erro ao excluir avaliação:', error.message);
+    throw error;
+  }
+};
