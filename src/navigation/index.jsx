@@ -193,15 +193,7 @@ const PublicStack = () => {
     <Stack.Navigator
       initialRouteName="PublicApp"
       screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.headerBg,
-          paddingTop: 38,
-          paddingBottom: 18,
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
+        header: MainStackHeader,
       }}
     >
       <Stack.Screen
@@ -504,19 +496,45 @@ const MainStackHeader = ({ navigation, route, options, back }) => {
     ? (route.params?.editItem ? 'Editar Pet' : 'Registrar')
     : options.headerTitle || options.title || '';
 
+  // Exibe o botão de voltar se houver histórico de pilha OU se a tela atual não for a aba principal
+  const isMainTabRoute = route.name === 'MainApp' || route.name === 'PublicApp';
+  const showBackButton = Boolean(back || navigation.canGoBack() || !isMainTabRoute);
+
+  const handleBackPress = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      // Fallback inteligente: se o histórico foi resetado no login, volta com segurança para o app principal
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainApp' }],
+      });
+    }
+  };
+
   return (
     <SafeAreaView edges={['top']} style={{ backgroundColor: colors.headerBg }}>
       <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
-        {back && (
+        {showBackButton && (
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{ width: 38, height: 38, alignItems: 'center', justifyContent: 'center', marginRight: 10, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)' }}
+            onPress={handleBackPress}
+            style={{
+              width: 38,
+              height: 38,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 10,
+              borderRadius: 19,
+              backgroundColor: 'rgba(255,255,255,0.14)',
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.28)',
+            }}
             accessibilityLabel="Voltar"
           >
             <MaterialIcons name="chevron-left" size={28} color="#fff" />
           </TouchableOpacity>
         )}
-        <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }} numberOfLines={1}>
+        <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold', flex: 1 }} numberOfLines={1}>
           {title}
         </Text>
       </View>
