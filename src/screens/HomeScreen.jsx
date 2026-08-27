@@ -594,16 +594,15 @@ const HomeScreen = ({ navigation, route }) => {
     loadInitialLocation();
   }, [user, userProfile]);
 
-  // Localidade ativa para exibição no cabeçalho (compacto: Nome da rua, Cidade, Estado)
+  // Localidade ativa para exibição no cabeçalho (apenas Cidade - Estado)
   const activeCity = sessionCity;
   const activeState = sessionState;
   const activeStreet = sessionStreet;
-  const headerLocationSummary = activeStreet && activeCity && activeState
-    ? `${activeStreet}, ${activeCity}, ${activeState}`
-    : (activeCity && activeState)
-    ? `${activeCity}, ${activeState}`
+  const headerCityState = (activeCity && activeState)
+    ? `${activeCity} - ${activeState}`
     : (activeCity || activeState || 'Todo o Brasil');
-  const displayLocation = headerLocationSummary;
+  const headerLocationSummary = headerCityState;
+  const displayLocation = headerCityState;
 
   // Salvar localidade (perfil e armazenamento local)
   const handleSaveProfileLocation = async () => {
@@ -1214,7 +1213,7 @@ const HomeScreen = ({ navigation, route }) => {
                 setProfileEditRadiusKm(searchRadiusKm);
                 setShowProfileLocationModal(true);
               }}
-              accessibilityLabel={`Localidade: ${headerLocationSummary}`}
+              accessibilityLabel={`Localidade: ${headerCityState}`}
               activeOpacity={0.75}
             >
               <MaterialIcons name="place" size={14} color="#FEA937" style={{ marginRight: 4, flexShrink: 0 }} />
@@ -1223,9 +1222,7 @@ const HomeScreen = ({ navigation, route }) => {
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                {activeCity && activeState
-                  ? `${headerLocationSummary} • ${searchRadiusKm} km`
-                  : headerLocationSummary}
+                {headerCityState}
               </Text>
               <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 10, padding: 2, flexShrink: 0 }}>
                 <MaterialIcons name="edit" size={11} color="#FFFFFF" />
