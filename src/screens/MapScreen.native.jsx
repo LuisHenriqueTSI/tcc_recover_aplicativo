@@ -438,7 +438,7 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#F97316');
   const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
 
-  const SIZE = isSelected ? 64 : 52;
+  const SIZE = isSelected ? 60 : 48;
   const BORDER = 3.5;
   const PHOTO = SIZE - BORDER * 2;
 
@@ -462,13 +462,6 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
           backgroundColor: '#FFFFFF',
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden',
-          // Sombra para Android e iOS
-          elevation: isSelected ? 8 : 4,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
         }}
       >
         {photoUrl ? (
@@ -493,7 +486,7 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: 18 }}>🐾</Text>
+            <Text style={{ fontSize: 16 }}>🐾</Text>
           </View>
         )}
       </View>
