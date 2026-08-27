@@ -646,7 +646,7 @@ const RootNavigator = () => {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background || '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
         <Image
           source={require('../assets/logo_wefind.png')}
           style={{ width: 220, height: 220 }}

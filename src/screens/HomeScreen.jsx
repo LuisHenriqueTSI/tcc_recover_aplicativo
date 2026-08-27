@@ -184,7 +184,10 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
 
   const petAttributeChips = React.useMemo(() => {
     const list = [];
-    if (animalBreed && animalBreed !== 'Sem raça definida') {
+    const isBreedUnknown = !animalBreed ||
+      /^(não informado|não informada|nao informado|nao informada|sem raça definida|sem raca definida|sem raça|sem raca|srd|desconhecido|desconhecida|outra|outro)$/i.test(animalBreed.trim());
+
+    if (!isBreedUnknown) {
       list.push({ key: 'breed', text: `🏷️ ${animalBreed}` });
     }
     if (animalGender && animalGender !== 'Não informado') {

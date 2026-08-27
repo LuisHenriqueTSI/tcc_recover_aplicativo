@@ -65,6 +65,96 @@ const geocodeItemLocation = async (item) => {
   return null;
 };
 
+const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+  const numLat1 = Number(lat1);
+  const numLon1 = Number(lon1);
+  const numLat2 = Number(lat2);
+  const numLon2 = Number(lon2);
+  if (isNaN(numLat1) || isNaN(numLon1) || isNaN(numLat2) || isNaN(numLon2)) return null;
+
+  const R = 6371;
+  const dLat = ((numLat2 - numLat1) * Math.PI) / 180;
+  const dLon = ((numLon2 - numLon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((numLat1 * Math.PI) / 180) *
+      Math.cos((numLat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+const formatItemDate = (value) => {
+  if (!value) return '';
+  const raw = String(value);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(`${raw}T12:00:00`) : new Date(raw);
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
+};
+
+const getColorHex = (colorName = '') => {
+  const norm = String(colorName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (norm.includes('pret')) return '#1E293B';
+  if (norm.includes('branc')) return '#FFFFFF';
+  if (norm.includes('marrom') || norm.includes('marron')) return '#78350F';
+  if (norm.includes('caramel') || norm.includes('dourad')) return '#D97706';
+  if (norm.includes('cinza') || norm.includes('prat')) return '#94A3B8';
+  if (norm.includes('laranja') || norm.includes('ruiv') || norm.includes('vermelh')) return '#EA580C';
+  if (norm.includes('amarel')) return '#EAB308';
+  if (norm.includes('bege') || norm.includes('crem')) return '#FDE68A';
+  return '#64748B';
+};
+
+const buildSelectedChips = (item) => {
+  if (!item) return [];
+  const breed = String(item.breed || item.extra_fields?.breed || '').trim();
+  const gender = String(item.gender || item.extra_fields?.gender || '').trim();
+  const color = String(item.color || item.extra_fields?.color || '').trim();
+  const size = String(item.size || item.extra_fields?.size || '').trim();
+  const age = String(item.age || item.extra_fields?.age || '').trim();
+  const collar = String(item.collar || item.extra_fields?.collar || '').toLowerCase() === 'sim' || Boolean(item.extra_fields?.has_collar);
+  const neutered = String(item.neutered || item.extra_fields?.neutered || '').toLowerCase() === 'sim' || Boolean(item.extra_fields?.castrated || item.extra_fields?.is_neutered);
+
+  const list = [];
+  const isBreedUnknown = !breed ||
+    /^(não informado|não informada|nao informado|nao informada|sem raça definida|sem raca definida|sem raça|sem raca|srd|desconhecido|desconhecida|outra|outro)$/i.test(breed.trim());
+
+  if (!isBreedUnknown) {
+    list.push({ key: 'breed', text: `🏷️ ${breed}` });
+  }
+  if (gender && gender !== 'Não informado') {
+    list.push({
+      key: 'gender',
+      text: gender.toLowerCase().includes('f') ? '♀️ Fêmea' : '♂️ Macho',
+    });
+  }
+  if (size && size !== 'Não informado') {
+    list.push({ key: 'size', text: `📏 ${size.replace(/porte\s*/i, '')}` });
+  }
+  if (age && age !== 'Não informado') {
+    list.push({
+      key: 'age',
+      text: age.toLowerCase().includes('filhote') ? '🍼 Filhote' : age.toLowerCase().includes('idoso') ? '👴 Idoso' : '🐕 Adulto',
+    });
+  }
+  if (color && color !== 'Cor não informada') {
+    list.push({
+      key: 'color',
+      isColor: true,
+      colorHex: getColorHex(color),
+      text: color,
+    });
+  }
+  if (collar) {
+    list.push({ key: 'collar', isCollar: true, text: '📿 Coleira' });
+  }
+  if (neutered) {
+    list.push({ key: 'neutered', isNeutered: true, text: '✂️ Castrado' });
+  }
+  return list;
+};
+
 const MapScreen = ({ navigation }) => {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
@@ -74,6 +164,7 @@ const MapScreen = ({ navigation }) => {
   const [locationStatus, setLocationStatus] = useState('checking');
   const locationStatusRef = useRef('checking');
   const [region, setRegion] = useState(BRAZIL_REGION);
+  const [userCoords, setUserCoords] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -137,6 +228,7 @@ const MapScreen = ({ navigation }) => {
         latitude: current.coords.latitude,
         longitude: current.coords.longitude,
       };
+      setUserCoords(coordinate);
       setRegion({ ...coordinate, latitudeDelta: 0.08, longitudeDelta: 0.08 });
       locationStatusRef.current = 'granted';
       setLocationStatus('granted');
@@ -234,8 +326,17 @@ const MapScreen = ({ navigation }) => {
 
   const isAdoption = itemsService.isPetAvailableForAdoption(selectedItem);
   const isFound = !isAdoption && selectedItem?.status === 'found';
-  const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#F97316');
-  const statusLabel = isAdoption ? 'Disponível para Adoção' : (isFound ? 'Animal encontrado' : 'Animal perdido');
+  const statusColor = isAdoption ? '#DB2777' : (isFound ? '#16A34A' : '#EA580C');
+  const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
+  const activeReward = Array.isArray(selectedItem?.rewards)
+    ? selectedItem.rewards.find(r => r?.status === 'active')
+    : null;
+  const selectedChips = buildSelectedChips(selectedItem);
+  const selectedSpecies = String(selectedItem?.species || selectedItem?.extra_fields?.species || '').trim();
+  const selectedDistanceKm = calculateDistanceKm(userCoords?.latitude, userCoords?.longitude, selectedItem?.latitude, selectedItem?.longitude);
+  const selectedDateFormatted = formatItemDate(selectedItem?.date || selectedItem?.created_at);
+  const ownerName = selectedItem?.profiles?.name || selectedItem?.owner_name || 'Tutor';
+  const ownerAvatar = selectedItem?.profiles?.avatar_url || selectedItem?.owner_avatar || null;
 
   return (
     <View style={styles.container}>
@@ -284,6 +385,13 @@ const MapScreen = ({ navigation }) => {
         showsMyLocationButton={false}
         showsPointsOfInterest={false}
         showsBuildings={false}
+        showsCompass={true}
+        mapPadding={{
+          top: Math.max(insets.top + 68, 104),
+          right: 12,
+          bottom: selectedItem ? 370 : 110,
+          left: 12,
+        }}
         customMapStyle={PETS_ONLY_MAP_STYLE}
       >
         {filteredItems.map((item) => (
@@ -303,54 +411,258 @@ const MapScreen = ({ navigation }) => {
             <MaterialIcons name="close" size={18} color="#64748B" />
           </TouchableOpacity>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+          {/* 1. Header do Tutor + Data + Distância */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, paddingRight: 32 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
+              {ownerAvatar ? (
+                <Image
+                  source={{ uri: ownerAvatar }}
+                  style={{ width: 26, height: 26, borderRadius: 13, marginRight: 7, backgroundColor: '#E2E8F0' }}
+                />
+              ) : (
+                <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center', marginRight: 7 }}>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 11 }}>
+                    {ownerName[0]?.toUpperCase()}
+                  </Text>
+                </View>
+              )}
+              <Text style={{ fontSize: 12.5, fontWeight: '700', color: '#1E293B' }} numberOfLines={1}>
+                {ownerName}
+              </Text>
+            </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              {selectedDistanceKm != null && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                  <MaterialIcons name="near-me" size={11} color="#2563EB" style={{ marginRight: 2 }} />
+                  <Text style={{ fontSize: 10.5, fontWeight: '700', color: '#1D4ED8' }}>
+                    {selectedDistanceKm < 1 ? '< 1 km' : `${selectedDistanceKm < 10 ? selectedDistanceKm.toFixed(1) : Math.round(selectedDistanceKm)} km`}
+                  </Text>
+                </View>
+              )}
+              {selectedDateFormatted ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <MaterialIcons name="event" size={12} color="#94A3B8" style={{ marginRight: 2 }} />
+                  <Text style={{ fontSize: 11, color: '#64748B', fontWeight: '600' }}>
+                    {selectedDateFormatted}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
+
+          {/* 2. Foto + Título + Badges de Status, Espécie e Custódia */}
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
             {selectedItem.item_photos?.[0]?.url ? (
               <Image
                 source={{ uri: selectedItem.item_photos[0].url }}
-                style={{ width: 64, height: 64, borderRadius: 14, marginRight: 12, backgroundColor: '#E2E8F0' }}
+                style={{ width: 72, height: 72, borderRadius: 14, marginRight: 12, backgroundColor: '#E2E8F0' }}
                 resizeMode="cover"
               />
             ) : (
-              <View style={{ width: 64, height: 64, borderRadius: 14, marginRight: 12, backgroundColor: statusColor + '18', alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 30 }}>🐾</Text>
+              <View style={{ width: 72, height: 72, borderRadius: 14, marginRight: 12, backgroundColor: statusColor + '18', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 32 }}>🐾</Text>
               </View>
             )}
 
-            <View style={{ flex: 1, paddingRight: 20 }}>
-              <Text style={styles.infoTitle} numberOfLines={1}>{selectedItem.title || 'Animal'}</Text>
-              <View style={{
-                alignSelf: 'flex-start',
-                backgroundColor: statusColor + '18',
-                borderColor: statusColor + '40',
-                borderWidth: 1,
-                borderRadius: 8,
-                paddingHorizontal: 7,
-                paddingVertical: 2.5,
-                marginTop: 4,
-              }}>
-                <Text style={{ color: statusColor, fontWeight: '800', fontSize: 11 }}>
-                  {statusLabel}
-                </Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.infoTitle} numberOfLines={1}>
+                {selectedItem.title || 'Animal'}
+              </Text>
+
+              {/* Badges Flutuantes */}
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                {/* Status */}
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: statusColor + '18',
+                  borderColor: statusColor + '40',
+                  borderWidth: 1,
+                  borderRadius: 7,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                }}>
+                  <Text style={{ color: statusColor, fontWeight: '800', fontSize: 10.5 }}>
+                    {statusLabel}
+                  </Text>
+                </View>
+
+                {/* Espécie */}
+                {selectedSpecies ? (
+                  <View style={{
+                    backgroundColor: '#F1F5F9',
+                    borderRadius: 7,
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderWidth: 1,
+                    borderColor: '#E2E8F0',
+                  }}>
+                    <Text style={{ color: '#475569', fontWeight: '700', fontSize: 10.5 }}>
+                      🐾 {selectedSpecies}
+                    </Text>
+                  </View>
+                ) : null}
+
+                {/* Custódia (se encontrado e não for adoção) */}
+                {!isAdoption && selectedItem.status === 'found' && (
+                  selectedItem.extra_fields?.found_custody === 'spotted' ? (
+                    <View style={{ backgroundColor: '#FEF3C7', borderColor: '#FDE68A', borderWidth: 1, borderRadius: 7, paddingHorizontal: 6, paddingVertical: 2 }}>
+                      <Text style={{ color: '#B45309', fontWeight: '700', fontSize: 10.5 }}>👀 Visto na Rua</Text>
+                    </View>
+                  ) : (
+                    <View style={{ backgroundColor: '#DCFCE7', borderColor: '#BBF7D0', borderWidth: 1, borderRadius: 7, paddingHorizontal: 6, paddingVertical: 2 }}>
+                      <Text style={{ color: '#15803D', fontWeight: '700', fontSize: 10.5 }}>🏠 Em Lar Temp.</Text>
+                    </View>
+                  )
+                )}
               </View>
             </View>
           </View>
 
+          {/* 3. Descrição Curta (se houver) */}
+          {selectedItem.description?.trim() ? (
+            <Text style={{ fontSize: 12, color: '#64748B', lineHeight: 16.5, marginBottom: 8 }} numberOfLines={2}>
+              {selectedItem.description.trim()}
+            </Text>
+          ) : null}
+
+          {/* 4. Chips de Atributos Minimalistas com Emojis e Bolinha de Cor */}
+          {selectedChips.length > 0 && (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: 8 }}>
+              {selectedChips.map((chip) => {
+                if (chip.isColor) {
+                  return (
+                    <View
+                      key={chip.key}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: '#F8FAFC',
+                        borderRadius: 7,
+                        paddingHorizontal: 7,
+                        paddingVertical: 2.5,
+                        borderWidth: 1,
+                        borderColor: '#E2E8F0',
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: chip.colorHex,
+                          marginRight: 4,
+                          borderWidth: chip.colorHex === '#FFFFFF' ? 1 : 0.5,
+                          borderColor: '#94A3B8',
+                        }}
+                      />
+                      <Text style={{ fontSize: 11, color: '#475569', fontWeight: '600' }}>
+                        {chip.text}
+                      </Text>
+                    </View>
+                  );
+                }
+
+                if (chip.isCollar) {
+                  return (
+                    <View
+                      key={chip.key}
+                      style={{
+                        backgroundColor: '#EFF6FF',
+                        borderRadius: 7,
+                        paddingHorizontal: 7,
+                        paddingVertical: 2.5,
+                        borderWidth: 1,
+                        borderColor: '#BFDBFE',
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, color: '#1E40AF', fontWeight: '600' }}>
+                        {chip.text}
+                      </Text>
+                    </View>
+                  );
+                }
+
+                if (chip.isNeutered) {
+                  return (
+                    <View
+                      key={chip.key}
+                      style={{
+                        backgroundColor: '#ECFDF5',
+                        borderRadius: 7,
+                        paddingHorizontal: 7,
+                        paddingVertical: 2.5,
+                        borderWidth: 1,
+                        borderColor: '#A7F3D0',
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, color: '#047857', fontWeight: '600' }}>
+                        {chip.text}
+                      </Text>
+                    </View>
+                  );
+                }
+
+                return (
+                  <View
+                    key={chip.key}
+                    style={{
+                      backgroundColor: '#F8FAFC',
+                      borderRadius: 7,
+                      paddingHorizontal: 7,
+                      paddingVertical: 2.5,
+                      borderWidth: 1,
+                      borderColor: '#E2E8F0',
+                    }}
+                  >
+                    <Text style={{ fontSize: 11, color: '#475569', fontWeight: '600' }}>
+                      {chip.text}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* 5. Banner de Recompensa (se houver) */}
+          {activeReward && (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#FEF3C7',
+              borderColor: '#FCD34D',
+              borderWidth: 1,
+              borderRadius: 8,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              marginBottom: 8,
+            }}>
+              <Text style={{ fontSize: 11.5, fontWeight: '800', color: '#B45309' }}>
+                🏆 {activeReward.amount ? `Recompensa: R$ ${parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Recompensa oferecida'}
+                {activeReward.description ? ` • ${activeReward.description}` : ''}
+              </Text>
+            </View>
+          )}
+
+          {/* 6. Localização */}
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: '#F8FAFC',
-            padding: 8,
-            borderRadius: 10,
+            padding: 7,
+            borderRadius: 9,
             borderWidth: 1,
             borderColor: '#E2E8F0',
-            marginBottom: 10,
+            marginBottom: 8,
           }}>
-            <MaterialIcons name="place" size={16} color="#2563EB" style={{ marginRight: 6 }} />
-            <Text style={{ fontSize: 12.5, color: '#334155', fontWeight: '600', flex: 1 }} numberOfLines={1}>
+            <MaterialIcons name="place" size={15} color="#2563EB" style={{ marginRight: 5 }} />
+            <Text style={{ fontSize: 12, color: '#334155', fontWeight: '600', flex: 1 }} numberOfLines={1}>
               {[selectedItem.neighborhood, selectedItem.city, selectedItem.state].filter(Boolean).join(' - ') || 'Localização marcada'}
             </Text>
           </View>
 
+          {/* 7. Botão Ver Detalhes */}
           <TouchableOpacity
             style={styles.detailsButton}
             onPress={() => navigation.navigate('ItemDetail', { itemId: selectedItem.id })}
@@ -473,8 +785,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
   },
-  centerLocationButton: { position: 'absolute', right: 16, bottom: 108, width: 50, height: 50, borderRadius: 25, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 5 },
-  centerLocationButtonRaised: { bottom: 270 },
+  centerLocationButton: { position: 'absolute', right: 16, bottom: 175, width: 50, height: 50, borderRadius: 25, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 5 },
+  centerLocationButtonRaised: { bottom: 435 },
   permissionState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28, backgroundColor: '#F9FAFB' },
   permissionTitle: { color: '#111827', fontSize: 18, fontWeight: '700', marginTop: 14 },
   permissionText: { color: '#6B7280', textAlign: 'center', marginTop: 6, lineHeight: 20 },
@@ -609,8 +921,8 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const statusIcon = isAdoption ? '💖' : (isFound ? '🟢' : '🔴');
   const emoji = getSpeciesEmoji(item);
 
-  const RING_SIZE = isSelected ? 33 : 26;
-  const BORDER_W = isSelected ? 3.2 : 2.5;
+  const RING_SIZE = 32;
+  const BORDER_W = 2.5;
 
   return (
     <Marker
@@ -619,7 +931,9 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
       onCalloutPress={onCalloutPress}
       tracksViewChanges={tracksViewChanges}
       anchor={{ x: 0.5, y: 0.5 }}
+      calloutAnchor={{ x: 0.5, y: 0.0 }}
     >
+      {/* Círculo do Marcador com o Emoji */}
       <View
         collapsable={false}
         style={{
@@ -643,15 +957,15 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
           <Image
             source={require('../../assets/cat_face.png')}
             style={{
-              width: isSelected ? 18 : 14.5,
-              height: isSelected ? 18 : 14.5,
+              width: 18,
+              height: 18,
             }}
             resizeMode="contain"
           />
         ) : (
           <Text
             style={{
-              fontSize: isSelected ? 17 : 13.5,
+              fontSize: 17,
               includeFontPadding: false,
               textAlign: 'center',
             }}
@@ -660,11 +974,33 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
           </Text>
         )}
       </View>
-      <Callout tooltip={false}>
-        <View style={styles.callout}>
-          <Text style={styles.calloutTitle} numberOfLines={1}>{item.title || 'Animal'}</Text>
-          <Text style={[styles.calloutStatus, { color: statusColor }]}>{isAdoption ? 'Para Adoção' : (isFound ? 'Animal Encontrado' : 'Animal Perdido')}</Text>
-          <Text style={styles.calloutAction}>Toque para ver detalhes</Text>
+
+      {/* Balão de Seleção Perfeitamente Centralizado Acima do Marcador */}
+      <Callout
+        onPress={onCalloutPress}
+        style={{ width: 160 }}
+      >
+        <View style={{ width: 160, paddingVertical: 4, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: 13, fontWeight: '700', color: '#0F172A', textAlign: 'center', width: '100%' }} numberOfLines={1}>
+            {item.title || 'Animal'}
+          </Text>
+          <View style={{
+            backgroundColor: statusColor + '20',
+            borderColor: statusColor,
+            borderWidth: 1,
+            borderRadius: 6,
+            paddingHorizontal: 8,
+            paddingVertical: 2,
+            alignItems: 'center',
+            marginTop: 3,
+          }}>
+            <Text style={{ fontSize: 10, fontWeight: '800', color: statusColor, textTransform: 'uppercase', letterSpacing: 0.3 }}>
+              {isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido')}
+            </Text>
+          </View>
+          <Text style={{ fontSize: 9.5, color: '#64748B', marginTop: 3 }}>
+            Toque para ver detalhes
+          </Text>
         </View>
       </Callout>
     </Marker>
