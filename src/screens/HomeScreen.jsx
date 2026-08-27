@@ -132,7 +132,7 @@ const formatStreetNumberNeighborhood = (item) => {
 };
 
 // ItemCard agora é um componente fora do HomeScreen
-const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress, onPressOwner }) => {
+const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMessage, handleEditItem, handleDeleteItem, onPress, onPressOwner }) => {
   const { colors, isDark } = useTheme();
   const [carouselIndex, setCarouselIndex] = React.useState(0);
   const [cardWidth, setCardWidth] = React.useState(0);
@@ -155,9 +155,11 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
   const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
   const IMAGE_HEIGHT = 215;
 
+  const isOwner = Boolean(user && item.owner_id === user.id);
+  const ownerAvatar = (isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || item.profiles?.avatar_url || item.profiles?.avatarUrl || item.owner_avatar || null;
   const safeTitle = item.title != null ? String(item.title) : (animalSpecies || 'Animal');
   const safeDescription = item.description != null ? String(item.description) : '';
-  const safeOwnerName = item.owner_name != null ? String(item.owner_name) : (item.profiles?.name || 'Tutor');
+  const safeOwnerName = (isOwner && userProfile?.name) ? userProfile.name : (item.owner_name != null ? String(item.owner_name) : (item.profiles?.name || 'Tutor'));
   const activeReward = Array.isArray(item.rewards)
     ? item.rewards.find(reward => reward?.status === 'active')
     : null;
@@ -436,7 +438,7 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
           <TouchableOpacity
             onPress={() => {
               if (onPressOwner && item.owner_id) {
-                onPressOwner(item.owner_id, safeOwnerName, item.profiles?.avatar_url);
+                onPressOwner(item.owner_id, safeOwnerName, ownerAvatar);
               }
             }}
             activeOpacity={0.7}
@@ -452,9 +454,10 @@ const ItemCard = React.memo(({ item, user, thumbnails, handleSendMessage, handle
               marginRight: 6,
               borderWidth: 1,
               borderColor: isDark ? colors.cardBorder : '#BFDBFE',
+              overflow: 'hidden',
             }}>
-              {item.profiles?.avatar_url ? (
-                <Image source={{ uri: item.profiles.avatar_url }} style={{ width: 26, height: 26, borderRadius: 13 }} />
+              {ownerAvatar ? (
+                <Image source={{ uri: ownerAvatar }} style={{ width: 28, height: 28, borderRadius: 14 }} />
               ) : (
                 <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 12 }}>
                   {safeOwnerName.trim()[0]?.toUpperCase() || 'U'}
@@ -2323,6 +2326,7 @@ const HomeScreen = ({ navigation, route }) => {
           <ItemCard
             item={item}
             user={user}
+            userProfile={userProfile}
             thumbnails={thumbnails}
             handleSendMessage={handleSendMessage}
             handleEditItem={handleEditItem}

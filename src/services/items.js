@@ -53,7 +53,7 @@ export const listItemsWithPhotosAndOwner = async (filters = {}) => {
     
     let query = supabase
       .from('items')
-      .select('*, profiles!owner_id(name, email, whatsapp, phone), item_photos(id, url), rewards(id, amount, currency, status, description)')
+      .select('*, profiles!owner_id(name, email, whatsapp, phone, avatar_url, avatar_path), item_photos(id, url), rewards(id, amount, currency, status, description)')
       .order('created_at', { ascending: false });
 
     if (filters.status) query = query.eq('status', filters.status);
@@ -114,7 +114,7 @@ export const getItems = async (filters = {}) => {
   try {
     let query = supabase
       .from('items')
-      .select('*, profiles!owner_id(name, email, whatsapp, phone), item_photos(id, url), rewards(id, amount, currency, status, description)')
+      .select('*, profiles!owner_id(name, email, whatsapp, phone, avatar_url, avatar_path), item_photos(id, url), rewards(id, amount, currency, status, description)')
       .order('created_at', { ascending: false });
 
     if (filters.limit) {
@@ -156,7 +156,7 @@ const listItemsWithPhotosAndOwnerFallback = async (filters = {}) => {
   try {
     let query = supabase
       .from('items')
-      .select('*, profiles!owner_id(name, email, whatsapp, phone)')
+      .select('*, profiles!owner_id(name, email, whatsapp, phone, avatar_url, avatar_path)')
       .order('created_at', { ascending: false });
 
     if (filters.status) query = query.eq('status', filters.status);
@@ -746,7 +746,7 @@ export const searchItems = async (searchTerm) => {
 
     const { data, error } = await supabase
       .from('items')
-      .select('*, profiles!owner_id(name, email, whatsapp, phone), item_photos(id, url), rewards(id, amount, currency, status, description)')
+      .select('*, profiles!owner_id(name, email, whatsapp, phone, avatar_url, avatar_path), item_photos(id, url), rewards(id, amount, currency, status, description)')
       .eq('resolved', false)
       .or(`title.ilike.%${term}%,description.ilike.%${term}%,city.ilike.%${term}%,state.ilike.%${term}%,neighborhood.ilike.%${term}%,species.ilike.%${term}%`)
       .order('created_at', { ascending: false });
@@ -1115,7 +1115,7 @@ export const listRecoveredPets = async (limit = 10) => {
   try {
     let query = supabase
       .from('items')
-      .select('*, profiles!owner_id(name, email, whatsapp, phone)')
+      .select('*, profiles!owner_id(name, email, whatsapp, phone, avatar_url, avatar_path)')
       .eq('resolved', true)
       .order('updated_at', { ascending: false })
       .limit(limit);
