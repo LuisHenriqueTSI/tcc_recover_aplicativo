@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,31 +7,43 @@ import {
   Linking,
   StyleSheet,
   Image,
+  ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MaterialIcons, Feather, FontAwesome5 } from '@expo/vector-icons';
+import { MaterialIcons, Feather, Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import * as storiesService from '../services/stories';
+import OptimizedImage from '../components/OptimizedImage';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const SobreScreen = ({ navigation }) => {
   const { user } = useAuth();
   const { colors, isDark } = useTheme();
 
-  const handleStart = async () => {
-    await AsyncStorage.setItem('accepted_terms', 'true');
-    navigation.replace('PublicApp');
-  };
+  const [stories, setStories] = useState([]);
+  const [loadingStories, setLoadingStories] = useState(true);
 
-  const handleLoginDirect = async () => {
-    await AsyncStorage.setItem('accepted_terms', 'true');
-    navigation.navigate('Login');
-  };
-
-  const handleRegisterDirect = async () => {
-    await AsyncStorage.setItem('accepted_terms', 'true');
-    navigation.navigate('Register');
-  };
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStories = async () => {
+      try {
+        setLoadingStories(true);
+        const data = await storiesService.listSuccessStories();
+        if (isMounted) {
+          setStories(data || []);
+        }
+      } catch (err) {
+        console.log('[SobreScreen] Erro ao carregar mural:', err.message);
+      } finally {
+        if (isMounted) setLoadingStories(false);
+      }
+    };
+    fetchStories();
+    return () => { isMounted = false; };
+  }, []);
 
   const handleGoToMap = () => {
     if (user) {
@@ -41,343 +53,266 @@ const SobreScreen = ({ navigation }) => {
     }
   };
 
+  const handleGoToMural = () => {
+    navigation.navigate('MuralReencontros');
+  };
+
+  const displayedStories = stories.slice(0, 4);
+
   return (
-    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]} edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      {/* HEADER SUPERIOR */}
+      <View style={[styles.topHeader, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}>
+        <View style={styles.topHeaderContent}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Image
+              source={require('../assets/logo_wefind.png')}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+            <View style={{ marginLeft: 10 }}>
+              <Text style={styles.headerTitle}>Conhecer o WeFIND</Text>
+              <Text style={styles.headerSubtitle}>Plataforma colaborativa animal</Text>
+            </View>
+          </View>
+
+          {!user && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Login')}
+              style={styles.headerLoginBtn}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="login" size={15} color="#FFFFFF" style={{ marginRight: 4 }} />
+              <Text style={styles.headerLoginBtnText}>Entrar</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* HERO SECTION */}
-        <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          {/* Logo Circular */}
-          <View
-            style={[
-              styles.circularLogoContainer,
-              {
-                backgroundColor: colors.card,
-                borderColor: isDark ? 'rgba(37, 99, 235, 0.3)' : '#EFF6FF',
-              },
-            ]}
-          >
-            <Image
-              source={require('../assets/logo_wefind.png')}
-              style={styles.circularLogo}
-              resizeMode="contain"
-            />
+        {/* 1. HERO CARD COMPACTO & ELEGANTE */}
+        <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+          <View style={[styles.heroBadge, { backgroundColor: colors.primaryLight }]}>
+            <MaterialIcons name="pets" size={14} color={colors.primary} style={{ marginRight: 5 }} />
+            <Text style={[styles.heroBadgeText, { color: colors.primary }]}>REDE DE PROTEÇÃO E REENCONTRO</Text>
           </View>
 
-          <View style={[styles.brandPill, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : '#DBEAFE' }]}>
-            <MaterialIcons name="pets" size={13} color={colors.primary} style={{ marginRight: 4 }} />
-            <Text style={[styles.brandPillText, { color: colors.primary }]}>REDE COLABORATIVA ANIMAL</Text>
-          </View>
-
-          <Text style={[styles.headline, { color: colors.text }]}>
-            Reunindo pets e famílias com inteligência e comunidade.
+          <Text style={[styles.heroHeadline, { color: colors.text }]}>
+            Reunindo animais e famílias com rapidez, tecnologia e empatia.
           </Text>
 
-          <Text style={[styles.subheadline, { color: colors.textSecondary }]}>
-            O WeFIND conecta quem perdeu e quem encontrou um animal, tornando a busca rápida, geolocalizada e acolhedora.
+          <Text style={[styles.heroDescription, { color: colors.textSecondary }]}>
+            O WeFIND conecta tutores, protetores e a vizinhança através de alertas geolocalizados, radar de busca em tempo real e divulgação facilitada.
           </Text>
 
-          {/* Quick Value Badges */}
-          <View style={styles.valueBadgesRow}>
-            <View style={[styles.valBadge, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.12)' : '#ECFDF5', borderColor: isDark ? 'rgba(34, 197, 94, 0.3)' : '#A7F3D0' }]}>
+          {/* Destaques Rápidos */}
+          <View style={styles.pillsRow}>
+            <View style={[styles.featurePill, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.12)' : '#ECFDF5', borderColor: '#A7F3D0' }]}>
               <MaterialIcons name="check-circle" size={14} color="#059669" style={{ marginRight: 4 }} />
-              <Text style={[styles.valBadgeText, { color: isDark ? '#6EE7B7' : '#047857' }]}>100% Gratuito</Text>
+              <Text style={[styles.featurePillText, { color: '#047857' }]}>100% Gratuito</Text>
             </View>
-            <View style={[styles.valBadge, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.12)' : '#EFF6FF', borderColor: isDark ? 'rgba(37, 99, 235, 0.3)' : '#BFDBFE' }]}>
+            <View style={[styles.featurePill, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.12)' : '#EFF6FF', borderColor: '#BFDBFE' }]}>
               <MaterialIcons name="my-location" size={14} color="#2563EB" style={{ marginRight: 4 }} />
-              <Text style={[styles.valBadgeText, { color: isDark ? '#93C5FD' : '#1D4ED8' }]}>GPS em Tempo Real</Text>
+              <Text style={[styles.featurePillText, { color: '#1D4ED8' }]}>Radar com GPS</Text>
             </View>
-            <View style={[styles.valBadge, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FFFBEB', borderColor: isDark ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A' }]}>
-              <MaterialIcons name="chat" size={14} color="#D97706" style={{ marginRight: 4 }} />
-              <Text style={[styles.valBadgeText, { color: isDark ? '#FDE68A' : '#B45309' }]}>WhatsApp Integrado</Text>
+            <View style={[styles.featurePill, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FFFBEB', borderColor: '#FDE68A' }]}>
+              <MaterialIcons name="campaign" size={14} color="#D97706" style={{ marginRight: 4 }} />
+              <Text style={[styles.featurePillText, { color: '#B45309' }]}>Cartaz Digital</Text>
             </View>
           </View>
         </View>
 
-        {/* BOTOES DE ACAO INICIAL PARA VISITANTES */}
-        {!user && (
-          <View style={styles.actionSectionTop}>
-            <TouchableOpacity
-              style={[styles.primaryButton, { backgroundColor: colors.primary }]}
-              onPress={handleStart}
-              activeOpacity={0.88}
-            >
-              <Text style={styles.primaryButtonText}>Começar a Explorar</Text>
-              <MaterialIcons name="arrow-forward" size={18} color="#FFFFFF" />
-            </TouchableOpacity>
-
-            <View style={styles.authButtonsRow}>
-              <TouchableOpacity
-                style={[styles.secondaryButton, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-                onPress={handleLoginDirect}
-                activeOpacity={0.8}
-              >
-                <MaterialIcons name="login" size={17} color={colors.primary} style={{ marginRight: 6 }} />
-                <Text style={[styles.secondaryButtonText, { color: colors.text }]}>Entrar</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.secondaryButton, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-                onPress={handleRegisterDirect}
-                activeOpacity={0.8}
-              >
-                <MaterialIcons name="person-add" size={17} color={colors.primary} style={{ marginRight: 6 }} />
-                <Text style={[styles.secondaryButtonText, { color: colors.text }]}>Criar Conta</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
-        {/* STATS IMPACT HIGHLIGHTS */}
-        <View style={styles.statsRow}>
-          <View style={[styles.statTile, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <View style={[styles.statIconCircle, { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2' }]}>
-              <MaterialIcons name="notifications-active" size={18} color="#EF4444" />
-            </View>
-            <Text style={[styles.statNumber, { color: colors.text }]}>Ágil</Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Alertas imediatos na vizinhança</Text>
-          </View>
-
-          <View style={[styles.statTile, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <View style={[styles.statIconCircle, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' }]}>
-              <MaterialIcons name="map" size={18} color="#2563EB" />
-            </View>
-            <Text style={[styles.statNumber, { color: colors.text }]}>Interativo</Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Radar de busca com raio personalizável</Text>
-          </View>
-
-          <View style={[styles.statTile, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <View style={[styles.statIconCircle, { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5' }]}>
-              <MaterialIcons name="volunteer-activism" size={18} color="#10B981" />
-            </View>
-            <Text style={[styles.statNumber, { color: colors.text }]}>Solidário</Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Comunidade ativa e sem custos</Text>
-          </View>
-        </View>
-
-        {/* COMO FUNCIONA O WEFIND */}
-        <View style={styles.howItWorksSection}>
-          <View style={styles.howItWorksHeaderRow}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Como Funciona o WeFIND</Text>
-            <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
-              Três passos simples para encontrar ou ajudar um animal
-            </Text>
-          </View>
-
-          {/* CARD 1: Crie seu anúncio */}
-          <View style={[styles.wefindStepCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <View style={styles.wefindStepTopRow}>
-              <View style={[styles.wefindStepTag, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : '#BFDBFE' }]}>
-                <Text style={[styles.wefindStepTagText, { color: colors.primary }]}>PASSO 01</Text>
+        {/* 2. MURAL DE REENCONTROS (DESTAQUE PRINCIPAL) */}
+        <View style={styles.sectionWrapper}>
+          <View style={styles.sectionHeaderRow}>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <MaterialIcons name="volunteer-activism" size={20} color="#059669" />
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Mural de Reencontros</Text>
               </View>
-              <Text style={[styles.wefindStepSubtitle, { color: colors.primary }]}>CADASTRO INTELIGENTE</Text>
-            </View>
-            <Text style={[styles.wefindStepTitle, { color: colors.text }]}>Publique o anúncio em 1 minuto</Text>
-
-            {/* Showcase Visual */}
-            <View
-              style={[
-                styles.wefindShowcaseBox,
-                {
-                  backgroundColor: isDark ? colors.innerCard : '#F8FAFC',
-                  borderColor: isDark ? colors.cardBorder : '#E2E8F0',
-                },
-              ]}
-            >
-              <View style={[styles.miniCardMockup, { backgroundColor: isDark ? colors.card : '#FFFFFF', borderColor: colors.cardBorder }]}>
-                <View style={styles.miniCardHeader}>
-                  <View style={[styles.miniStatusBadge, { backgroundColor: '#EF4444' }]}>
-                    <Text style={styles.miniStatusBadgeText}>PERDIDO</Text>
-                  </View>
-                  <View style={[styles.miniSpeciesBadge, { backgroundColor: colors.primaryLight }]}>
-                    <Text style={[styles.miniSpeciesBadgeText, { color: colors.primary }]}>🐾 Cão • Labrador</Text>
-                  </View>
-                </View>
-                <View style={styles.miniCardRow}>
-                  <View style={[styles.miniPhotoBox, { backgroundColor: colors.primaryLight }]}>
-                    <MaterialIcons name="photo-camera" size={24} color={colors.primary} />
-                    <Text style={[styles.miniPhotoLabel, { color: colors.primary }]}>Fotos</Text>
-                  </View>
-                  <View style={styles.miniCardDetails}>
-                    <Text style={[styles.miniCardPetName, { color: colors.text }]}>Paçoca</Text>
-                    <Text style={[styles.miniCardLocationText, { color: colors.textSecondary }]}>📍 Praça Central, SP</Text>
-                    <Text style={[styles.miniCardDateText, { color: colors.textMuted }]}>Hoje às 14:30</Text>
-                  </View>
-                </View>
-              </View>
-
-              <View style={[styles.wefindFloatingPill, { top: 12, right: 12, backgroundColor: isDark ? 'rgba(245, 158, 11, 0.2)' : '#FEF3C7', borderColor: isDark ? '#D97706' : '#FDE68A' }]}>
-                <Text style={{ fontSize: 11, fontWeight: '700', color: isDark ? '#FCD34D' : '#B45309' }}>✨ Gera Cartaz</Text>
-              </View>
-
-              <View style={[styles.wefindFloatingPill, { bottom: 12, left: 12, backgroundColor: isDark ? 'rgba(34, 197, 94, 0.2)' : '#DCFCE7', borderColor: isDark ? '#22C55E' : '#BBF7D0' }]}>
-                <Text style={{ fontSize: 11, fontWeight: '700', color: isDark ? '#86EFAC' : '#15803D' }}>⚡ 100% Grátis</Text>
-              </View>
-            </View>
-
-            <Text style={[styles.wefindStepDescription, { color: colors.textSecondary }]}>
-              Adicione fotos, características e o último local visto. O aplicativo gera automaticamente um cartaz digital pronto para imprimir e compartilhar no WhatsApp e redes sociais.
-            </Text>
-
-            <TouchableOpacity
-              style={[styles.wefindStepBtn, { backgroundColor: colors.primary }]}
-              onPress={() => navigation.navigate('RegisterItem')}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.wefindStepBtnText}>Publicar Anúncio de Animal</Text>
-              <MaterialIcons name="arrow-forward" size={16} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-
-          {/* CARD 2: Mobilize no Mapa & Rede */}
-          <View style={[styles.wefindStepCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <View style={styles.wefindStepTopRow}>
-              <View style={[styles.wefindStepTag, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.18)' : '#FFFBEB', borderColor: isDark ? '#D97706' : '#FDE68A' }]}>
-                <Text style={[styles.wefindStepTagText, { color: isDark ? '#FCD34D' : '#D97706' }]}>PASSO 02</Text>
-              </View>
-              <Text style={[styles.wefindStepSubtitle, { color: isDark ? '#FCD34D' : '#D97706' }]}>RADAR DE BUSCA & GPS</Text>
-            </View>
-            <Text style={[styles.wefindStepTitle, { color: colors.text }]}>Mobilize no Mapa & WhatsApp</Text>
-
-            <View
-              style={[
-                styles.wefindShowcaseBox,
-                {
-                  backgroundColor: isDark ? colors.innerCard : '#F0F9FF',
-                  borderColor: isDark ? colors.cardBorder : '#BAE6FD',
-                },
-              ]}
-            >
-              <View style={styles.miniMapGrid}>
-                <View style={[styles.miniMapRouteLine, { borderColor: colors.primary }]} />
-                <View style={[styles.miniMapPinWrapper, { top: 16, left: 20 }]}>
-                  <View style={[styles.miniMapPinCircle, { backgroundColor: '#EF4444' }]}>
-                    <MaterialIcons name="place" size={16} color="#FFFFFF" />
-                  </View>
-                  <Text style={styles.miniMapPinText}>Onde sumiu</Text>
-                </View>
-                <View style={[styles.miniMapPinWrapper, { bottom: 12, right: 22 }]}>
-                  <View style={[styles.miniMapPinCircle, { backgroundColor: colors.primary }]}>
-                    <MaterialIcons name="visibility" size={16} color="#FFFFFF" />
-                  </View>
-                  <Text style={[styles.miniMapPinText, { color: colors.primary }]}>Pista com GPS</Text>
-                </View>
-              </View>
-
-              <View style={[styles.wefindFloatingPill, { top: 10, right: 10, backgroundColor: isDark ? 'rgba(34, 197, 94, 0.2)' : '#DCFCE7', borderColor: isDark ? '#22C55E' : '#86EFAC' }]}>
-                <Text style={{ fontSize: 11, fontWeight: '700', color: isDark ? '#86EFAC' : '#166534' }}>💬 Alerta no WhatsApp</Text>
-              </View>
-            </View>
-
-            <Text style={[styles.wefindStepDescription, { color: colors.textSecondary }]}>
-              A comunidade e tutores próximos recebem avisos imediatos. Quem avistar o animal pode marcar novas coordenadas no mapa e enviar fotos de pistas com GPS.
-            </Text>
-
-            <TouchableOpacity
-              style={[styles.wefindStepBtn, { backgroundColor: '#D97706' }]}
-              onPress={handleGoToMap}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.wefindStepBtnText}>Explorar Mapa Interativo</Text>
-              <MaterialIcons name="arrow-forward" size={16} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-
-          {/* CARD 3: Celebre o Reencontro */}
-          <View style={[styles.wefindStepCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <View style={styles.wefindStepTopRow}>
-              <View style={[styles.wefindStepTag, { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.18)' : '#ECFDF5', borderColor: isDark ? '#10B981' : '#A7F3D0' }]}>
-                <Text style={[styles.wefindStepTagText, { color: isDark ? '#6EE7B7' : '#059669' }]}>PASSO 03</Text>
-              </View>
-              <Text style={[styles.wefindStepSubtitle, { color: isDark ? '#6EE7B7' : '#059669' }]}>CONEXÃO & REENCONTRO</Text>
-            </View>
-            <Text style={[styles.wefindStepTitle, { color: colors.text }]}>Converse e Celebre o Reencontro</Text>
-
-            <View
-              style={[
-                styles.wefindShowcaseBox,
-                {
-                  backgroundColor: isDark ? colors.innerCard : '#F0FDF4',
-                  borderColor: isDark ? colors.cardBorder : '#BBF7D0',
-                },
-              ]}
-            >
-              <View style={[styles.miniChatBubble, { alignSelf: 'flex-start', backgroundColor: isDark ? colors.card : '#FFFFFF', borderColor: colors.cardBorder }]}>
-                <Text style={[styles.miniChatText, { color: colors.text }]}>💬 "Encontrei seu animalzinho! Ele está seguro comigo."</Text>
-              </View>
-
-              <View style={[styles.miniChatBubble, { alignSelf: 'flex-end', backgroundColor: '#059669', borderColor: '#047857', marginTop: 6 }]}>
-                <Text style={[styles.miniChatText, { color: '#FFFFFF' }]}>"Que alívio! Já estou indo buscar! ❤️"</Text>
-              </View>
-
-              <View style={[styles.wefindFloatingPill, { bottom: 10, right: 12, backgroundColor: isDark ? 'rgba(245, 158, 11, 0.2)' : '#FEF3C7', borderColor: isDark ? '#D97706' : '#FDE68A' }]}>
-                <Text style={{ fontSize: 11, fontWeight: '700', color: isDark ? '#FCD34D' : '#B45309' }}>🎉 Reencontro Feliz</Text>
-              </View>
-            </View>
-
-            <Text style={[styles.wefindStepDescription, { color: colors.textSecondary }]}>
-              Converse diretamente em tempo real com quem encontrou o animal, combine a entrega com segurança e inspire outras pessoas compartilhando seu relato!
-            </Text>
-
-            <TouchableOpacity
-              style={[styles.wefindStepBtn, { backgroundColor: '#059669' }]}
-              onPress={() => navigation.navigate('MuralReencontros')}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.wefindStepBtnText}>Ver Mural de Reencontros</Text>
-              <MaterialIcons name="arrow-forward" size={16} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* NOSSOS PILARES */}
-        <View style={[styles.pillarsCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <Text style={[styles.pillarsTitle, { color: colors.text }]}>Nossos Compromissos</Text>
-
-          <View style={styles.pillarItem}>
-            <View style={[styles.pillarIconBox, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' }]}>
-              <MaterialIcons name="verified-user" size={20} color="#2563EB" />
-            </View>
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={[styles.pillarItemTitle, { color: colors.text }]}>Privacidade e Segurança</Text>
-              <Text style={[styles.pillarItemDesc, { color: colors.textSecondary }]}>
-                Seus dados de contato ficam resguardados e você controla o compartilhamento de mensagens.
+              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
+                Histórias reais de pets que voltaram para casa
               </Text>
             </View>
+
+            <TouchableOpacity
+              onPress={handleGoToMural}
+              style={[styles.seeAllBtn, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: colors.cardBorder }]}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.seeAllBtnText, { color: colors.primary }]}>Ver Todos</Text>
+              <MaterialIcons name="chevron-right" size={16} color={colors.primary} />
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.pillarItem}>
-            <View style={[styles.pillarIconBox, { backgroundColor: isDark ? 'rgba(236, 72, 153, 0.15)' : '#FDF2F8' }]}>
-              <MaterialIcons name="favorite" size={20} color="#EC4899" />
+          {loadingStories ? (
+            <View style={[styles.loadingBox, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 8 }}>Carregando histórias...</Text>
             </View>
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={[styles.pillarItemTitle, { color: colors.text }]}>Adoção Consciente</Text>
-              <Text style={[styles.pillarItemDesc, { color: colors.textSecondary }]}>
-                Espaço dedicado para divulgar pets que buscam um lar amoroso e responsável.
+          ) : displayedStories.length === 0 ? (
+            <View style={[styles.emptyMuralBox, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+              <MaterialIcons name="pets" size={36} color="#059669" style={{ marginBottom: 6 }} />
+              <Text style={[styles.emptyMuralTitle, { color: colors.text }]}>Participe do nosso Mural!</Text>
+              <Text style={[styles.emptyMuralSubtitle, { color: colors.textSecondary }]}>
+                Quando encontrar seu pet através do WeFIND, compartilhe seu relato para inspirar a comunidade.
               </Text>
             </View>
-          </View>
+          ) : (
+            <View style={styles.storiesContainer}>
+              {displayedStories.map((story) => (
+                <TouchableOpacity
+                  key={String(story.id)}
+                  style={[styles.storyCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
+                  activeOpacity={0.88}
+                  onPress={handleGoToMural}
+                >
+                  <View style={styles.storyTopRow}>
+                    <View style={styles.storyAvatarWrapper}>
+                      {story.photoUrl ? (
+                        <OptimizedImage uri={story.photoUrl} style={styles.storyAvatar} resizeMode="cover" />
+                      ) : (
+                        <View style={[styles.storyAvatarPlaceholder, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.2)' : '#DCFCE7' }]}>
+                          <MaterialIcons name="pets" size={24} color="#16A34A" />
+                        </View>
+                      )}
+                    </View>
 
-          <View style={[styles.pillarItem, { marginBottom: 0 }]}>
-            <View style={[styles.pillarIconBox, { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5' }]}>
-              <MaterialIcons name="all-inclusive" size={20} color="#10B981" />
+                    <View style={styles.storyHeaderInfo}>
+                      <View style={styles.storyBadgeHappy}>
+                        <Text style={styles.storyBadgeHappyText}>REENCONTRADO 🎉</Text>
+                      </View>
+                      <Text style={[styles.storyPetName, { color: colors.text }]} numberOfLines={1}>
+                        {story.petName}
+                      </Text>
+                      <Text style={[styles.storyAuthorLocation, { color: colors.textMuted }]} numberOfLines={1}>
+                        Por {story.author} • {story.location}
+                      </Text>
+                    </View>
+
+                    <View style={styles.storyRatingStars}>
+                      {[1, 2, 3, 4, 5].map((st) => (
+                        <MaterialIcons
+                          key={st}
+                          name={st <= story.rating ? 'star' : 'star-border'}
+                          size={13}
+                          color="#F59E0B"
+                        />
+                      ))}
+                    </View>
+                  </View>
+
+                  {story.testimonial ? (
+                    <Text style={[styles.storyQuote, { color: isDark ? '#CBD5E1' : '#334155' }]} numberOfLines={3}>
+                      "{story.testimonial}"
+                    </Text>
+                  ) : null}
+                </TouchableOpacity>
+              ))}
             </View>
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={[styles.pillarItemTitle, { color: colors.text }]}>100% Gratuito e Aberto</Text>
-              <Text style={[styles.pillarItemDesc, { color: colors.textSecondary }]}>
-                Uma plataforma construída para salvar vidas e conectar comunidades sem cobranças.
+          )}
+
+          {/* CTA para o Mural */}
+          <TouchableOpacity
+            onPress={handleGoToMural}
+            style={[styles.muralBannerCTA, { backgroundColor: isDark ? '#064E3B' : '#ECFDF5', borderColor: '#10B981' }]}
+            activeOpacity={0.85}
+          >
+            <View style={{ flex: 1, marginRight: 10 }}>
+              <Text style={[styles.muralCTATitle, { color: isDark ? '#6EE7B7' : '#065F46' }]}>
+                Celebre o seu Reencontro
               </Text>
+              <Text style={[styles.muralCTASubtitle, { color: isDark ? '#A7F3D0' : '#047857' }]}>
+                Envie fotos e depoimentos para o Mural oficial da comunidade
+              </Text>
+            </View>
+            <MaterialIcons name="arrow-forward" size={20} color={isDark ? '#6EE7B7' : '#059669'} />
+          </TouchableOpacity>
+        </View>
+
+        {/* 3. COMO FUNCIONA EM 3 PASSOS DIRETOS */}
+        <View style={styles.sectionWrapper}>
+          <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>
+            Como o WeFIND Funciona
+          </Text>
+
+          <View style={styles.stepsColumn}>
+            {/* Passo 1 */}
+            <View style={[styles.stepItemCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+              <View style={[styles.stepNumberBadge, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
+                <Text style={[styles.stepNumberText, { color: '#2563EB' }]}>1</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={[styles.stepItemTitle, { color: colors.text }]}>Cadastre com Foto & Local</Text>
+                <Text style={[styles.stepItemDesc, { color: colors.textSecondary }]}>
+                  Publique em segundos um pet perdido, encontrado ou para adoção. O app gera cartaz digital com QR code pronto para compartilhar.
+                </Text>
+              </View>
+            </View>
+
+            {/* Passo 2 */}
+            <View style={[styles.stepItemCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+              <View style={[styles.stepNumberBadge, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
+                <Text style={[styles.stepNumberText, { color: '#D97706' }]}>2</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={[styles.stepItemTitle, { color: colors.text }]}>Radar no Mapa & Pistas com GPS</Text>
+                <Text style={[styles.stepItemDesc, { color: colors.textSecondary }]}>
+                  Pessoas da região podem avistar o animal, registrar novas coordenadas no mapa interativo e anexar fotos recentes.
+                </Text>
+              </View>
+            </View>
+
+            {/* Passo 3 */}
+            <View style={[styles.stepItemCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+              <View style={[styles.stepNumberBadge, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+                <Text style={[styles.stepNumberText, { color: '#059669' }]}>3</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={[styles.stepItemTitle, { color: colors.text }]}>Chat Seguro & Avaliações</Text>
+                <Text style={[styles.stepItemDesc, { color: colors.textSecondary }]}>
+                  Converse diretamente pelo app ou WhatsApp, combine o reencontro e avalie sua experiência com outros membros.
+                </Text>
+              </View>
             </View>
           </View>
         </View>
 
-        {/* Rodapé com Termos e Privacidade */}
+        {/* 4. ATALHOS RÁPIDOS */}
+        <View style={styles.quickGrid}>
+          <TouchableOpacity
+            onPress={handleGoToMap}
+            style={[styles.quickTile, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
+            activeOpacity={0.85}
+          >
+            <View style={[styles.quickIconCircle, { backgroundColor: '#EFF6FF' }]}>
+              <MaterialIcons name="map" size={22} color="#2563EB" />
+            </View>
+            <Text style={[styles.quickTileTitle, { color: colors.text }]}>Mapa Interativo</Text>
+            <Text style={[styles.quickTileSub, { color: colors.textMuted }]}>Explorar por raio e radar GPS</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleGoToMural}
+            style={[styles.quickTile, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
+            activeOpacity={0.85}
+          >
+            <View style={[styles.quickIconCircle, { backgroundColor: '#ECFDF5' }]}>
+              <MaterialIcons name="stars" size={22} color="#059669" />
+            </View>
+            <Text style={[styles.quickTileTitle, { color: colors.text }]}>Reencontros</Text>
+            <Text style={[styles.quickTileSub, { color: colors.textMuted }]}>Depoimentos da comunidade</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* 5. RODAPÉ DE PRIVACIDADE E TERMOS */}
         <View style={styles.footerSection}>
           <Text style={[styles.termsText, { color: colors.textMuted }]}>
-            Ao continuar, você concorda com nossos{' '}
+            WeFIND • Plataforma colaborativa para proteção animal.{'\n'}
             <Text
               style={[styles.link, { color: colors.primary }]}
               onPress={() => Linking.openURL('https://wefind.app/termos')}
@@ -391,7 +326,6 @@ const SobreScreen = ({ navigation }) => {
             >
               Privacidade
             </Text>
-            .
           </Text>
         </View>
       </ScrollView>
@@ -403,151 +337,166 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  topHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  topHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerLogo: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 16.5,
+    fontWeight: '800',
+  },
+  headerSubtitle: {
+    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: 11.5,
+  },
+  headerLoginBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  headerLoginBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12.5,
+    fontWeight: '800',
+  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     paddingTop: 14,
-    paddingBottom: 40,
+    paddingBottom: 36,
   },
   heroCard: {
-    borderRadius: 24,
-    padding: 22,
-    alignItems: 'center',
-    marginBottom: 16,
+    borderRadius: 22,
+    padding: 18,
     borderWidth: 1,
+    marginBottom: 18,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  circularLogoContainer: {
-    width: 108,
-    height: 108,
-    borderRadius: 54,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    borderWidth: 3,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.16,
-    shadowRadius: 10,
-    elevation: 4,
-    marginBottom: 14,
-  },
-  circularLogo: {
-    width: '100%',
-    height: '100%',
-  },
-  brandPill: {
+  heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 9,
     paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 10,
     marginBottom: 10,
   },
-  brandPillText: {
+  heroBadgeText: {
     fontSize: 10.5,
     fontWeight: '800',
-    letterSpacing: 0.6,
+    letterSpacing: 0.5,
   },
-  headline: {
-    fontSize: 20,
-    fontWeight: '800',
-    textAlign: 'center',
-    lineHeight: 27,
+  heroHeadline: {
+    fontSize: 18.5,
+    fontWeight: '900',
+    lineHeight: 25,
     marginBottom: 8,
     letterSpacing: -0.3,
   },
-  subheadline: {
-    fontSize: 13.5,
-    textAlign: 'center',
-    lineHeight: 20,
-    maxWidth: 320,
-    marginBottom: 16,
+  heroDescription: {
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 14,
   },
-  valueBadgesRow: {
+  pillsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    justifyContent: 'center',
+    gap: 6,
   },
-  valBadge: {
+  featurePill: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  featurePillText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  sectionWrapper: {
+    marginBottom: 20,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 16.5,
+    fontWeight: '800',
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  seeAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
     borderWidth: 1,
   },
-  valBadgeText: {
-    fontSize: 11,
+  seeAllBtnText: {
+    fontSize: 12,
     fontWeight: '700',
   },
-  actionSectionTop: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  primaryButton: {
-    width: '100%',
-    flexDirection: 'row',
+  loadingBox: {
+    padding: 24,
+    borderRadius: 18,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    gap: 8,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
-    shadowRadius: 8,
-    elevation: 3,
-    marginBottom: 10,
   },
-  primaryButtonText: {
-    color: '#FFFFFF',
+  emptyMuralBox: {
+    padding: 20,
+    borderRadius: 18,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyMuralTitle: {
     fontSize: 15,
     fontWeight: '800',
-    letterSpacing: 0.2,
+    marginBottom: 4,
   },
-  authButtonsRow: {
-    flexDirection: 'row',
+  emptyMuralSubtitle: {
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  storiesContainer: {
     gap: 10,
-    width: '100%',
   },
-  secondaryButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    paddingVertical: 12,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  secondaryButtonText: {
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 20,
-  },
-  statTile: {
-    flex: 1,
+  storyCard: {
+    padding: 14,
     borderRadius: 18,
-    padding: 12,
-    alignItems: 'center',
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -555,292 +504,148 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-  statIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
-  statNumber: {
-    fontSize: 13,
-    fontWeight: '800',
-    marginBottom: 2,
-  },
-  statLabel: {
-    fontSize: 10,
-    textAlign: 'center',
-    lineHeight: 13,
-  },
-  howItWorksSection: {
-    marginBottom: 20,
-  },
-  howItWorksHeaderRow: {
-    marginBottom: 14,
-    paddingHorizontal: 2,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 2,
-    letterSpacing: -0.2,
-  },
-  sectionSubtitle: {
-    fontSize: 12.5,
-  },
-  wefindStepCard: {
-    borderRadius: 22,
-    padding: 18,
-    marginBottom: 16,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  wefindStepTopRow: {
+  storyTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 6,
-  },
-  wefindStepTag: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  wefindStepTagText: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  wefindStepSubtitle: {
-    fontSize: 11.5,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  wefindStepTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    marginBottom: 14,
-    letterSpacing: -0.2,
-  },
-  wefindShowcaseBox: {
-    borderRadius: 18,
-    borderWidth: 1,
-    padding: 14,
-    minHeight: 140,
-    justifyContent: 'center',
-    position: 'relative',
-    marginBottom: 14,
-    overflow: 'hidden',
-  },
-  miniCardMockup: {
-    borderRadius: 14,
-    padding: 10,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-    width: '92%',
-    alignSelf: 'center',
-  },
-  miniCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
     marginBottom: 8,
   },
-  miniStatusBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
+  storyAvatarWrapper: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#22C55E',
   },
-  miniStatusBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '800',
+  storyAvatar: {
+    width: 46,
+    height: 46,
   },
-  miniSpeciesBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  miniSpeciesBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  miniCardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  miniPhotoBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
+  storyAvatarPlaceholder: {
+    width: 46,
+    height: 46,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
   },
-  miniPhotoLabel: {
-    fontSize: 9,
-    fontWeight: '700',
-    marginTop: -2,
-  },
-  miniCardDetails: {
+  storyHeaderInfo: {
     flex: 1,
+    marginLeft: 10,
+    marginRight: 6,
   },
-  miniCardPetName: {
-    fontSize: 13.5,
+  storyBadgeHappy: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginBottom: 2,
+  },
+  storyBadgeHappyText: {
+    color: '#15803D',
+    fontSize: 9,
     fontWeight: '800',
   },
-  miniCardLocationText: {
+  storyPetName: {
+    fontSize: 14.5,
+    fontWeight: '800',
+  },
+  storyAuthorLocation: {
     fontSize: 11,
     marginTop: 1,
   },
-  miniCardDateText: {
-    fontSize: 10,
+  storyRatingStars: {
+    flexDirection: 'row',
   },
-  wefindFloatingPill: {
-    position: 'absolute',
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+  storyQuote: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    fontStyle: 'italic',
   },
-  miniMapGrid: {
-    height: 110,
-    width: '100%',
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  miniMapRouteLine: {
-    position: 'absolute',
-    left: 40,
-    right: 40,
-    top: 50,
-    height: 2,
-    borderStyle: 'dashed',
-    borderWidth: 1,
-  },
-  miniMapPinWrapper: {
-    position: 'absolute',
+  muralBannerCTA: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  miniMapPinCircle: {
-    width: 32,
-    height: 32,
+    justifyContent: 'space-between',
+    padding: 14,
     borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  miniMapPinText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#B91C1C',
-    marginTop: 2,
-  },
-  miniChatBubble: {
-    maxWidth: '84%',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
     borderWidth: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.03,
-    shadowRadius: 3,
-    elevation: 1,
+    marginTop: 10,
   },
-  miniChatText: {
-    fontSize: 11.5,
-    fontWeight: '600',
-    lineHeight: 16,
-  },
-  wefindStepDescription: {
+  muralCTATitle: {
     fontSize: 13.5,
-    lineHeight: 20,
-    marginBottom: 14,
-  },
-  wefindStepBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 13,
-    paddingHorizontal: 16,
-    borderRadius: 14,
-    gap: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  wefindStepBtnText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  pillarsCard: {
-    borderRadius: 22,
-    padding: 18,
-    borderWidth: 1,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  pillarsTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    marginBottom: 14,
-    letterSpacing: -0.2,
-  },
-  pillarItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 14,
-  },
-  pillarIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  pillarItemTitle: {
-    fontSize: 14,
     fontWeight: '800',
     marginBottom: 2,
   },
-  pillarItemDesc: {
-    fontSize: 12.5,
-    lineHeight: 18,
+  muralCTASubtitle: {
+    fontSize: 11.5,
+  },
+  stepsColumn: {
+    gap: 8,
+  },
+  stepItemCard: {
+    flexDirection: 'row',
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'flex-start',
+  },
+  stepNumberBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  stepNumberText: {
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  stepItemTitle: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    marginBottom: 3,
+  },
+  stepItemDesc: {
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  quickGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  quickTile: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  quickIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  quickTileTitle: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  quickTileSub: {
+    fontSize: 11,
+    lineHeight: 15,
   },
   footerSection: {
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 16,
+    paddingTop: 10,
   },
   termsText: {
-    fontSize: 12,
+    fontSize: 11.5,
     textAlign: 'center',
     lineHeight: 18,
-    maxWidth: 300,
   },
   link: {
     fontWeight: '700',
