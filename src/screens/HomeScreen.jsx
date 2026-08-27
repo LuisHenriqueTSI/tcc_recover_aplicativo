@@ -666,6 +666,32 @@ const HomeScreen = ({ navigation, route }) => {
   const headerLocationSummary = headerCityState;
   const displayLocation = headerCityState;
 
+  const userFullLocation = useMemo(() => {
+    const parts = [
+      sessionStreet || profileEditStreet,
+      sessionDistrict || profileEditDistrict,
+      [sessionCity || profileEditCity, sessionState || profileEditState].filter(Boolean).join(' - '),
+    ].filter(Boolean);
+    if (parts.length > 0) return parts.join(', ');
+    return sessionAddressText || profileEditAddressText || headerLocationSummary || 'Sua Localização';
+  }, [sessionStreet, profileEditStreet, sessionDistrict, profileEditDistrict, sessionCity, profileEditCity, sessionState, profileEditState, sessionAddressText, profileEditAddressText, headerLocationSummary]);
+
+  const radiusStatusText = useMemo(() => {
+    switch (filters.status) {
+      case 'lost':
+        return 'animais perdidos';
+      case 'found':
+        return 'animais encontrados';
+      case 'adoption':
+        return 'animais para adoção';
+      case 'resolved':
+        return 'animais reencontrados';
+      case 'all':
+      default:
+        return 'TODOS os animais';
+    }
+  }, [filters.status]);
+
   // Salvar localidade (perfil e armazenamento local)
   const handleSaveProfileLocation = async () => {
     if (!profileEditState || !profileEditCity) return;
@@ -2184,7 +2210,7 @@ const HomeScreen = ({ navigation, route }) => {
                 Raio de {searchRadiusKm} km ativo
               </Text>
               <Text style={[styles.radiusBannerSubtitle, { color: isDark ? '#60A5FA' : '#3B82F6' }]} numberOfLines={1}>
-                Exibindo pets próximos a {headerLocationSummary}
+                Exibindo {radiusStatusText} próximos a sua localização
               </Text>
             </View>
           </View>
@@ -2225,9 +2251,17 @@ const HomeScreen = ({ navigation, route }) => {
               </View>
             </View>
 
-            <Text style={{ color: colors.textSecondary, fontSize: 13, marginVertical: 12, lineHeight: 18 }}>
-              Escolha a distância máxima para exibir publicações ao redor de <Text style={{ fontWeight: '700', color: colors.text }}>{headerLocationSummary}</Text>:
+            <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 10, marginBottom: 6, lineHeight: 18 }}>
+              Escolha a distância máxima para exibir {radiusStatusText} próximos a sua localização:
             </Text>
+
+            {/* Localização do Usuário (Discreta e Integrada ao Design) */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: isDark ? '#1E293B' : '#F1F5F9', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, marginBottom: 14, borderWidth: 1, borderColor: colors.cardBorder }}>
+              <MaterialIcons name="location-on" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+              <Text style={{ fontSize: 12, color: colors.textSecondary, flex: 1 }} numberOfLines={1}>
+                Sua localização: <Text style={{ color: colors.text, fontWeight: '700' }}>{userFullLocation}</Text>
+              </Text>
+            </View>
 
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
               {[15, 30, 60, 100, 150, 250, 500].map((r) => {
