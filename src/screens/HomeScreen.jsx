@@ -847,9 +847,39 @@ const HomeScreen = ({ navigation, route }) => {
   const [thumbnails, setThumbnails] = useState({});
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState({
-    category: 'animal',
     animalType: 'all',
+    size: 'all',
+    gender: 'all',
+    age: 'all',
+    color: 'all',
+    hasReward: false,
+    sortBy: 'distance',
   });
+
+  const activeAdvancedFiltersCount = useMemo(() => {
+    let count = 0;
+    if (advancedFilters.animalType && advancedFilters.animalType !== 'all') count++;
+    if (advancedFilters.size && advancedFilters.size !== 'all') count++;
+    if (advancedFilters.gender && advancedFilters.gender !== 'all') count++;
+    if (advancedFilters.age && advancedFilters.age !== 'all') count++;
+    if (advancedFilters.color && advancedFilters.color !== 'all') count++;
+    if (advancedFilters.hasReward) count++;
+    if (advancedFilters.sortBy && advancedFilters.sortBy !== 'distance') count++;
+    return count;
+  }, [advancedFilters]);
+
+  const handleResetAdvancedFilters = () => {
+    setAdvancedFilters({
+      animalType: 'all',
+      size: 'all',
+      gender: 'all',
+      age: 'all',
+      color: 'all',
+      hasReward: false,
+      sortBy: 'distance',
+    });
+    setFilters(prev => ({ ...prev, animalType: 'all' }));
+  };
 
   const loadItems = async (isSilent = false) => {
     try {
@@ -1213,13 +1243,87 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   const finalDisplayItems = useMemo(() => {
-    return filteredItems.filter(item => {
-      const matchesAnimalType = advancedFilters.animalType === 'all' || advancedFilters.animalType === undefined || !item.species
-        ? true
-        : String(item.species || '').toLowerCase().includes(String(advancedFilters.animalType).toLowerCase());
-      return (advancedFilters.category === 'all' || item.category === advancedFilters.category) && matchesAnimalType;
+    let list = filteredItems.filter(item => {
+      // 1. Espécie
+      if (advancedFilters.animalType && advancedFilters.animalType !== 'all') {
+        const targetSpecies = normalizeText(advancedFilters.animalType);
+        const itemSpecies = normalizeText(item.species || item.extra_fields?.species || '');
+        if (targetSpecies === 'outro') {
+          const isStandard = ['cachorro', 'cao', 'gato', 'bovino', 'ave', 'passaro', 'cavalo'].some(t => itemSpecies.includes(t));
+          if (isStandard) return false;
+        } else if (!itemSpecies.includes(targetSpecies) && !targetSpecies.includes(itemSpecies)) {
+          return false;
+        }
+      }
+
+      // 2. Porte (Size)
+      if (advancedFilters.size && advancedFilters.size !== 'all') {
+        const targetSize = normalizeText(advancedFilters.size);
+        const itemSize = normalizeText(item.size || item.extra_fields?.size || item.extra_fields?.porte || '');
+        if (!itemSize.includes(targetSize) && !targetSize.includes(itemSize)) {
+          return false;
+        }
+      }
+
+      // 3. Sexo (Gender)
+      if (advancedFilters.gender && advancedFilters.gender !== 'all') {
+        const targetGender = normalizeText(advancedFilters.gender);
+        const itemGender = normalizeText(item.gender || item.extra_fields?.gender || item.extra_fields?.sexo || '');
+        if (targetGender === 'macho') {
+          if (!itemGender.includes('macho') && itemGender !== 'm') return false;
+        } else if (targetGender === 'femea') {
+          if (!itemGender.includes('femea') && !itemGender.includes('fêmea') && itemGender !== 'f') return false;
+        }
+      }
+
+      // 4. Idade (Age)
+      if (advancedFilters.age && advancedFilters.age !== 'all') {
+        const targetAge = normalizeText(advancedFilters.age);
+        const itemAge = normalizeText(item.age || item.extra_fields?.age || item.extra_fields?.idade || item.extra_fields?.age_group || '');
+        if (!itemAge.includes(targetAge) && !targetAge.includes(itemAge)) {
+          return false;
+        }
+      }
+
+      // 5. Cor
+      if (advancedFilters.color && advancedFilters.color !== 'all') {
+        const targetColor = normalizeText(advancedFilters.color);
+        const itemColor = normalizeText(item.color || item.extra_fields?.color || item.extra_fields?.cor || '');
+        if (!itemColor.includes(targetColor)) {
+          return false;
+        }
+      }
+
+      // 6. Recompensa Ativa
+      if (advancedFilters.hasReward) {
+        const hasActiveReward = Array.isArray(item.rewards) && item.rewards.some(r => r?.status === 'active');
+        if (!hasActiveReward) return false;
+      }
+
+      return true;
     });
-  }, [filteredItems, advancedFilters.animalType, advancedFilters.category]);
+
+    // 7. Ordenação
+    if (advancedFilters.sortBy === 'newest') {
+      list.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+    } else if (advancedFilters.sortBy === 'oldest') {
+      list.sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
+    } else {
+      // 'distance': proximidade, desempate por mais recentes
+      list.sort((a, b) => {
+        const aDist = a._distanceKm;
+        const bDist = b._distanceKm;
+        if (aDist != null && bDist != null && Math.abs(aDist - bDist) > 0.05) {
+          return aDist - bDist;
+        }
+        if (aDist != null && bDist == null) return -1;
+        if (aDist == null && bDist != null) return 1;
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      });
+    }
+
+    return list;
+  }, [filteredItems, advancedFilters]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -1664,13 +1768,31 @@ const HomeScreen = ({ navigation, route }) => {
           <TouchableOpacity
             style={[
               styles.filterToggle,
-              { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: isDark ? '#334155' : '#BFDBFE' },
+              { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: isDark ? '#334155' : '#BFDBFE', position: 'relative' },
               showAdvancedFilters && styles.filterToggleActive,
             ]}
             onPress={() => setShowAdvancedFilters(v => !v)}
             accessibilityLabel="Abrir filtros avançados"
           >
-            <MaterialIcons name="tune" size={21} color={showAdvancedFilters ? '#fff' : (isDark ? '#60A5FA' : '#1E3A8A')} />
+            <MaterialIcons name="tune" size={20} color={showAdvancedFilters ? '#fff' : (isDark ? '#60A5FA' : '#1E3A8A')} />
+            {activeAdvancedFiltersCount > 0 && (
+              <View style={{
+                position: 'absolute',
+                top: -4,
+                right: -4,
+                backgroundColor: colors.primary,
+                borderRadius: 10,
+                minWidth: 18,
+                height: 18,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 4,
+                borderWidth: 2,
+                borderColor: colors.surface,
+              }}>
+                <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>{activeAdvancedFiltersCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -1755,29 +1877,253 @@ const HomeScreen = ({ navigation, route }) => {
         </ScrollView>
       </View>
 
-      {/* Lista de pets */}
+      {/* PAINEL COMPLETO DE FILTROS AVANÇADOS */}
       {showAdvancedFilters && (
-        <View style={[styles.advancedFiltersPanel, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.advancedFiltersTitle, { color: colors.text }]}>Mais filtros</Text>
-          <View style={[styles.speciesPickerWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-            <MaterialIcons name="pets" size={19} color={isDark ? '#60A5FA' : '#1E3A8A'} style={{ marginLeft: 12 }} />
-            <Picker
-              selectedValue={advancedFilters.animalType || 'all'}
-              onValueChange={value => {
-                setAdvancedFilters(f => ({ ...f, animalType: value }));
-                setFilters(f => ({ ...f, animalType: value }));
-              }}
-              style={[styles.speciesPicker, { color: colors.text }]}
-              dropdownIconColor={colors.textSecondary}
-            >
-              <Picker.Item label="Todas" value="all" />
-              <Picker.Item label="Cachorro" value="cachorro" />
-              <Picker.Item label="Gato" value="gato" />
-              <Picker.Item label="Bovino" value="bovino" />
-              <Picker.Item label="Ave" value="ave" />
-              <Picker.Item label="Cavalo" value="cavalo" />
-              <Picker.Item label="Outro" value="outro" />
-            </Picker>
+        <View style={[styles.advancedFiltersPanel, { backgroundColor: isDark ? colors.card : '#FFFFFF', borderColor: colors.cardBorder }]}>
+          {/* Cabeçalho do Painel */}
+          <View style={styles.advHeaderRow}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <MaterialIcons name="tune" size={19} color={colors.primary} />
+              <Text style={[styles.advPanelTitle, { color: colors.text }]}>Filtros Avançados</Text>
+              {activeAdvancedFiltersCount > 0 && (
+                <View style={[styles.advCountBadge, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : '#BFDBFE' }]}>
+                  <Text style={[styles.advCountText, { color: colors.primary }]}>{activeAdvancedFiltersCount} {activeAdvancedFiltersCount === 1 ? 'ativo' : 'ativos'}</Text>
+                </View>
+              )}
+            </View>
+            {activeAdvancedFiltersCount > 0 && (
+              <TouchableOpacity onPress={handleResetAdvancedFilters} style={styles.advClearButton} activeOpacity={0.75}>
+                <MaterialIcons name="refresh" size={14} color={colors.primary} style={{ marginRight: 3 }} />
+                <Text style={[styles.advClearText, { color: colors.primary }]}>Limpar</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* 1. ESPÉCIE */}
+          <View style={styles.advSection}>
+            <Text style={[styles.advSectionLabel, { color: colors.textSecondary }]}>🐾 Espécie do Animal</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.advPillRow}>
+              {[
+                { label: 'Todas', value: 'all' },
+                { label: 'Cachorro', value: 'cachorro' },
+                { label: 'Gato', value: 'gato' },
+                { label: 'Ave', value: 'ave' },
+                { label: 'Cavalo', value: 'cavalo' },
+                { label: 'Bovino', value: 'bovino' },
+                { label: 'Outro', value: 'outro' },
+              ].map(opt => {
+                const isSelected = (advancedFilters.animalType || 'all') === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    onPress={() => {
+                      setAdvancedFilters(prev => ({ ...prev, animalType: opt.value }));
+                      setFilters(prev => ({ ...prev, animalType: opt.value }));
+                    }}
+                    style={[
+                      styles.advPill,
+                      { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#E2E8F0' },
+                      isSelected && [styles.advPillActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.advPillText, { color: isDark ? '#94A3B8' : '#475569' }, isSelected && styles.advPillTextActive]}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* 2. PORTE */}
+          <View style={styles.advSection}>
+            <Text style={[styles.advSectionLabel, { color: colors.textSecondary }]}>📏 Porte do Animal</Text>
+            <View style={styles.advPillWrap}>
+              {[
+                { label: 'Todos', value: 'all' },
+                { label: 'Pequeno', value: 'pequeno' },
+                { label: 'Médio', value: 'medio' },
+                { label: 'Grande', value: 'grande' },
+                { label: 'Gigante', value: 'gigante' },
+              ].map(opt => {
+                const isSelected = (advancedFilters.size || 'all') === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    onPress={() => setAdvancedFilters(prev => ({ ...prev, size: opt.value }))}
+                    style={[
+                      styles.advPill,
+                      { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#E2E8F0' },
+                      isSelected && [styles.advPillActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.advPillText, { color: isDark ? '#94A3B8' : '#475569' }, isSelected && styles.advPillTextActive]}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* 3. SEXO */}
+          <View style={styles.advSection}>
+            <Text style={[styles.advSectionLabel, { color: colors.textSecondary }]}>⚧ Sexo / Gênero</Text>
+            <View style={styles.advPillWrap}>
+              {[
+                { label: 'Todos', value: 'all' },
+                { label: '♂ Macho', value: 'macho' },
+                { label: '♀ Fêmea', value: 'femea' },
+              ].map(opt => {
+                const isSelected = (advancedFilters.gender || 'all') === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    onPress={() => setAdvancedFilters(prev => ({ ...prev, gender: opt.value }))}
+                    style={[
+                      styles.advPill,
+                      { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#E2E8F0' },
+                      isSelected && [styles.advPillActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.advPillText, { color: isDark ? '#94A3B8' : '#475569' }, isSelected && styles.advPillTextActive]}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* 4. IDADE */}
+          <View style={styles.advSection}>
+            <Text style={[styles.advSectionLabel, { color: colors.textSecondary }]}>🎂 Idade Estimada</Text>
+            <View style={styles.advPillWrap}>
+              {[
+                { label: 'Todas', value: 'all' },
+                { label: 'Filhote', value: 'filhote' },
+                { label: 'Adulto', value: 'adulto' },
+                { label: 'Idoso', value: 'idoso' },
+              ].map(opt => {
+                const isSelected = (advancedFilters.age || 'all') === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    onPress={() => setAdvancedFilters(prev => ({ ...prev, age: opt.value }))}
+                    style={[
+                      styles.advPill,
+                      { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#E2E8F0' },
+                      isSelected && [styles.advPillActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.advPillText, { color: isDark ? '#94A3B8' : '#475569' }, isSelected && styles.advPillTextActive]}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* 5. COR PREDOMINANTE */}
+          <View style={styles.advSection}>
+            <Text style={[styles.advSectionLabel, { color: colors.textSecondary }]}>🎨 Cor Predominante</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.advPillRow}>
+              {[
+                { label: 'Todas', value: 'all', dot: null },
+                { label: 'Preto', value: 'preto', dot: '#1E293B' },
+                { label: 'Branco', value: 'branco', dot: '#F8FAFC' },
+                { label: 'Marrom', value: 'marrom', dot: '#78350F' },
+                { label: 'Caramelo', value: 'caramelo', dot: '#D97706' },
+                { label: 'Cinza', value: 'cinza', dot: '#94A3B8' },
+                { label: 'Amarelo', value: 'amarelo', dot: '#FACC15' },
+                { label: 'Dourado', value: 'dourado', dot: '#CA8A04' },
+                { label: 'Laranja', value: 'laranja', dot: '#EA580C' },
+              ].map(opt => {
+                const isSelected = (advancedFilters.color || 'all') === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    onPress={() => setAdvancedFilters(prev => ({ ...prev, color: opt.value }))}
+                    style={[
+                      styles.advPill,
+                      { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#E2E8F0' },
+                      isSelected && [styles.advPillActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    {opt.dot ? (
+                      <View style={{
+                        width: 11,
+                        height: 11,
+                        borderRadius: 6,
+                        backgroundColor: opt.dot,
+                        marginRight: 5,
+                        borderWidth: 1,
+                        borderColor: opt.value === 'branco' ? '#CBD5E1' : 'transparent',
+                      }} />
+                    ) : null}
+                    <Text style={[styles.advPillText, { color: isDark ? '#94A3B8' : '#475569' }, isSelected && styles.advPillTextActive]}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* 6. RECOMPENSA & ORDENAÇÃO */}
+          <View style={styles.advSection}>
+            <Text style={[styles.advSectionLabel, { color: colors.textSecondary }]}>⚡ Destaque & Ordenação</Text>
+            <View style={styles.advPillWrap}>
+              {/* Toggle de Recompensa */}
+              <TouchableOpacity
+                onPress={() => setAdvancedFilters(prev => ({ ...prev, hasReward: !prev.hasReward }))}
+                style={[
+                  styles.advPill,
+                  { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#E2E8F0' },
+                  advancedFilters.hasReward && [styles.advPillActive, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.25)' : '#FEF3C7', borderColor: '#F59E0B' }],
+                ]}
+                activeOpacity={0.8}
+              >
+                <Text style={[
+                  styles.advPillText,
+                  { color: isDark ? '#94A3B8' : '#475569' },
+                  advancedFilters.hasReward && { color: isDark ? '#FBBF24' : '#B45309', fontWeight: '800' },
+                ]}>
+                  🎁 Com Recompensa
+                </Text>
+              </TouchableOpacity>
+
+              {/* Ordenações */}
+              {[
+                { label: '📍 Mais Próximos', value: 'distance' },
+                { label: '🕒 Mais Recentes', value: 'newest' },
+                { label: '📅 Mais Antigos', value: 'oldest' },
+              ].map(opt => {
+                const isSelected = (advancedFilters.sortBy || 'distance') === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    onPress={() => setAdvancedFilters(prev => ({ ...prev, sortBy: opt.value }))}
+                    style={[
+                      styles.advPill,
+                      { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#E2E8F0' },
+                      isSelected && [styles.advPillActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.advPillText, { color: isDark ? '#94A3B8' : '#475569' }, isSelected && styles.advPillTextActive]}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
         </View>
       )}
@@ -2056,34 +2402,93 @@ const styles = StyleSheet.create({
     borderColor: '#1E3A8A',
   },
   advancedFiltersPanel: {
-    padding: 14,
-    marginHorizontal: 16,
+    padding: 16,
+    marginHorizontal: 14,
     marginBottom: 12,
-    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 14,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  advancedFiltersTitle: {
-    color: '#0F172A',
-    fontSize: 13,
-    fontWeight: '800',
-    marginBottom: 10,
-  },
-  speciesPickerWrapper: {
-    height: 52,
+  advHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    borderRadius: 10,
+    justifyContent: 'space-between',
+    marginBottom: 14,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(150, 150, 150, 0.15)',
   },
-  speciesPicker: {
-    flex: 1,
-    height: 52,
-    minWidth: 0,
-    color: '#0F172A',
+  advPanelTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  advCountBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  advCountText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+  },
+  advClearButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  advClearText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  advSection: {
+    marginBottom: 14,
+  },
+  advSectionLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 8,
+    letterSpacing: 0.2,
+  },
+  advPillRow: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingRight: 10,
+  },
+  advPillWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  advPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  advPillActive: {
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  advPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  advPillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '800',
   },
   locationFilterRow: {
     marginTop: 14,
