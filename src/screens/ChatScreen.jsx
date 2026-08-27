@@ -204,14 +204,36 @@ const ChatScreen = (props) => {
 
 
 
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true);
+        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      }
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   // Não mostrar loading global. Apenas erro, se houver.
   if (error) return <Text style={[styles.error, { backgroundColor: colors.background }]}>{error}</Text>;
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 25}
     >
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.chatHeader, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}>
@@ -233,7 +255,7 @@ const ChatScreen = (props) => {
           extraData={messages}
           keyExtractor={item => String(item.id)}
           renderItem={renderItem}
-          contentContainerStyle={{ padding: 12, paddingBottom: 200 }}
+          contentContainerStyle={{ padding: 12, paddingBottom: 20 }}
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
           onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
           keyboardShouldPersistTaps="handled"
@@ -247,7 +269,7 @@ const ChatScreen = (props) => {
             </TouchableOpacity>
           </View>
         )}
-        <SafeAreaView edges={["bottom"]} style={{ backgroundColor: colors.surface }}>
+        <SafeAreaView edges={keyboardVisible ? [] : ["bottom"]} style={{ backgroundColor: colors.surface }}>
           <View style={[styles.inputRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <TouchableOpacity onPress={handlePickPhoto} style={[styles.photoButton, { backgroundColor: colors.primaryLight }]}>
               <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Foto</Text>
