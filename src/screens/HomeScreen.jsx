@@ -168,7 +168,6 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
   const animalAge = String(item.age || item.extra_fields?.age || '').trim();
   const hasCollar = String(item.collar || item.extra_fields?.collar || '').toLowerCase() === 'sim' || Boolean(item.extra_fields?.has_collar);
   const isNeutered = String(item.neutered || item.extra_fields?.neutered || '').toLowerCase() === 'sim' || Boolean(item.extra_fields?.castrated || item.extra_fields?.is_neutered);
-  const hasMicrochip = String(item.microchip || item.extra_fields?.microchip || '').toLowerCase() === 'sim' || Boolean(item.extra_fields?.has_microchip);
 
   const photos = item.item_photos && item.item_photos.length > 0 ? item.item_photos : (thumbnails[item.id] ? [{ url: thumbnails[item.id] }] : []);
   const IMAGE_HEIGHT = 215;
@@ -356,7 +355,7 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
         </View>
 
         {/* Chips de Atributos Minimalistas com Emojis e Bolinha de Cor */}
-        {(animalBreed || (animalGender && animalGender !== 'Não informado') || (animalSize && animalSize !== 'Não informado') || (animalAge && animalAge !== 'Não informado') || (animalColor && animalColor !== 'Cor não informada') || hasCollar || isNeutered || hasMicrochip) ? (
+        {(animalBreed || (animalGender && animalGender !== 'Não informado') || (animalSize && animalSize !== 'Não informado') || (animalAge && animalAge !== 'Não informado') || (animalColor && animalColor !== 'Cor não informada') || hasCollar || isNeutered) ? (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
             {/* Raça */}
             {animalBreed && animalBreed !== 'Sem raça definida' ? (
@@ -430,13 +429,6 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
             {isNeutered ? (
               <View style={{ backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? 'rgba(16, 185, 129, 0.3)' : '#A7F3D0' }}>
                 <Text style={{ fontSize: 11.5, color: isDark ? '#6EE7B7' : '#047857', fontWeight: '600' }}>✂️ Castrado</Text>
-              </View>
-            ) : null}
-
-            {/* Microchip */}
-            {hasMicrochip ? (
-              <View style={{ backgroundColor: isDark ? 'rgba(168, 85, 247, 0.15)' : '#FAF5FF', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3.5, borderWidth: 1, borderColor: isDark ? 'rgba(168, 85, 247, 0.3)' : '#E9D5FF' }}>
-                <Text style={{ fontSize: 11.5, color: isDark ? '#D8B4FE' : '#6B21A8', fontWeight: '600' }}>📡 Microchip</Text>
               </View>
             ) : null}
           </View>
