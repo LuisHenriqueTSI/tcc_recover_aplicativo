@@ -15,6 +15,15 @@
     },
     "plugins": [
       [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "Permitir acesso às suas fotos para registrar itens",
