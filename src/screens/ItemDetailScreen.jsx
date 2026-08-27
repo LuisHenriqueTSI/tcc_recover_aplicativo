@@ -383,13 +383,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
       return;
     }
 
-    let initialMessage = '';
-    if (item.status === 'lost') {
-      initialMessage = 'Oi, eu tenho informações sobre o seu pet!';
-    } else if (item.status === 'found') {
-      initialMessage = 'Oi, você encontrou meu pet?';
-    }
-
     navigation.navigate('ChatScreen', {
       conversation: {
         otherId: item.owner_id,
@@ -397,7 +390,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
         otherName: owner?.name || 'Tutor',
         avatarUrl: owner?.avatar_url || null,
         itemTitle: item.title || item.species || 'Animal',
-        initialMessage,
+        itemStatus: item.status,
+        itemOwnerId: item.owner_id,
       },
     });
   };

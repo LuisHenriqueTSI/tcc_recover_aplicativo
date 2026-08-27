@@ -1382,13 +1382,6 @@ const HomeScreen = ({ navigation, route }) => {
       Alert.alert('Aviso', 'Você é o autor desta publicação.');
       return;
     }
-    // Define mensagem automática inicial
-    let autoMessage = '';
-    if (itemStatus === 'lost') {
-      autoMessage = 'Oi, eu encontrei seu pet!';
-    } else {
-      autoMessage = 'Oi, você encontrou meu pet?';
-    }
     navigation.navigate('ChatScreen', {
       conversation: {
         otherId: ownerId,
@@ -1396,8 +1389,9 @@ const HomeScreen = ({ navigation, route }) => {
         otherName: otherName || 'Tutor',
         avatarUrl: avatarUrl || null,
         itemTitle: itemTitle || 'Animal',
+        itemStatus: itemStatus,
+        itemOwnerId: ownerId,
       },
-      draftMessage: autoMessage,
     });
   };
 
