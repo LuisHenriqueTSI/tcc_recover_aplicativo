@@ -3,7 +3,7 @@ import { ActivityIndicator, Image, Platform, StyleSheet, Text, TextInput, Toucha
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import MapView, { Callout, Marker } from 'react-native-maps';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import * as itemsService from '../services/items';
 import { useAuth } from '../contexts/AuthContext';
@@ -569,7 +569,7 @@ const getSpeciesEmoji = (item) => {
     return '🐶';
   }
   if (species.includes('gato') || title.includes('gato')) {
-    return '🐱';
+    return 'CAT_ICON';
   }
   if (species.includes('ave') || species.includes('passaro') || species.includes('pássaro') || species.includes('calopsita') || species.includes('papagaio')) {
     return '🦜';
@@ -609,6 +609,9 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const statusIcon = isAdoption ? '💖' : (isFound ? '🟢' : '🔴');
   const emoji = getSpeciesEmoji(item);
 
+  const RING_SIZE = isSelected ? 33 : 26;
+  const BORDER_W = isSelected ? 3.2 : 2.5;
+
   return (
     <Marker
       coordinate={coordinate}
@@ -620,46 +623,42 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
       <View
         collapsable={false}
         style={{
+          width: RING_SIZE,
+          height: RING_SIZE,
+          borderRadius: RING_SIZE / 2,
+          backgroundColor: '#FFFFFF',
+          borderWidth: BORDER_W,
+          borderColor: statusColor,
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 2,
-          transform: [{ scale: isSelected ? 1.25 : 1.0 }],
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 2.5,
+          elevation: 4,
         }}
       >
-        {/* Triângulo Minimalista de Status Acima do Animal */}
-        <View
-          style={{
-            width: 0,
-            height: 0,
-            backgroundColor: 'transparent',
-            borderStyle: 'solid',
-            borderLeftWidth: 4.5,
-            borderRightWidth: 4.5,
-            borderBottomWidth: 0,
-            borderTopWidth: 6,
-            borderLeftColor: 'transparent',
-            borderRightColor: 'transparent',
-            borderTopColor: statusColor,
-            marginBottom: 1.5,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.3,
-            shadowRadius: 1.5,
-            elevation: 2,
-          }}
-        />
-
-        {/* Emoji da Espécie */}
-        <Text
-          style={{
-            fontSize: isSelected ? 28 : 22,
-            textShadowColor: 'rgba(0, 0, 0, 0.25)',
-            textShadowOffset: { width: 0, height: 1.5 },
-            textShadowRadius: 2.5,
-          }}
-        >
-          {emoji}
-        </Text>
+        {/* Emoji ou Ícone da Espécie */}
+        {emoji === 'CAT_ICON' ? (
+          <Image
+            source={require('../../assets/cat_face.png')}
+            style={{
+              width: isSelected ? 18 : 14.5,
+              height: isSelected ? 18 : 14.5,
+            }}
+            resizeMode="contain"
+          />
+        ) : (
+          <Text
+            style={{
+              fontSize: isSelected ? 17 : 13.5,
+              includeFontPadding: false,
+              textAlign: 'center',
+            }}
+          >
+            {emoji}
+          </Text>
+        )}
       </View>
       <Callout tooltip={false}>
         <View style={styles.callout}>
