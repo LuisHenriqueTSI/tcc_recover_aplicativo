@@ -564,7 +564,7 @@ const MainStack = () => {
       <Stack.Screen
         name="ChatScreen"
         component={ChatScreen}
-        options={{ title: 'Mensagens' }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="RegisterItem"

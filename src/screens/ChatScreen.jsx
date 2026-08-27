@@ -10,12 +10,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 
 const ChatScreen = (props) => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   const route = useRoute();
   const conversation = route.params?.conversation;
   const highlightMessageId = route.params?.highlightMessageId;
@@ -237,19 +238,43 @@ const ChatScreen = (props) => {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.chatHeader, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}>
-          <View style={styles.chatAvatar}>
-            <Image
-              source={conversation?.avatarUrl ? { uri: conversation.avatarUrl } : require('../assets/logo_wefind.png')}
-              style={styles.chatAvatarImage}
-            />
+        {/* Header Personalizado: Voltar + Foto do Usuário + Nome */}
+        <SafeAreaView edges={['top']} style={{ backgroundColor: colors.headerBg }}>
+          <View style={[styles.chatHeader, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}>
+            <TouchableOpacity
+              onPress={() => {
+                if (navigation.canGoBack()) {
+                  navigation.goBack();
+                } else {
+                  navigation.navigate('MainApp');
+                }
+              }}
+              style={styles.headerBackBtn}
+              accessibilityLabel="Voltar"
+              activeOpacity={0.75}
+            >
+              <MaterialIcons name="chevron-left" size={28} color="#FFFFFF" />
+            </TouchableOpacity>
+
+            <View style={styles.chatAvatar}>
+              <Image
+                source={conversation?.avatarUrl ? { uri: conversation.avatarUrl } : require('../assets/logo_wefind.png')}
+                style={styles.chatAvatarImage}
+              />
+            </View>
+
+            <View style={styles.chatHeaderContent}>
+              <Text style={[styles.chatHeaderName, { color: colors.headerText }]} numberOfLines={1}>
+                {conversation?.otherName || 'Usuário'}
+              </Text>
+              {conversation?.itemTitle ? (
+                <Text style={[styles.chatHeaderPet, { color: colors.headerSubText }]} numberOfLines={1}>
+                  Pet: {conversation.itemTitle}
+                </Text>
+              ) : null}
+            </View>
           </View>
-          <View style={styles.chatHeaderContent}>
-            <Text style={[styles.chatHeaderName, { color: colors.headerText }]} numberOfLines={1}>{conversation?.otherName || 'Usuário'}</Text>
-            {conversation?.itemTitle ? <Text style={[styles.chatHeaderPet, { color: colors.headerSubText }]} numberOfLines={1}>{conversation.itemTitle}</Text> : null}
-          </View>
-          <Feather name="message-circle" size={20} color={isDark ? colors.primary : '#BFDBFE'} />
-        </View>
+        </SafeAreaView>
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -303,12 +328,13 @@ const ChatScreen = (props) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
-  chatHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#1E3A8A', borderBottomWidth: 1, borderBottomColor: '#1D4ED8' },
-  chatAvatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#EFF6FF', overflow: 'hidden', marginRight: 10 },
-  chatAvatarImage: { width: 42, height: 42, borderRadius: 21, resizeMode: 'cover' },
+  chatHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, height: 60, backgroundColor: '#1E3A8A', borderBottomWidth: 1, borderBottomColor: '#1D4ED8' },
+  headerBackBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)', marginRight: 10 },
+  chatAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#EFF6FF', overflow: 'hidden', marginRight: 10, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)' },
+  chatAvatarImage: { width: 40, height: 40, borderRadius: 20, resizeMode: 'cover' },
   chatHeaderContent: { flex: 1, minWidth: 0 },
-  chatHeaderName: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
-  chatHeaderPet: { color: '#BFDBFE', fontSize: 12, marginTop: 3 },
+  chatHeaderName: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  chatHeaderPet: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 1 },
   messageRow: { flexDirection: 'row', marginVertical: 4, paddingHorizontal: 4 },
   myMessage: { justifyContent: 'flex-end' },
   otherMessage: { justifyContent: 'flex-start' },
