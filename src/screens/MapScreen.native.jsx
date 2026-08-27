@@ -477,8 +477,8 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   const statusLabel = isAdoption ? 'Para Adoção' : (isFound ? 'Encontrado' : 'Perdido');
   const emoji = getSpeciesEmoji(item);
 
-  const PIN_SIZE = isSelected ? 48 : 40;
-  const INNER_SIZE = isSelected ? 38 : 32;
+  const PIN_SIZE = isSelected ? 68 : 56;
+  const INNER_SIZE = isSelected ? 52 : 42;
 
   return (
     <Marker
@@ -488,8 +488,8 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
       tracksViewChanges={false}
       anchor={{ x: 0.5, y: 1.0 }}
     >
-      <View collapsable={false} style={{ alignItems: 'center', justifyContent: 'center' }}>
-        {/* Cabeça da Gota (Círculo colorido com sombra) */}
+      <View collapsable={false} style={{ alignItems: 'center', justifyContent: 'center', paddingBottom: 4 }}>
+        {/* Badge Principal Grande, Imponente e Arredondado */}
         <View
           style={{
             width: PIN_SIZE,
@@ -498,16 +498,17 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
             backgroundColor: statusColor,
             alignItems: 'center',
             justifyContent: 'center',
-            borderWidth: 2,
+            borderWidth: 3.5,
             borderColor: '#FFFFFF',
             shadowColor: statusColor,
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.4,
-            shadowRadius: 4,
-            elevation: 5,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.45,
+            shadowRadius: 6,
+            elevation: 8,
+            transform: isSelected ? [{ scale: 1.1 }] : [],
           }}
         >
-          {/* Núcleo Branco com Ícone da Espécie */}
+          {/* Núcleo Branco Interno com Ícone da Espécie Destacado */}
           <View
             style={{
               width: INNER_SIZE,
@@ -518,22 +519,20 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: isSelected ? 20 : 16 }}>{emoji}</Text>
+            <Text style={{ fontSize: isSelected ? 28 : 24 }}>{emoji}</Text>
           </View>
         </View>
 
-        {/* Ponta da Lágrima virada para baixo */}
+        {/* Indicador de posição arredondado e suave (sem pontas ou triângulos) */}
         <View
           style={{
-            width: 0,
-            height: 0,
-            borderLeftWidth: 5,
-            borderRightWidth: 5,
-            borderTopWidth: 7,
-            borderLeftColor: 'transparent',
-            borderRightColor: 'transparent',
-            borderTopColor: statusColor,
-            marginTop: -2,
+            width: 10,
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: statusColor,
+            marginTop: -3,
+            borderWidth: 1,
+            borderColor: '#FFFFFF',
           }}
         />
       </View>
