@@ -552,9 +552,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
   };
 
   const handleDeleteComment = (comment) => {
+    const isCommentAuthor = user && comment.user_id === user.id;
     Alert.alert(
-      'Excluir comentário',
-      'Tem certeza que deseja excluir este comentário?',
+      isAdmin && !isCommentAuthor ? 'Excluir comentário (Admin)' : 'Excluir comentário',
+      isAdmin && !isCommentAuthor
+        ? 'Como Administrador, você está prestes a excluir este comentário permanentemente.'
+        : 'Tem certeza que deseja excluir este comentário?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -562,11 +565,13 @@ const ItemDetailScreen = ({ route, navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
+              setSightings((prev) => prev.filter((c) => String(c.id) !== String(comment.id)));
               await sightingsService.deleteSighting(comment.id);
-              setSightings(prev => prev.filter(c => c.id !== comment.id));
-              loadSightings();
+              Alert.alert('Sucesso', 'Comentário excluído com sucesso.');
             } catch (error) {
               console.error('Falha ao excluir comentário:', error);
+              Alert.alert('Erro', 'Não foi possível excluir o comentário.');
+              loadSightings();
             }
           },
         },

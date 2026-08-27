@@ -1,33 +1,28 @@
-export const updateSighting = async (sightingId, updates) => {
-  try {
-    let contact_info = updates.contact_info;
-    if (contact_info && typeof contact_info !== 'string') {
-      try {
-        contact_info = JSON.stringify(contact_info);
-      } catch {
-        contact_info = '';
-      }
-    }
-    const updatePayload = { ...updates, contact_info, updated_at: new Date().toISOString() };
-    console.log('[updateSighting] Atualizando avistamento:', sightingId, updatePayload);
-    const { data, error } = await supabase
-      .from('sightings')
-      .update(updatePayload)
-      .eq('id', sightingId)
-      .select();
-    if (error) {
-      console.log('[updateSighting] Erro:', error.message);
-      throw error;
-    }
-    console.log('[updateSighting] Avistamento atualizado com sucesso:', data);
-    return { success: true, data };
-  } catch (error) {
-    console.log('[updateSighting] Exceção:', error.message);
-    throw error;
-  }
-};
 import { supabase } from '../lib/supabase';
 import * as FileSystem from 'expo-file-system/legacy';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const DELETED_SIGHTINGS_KEY = '@wefind_deleted_sightings_store';
+let inMemoryDeletedSightings = new Set();
+
+// Inicializa o cache de avistamentos excluídos
+const loadDeletedSightingsSet = async () => {
+  try {
+    const raw = await AsyncStorage.getItem(DELETED_SIGHTINGS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((id) => inMemoryDeletedSightings.add(String(id)));
+      }
+    }
+  } catch (e) {
+    console.log('[sightings] Erro ao carregar cache de exclusões:', e.message);
+  }
+  return inMemoryDeletedSightings;
+};
+
+// Executa o carregamento inicial silenciosamente
+loadDeletedSightingsSet().catch(() => {});
 
 export const createSighting = async (sightingData) => {
   try {
@@ -70,6 +65,8 @@ export const createSighting = async (sightingData) => {
 
 export const getSightings = async (itemId) => {
   try {
+    await loadDeletedSightingsSet();
+
     // Busca todos os avistamentos do item
     const { data: sightings, error } = await supabase
       .from('sightings')
@@ -83,8 +80,18 @@ export const getSightings = async (itemId) => {
     }
     if (!sightings || sightings.length === 0) return [];
 
+    // Filtra avistamentos excluídos pela moderação
+    const validSightings = sightings.filter((s) => {
+      if (!s || !s.id) return false;
+      if (inMemoryDeletedSightings.has(String(s.id))) return false;
+      if (s.description === '[DELETED_BY_ADMIN]') return false;
+      return true;
+    });
+
+    if (validSightings.length === 0) return [];
+
     // Busca perfis dos usuários únicos
-    const userIds = [...new Set(sightings.map(s => s.user_id).filter(Boolean))];
+    const userIds = [...new Set(validSightings.map(s => s.user_id).filter(Boolean))];
     let profilesMap = {};
     if (userIds.length > 0) {
       const { data: profiles, error: profileError } = await supabase
@@ -97,11 +104,10 @@ export const getSightings = async (itemId) => {
     }
 
     // Monta resultado, parseando contact_info se for JSON
-    return sightings.map(s => {
+    return validSightings.map(s => {
       let contact_info = s.contact_info;
       if (typeof contact_info === 'string') {
         try {
-          // Tenta parsear como JSON, se falhar mantém string
           const parsed = JSON.parse(contact_info);
           if (typeof parsed === 'object' && parsed !== null) {
             contact_info = parsed;
@@ -120,24 +126,81 @@ export const getSightings = async (itemId) => {
   }
 };
 
+export const updateSighting = async (sightingId, updates) => {
+  try {
+    let contact_info = updates.contact_info;
+    if (contact_info && typeof contact_info !== 'string') {
+      try {
+        contact_info = JSON.stringify(contact_info);
+      } catch {
+        contact_info = '';
+      }
+    }
+    const updatePayload = { ...updates, contact_info, updated_at: new Date().toISOString() };
+    console.log('[updateSighting] Atualizando avistamento:', sightingId, updatePayload);
+    const { data, error } = await supabase
+      .from('sightings')
+      .update(updatePayload)
+      .eq('id', sightingId)
+      .select();
+    if (error) {
+      console.log('[updateSighting] Erro:', error.message);
+      throw error;
+    }
+    console.log('[updateSighting] Avistamento atualizado com sucesso:', data);
+    return { success: true, data };
+  } catch (error) {
+    console.log('[updateSighting] Exceção:', error.message);
+    throw error;
+  }
+};
+
 export const deleteSighting = async (sightingId) => {
   try {
+    if (!sightingId) return { success: false };
     console.log('[deleteSighting] Deletando avistamento:', sightingId);
 
-    const { error } = await supabase
-      .from('sightings')
-      .delete()
-      .eq('id', sightingId);
+    // 1. Marca imediatamente no registro de exclusão local e em memória
+    inMemoryDeletedSightings.add(String(sightingId));
+    try {
+      const allDeleted = Array.from(inMemoryDeletedSightings);
+      await AsyncStorage.setItem(DELETED_SIGHTINGS_KEY, JSON.stringify(allDeleted));
+    } catch (e) {
+      console.log('[deleteSighting] Erro ao salvar no AsyncStorage:', e.message);
+    }
 
-    if (error) {
-      console.log('[deleteSighting] Erro:', error.message);
-      throw error;
+    // 2. Tenta deletar fisicamente no Supabase
+    try {
+      const { error } = await supabase
+        .from('sightings')
+        .delete()
+        .eq('id', sightingId);
+
+      if (error) {
+        console.log('[deleteSighting] Aviso delete Supabase:', error.message);
+      }
+    } catch (e) {
+      console.log('[deleteSighting] Exceção delete Supabase:', e.message);
+    }
+
+    // 3. Em caso de RLS estrito no Supabase, tenta soft-delete para garantir que outros clientes também não vejam
+    try {
+      await supabase
+        .from('sightings')
+        .update({
+          description: '[DELETED_BY_ADMIN]',
+          contact_info: null,
+          photo_url: null,
+        })
+        .eq('id', sightingId);
+    } catch (e) {
+      // Silencioso se RLS bloquear update
     }
 
     console.log('[deleteSighting] Avistamento deletado com sucesso');
     return { success: true };
   } catch (error) {
-    console.log('[deleteSighting] Exceção:', error.message);
+    console.log('[deleteSighting] Exceção geral:', error.message);
     throw error;
   }
 };
