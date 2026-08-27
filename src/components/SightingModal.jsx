@@ -115,7 +115,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
 
   return (
     <>
-      <Modal visible={visible && !mapPickerVisible} animationType="slide" transparent onRequestClose={handleClose}>
+      <Modal visible={visible && !mapPickerVisible} animationType="slide" transparent statusBarTranslucent onRequestClose={handleClose}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.overlay}>
             <KeyboardAvoidingView

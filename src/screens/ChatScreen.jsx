@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, Image, Keyboard, Platform, KeyboardAvoidingView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { getMessages, sendMessage, markMessagesAsRead, uploadMessagePhoto } from '../services/messages';
 import { supabase } from '../lib/supabase';
@@ -15,6 +15,7 @@ import { Feather } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 
 const ChatScreen = (props) => {
+  const insets = useSafeAreaInsets();
   const route = useRoute();
   const conversation = route.params?.conversation;
   const highlightMessageId = route.params?.highlightMessageId;
@@ -269,25 +270,32 @@ const ChatScreen = (props) => {
             </TouchableOpacity>
           </View>
         )}
-        <SafeAreaView edges={keyboardVisible ? [] : ["bottom"]} style={{ backgroundColor: colors.surface }}>
-          <View style={[styles.inputRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <TouchableOpacity onPress={handlePickPhoto} style={[styles.photoButton, { backgroundColor: colors.primaryLight }]}>
-              <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Foto</Text>
-            </TouchableOpacity>
-            <TextInput
-              style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-              value={input}
-              onChangeText={setInput}
-              placeholder="Digite sua mensagem..."
-              placeholderTextColor={colors.textMuted}
-              editable={!sending}
-              onSubmitEditing={handleSend}
-              blurOnSubmit={false}
-              returnKeyType="send"
-            />
-            <Button title="Enviar" onPress={handleSend} loading={sending} style={styles.sendButton} />
-          </View>
-        </SafeAreaView>
+        <View
+          style={[
+            styles.inputRow,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              paddingBottom: keyboardVisible ? 8 : Math.max(8, insets.bottom),
+            },
+          ]}
+        >
+          <TouchableOpacity onPress={handlePickPhoto} style={[styles.photoButton, { backgroundColor: colors.primaryLight }]}>
+            <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Foto</Text>
+          </TouchableOpacity>
+          <TextInput
+            style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+            value={input}
+            onChangeText={setInput}
+            placeholder="Digite sua mensagem..."
+            placeholderTextColor={colors.textMuted}
+            editable={!sending}
+            onSubmitEditing={handleSend}
+            blurOnSubmit={false}
+            returnKeyType="send"
+          />
+          <Button title="Enviar" onPress={handleSend} loading={sending} style={styles.sendButton} />
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -312,7 +320,7 @@ const styles = StyleSheet.create({
   previewImage: { width: 60, height: 60, borderRadius: 8, marginRight: 10 },
   removePhotoButton: { padding: 8 },
   messageMeta: { fontSize: 11, color: '#6B7280', marginTop: 4 },
-  inputRow: { flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E5E7EB', marginBottom: 32 },
+  inputRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingTop: 8, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E5E7EB' },
   input: { flex: 1, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 12, fontSize: 16, backgroundColor: '#F9FAFB', marginRight: 8 },
   sendButton: { paddingVertical: 10, paddingHorizontal: 16 },
   error: { color: 'red', textAlign: 'center', marginTop: 20 },
