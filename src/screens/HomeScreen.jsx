@@ -676,22 +676,6 @@ const HomeScreen = ({ navigation, route }) => {
     return sessionAddressText || profileEditAddressText || headerLocationSummary || 'Sua Localização';
   }, [sessionStreet, profileEditStreet, sessionDistrict, profileEditDistrict, sessionCity, profileEditCity, sessionState, profileEditState, sessionAddressText, profileEditAddressText, headerLocationSummary]);
 
-  const radiusStatusText = useMemo(() => {
-    switch (filters.status) {
-      case 'lost':
-        return 'animais perdidos';
-      case 'found':
-        return 'animais encontrados';
-      case 'adoption':
-        return 'animais para adoção';
-      case 'resolved':
-        return 'animais reencontrados';
-      case 'all':
-      default:
-        return 'TODOS os animais';
-    }
-  }, [filters.status]);
-
   // Salvar localidade (perfil e armazenamento local)
   const handleSaveProfileLocation = async () => {
     if (!profileEditState || !profileEditCity) return;
@@ -823,6 +807,23 @@ const HomeScreen = ({ navigation, route }) => {
     animalType: 'all',
     showMyItems: false,
   });
+
+  const radiusStatusText = useMemo(() => {
+    const currentStatus = filters?.status || 'all';
+    switch (currentStatus) {
+      case 'lost':
+        return 'animais perdidos';
+      case 'found':
+        return 'animais encontrados';
+      case 'adoption':
+        return 'animais para adoção';
+      case 'resolved':
+        return 'animais reencontrados';
+      case 'all':
+      default:
+        return 'TODOS os animais';
+    }
+  }, [filters?.status]);
   const [searchTerm, setSearchTerm] = useState('');
   // Localidade padrão do usuário, mas permite alterar livremente
   const [locationFilter, setLocationFilter] = useState('');
