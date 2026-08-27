@@ -147,37 +147,35 @@ const PublicAppTabs = ({ navigation }) => {
         }}
       />
       <Tab.Screen
-        name="LoginTab"
-        component={LoginScreen}
+        name="SobreTab"
+        component={SobreScreen}
         options={{
-          title: 'Entrar',
-          tabBarLabel: () => null,
-          tabBarIcon: () => null,
-          tabBarButton: (props) => (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 }}>
-              <TouchableOpacity
-                {...props}
-                style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: colors.primary,
-                  borderRadius: 22,
-                  flexDirection: 'row',
-                  paddingHorizontal: 18,
-                  paddingVertical: 9,
-                  minWidth: 105,
-                  shadowColor: colors.primary,
-                  shadowOffset: { width: 0, height: 3 },
-                  shadowOpacity: 0.28,
-                  shadowRadius: 5,
-                  elevation: 4,
-                }}
-                onPress={() => navigation.navigate('Login')}
-                activeOpacity={0.85}
-              >
-                <MaterialIcons name="login" size={17} color="#FFFFFF" style={{ marginRight: 6 }} />
-                <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 13.5 }}>Entrar</Text>
-              </TouchableOpacity>
+          title: 'Conhecer',
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{
+                color: focused ? colors.primary : colors.textSecondary,
+                fontSize: 12,
+                marginTop: 2,
+                textAlign: 'center',
+                fontWeight: focused ? '700' : '500',
+              }}
+            >
+              Conhecer
+            </Text>
+          ),
+          tabBarIcon: ({ focused }) => (
+            <View
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 42,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: focused ? colors.primaryLight : 'transparent',
+              }}
+            >
+              <MaterialIcons name="auto-awesome" size={22} color={focused ? colors.primary : colors.textSecondary} />
             </View>
           ),
         }}

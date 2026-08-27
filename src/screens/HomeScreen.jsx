@@ -1414,13 +1414,29 @@ const HomeScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={{ flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
-              <Image
-                source={require('../assets/logo_wefind.png')}
-                style={{ width: 44, height: 44, borderRadius: 22 }}
-                resizeMode="contain"
-              />
-            </View>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Login')}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.18)',
+                borderRadius: 18,
+                paddingHorizontal: 12,
+                paddingVertical: 7,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.35)',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.1,
+                shadowRadius: 2,
+                elevation: 2,
+              }}
+              activeOpacity={0.8}
+              accessibilityLabel="Entrar na conta"
+            >
+              <MaterialIcons name="login" size={16} color="#FFFFFF" style={{ marginRight: 5 }} />
+              <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13 }}>Entrar</Text>
+            </TouchableOpacity>
           )}
           {user && showProfileMenu && (
             <View style={[styles.profileMenu, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
