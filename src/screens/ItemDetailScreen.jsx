@@ -33,6 +33,7 @@ import * as sightingsService from '../services/sightings';
 import { getRenewalInfo } from '../services/itemExpiration';
 import { createRenewalReminderNotification } from '../services/notifications';
 import * as reportsService from '../services/reports';
+import * as Location from 'expo-location';
 
 const formatItemDate = (value) => {
   if (!value) return '';
@@ -599,6 +600,61 @@ const ItemDetailScreen = ({ route, navigation }) => {
     );
   }
 
+  const handleOpenRoute = async () => {
+    if (!item) return;
+
+    let lat = item.latitude || item.extra_fields?.location_details?.latitude;
+    let lng = item.longitude || item.extra_fields?.location_details?.longitude;
+
+    if (!lat || !lng) {
+      try {
+        const query = [
+          item.street,
+          item.neighborhood,
+          item.city,
+          item.state,
+          'Brasil',
+        ].filter(Boolean).join(', ');
+
+        if (query) {
+          const results = await Location.geocodeAsync(query);
+          if (results && results.length > 0) {
+            lat = results[0].latitude;
+            lng = results[0].longitude;
+          }
+        }
+      } catch (err) {
+        console.log('[ItemDetailScreen] Erro no geocoding:', err);
+      }
+    }
+
+    if (!lat || !lng) {
+      Alert.alert(
+        'Localização indisponível',
+        'Não foi possível encontrar as coordenadas exatas deste animal para traçar a rota.'
+      );
+      return;
+    }
+
+    // Abre diretamente o Mapa do WeFIND traçando a rota até o animal
+    try {
+      navigation.navigate('MainApp', {
+        screen: 'MapTab',
+        params: {
+          focusItemId: item.id,
+          showRoute: true,
+          targetCoords: { latitude: Number(lat), longitude: Number(lng) },
+        },
+      });
+    } catch (e) {
+      navigation.navigate('Map', {
+        focusItemId: item.id,
+        showRoute: true,
+        targetCoords: { latitude: Number(lat), longitude: Number(lng) },
+      });
+    }
+  };
+
   const isAdoption = Boolean(item.extra_fields?.is_direct_adoption || itemsService.isPetAvailableForAdoption(item));
   const isFound = item.status === 'found' && !isAdoption;
 
@@ -726,29 +782,37 @@ const ItemDetailScreen = ({ route, navigation }) => {
           {(item.species || item.extra_fields?.species) ? (
             <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
               <Text style={styles.attrChipEmoji}>🐾</Text>
-              <View>
+              <View style={styles.attrChipTextWrap}>
                 <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Espécie</Text>
-                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.species || item.extra_fields?.species}</Text>
+                <Text style={[styles.attrChipValue, { color: colors.text }]} numberOfLines={1}>{item.species || item.extra_fields?.species}</Text>
               </View>
             </View>
           ) : null}
 
-          {(item.breed || item.extra_fields?.breed) ? (
-            <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
-              <Text style={styles.attrChipEmoji}>🏷️</Text>
-              <View>
-                <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Raça</Text>
-                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.breed || item.extra_fields?.breed}</Text>
+          {(() => {
+            const rawBreed = item.breed || item.extra_fields?.breed || '';
+            const isBreedUnknown = !rawBreed ||
+              /^(não informado|não informada|nao informado|nao informada|sem raça definida|sem raca definida|sem raça|sem raca|srd|desconhecido|desconhecida|outra|outro)$/i.test(rawBreed.trim());
+            if (isBreedUnknown) return null;
+            return (
+              <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
+                <Text style={styles.attrChipEmoji}>🏷️</Text>
+                <View style={styles.attrChipTextWrap}>
+                  <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Raça</Text>
+                  <Text style={[styles.attrChipValue, { color: colors.text }]} numberOfLines={1}>{rawBreed}</Text>
+                </View>
               </View>
-            </View>
-          ) : null}
+            );
+          })()}
 
           {(item.gender || item.extra_fields?.gender) && (item.gender || item.extra_fields?.gender) !== 'Não informado' ? (
             <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
-              <Text style={styles.attrChipEmoji}>⚧</Text>
-              <View>
+              <Text style={styles.attrChipEmoji}>
+                {String(item.gender || item.extra_fields?.gender).toLowerCase().includes('f') ? '♀️' : '♂️'}
+              </Text>
+              <View style={styles.attrChipTextWrap}>
                 <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Sexo</Text>
-                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.gender || item.extra_fields?.gender}</Text>
+                <Text style={[styles.attrChipValue, { color: colors.text }]} numberOfLines={1}>{item.gender || item.extra_fields?.gender}</Text>
               </View>
             </View>
           ) : null}
@@ -756,9 +820,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
           {(item.age || item.extra_fields?.age) && (item.age || item.extra_fields?.age) !== 'Não informado' ? (
             <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
               <Text style={styles.attrChipEmoji}>🎂</Text>
-              <View>
+              <View style={styles.attrChipTextWrap}>
                 <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Idade</Text>
-                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.age || item.extra_fields?.age}</Text>
+                <Text style={[styles.attrChipValue, { color: colors.text }]} numberOfLines={1}>{item.age || item.extra_fields?.age}</Text>
               </View>
             </View>
           ) : null}
@@ -766,9 +830,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
           {(item.size || item.extra_fields?.size) && (item.size || item.extra_fields?.size) !== 'Não informado' ? (
             <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
               <Text style={styles.attrChipEmoji}>📏</Text>
-              <View>
+              <View style={styles.attrChipTextWrap}>
                 <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Porte</Text>
-                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.size || item.extra_fields?.size}</Text>
+                <Text style={[styles.attrChipValue, { color: colors.text }]} numberOfLines={1}>{item.size || item.extra_fields?.size}</Text>
               </View>
             </View>
           ) : null}
@@ -776,9 +840,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
           {(item.color || item.extra_fields?.color) && (
             <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
               <Text style={styles.attrChipEmoji}>🎨</Text>
-              <View>
+              <View style={styles.attrChipTextWrap}>
                 <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Cor</Text>
-                <Text style={[styles.attrChipValue, { color: colors.text }]}>{item.color || item.extra_fields?.color}</Text>
+                <Text style={[styles.attrChipValue, { color: colors.text }]} numberOfLines={1}>{item.color || item.extra_fields?.color}</Text>
               </View>
             </View>
           )}
@@ -791,6 +855,36 @@ const ItemDetailScreen = ({ route, navigation }) => {
             <Text style={[styles.descriptionText, { color: colors.text }]}>{item.description}</Text>
           </View>
         ) : null}
+
+        {/* Personalidade & Cuidados do Pet */}
+        {Array.isArray(item.extra_fields?.temperament) && item.extra_fields.temperament.length > 0 && (
+          <View style={{ marginTop: 14 }}>
+            <Text style={[styles.sectionSubtitle, { color: colors.textMuted, marginBottom: 8 }]}>
+              Personalidade & Cuidados
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {item.extra_fields.temperament.map((trait, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: isDark ? 'rgba(219, 39, 119, 0.15)' : '#FDF2F8',
+                    borderColor: isDark ? 'rgba(219, 39, 119, 0.35)' : '#FBCFE8',
+                    borderWidth: 1,
+                    borderRadius: 10,
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                  }}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: isDark ? '#F472B6' : '#BE185D' }}>
+                    {trait}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* Bloco de Recompensa (Se ativa) */}
         {Array.isArray(rewards) && rewards.some(r => r?.status === 'active') && (
@@ -857,15 +951,17 @@ const ItemDetailScreen = ({ route, navigation }) => {
         </View>
       )}
 
-      {/* 4. CARD DE LOCALIZAÇÃO E DATA */}
+      {/* 4. CARD DE LOCALIZAÇÃO E DATA COM ROTA GPS */}
       <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <View style={styles.sectionHeaderRow}>
-          <View style={[styles.sectionIconWrap, { backgroundColor: colors.primaryLight }]}>
-            <MaterialIcons name="place" size={20} color={colors.primary} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <View style={styles.sectionHeaderRow}>
+            <View style={[styles.sectionIconWrap, { backgroundColor: colors.primaryLight }]}>
+              <MaterialIcons name="place" size={20} color={colors.primary} />
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              {item.status === 'lost' ? 'Último Local Visto' : 'Local Onde Foi Encontrado'}
+            </Text>
           </View>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {item.status === 'lost' ? 'Último Local Visto' : 'Local Onde Foi Encontrado'}
-          </Text>
         </View>
 
         <View style={styles.locationBody}>
@@ -873,13 +969,13 @@ const ItemDetailScreen = ({ route, navigation }) => {
             {formatCityState(item)}
           </Text>
           {formatStreetNumberNeighborhood(item) ? (
-            <Text style={[styles.locationStreetText, { color: colors.textSecondary }]}>
+            <Text style={[styles.locationStreetText, { color: colors.textSecondary, marginBottom: 8 }]}>
               {formatStreetNumberNeighborhood(item)}
             </Text>
           ) : null}
 
           {item.date ? (
-            <View style={[styles.dateRow, { borderTopColor: colors.border }]}>
+            <View style={[styles.dateRow, { borderTopColor: colors.border, marginBottom: 12 }]}>
               <MaterialIcons name="event" size={16} color={colors.textMuted} style={{ marginRight: 6 }} />
               <Text style={[styles.dateLabel, { color: colors.textMuted }]}>
                 {item.status === 'lost' ? 'Data do desaparecimento: ' : 'Data do encontro: '}
@@ -887,6 +983,33 @@ const ItemDetailScreen = ({ route, navigation }) => {
               </Text>
             </View>
           ) : null}
+
+          {/* Botão de Ver Rota GPS */}
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: colors.primary,
+              borderRadius: 12,
+              paddingVertical: 11,
+              paddingHorizontal: 14,
+              marginTop: 4,
+              shadowColor: colors.primary,
+              shadowOffset: { width: 0, height: 3 },
+              shadowOpacity: 0.25,
+              shadowRadius: 5,
+              elevation: 3,
+            }}
+            onPress={handleOpenRoute}
+            activeOpacity={0.85}
+            accessibilityLabel="Ver rota no mapa"
+          >
+            <MaterialIcons name="directions" size={20} color="#FFFFFF" style={{ marginRight: 6 }} />
+            <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13.5 }}>
+              Ver Rota no Mapa
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -1423,9 +1546,10 @@ const styles = StyleSheet.create({
   petMainTitle: { fontSize: 24, fontWeight: '800', lineHeight: 30, marginBottom: 14 },
 
   // Attribute Chips Grid
-  attributeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  attrChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, borderWidth: 1, minWidth: '47%', flex: 1 },
-  attrChipEmoji: { fontSize: 18, marginRight: 8 },
+  attributeGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 8, marginBottom: 14 },
+  attrChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, width: '48.5%' },
+  attrChipEmoji: { fontSize: 18, width: 24, textAlign: 'center', marginRight: 8 },
+  attrChipTextWrap: { flex: 1 },
   attrChipLabel: { fontSize: 10.5, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.3 },
   attrChipValue: { fontSize: 13.5, fontWeight: '700' },
 

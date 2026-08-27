@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import MapView, { Callout, Marker } from 'react-native-maps';
+import MapView, { Callout, Marker, Polyline } from 'react-native-maps';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import * as itemsService from '../services/items';
@@ -152,10 +152,14 @@ const buildSelectedChips = (item) => {
   if (neutered) {
     list.push({ key: 'neutered', isNeutered: true, text: '✂️ Castrado' });
   }
+  const temperament = Array.isArray(item?.extra_fields?.temperament) ? item.extra_fields.temperament : [];
+  temperament.forEach((trait, idx) => {
+    list.push({ key: `trait-${idx}`, isTrait: true, text: trait });
+  });
   return list;
 };
 
-const MapScreen = ({ navigation }) => {
+const MapScreen = ({ route, navigation }) => {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const mapRef = useRef(null);
@@ -193,6 +197,118 @@ const MapScreen = ({ navigation }) => {
       );
     });
   }, [items, searchTerm]);
+
+  const [routeCoordinates, setRouteCoordinates] = useState([]);
+  const [routeInfo, setRouteInfo] = useState(null);
+  const [loadingRoute, setLoadingRoute] = useState(false);
+
+  const calculateRoute = useCallback(async (fromCoords, toCoords) => {
+    if (!fromCoords?.latitude || !toCoords?.latitude) return;
+    setLoadingRoute(true);
+    try {
+      const url = `https://router.project-osrm.org/route/v1/driving/${fromCoords.longitude},${fromCoords.latitude};${toCoords.longitude},${toCoords.latitude}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data?.routes?.[0]?.geometry?.coordinates) {
+        const coords = data.routes[0].geometry.coordinates.map(([lng, lat]) => ({
+          latitude: Number(lat),
+          longitude: Number(lng),
+        }));
+        setRouteCoordinates(coords);
+        setRouteInfo({
+          distanceKm: (data.routes[0].distance / 1000).toFixed(1),
+          durationMin: Math.max(1, Math.round(data.routes[0].duration / 60)),
+        });
+
+        if (mapRef.current && coords.length > 0) {
+          setTimeout(() => {
+            mapRef.current?.fitToCoordinates([fromCoords, toCoords, ...coords], {
+              edgePadding: { top: 140, right: 60, bottom: 440, left: 60 },
+              animated: true,
+            });
+          }, 300);
+        }
+        return;
+      }
+    } catch (err) {
+      console.log('[MapScreen] Erro na rota OSRM:', err);
+    } finally {
+      setLoadingRoute(false);
+    }
+
+    // Fallback: linha direta se não houver internet ou OSRM offline
+    const fallbackCoords = [
+      { latitude: Number(fromCoords.latitude), longitude: Number(fromCoords.longitude) },
+      { latitude: Number(toCoords.latitude), longitude: Number(toCoords.longitude) },
+    ];
+    setRouteCoordinates(fallbackCoords);
+    if (mapRef.current) {
+      setTimeout(() => {
+        mapRef.current?.fitToCoordinates(fallbackCoords, {
+          edgePadding: { top: 140, right: 60, bottom: 440, left: 60 },
+          animated: true,
+        });
+      }, 300);
+    }
+  }, []);
+
+  // Ao receber focusItemId ou showRoute, centraliza e traça a rota na hora!
+  useEffect(() => {
+    const focusId = route?.params?.focusItemId;
+    const showRoute = route?.params?.showRoute;
+    const targetCoordsParam = route?.params?.targetCoords;
+
+    if ((focusId || targetCoordsParam) && items.length > 0) {
+      const target = items.find(i => String(i.id) === String(focusId)) || {
+        id: focusId || 'temp',
+        latitude: targetCoordsParam?.latitude,
+        longitude: targetCoordsParam?.longitude,
+      };
+
+      if (target?.latitude && target?.longitude) {
+        setSelectedItem(target);
+
+        if (showRoute) {
+          (async () => {
+            let current = userCoords;
+            if (!current) {
+              try {
+                const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+                if (loc?.coords) {
+                  current = {
+                    latitude: loc.coords.latitude,
+                    longitude: loc.coords.longitude,
+                  };
+                  setUserCoords(current);
+                }
+              } catch (e) {}
+            }
+
+            if (current) {
+              calculateRoute(current, {
+                latitude: Number(target.latitude),
+                longitude: Number(target.longitude),
+              });
+            } else {
+              mapRef.current?.animateToRegion({
+                latitude: Number(target.latitude),
+                longitude: Number(target.longitude),
+                latitudeDelta: 0.03,
+                longitudeDelta: 0.03,
+              }, 800);
+            }
+          })();
+        } else {
+          mapRef.current?.animateToRegion({
+            latitude: Number(target.latitude),
+            longitude: Number(target.longitude),
+            latitudeDelta: 0.03,
+            longitudeDelta: 0.03,
+          }, 800);
+        }
+      }
+    }
+  }, [route?.params?.focusItemId, route?.params?.showRoute, items, calculateRoute, userCoords]);
 
   // Ao buscar, recentraliza suavemente no primeiro animal correspondente encontrado
   useEffect(() => {
@@ -394,6 +510,22 @@ const MapScreen = ({ navigation }) => {
         }}
         customMapStyle={PETS_ONLY_MAP_STYLE}
       >
+        {/* Traçado da Rota GPS */}
+        {routeCoordinates.length > 1 && (
+          <>
+            <Polyline
+              coordinates={routeCoordinates}
+              strokeColor="#1E3A8A"
+              strokeWidth={7}
+            />
+            <Polyline
+              coordinates={routeCoordinates}
+              strokeColor="#2563EB"
+              strokeWidth={4.5}
+            />
+          </>
+        )}
+
         {filteredItems.map((item) => (
           <PetMapMarker
             key={String(item.id)}
@@ -404,6 +536,34 @@ const MapScreen = ({ navigation }) => {
           />
         ))}
       </MapView>
+
+      {/* Banner de Rota Ativa */}
+      {routeInfo && (
+        <View style={[styles.activeRouteBanner, { top: Math.max(insets.top + 64, 100) }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
+              <MaterialIcons name="directions-car" size={16} color="#FFFFFF" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 12, fontWeight: '800', color: '#1E293B' }} numberOfLines={1}>
+                Rota até {selectedItem?.title || 'o animal'}
+              </Text>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: '#2563EB' }}>
+                {routeInfo.distanceKm} km • aprox. {routeInfo.durationMin} min
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={() => {
+              setRouteCoordinates([]);
+              setRouteInfo(null);
+            }}
+            style={{ padding: 6, borderRadius: 12, backgroundColor: '#F1F5F9' }}
+          >
+            <MaterialIcons name="close" size={16} color="#64748B" />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {selectedItem && (
         <View style={styles.infoCard}>
@@ -604,6 +764,26 @@ const MapScreen = ({ navigation }) => {
                   );
                 }
 
+                if (chip.isTrait) {
+                  return (
+                    <View
+                      key={chip.key}
+                      style={{
+                        backgroundColor: '#FDF2F8',
+                        borderRadius: 7,
+                        paddingHorizontal: 7,
+                        paddingVertical: 2.5,
+                        borderWidth: 1,
+                        borderColor: '#FBCFE8',
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, color: '#BE185D', fontWeight: '700' }}>
+                        {chip.text}
+                      </Text>
+                    </View>
+                  );
+                }
+
                 return (
                   <View
                     key={chip.key}
@@ -662,15 +842,66 @@ const MapScreen = ({ navigation }) => {
             </Text>
           </View>
 
-          {/* 7. Botão Ver Detalhes */}
-          <TouchableOpacity
-            style={styles.detailsButton}
-            onPress={() => navigation.navigate('ItemDetail', { itemId: selectedItem.id })}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.detailsButtonText}>Ver Detalhes</Text>
-            <MaterialIcons name="chevron-right" size={18} color="#FFFFFF" style={{ marginLeft: 4 }} />
-          </TouchableOpacity>
+          {/* 7. Ações: Ver Detalhes e Traçar Rota */}
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 2 }}>
+            <TouchableOpacity
+              style={[styles.detailsButton, { flex: 1, marginTop: 0 }]}
+              onPress={() => navigation.navigate('ItemDetail', { itemId: selectedItem.id })}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.detailsButtonText}>Ver Detalhes</Text>
+              <MaterialIcons name="chevron-right" size={18} color="#FFFFFF" style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: routeCoordinates.length > 0 ? '#F1F5F9' : '#EFF6FF',
+                borderColor: routeCoordinates.length > 0 ? '#CBD5E1' : '#BFDBFE',
+                borderWidth: 1,
+                borderRadius: 12,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+              }}
+              onPress={() => {
+                if (routeCoordinates.length > 0) {
+                  setRouteCoordinates([]);
+                  setRouteInfo(null);
+                } else if (userCoords && selectedItem?.latitude && selectedItem?.longitude) {
+                  calculateRoute(userCoords, {
+                    latitude: Number(selectedItem.latitude),
+                    longitude: Number(selectedItem.longitude),
+                  });
+                } else {
+                  requestUserLocation().then((coords) => {
+                    if (coords && selectedItem?.latitude && selectedItem?.longitude) {
+                      calculateRoute(coords, {
+                        latitude: Number(selectedItem.latitude),
+                        longitude: Number(selectedItem.longitude),
+                      });
+                    }
+                  });
+                }
+              }}
+              activeOpacity={0.85}
+            >
+              <MaterialIcons
+                name={routeCoordinates.length > 0 ? 'close' : 'directions'}
+                size={18}
+                color={routeCoordinates.length > 0 ? '#64748B' : '#2563EB'}
+                style={{ marginRight: 4 }}
+              />
+              <Text style={{
+                fontSize: 12.5,
+                fontWeight: '700',
+                color: routeCoordinates.length > 0 ? '#64748B' : '#1D4ED8',
+              }}>
+                {routeCoordinates.length > 0 ? 'Limpar Rota' : 'Traçar Rota'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -784,6 +1015,26 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: '600',
     flex: 1,
+  },
+  activeRouteBanner: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+    zIndex: 50,
   },
   centerLocationButton: { position: 'absolute', right: 16, bottom: 175, width: 50, height: 50, borderRadius: 25, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 5 },
   centerLocationButtonRaised: { bottom: 435 },

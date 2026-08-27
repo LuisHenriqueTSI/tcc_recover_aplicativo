@@ -42,6 +42,20 @@ const PET_SIZE_OPTIONS = ['Pequeno', 'Médio', 'Grande', 'Gigante'];
 const PET_GENDER_OPTIONS = ['Macho', 'Fêmea', 'Não informado'];
 const PET_AGE_OPTIONS = ['Filhote', 'Adulto', 'Idoso', 'Não informado'];
 const PET_BREED_OPTIONS = ['Sem raça definida'];
+const PET_TEMPERAMENT_OPTIONS = [
+  '😇 Dócil',
+  '🎾 Brincalhão',
+  '🛋️ Calmo / Tranquilo',
+  '💖 Muito Carinhoso',
+  '👶 Bom com Crianças',
+  '🐱 Convive com Gatos',
+  '🐶 Convive com Cães',
+  '🦮 Obediente',
+  '💉 Vacinado',
+  '🪱 Vermifugado',
+  '🏡 Adaptado a Apartamento',
+  '⚡ Enérgico / Ativo',
+];
 const PET_COLOR_ALIASES = {
   Preto: ['preto', 'preta', 'pretos', 'pretas'],
   Branco: ['branco', 'branca', 'brancos', 'brancas'],
@@ -331,6 +345,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [animalAge, setAnimalAge] = useState(editItem?.age || editItem?.extra_fields?.age || '');
   const [animalCollar, setAnimalCollar] = useState(editItem?.collar || editItem?.extra_fields?.collar || '');
   const [animalNeutered, setAnimalNeutered] = useState(editItem?.neutered || editItem?.extra_fields?.neutered || '');
+  const [animalTemperament, setAnimalTemperament] = useState(
+    Array.isArray(editItem?.extra_fields?.temperament) ? editItem.extra_fields.temperament : []
+  );
   
   // Publicação em nome de terceiro
   const [isThirdPartyOwner, setIsThirdPartyOwner] = useState(
@@ -1168,6 +1185,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           age: toNull(animalAge),
           collar: toNull(animalCollar),
           neutered: toNull(animalNeutered),
+          temperament: animalTemperament || [],
           is_direct_adoption: isDirectAdoption,
           found_custody: status === 'found' ? foundCustody : (isDirectAdoption ? 'with_me' : null),
           adoption_intent: status === 'found' && foundCustody === 'with_me' ? Boolean(adoptionIntent) : false,
@@ -1669,6 +1687,56 @@ const RegisterItemScreen = ({ navigation, route }) => {
               <SelectionChips label="Idade" options={PET_AGE_OPTIONS} value={animalAge} onChange={setAnimalAge} />
               <SelectionChips label="Castrado(a)?" options={['Sim', 'Não', 'Não sei']} value={animalNeutered} onChange={setAnimalNeutered} />
               <SelectionChips label="Estava com coleira?" options={['Sim', 'Não', 'Não sei']} value={animalCollar} onChange={setAnimalCollar} />
+              {/* Seleção de Personalidade & Cuidados (ideal para Adoção) */}
+              <View style={styles.selectionGroup}>
+                <Text style={[styles.label, { color: colors.text }]}>
+                  Personalidade & Cuidados {status === 'adoption' ? '*(Incentiva a Adoção)*' : '(Opcional)'}
+                </Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                  {PET_TEMPERAMENT_OPTIONS.map((trait) => {
+                    const isSelected = animalTemperament.includes(trait);
+                    return (
+                      <TouchableOpacity
+                        key={trait}
+                        onPress={() => {
+                          setAnimalTemperament((prev) =>
+                            prev.includes(trait)
+                              ? prev.filter((t) => t !== trait)
+                              : [...prev, trait]
+                          );
+                        }}
+                        style={[
+                          styles.selectionChip,
+                          {
+                            backgroundColor: isSelected
+                              ? (isDark ? 'rgba(219, 39, 119, 0.25)' : '#FDF2F8')
+                              : colors.card,
+                            borderColor: isSelected ? '#DB2777' : colors.cardBorder,
+                            paddingHorizontal: 12,
+                            paddingVertical: 7,
+                            borderRadius: 10,
+                          },
+                          isSelected && styles.selectionChipSelected,
+                        ]}
+                        activeOpacity={0.75}
+                      >
+                        <Text
+                          style={[
+                            styles.selectionChipText,
+                            {
+                              color: isSelected ? '#DB2777' : colors.textSecondary,
+                              fontWeight: isSelected ? '700' : '500',
+                            },
+                          ]}
+                        >
+                          {trait}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
               <SelectionChips label="Raça" options={PET_BREED_OPTIONS} value={animalBreed} onChange={setAnimalBreed} />
               <Input
                 label="Raça (opcional)"

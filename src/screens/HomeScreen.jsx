@@ -219,8 +219,12 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
     if (isNeutered) {
       list.push({ key: 'neutered', isNeutered: true, text: '✂️ Castrado' });
     }
+    const temperamentTraits = Array.isArray(item.extra_fields?.temperament) ? item.extra_fields.temperament : [];
+    temperamentTraits.forEach((trait, idx) => {
+      list.push({ key: `trait-${idx}`, isTrait: true, text: trait });
+    });
     return list;
-  }, [animalBreed, animalGender, animalSize, animalAge, animalColor, hasCollar, isNeutered]);
+  }, [animalBreed, animalGender, animalSize, animalAge, animalColor, hasCollar, isNeutered, item.extra_fields?.temperament]);
 
   return (
     <Card style={{
@@ -472,6 +476,25 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
                 );
               }
 
+              if (chip.isTrait) {
+                return (
+                  <View
+                    key={chip.key}
+                    style={{
+                      backgroundColor: isDark ? 'rgba(219, 39, 119, 0.15)' : '#FDF2F8',
+                      borderRadius: 8,
+                      paddingHorizontal: 8,
+                      paddingVertical: 3.5,
+                      borderWidth: 1,
+                      borderColor: isDark ? 'rgba(219, 39, 119, 0.3)' : '#FBCFE8',
+                    }}
+                  >
+                    <Text style={{ fontSize: 11.5, color: isDark ? '#F472B6' : '#BE185D', fontWeight: '700' }}>
+                      {chip.text}
+                    </Text>
+                  </View>
+                );
+              }
               return (
                 <View
                   key={chip.key}
