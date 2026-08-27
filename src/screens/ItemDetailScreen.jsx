@@ -105,6 +105,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [fullScreenPhotoModal, setFullScreenPhotoModal] = useState(false);
   const [fullScreenIndex, setFullScreenIndex] = useState(0);
   const [shareFlyerVisible, setShareFlyerVisible] = useState(false);
+  const [expandedAdoptionInfo, setExpandedAdoptionInfo] = useState(false);
+  const [expandedCustodyInfo, setExpandedCustodyInfo] = useState(false);
   const screenWidth = Dimensions.get('window').width;
 
   const handleSafeGoBack = useCallback(() => {
@@ -907,48 +909,125 @@ const ItemDetailScreen = ({ route, navigation }) => {
         )}
       </View>
 
-      {/* 3. ADOÇÃO E CUSTÓDIA (AVISOS IMPORTANTES) */}
+      {/* 3. ADOÇÃO E CUSTÓDIA (AVISOS DISCRETOS E MODERNOS) */}
       {isAdoption && (
-        <View style={styles.adoptionNoticeCard}>
-          <View style={styles.noticeHeader}>
-            <MaterialIcons name="favorite" size={20} color="#DB2777" />
-            <Text style={styles.adoptionNoticeTitle}>Disponível para Adoção Responsável</Text>
+        <TouchableOpacity
+          style={[
+            styles.adoptionNoticeCard,
+            { backgroundColor: isDark ? 'rgba(219, 39, 119, 0.12)' : '#FDF2F8', borderColor: isDark ? 'rgba(219, 39, 119, 0.3)' : '#FBCFE8' }
+          ]}
+          onPress={() => setExpandedAdoptionInfo(!expandedAdoptionInfo)}
+          activeOpacity={0.8}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
+              <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: isDark ? 'rgba(219, 39, 119, 0.25)' : '#FCE7F3', alignItems: 'center', justifyContent: 'center' }}>
+                <MaterialIcons name="favorite" size={16} color="#DB2777" />
+              </View>
+              <Text style={[styles.adoptionNoticeTitle, { color: isDark ? '#F472B6' : '#BE185D' }]}>
+                Disponível para Adoção Responsável
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: isDark ? '#F472B6' : '#BE185D' }}>
+                {expandedAdoptionInfo ? 'Menos' : 'Saiba mais'}
+              </Text>
+              <MaterialIcons
+                name={expandedAdoptionInfo ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                size={18}
+                color={isDark ? '#F472B6' : '#BE185D'}
+              />
+            </View>
           </View>
-          <Text style={styles.adoptionNoticeText}>
-            Este animal não possui tutor conhecido e está sob acolhimento temporário. Caso queira adotar, envie uma mensagem ao protetor pelo chat!
-          </Text>
-        </View>
+
+          {expandedAdoptionInfo && (
+            <View style={{ marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(219, 39, 119, 0.2)' : '#FCE7F3' }}>
+              <Text style={[styles.adoptionNoticeText, { color: isDark ? '#E2E8F0' : '#831843' }]}>
+                Este animal não possui tutor conhecido e está sob acolhimento temporário. Caso queira adotar, envie uma mensagem ao protetor pelo chat!
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
       )}
 
       {isFound && !isAdoption && (
-        <View style={[
-          styles.custodyNoticeCard,
-          item.extra_fields?.found_custody === 'spotted' ? styles.custodySpotted : styles.custodyHome,
-        ]}>
-          <View style={styles.noticeHeader}>
-            <MaterialIcons
-              name={item.extra_fields?.found_custody === 'spotted' ? 'visibility' : 'home'}
-              size={20}
-              color={item.extra_fields?.found_custody === 'spotted' ? '#D97706' : '#059669'}
-            />
-            <Text style={[
-              styles.custodyNoticeTitle,
-              { color: item.extra_fields?.found_custody === 'spotted' ? '#B45309' : '#047857' },
-            ]}>
-              {item.extra_fields?.found_custody === 'spotted'
-                ? 'Animal Avistado na Rua'
-                : 'Animal sob Cuidados / Lar Temporário'}
-            </Text>
+        <TouchableOpacity
+          style={[
+            styles.custodyNoticeCard,
+            item.extra_fields?.found_custody === 'spotted'
+              ? { backgroundColor: isDark ? 'rgba(217, 119, 6, 0.12)' : '#FFFBEB', borderColor: isDark ? 'rgba(217, 119, 6, 0.3)' : '#FDE68A' }
+              : { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.12)' : '#ECFDF5', borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0' },
+          ]}
+          onPress={() => setExpandedCustodyInfo(!expandedCustodyInfo)}
+          activeOpacity={0.8}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
+              <View style={{
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: item.extra_fields?.found_custody === 'spotted'
+                  ? (isDark ? 'rgba(217, 119, 6, 0.25)' : '#FEF3C7')
+                  : (isDark ? 'rgba(5, 150, 105, 0.25)' : '#D1FAE5'),
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <MaterialIcons
+                  name={item.extra_fields?.found_custody === 'spotted' ? 'visibility' : 'home'}
+                  size={16}
+                  color={item.extra_fields?.found_custody === 'spotted' ? '#D97706' : '#059669'}
+                />
+              </View>
+              <Text style={[
+                styles.custodyNoticeTitle,
+                { color: item.extra_fields?.found_custody === 'spotted' ? (isDark ? '#FBBF24' : '#B45309') : (isDark ? '#34D399' : '#047857') },
+              ]}>
+                {item.extra_fields?.found_custody === 'spotted'
+                  ? 'Animal Avistado na Rua'
+                  : 'Animal sob Cuidados / Lar Temporário'}
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+              <Text style={{
+                fontSize: 11,
+                fontWeight: '700',
+                color: item.extra_fields?.found_custody === 'spotted'
+                  ? (isDark ? '#FBBF24' : '#B45309')
+                  : (isDark ? '#34D399' : '#047857')
+              }}>
+                {expandedCustodyInfo ? 'Menos' : 'Saiba mais'}
+              </Text>
+              <MaterialIcons
+                name={expandedCustodyInfo ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                size={18}
+                color={item.extra_fields?.found_custody === 'spotted'
+                  ? (isDark ? '#FBBF24' : '#B45309')
+                  : (isDark ? '#34D399' : '#047857')}
+              />
+            </View>
           </View>
-          <Text style={[
-            styles.custodyNoticeText,
-            { color: item.extra_fields?.found_custody === 'spotted' ? '#92400E' : '#065F46' },
-          ]}>
-            {item.extra_fields?.found_custody === 'spotted'
-              ? 'Quem publicou apenas avistou o animal no local informado. Se você estiver na região, compartilhe novas pistas nos comentários.'
-              : 'O animal foi acolhido com segurança enquanto a comunidade busca pelo seu tutor original.'}
-          </Text>
-        </View>
+
+          {expandedCustodyInfo && (
+            <View style={{
+              marginTop: 8,
+              paddingTop: 8,
+              borderTopWidth: 1,
+              borderTopColor: item.extra_fields?.found_custody === 'spotted'
+                ? (isDark ? 'rgba(217, 119, 6, 0.2)' : '#FEF3C7')
+                : (isDark ? 'rgba(5, 150, 105, 0.2)' : '#D1FAE5'),
+            }}>
+              <Text style={[
+                styles.custodyNoticeText,
+                { color: isDark ? '#E2E8F0' : (item.extra_fields?.found_custody === 'spotted' ? '#78350F' : '#064E3B') },
+              ]}>
+                {item.extra_fields?.found_custody === 'spotted'
+                  ? 'Quem publicou apenas avistou o animal no local informado. Se você estiver na região, compartilhe novas pistas nos comentários.'
+                  : 'O animal foi acolhido com segurança enquanto a comunidade busca pelo seu tutor original.'}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
       )}
 
       {/* 4. CARD DE LOCALIZAÇÃO E DATA COM ROTA GPS */}
@@ -1564,16 +1643,29 @@ const styles = StyleSheet.create({
   rewardTitle: { fontSize: 13, fontWeight: '800', color: '#92400E', textTransform: 'uppercase', letterSpacing: 0.3 },
   rewardAmount: { fontSize: 16, fontWeight: '800', color: '#B45309', marginTop: 2 },
 
-  // Adoption & Custody Notice Cards
-  adoptionNoticeCard: { marginHorizontal: 16, marginTop: 12, backgroundColor: '#FDF2F8', borderRadius: 14, padding: 14, borderWidth: 1.5, borderColor: '#F472B6' },
-  custodyNoticeCard: { marginHorizontal: 16, marginTop: 12, borderRadius: 14, padding: 14, borderWidth: 1 },
-  custodySpotted: { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' },
-  custodyHome: { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' },
-  noticeHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  adoptionNoticeTitle: { fontSize: 13.5, fontWeight: '800', color: '#9D174D' },
-  adoptionNoticeText: { fontSize: 12.5, lineHeight: 18, color: '#BE185D' },
-  custodyNoticeTitle: { fontSize: 13.5, fontWeight: '800' },
-  custodyNoticeText: { fontSize: 12.5, lineHeight: 18 },
+  // Adoption & Custody Notice Cards (Modern & Sleek Accordion)
+  adoptionNoticeCard: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    backgroundColor: '#FDF2F8',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderWidth: 1,
+    borderColor: '#FBCFE8',
+  },
+  custodyNoticeCard: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderWidth: 1,
+  },
+  adoptionNoticeTitle: { fontSize: 13, fontWeight: '700', color: '#9D174D' },
+  adoptionNoticeText: { fontSize: 12, lineHeight: 17, color: '#BE185D' },
+  custodyNoticeTitle: { fontSize: 13, fontWeight: '700' },
+  custodyNoticeText: { fontSize: 12, lineHeight: 17 },
 
   // Location Card
   sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
