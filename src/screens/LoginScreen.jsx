@@ -99,13 +99,11 @@ const LoginScreen = ({ navigation }) => {
       >
         {/* Top App Logo */}
         <View style={styles.brandHeroContainer}>
-          <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#EFF6FF' }]}>
-            <Image
-              source={require('../assets/logo_wefind.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-          </View>
+          <Image
+            source={require('../assets/logo_wefind.png')}
+            style={styles.heroLogoImage}
+            resizeMode="contain"
+          />
         </View>
 
         {/* Title Header */}
@@ -224,25 +222,12 @@ const styles = StyleSheet.create({
   },
   brandHeroContainer: {
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  logoSquircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 34,
-    alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 14,
-    elevation: 6,
-    marginBottom: 12,
+    marginBottom: 10,
   },
-  logoImage: {
-    width: 96,
-    height: 96,
+  heroLogoImage: {
+    width: 220,
+    height: 130,
   },
   headerBox: {
     alignItems: 'center',
