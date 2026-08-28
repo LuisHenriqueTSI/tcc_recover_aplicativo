@@ -85,7 +85,7 @@ const EditProfileScreen = ({ navigation }) => {
   const [profileStreet, setProfileStreet] = useState('');
   const [profileAddressText, setProfileAddressText] = useState('');
   const [profileCoords, setProfileCoords] = useState(null);
-  const [searchRadiusKm, setSearchRadiusKm] = useState(60);
+  const [searchRadiusKm, setSearchRadiusKm] = useState(25);
   const [mapVisible, setMapVisible] = useState(false);
 
   const [saving, setSaving] = useState(false);
@@ -217,10 +217,10 @@ const EditProfileScreen = ({ navigation }) => {
             city: profileCity,
             state: profileState,
             coords: profileCoords || null,
-            radiusKm: searchRadiusKm || 60,
+            radiusKm: searchRadiusKm || 25,
           })
         );
-        await AsyncStorage.setItem('@wefind/search_radius', String(searchRadiusKm || 60));
+        await AsyncStorage.setItem('@wefind/search_radius', String(searchRadiusKm || 25));
       } catch (e) {
         console.warn('[EditProfileScreen] Falha ao sincronizar AsyncStorage:', e.message);
       }
@@ -518,7 +518,7 @@ const EditProfileScreen = ({ navigation }) => {
             Distância máxima padrão para notificações e feed de animais próximos:
           </Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-            {[15, 30, 60, 100, 150, 250].map((r) => {
+            {[5, 10, 20, 35, 50, 80].map((r) => {
               const isSelected = searchRadiusKm === r;
               return (
                 <TouchableOpacity

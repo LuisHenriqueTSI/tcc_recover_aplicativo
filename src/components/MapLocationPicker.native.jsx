@@ -46,7 +46,7 @@ const MapLocationPicker = ({
   visible,
   initialLocation,
   mode,
-  radiusKm = 60,
+  radiusKm = 25,
   showRadius = true,
   onClose,
   onConfirm,
@@ -54,7 +54,7 @@ const MapLocationPicker = ({
   onRadiusChange,
 }) => {
   const [coordinate, setCoordinate] = useState(initialLocation || null);
-  const [currentRadiusKm, setCurrentRadiusKm] = useState(radiusKm || 60);
+  const [currentRadiusKm, setCurrentRadiusKm] = useState(radiusKm || 25);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
 
@@ -305,7 +305,7 @@ const MapLocationPicker = ({
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                  {[15, 30, 60, 100, 150, 250].map((r) => {
+                  {[5, 10, 20, 35, 50, 80].map((r) => {
                     const isSel = currentRadiusKm === r;
                     return (
                       <TouchableOpacity

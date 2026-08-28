@@ -776,10 +776,10 @@ const HomeScreen = ({ navigation, route }) => {
   const [profileEditCoords, setProfileEditCoords] = useState(null);
   const [profileMapVisible, setProfileMapVisible] = useState(false);
   const [userCoords, setUserCoords] = useState(null);
-  const [searchRadiusKm, setSearchRadiusKm] = useState(60);
-  const [profileEditRadiusKm, setProfileEditRadiusKm] = useState(60);
+  const [searchRadiusKm, setSearchRadiusKm] = useState(25);
+  const [profileEditRadiusKm, setProfileEditRadiusKm] = useState(25);
   const [showQuickRadiusModal, setShowQuickRadiusModal] = useState(false);
-  const [selectedQuickRadius, setSelectedQuickRadius] = useState(60);
+  const [selectedQuickRadius, setSelectedQuickRadius] = useState(25);
 
   // Localidade padrão do usuário, mas permite alterar livremente
   const [locationFilter, setLocationFilter] = useState('');
@@ -950,7 +950,7 @@ const HomeScreen = ({ navigation, route }) => {
   const handleSaveProfileLocation = async () => {
     if (!profileEditState || !profileEditCity) return;
     
-    const chosenRadius = profileEditRadiusKm || 60;
+    const chosenRadius = profileEditRadiusKm || 25;
     const fullText = profileEditAddressText || [
       profileEditStreet,
       profileEditDistrict,
@@ -1296,7 +1296,7 @@ const HomeScreen = ({ navigation, route }) => {
 
     // Filtro por Localização com RAIO DE BUSCA
     if (locationFilter && locationFilter.trim().length > 0) {
-      const maxRadius = searchRadiusKm || 60;
+      const maxRadius = searchRadiusKm || 25;
       const parts = locationFilter
         .split(',')
         .map(p => normalizeText(p))
@@ -1809,7 +1809,7 @@ const HomeScreen = ({ navigation, route }) => {
                     Selecione a distância máxima para filtrar publicações ao redor de você:
                   </Text>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                    {[15, 30, 60, 100, 150, 250].map((r) => {
+                    {[5, 10, 20, 35, 50, 80].map((r) => {
                       const isSelected = profileEditRadiusKm === r;
                       return (
                         <TouchableOpacity
@@ -2490,7 +2490,7 @@ const HomeScreen = ({ navigation, route }) => {
             </Text>
 
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 12 }}>
-              {[15, 30, 60, 100, 150, 250].map((r) => {
+              {[5, 10, 20, 35, 50, 80].map((r) => {
                 const isSelected = selectedQuickRadius === r;
                 return (
                   <TouchableOpacity
