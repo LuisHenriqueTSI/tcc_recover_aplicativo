@@ -104,6 +104,7 @@ const RegisterScreen = ({ navigation }) => {
       return () => subscription.remove();
     }, [navigation, user])
   );
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -184,7 +185,7 @@ const RegisterScreen = ({ navigation }) => {
           whatsapp_notifications_enabled: whatsappConsent,
           verificationCode: verificationCode.trim(),
         });
-        Alert.alert('Conta criada com sucesso!', 'Seja bem-vindo ao WeFIND. Faça login para começar.');
+        Alert.alert('Conta criada com sucesso! 🎉', 'Seja bem-vindo ao WeFIND. Faça login para começar.');
         setPendingVerification(false);
         setVerificationCode('');
         setEmail('');
@@ -221,7 +222,7 @@ const RegisterScreen = ({ navigation }) => {
         setPendingSignupData(result);
         setResendCooldown(30);
         setTimeout(() => {
-          scrollRef.current?.scrollToEnd?.(true);
+          scrollRef.current?.scrollToEnd?.({ animated: true });
         }, 250);
         if (result?.devCode) {
           Alert.alert(
@@ -292,30 +293,42 @@ const RegisterScreen = ({ navigation }) => {
         extraHeight={Platform.OS === 'ios' ? 120 : 160}
         keyboardOpeningTime={0}
       >
-        {/* Logo Circular */}
-        <View style={[styles.circularLogoContainer, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#EFF6FF' }]}>
-          <Image
-            source={require('../assets/logo_wefind.png')}
-            style={styles.circularLogo}
-            resizeMode="contain"
-          />
+        {/* Brand Header */}
+        <View style={styles.brandHeroContainer}>
+          <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#EFF6FF' }]}>
+            <Image
+              source={require('../assets/logo_wefind.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+          </View>
+
+          <View style={[styles.badgePill, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.18)' : '#EFF6FF', borderColor: isDark ? '#1E3A8A' : '#BFDBFE' }]}>
+            <MaterialIcons name="security" size={13} color={colors.primary} style={{ marginRight: 5 }} />
+            <Text style={[styles.badgePillText, { color: colors.primary }]}>CADASTRO RÁPIDO E SEGURO</Text>
+          </View>
         </View>
 
         <View style={styles.headerBox}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Criar sua conta</Text>
-          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Junte-se à nossa comunidade de proteção animal</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Criar nova conta</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+            Faça parte da maior rede de proteção e reencontro de pets
+          </Text>
         </View>
 
         <View style={[styles.formBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <Input
             label="Nome Completo"
-            placeholder="Ex: João da Silva"
+            placeholder="Ex: Maria dos Santos"
             value={name}
-            onChangeText={setName}
+            onChangeText={(text) => {
+              setName(text);
+              if (errors.name) setErrors((prev) => ({ ...prev, name: null }));
+            }}
             error={errors.name}
             editable={!pendingVerification}
             style={styles.input}
-            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0', color: colors.text }]}
             returnKeyType="next"
           />
 
@@ -323,13 +336,16 @@ const RegisterScreen = ({ navigation }) => {
             label="E-mail"
             placeholder="seu@email.com"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errors.email) setErrors((prev) => ({ ...prev, email: null }));
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
             editable={!pendingVerification}
             error={errors.email}
             style={styles.input}
-            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0', color: colors.text }]}
             returnKeyType="next"
           />
 
@@ -337,25 +353,31 @@ const RegisterScreen = ({ navigation }) => {
             label="WhatsApp (com DDD)"
             placeholder="(11) 99999-9999"
             value={formatBrazilianPhone(whatsapp)}
-            onChangeText={text => setWhatsapp(text.replace(/\D/g, ''))}
+            onChangeText={(text) => {
+              setWhatsapp(text.replace(/\D/g, ''));
+              if (errors.whatsapp) setErrors((prev) => ({ ...prev, whatsapp: null }));
+            }}
             keyboardType="phone-pad"
             editable={!pendingVerification}
             error={errors.whatsapp || errors.phone}
             style={styles.input}
-            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0', color: colors.text }]}
             returnKeyType="next"
           />
 
           <Input
             label="Senha"
-            placeholder="Crie uma senha forte (mín. 8 caracteres)"
+            placeholder="Mínimo 8 caracteres com letras e números"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errors.password) setErrors((prev) => ({ ...prev, password: null }));
+            }}
             secureTextEntry={true}
             editable={!pendingVerification}
             error={errors.password}
             style={styles.input}
-            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0', color: colors.text }]}
             returnKeyType="next"
           />
 
@@ -364,9 +386,8 @@ const RegisterScreen = ({ navigation }) => {
             const pwdStrength = calculatePasswordStrength(password);
             return (
               <View style={[styles.passwordStrengthBox, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#F8FAFC', borderColor: colors.cardBorder }]}>
-                {/* Linha com classificação de força */}
                 <View style={styles.strengthHeaderRow}>
-                  <Text style={[styles.strengthLabelTitle, { color: colors.textSecondary }]}>Força da senha:</Text>
+                  <Text style={[styles.strengthLabelTitle, { color: colors.textSecondary }]}>Segurança da senha:</Text>
                   <Text style={[styles.strengthBadgeText, { color: pwdStrength.color }]}>{pwdStrength.label}</Text>
                 </View>
 
@@ -390,7 +411,7 @@ const RegisterScreen = ({ navigation }) => {
                   <View style={styles.criteriaItem}>
                     <MaterialIcons
                       name={pwdStrength.rules.hasMinLength ? 'check-circle' : 'radio-button-unchecked'}
-                      size={14}
+                      size={13}
                       color={pwdStrength.rules.hasMinLength ? '#10B981' : colors.textMuted}
                     />
                     <Text style={[styles.criteriaText, { color: pwdStrength.rules.hasMinLength ? (isDark ? '#34D399' : '#059669') : colors.textMuted }]}>
@@ -401,33 +422,22 @@ const RegisterScreen = ({ navigation }) => {
                   <View style={styles.criteriaItem}>
                     <MaterialIcons
                       name={pwdStrength.rules.hasLetters ? 'check-circle' : 'radio-button-unchecked'}
-                      size={14}
+                      size={13}
                       color={pwdStrength.rules.hasLetters ? '#10B981' : colors.textMuted}
                     />
                     <Text style={[styles.criteriaText, { color: pwdStrength.rules.hasLetters ? (isDark ? '#34D399' : '#059669') : colors.textMuted }]}>
-                      Letras maiúsculas e minúsculas
+                      Letras (maiúsculas ou minúsculas)
                     </Text>
                   </View>
 
                   <View style={styles.criteriaItem}>
                     <MaterialIcons
                       name={pwdStrength.rules.hasNumber ? 'check-circle' : 'radio-button-unchecked'}
-                      size={14}
+                      size={13}
                       color={pwdStrength.rules.hasNumber ? '#10B981' : colors.textMuted}
                     />
                     <Text style={[styles.criteriaText, { color: pwdStrength.rules.hasNumber ? (isDark ? '#34D399' : '#059669') : colors.textMuted }]}>
                       Pelo menos um número (0-9)
-                    </Text>
-                  </View>
-
-                  <View style={styles.criteriaItem}>
-                    <MaterialIcons
-                      name={pwdStrength.rules.hasSpecial ? 'check-circle' : 'radio-button-unchecked'}
-                      size={14}
-                      color={pwdStrength.rules.hasSpecial ? '#10B981' : colors.textMuted}
-                    />
-                    <Text style={[styles.criteriaText, { color: pwdStrength.rules.hasSpecial ? (isDark ? '#34D399' : '#059669') : colors.textMuted }]}>
-                      Caractere especial (!@#$...) (opcional)
                     </Text>
                   </View>
                 </View>
@@ -439,12 +449,15 @@ const RegisterScreen = ({ navigation }) => {
             label="Confirmar Senha"
             placeholder="Repita sua senha"
             value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: null }));
+            }}
             secureTextEntry={true}
             editable={!pendingVerification}
             error={errors.confirmPassword}
             style={styles.input}
-            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0', color: colors.text }]}
             returnKeyType="done"
           />
 
@@ -460,11 +473,11 @@ const RegisterScreen = ({ navigation }) => {
               <Text
                 style={{
                   fontSize: 12,
-                  fontWeight: '600',
+                  fontWeight: '700',
                   color: password === confirmPassword ? (isDark ? '#34D399' : '#059669') : '#EF4444',
                 }}
               >
-                {password === confirmPassword ? 'As senhas conferem!' : 'As senhas não conferem.'}
+                {password === confirmPassword ? 'As senhas conferem perfeitamente' : 'As senhas não conferem'}
               </Text>
             </View>
           )}
@@ -476,11 +489,11 @@ const RegisterScreen = ({ navigation }) => {
               onPress={() => setWhatsappConsent(prev => !prev)}
               activeOpacity={0.8}
             >
-              <View style={[styles.checkbox, { borderColor: colors.border, backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }, whatsappConsent && styles.checkboxChecked]}>
-                {whatsappConsent ? <MaterialIcons name="check" size={16} color="#FFFFFF" /> : null}
+              <View style={[styles.checkbox, { borderColor: colors.border, backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }, whatsappConsent && [styles.checkboxChecked, { backgroundColor: colors.primary, borderColor: colors.primary }]]}>
+                {whatsappConsent ? <MaterialIcons name="check" size={15} color="#FFFFFF" /> : null}
               </View>
               <Text style={[styles.consentText, { color: colors.textSecondary }]}>
-                Desejo receber avisos e notificações de novas informações de animais no meu WhatsApp
+                Desejo receber avisos em tempo real de animais encontrados no meu WhatsApp
               </Text>
             </TouchableOpacity>
           )}
@@ -488,66 +501,57 @@ const RegisterScreen = ({ navigation }) => {
           {pendingVerification ? (
             <View style={[styles.verificationBox, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FFF7ED', borderColor: isDark ? 'rgba(245, 158, 11, 0.35)' : '#FDBA74' }]}>
               <View style={styles.verificationHeader}>
-                <Text style={[styles.verificationTitle, { color: isDark ? '#FBBF24' : '#C2410C' }]}>🔐 Verificação por WhatsApp</Text>
+                <Text style={[styles.verificationTitle, { color: isDark ? '#FBBF24' : '#C2410C' }]}>🔐 Validação por WhatsApp</Text>
                 <TouchableOpacity onPress={handleCancelVerification} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Text style={[styles.editDataText, { color: colors.primary }]}>Editar dados</Text>
                 </TouchableOpacity>
               </View>
 
               <Text style={[styles.verificationDesc, { color: isDark ? '#FDE68A' : '#7C2D12' }]}>
-                Enviamos um código de 6 dígitos para o WhatsApp <Text style={{ fontWeight: 'bold' }}>{formatBrazilianPhone(whatsapp)}</Text>:
+                Enviamos um código de segurança de 6 dígitos para o WhatsApp <Text style={{ fontWeight: '800' }}>{formatBrazilianPhone(whatsapp)}</Text>:
               </Text>
 
               <Input
-                label="Código de verificação"
-                placeholder="123456"
+                placeholder="000000"
                 value={verificationCode}
                 onChangeText={setVerificationCode}
                 keyboardType="number-pad"
-                style={styles.input}
-                inputStyle={[styles.inputField, styles.codeInputField, { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', color: colors.text }]}
-                onFocus={() => {
-                  scrollRef.current?.scrollToEnd?.(true);
-                }}
+                maxLength={6}
+                style={{ marginVertical: 8 }}
+                inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', borderColor: isDark ? '#334155' : '#CBD5E1', color: colors.text, textAlign: 'center', fontSize: 22, letterSpacing: 8, fontWeight: '800' }]}
+                returnKeyType="done"
               />
 
-              {/* Botão de Reenviar Código */}
-              <View style={styles.resendContainer}>
-                <Text style={[styles.resendQuestion, { color: isDark ? '#FDE68A' : '#9A3412' }]}>Não recebeu o código?</Text>
-                <TouchableOpacity
-                  onPress={handleResendCode}
-                  disabled={isSubmitting || resendCooldown > 0}
-                  activeOpacity={0.7}
-                  style={styles.resendButton}
-                >
-                  <Feather
-                    name="refresh-cw"
-                    size={14}
-                    color={resendCooldown > 0 ? colors.textMuted : colors.primary}
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text style={[styles.resendText, { color: colors.primary }, resendCooldown > 0 && { color: colors.textMuted }]}>
-                    {resendCooldown > 0 ? `Reenviar em ${resendCooldown}s` : 'Reenviar código no WhatsApp'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                onPress={handleResendCode}
+                disabled={resendCooldown > 0 || isSubmitting}
+                style={styles.resendBtn}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.resendBtnText, { color: resendCooldown > 0 ? colors.textMuted : colors.primary }]}>
+                  {resendCooldown > 0 ? `Reenviar código em ${resendCooldown}s` : 'Reenviar código por WhatsApp'}
+                </Text>
+              </TouchableOpacity>
             </View>
           ) : null}
 
-          <Button
-            title={isSubmitting ? 'Processando...' : pendingVerification ? 'Confirmar código' : 'Cadastrar'}
+          <TouchableOpacity
             onPress={handleRegister}
             disabled={isSubmitting}
-            loading={isSubmitting}
             style={[styles.registerButton, { backgroundColor: colors.primary }]}
-            textStyle={styles.registerButtonText}
-          />
+            activeOpacity={0.85}
+          >
+            <Text style={styles.registerButtonText}>
+              {isSubmitting ? 'Processando...' : (pendingVerification ? 'Confirmar e Concluir' : 'Criar Minha Conta')}
+            </Text>
+            {!isSubmitting && <Feather name="arrow-right" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />}
+          </TouchableOpacity>
         </View>
 
         <View style={styles.footerRow}>
-          <Text style={[styles.footerText, { color: colors.textSecondary }]}>Já tem uma conta? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.7}>
-            <Text style={[styles.createAccountText, { color: colors.primary }]}>Fazer login</Text>
+          <Text style={[styles.footerText, { color: colors.textSecondary }]}>Já possui uma conta? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.75}>
+            <Text style={[styles.loginLinkText, { color: colors.primary }]}>Acessar conta</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
@@ -562,74 +566,92 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 24,
     paddingBottom: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  circularLogoContainer: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
-    alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    borderWidth: 3,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 3,
-    marginBottom: 10,
-  },
-  circularLogo: {
-    width: '100%',
-    height: '100%',
-  },
-  headerBox: {
+  brandHeroContainer: {
     alignItems: 'center',
     marginBottom: 16,
   },
-  headerTitle: {
-    fontSize: 22,
+  logoSquircle: {
+    width: 90,
+    height: 90,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 12,
+    elevation: 5,
+    marginBottom: 12,
+  },
+  logoImage: {
+    width: 66,
+    height: 66,
+  },
+  badgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  badgePillText: {
+    fontSize: 10.5,
     fontWeight: '800',
-    marginBottom: 2,
-    letterSpacing: -0.3,
+    letterSpacing: 0.8,
+  },
+  headerBox: {
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 16,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    marginBottom: 6,
+    letterSpacing: -0.4,
+    textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 13.5,
+    lineHeight: 19,
     textAlign: 'center',
   },
   formBox: {
     width: '100%',
-    maxWidth: 380,
-    borderRadius: 22,
-    paddingVertical: 20,
-    paddingHorizontal: 18,
+    maxWidth: 390,
+    borderRadius: 24,
+    paddingVertical: 22,
+    paddingHorizontal: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 4,
     borderWidth: 1,
   },
   input: {
     marginBottom: 12,
   },
   inputField: {
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     paddingHorizontal: 14,
     fontSize: 15,
-    height: 48,
+    height: 50,
   },
   passwordStrengthBox: {
-    padding: 12,
     borderRadius: 14,
     borderWidth: 1,
-    marginTop: -4,
+    padding: 12,
     marginBottom: 14,
+    marginTop: -4,
   },
   strengthHeaderRow: {
     flexDirection: 'row',
@@ -642,22 +664,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   strengthBadgeText: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '800',
   },
   strengthBarRow: {
     flexDirection: 'row',
-    gap: 5,
-    marginBottom: 8,
+    gap: 4,
+    marginBottom: 10,
   },
   strengthBarSegment: {
     flex: 1,
-    height: 4,
-    borderRadius: 2,
+    height: 5,
+    borderRadius: 3,
   },
   criteriaContainer: {
-    gap: 3,
-    marginTop: 2,
+    gap: 4,
   },
   criteriaItem: {
     flexDirection: 'row',
@@ -666,46 +687,35 @@ const styles = StyleSheet.create({
   },
   criteriaText: {
     fontSize: 11.5,
-    fontWeight: '500',
-  },
-  codeInputField: {
-    borderColor: '#FDBA74',
-    textAlign: 'center',
-    fontSize: 20,
-    letterSpacing: 6,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   consentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
-    marginBottom: 14,
-    paddingHorizontal: 2,
+    marginVertical: 12,
+    gap: 10,
   },
   checkbox: {
-    width: 22,
-    height: 22,
+    width: 20,
+    height: 20,
     borderRadius: 6,
-    borderWidth: 2,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
   },
   checkboxChecked: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
+    borderWidth: 0,
   },
   consentText: {
     flex: 1,
     fontSize: 12.5,
     lineHeight: 17,
-    fontWeight: '500',
   },
   verificationBox: {
-    borderWidth: 1.5,
     borderRadius: 16,
+    borderWidth: 1.5,
     padding: 14,
-    marginBottom: 14,
+    marginVertical: 12,
   },
   verificationHeader: {
     flexDirection: 'row',
@@ -714,68 +724,56 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   verificationTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '800',
   },
   editDataText: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '700',
-    textDecorationLine: 'underline',
   },
   verificationDesc: {
-    fontSize: 13,
-    marginBottom: 10,
+    fontSize: 12.5,
     lineHeight: 18,
+    marginBottom: 6,
   },
-  resendContainer: {
-    marginTop: 8,
+  resendBtn: {
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: 6,
   },
-  resendQuestion: {
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  resendButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  resendText: {
-    fontSize: 13,
+  resendBtnText: {
+    fontSize: 12.5,
     fontWeight: '700',
-    textDecorationLine: 'underline',
   },
   registerButton: {
-    marginTop: 4,
-    borderRadius: 14,
-    paddingVertical: 13,
-    marginBottom: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    paddingVertical: 14,
+    marginTop: 6,
     shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 4,
   },
   registerButtonText: {
     fontWeight: '800',
     fontSize: 15.5,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
     color: '#FFFFFF',
   },
   footerRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 14,
+    justifyContent: 'center',
+    marginTop: 22,
   },
   footerText: {
     fontSize: 14,
     fontWeight: '500',
   },
-  createAccountText: {
+  loginLinkText: {
     fontWeight: '800',
     fontSize: 14,
   },

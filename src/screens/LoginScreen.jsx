@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useFocusEffect } from '@react-navigation/native';
+import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import Button from '../components/Button';
@@ -48,19 +49,19 @@ const LoginScreen = ({ navigation }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!email.trim()) {
       newErrors.email = 'Email é obrigatório';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Email inválido';
     }
-    
+
     if (!password) {
       newErrors.password = 'Senha é obrigatória';
     } else if (password.length < 6) {
       newErrors.password = 'Senha deve ter no mínimo 6 caracteres';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -96,67 +97,117 @@ const LoginScreen = ({ navigation }) => {
         extraHeight={Platform.OS === 'ios' ? 80 : 100}
         keyboardOpeningTime={0}
       >
-        <View style={[styles.circularLogoContainer, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#EFF6FF' }]}>
-          <Image
-            source={require('../assets/logo_wefind.png')}
-            style={styles.circularLogo}
-            resizeMode="contain"
-          />
+        {/* Top Floating App Brand Badge */}
+        <View style={styles.brandHeroContainer}>
+          <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#EFF6FF' }]}>
+            <Image
+              source={require('../assets/logo_wefind.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+          </View>
+
+          <View style={[styles.badgePill, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.18)' : '#EFF6FF', borderColor: isDark ? '#1E3A8A' : '#BFDBFE' }]}>
+            <MaterialIcons name="pets" size={13} color={colors.primary} style={{ marginRight: 5 }} />
+            <Text style={[styles.badgePillText, { color: colors.primary }]}>REDE DE REENCONTRO ANIMAL</Text>
+          </View>
         </View>
 
+        {/* Title Header */}
         <View style={styles.headerBox}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Bem-vindo de volta</Text>
-          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Acesse sua conta para continuar</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Acesse sua conta</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+            Conecte-se para buscar, resgatar e proteger animais
+          </Text>
         </View>
 
+        {/* Form Container */}
         <View style={[styles.formBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <Input
-            label="E-mail"
-            placeholder="seu@email.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={errors.email}
-            style={styles.input}
-            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
-            returnKeyType="next"
-          />
+          <View style={styles.inputWrapper}>
+            <Input
+              label="E-mail"
+              placeholder="seu@email.com"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (errors.email) setErrors((prev) => ({ ...prev, email: null }));
+              }}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              error={errors.email}
+              style={styles.input}
+              inputStyle={[
+                styles.inputField,
+                {
+                  backgroundColor: isDark ? '#0F172A' : '#F8FAFC',
+                  borderColor: isDark ? '#334155' : '#E2E8F0',
+                  color: colors.text,
+                },
+              ]}
+              returnKeyType="next"
+            />
+          </View>
 
-          <Input
-            label="Senha"
-            placeholder="••••••••"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={true}
-            error={errors.password}
-            style={styles.input}
-            inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
-            returnKeyType="done"
-          />
+          <View style={styles.inputWrapper}>
+            <Input
+              label="Senha"
+              placeholder="••••••••"
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (errors.password) setErrors((prev) => ({ ...prev, password: null }));
+              }}
+              secureTextEntry={true}
+              error={errors.password}
+              style={styles.input}
+              inputStyle={[
+                styles.inputField,
+                {
+                  backgroundColor: isDark ? '#0F172A' : '#F8FAFC',
+                  borderColor: isDark ? '#334155' : '#E2E8F0',
+                  color: colors.text,
+                },
+              ]}
+              returnKeyType="done"
+            />
+          </View>
 
           <TouchableOpacity
             onPress={() => navigation.navigate('EsqueciSenha')}
             style={styles.forgotPasswordContainer}
-            activeOpacity={0.7}
+            activeOpacity={0.75}
           >
             <Text style={[styles.forgotPassword, { color: colors.primary }]}>Esqueceu sua senha?</Text>
           </TouchableOpacity>
 
-          <Button
-            title={loading ? 'Entrando...' : 'Entrar'}
+          <TouchableOpacity
             onPress={handleLogin}
             disabled={loading}
-            loading={loading}
             style={[styles.loginButton, { backgroundColor: colors.primary }]}
-            textStyle={styles.loginButtonText}
-          />
+            activeOpacity={0.85}
+          >
+            <Text style={styles.loginButtonText}>{loading ? 'Autenticando...' : 'Entrar na Conta'}</Text>
+            {!loading && <Feather name="arrow-right" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />}
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.footerRow}>
-          <Text style={[styles.footerText, { color: colors.textSecondary }]}>Não tem uma conta? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Register')} activeOpacity={0.7}>
-            <Text style={[styles.createAccountText, { color: colors.primary }]}>Criar conta</Text>
+        {/* Footer Navigation */}
+        <View style={styles.footerContainer}>
+          <View style={styles.footerRow}>
+            <Text style={[styles.footerText, { color: colors.textSecondary }]}>Ainda não faz parte? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')} activeOpacity={0.75}>
+              <Text style={[styles.createAccountText, { color: colors.primary }]}>Criar nova conta</Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate('PublicApp')}
+            style={styles.guestLink}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.guestLinkText, { color: colors.textMuted }]}>
+              Continuar explorando sem login ➔
+            </Text>
           </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
@@ -171,98 +222,125 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 24,
     paddingBottom: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  circularLogoContainer: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
-    alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    borderWidth: 3,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 4,
-    marginBottom: 14,
-  },
-  circularLogo: {
-    width: '100%',
-    height: '100%',
-  },
-  headerBox: {
+  brandHeroContainer: {
     alignItems: 'center',
     marginBottom: 16,
   },
-  headerTitle: {
-    fontSize: 22,
+  logoSquircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 12,
+    elevation: 5,
+    marginBottom: 12,
+  },
+  logoImage: {
+    width: 72,
+    height: 72,
+  },
+  badgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  badgePillText: {
+    fontSize: 10.5,
     fontWeight: '800',
-    marginBottom: 3,
-    letterSpacing: -0.3,
+    letterSpacing: 0.8,
+  },
+  headerBox: {
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 16,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    marginBottom: 6,
+    letterSpacing: -0.4,
+    textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 13.5,
+    lineHeight: 19,
     textAlign: 'center',
   },
   formBox: {
     width: '100%',
-    maxWidth: 380,
-    borderRadius: 22,
-    paddingVertical: 20,
-    paddingHorizontal: 18,
+    maxWidth: 390,
+    borderRadius: 24,
+    paddingVertical: 22,
+    paddingHorizontal: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 4,
     borderWidth: 1,
+  },
+  inputWrapper: {
+    marginBottom: 4,
   },
   input: {
     marginBottom: 12,
   },
   inputField: {
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     paddingHorizontal: 14,
     fontSize: 15,
-    height: 48,
+    height: 50,
   },
   forgotPasswordContainer: {
     alignSelf: 'flex-end',
-    marginBottom: 16,
+    marginBottom: 18,
     marginTop: 2,
+    paddingVertical: 2,
   },
   forgotPassword: {
     fontSize: 13,
     fontWeight: '700',
   },
   loginButton: {
-    borderRadius: 14,
-    paddingVertical: 13,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    paddingVertical: 14,
     shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 4,
   },
   loginButtonText: {
     fontWeight: '800',
     fontSize: 15.5,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
     color: '#FFFFFF',
+  },
+  footerContainer: {
+    alignItems: 'center',
+    marginTop: 22,
   },
   footerRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 22,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   footerText: {
     fontSize: 14,
@@ -271,6 +349,14 @@ const styles = StyleSheet.create({
   createAccountText: {
     fontWeight: '800',
     fontSize: 14,
+  },
+  guestLink: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  guestLinkText: {
+    fontSize: 12.5,
+    fontWeight: '600',
   },
 });
 
