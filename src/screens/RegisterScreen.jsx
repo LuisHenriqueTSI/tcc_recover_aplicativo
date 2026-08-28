@@ -297,11 +297,13 @@ const RegisterScreen = ({ navigation }) => {
 
         {/* Top App Logo */}
         <View style={styles.brandHeroContainer}>
-          <Image
-            source={require('../assets/logo_wefind.png')}
-            style={styles.heroLogoImage}
-            resizeMode="contain"
-          />
+          <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#DBEAFE' }]}>
+            <Image
+              source={require('../assets/logo_wefind.png')}
+              style={styles.logoImage}
+              resizeMode="cover"
+            />
+          </View>
         </View>
 
         <View style={styles.headerBox}>
@@ -569,12 +571,27 @@ const styles = StyleSheet.create({
   brandHeroContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: 12,
     marginTop: 4,
   },
-  heroLogoImage: {
-    width: 200,
-    height: 110,
+  logoSquircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 2,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+    transform: [{ scale: 1.25 }],
   },
   headerBox: {
     alignItems: 'center',
