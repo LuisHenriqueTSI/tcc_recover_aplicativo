@@ -321,22 +321,53 @@ Copie `.env.example` para `.env`:
 cp .env.example .env
 ```
 
-Edite `.env` e adicione suas credenciais Supabase:
+Edite `.env` e adicione suas credenciais Supabase e IA:
 ```env
 EXPO_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
 ```
 
-### 3. **Iniciar o Servidor Expo**
+---
+
+### 💻 3. **Modos de Execução e Demonstração do Aplicativo**
+
+#### 🔹 Opção A: Desenvolvimento Local no PC (Fast Refresh em Tempo Real)
+Use no dia a dia enquanto programa no computador:
 ```bash
-npm start
+npx expo start
 ```
+* **Na mesma rede Wi-Fi:** Escaneie o QR Code no app **Expo Go** do Android/iOS.
+* **Em redes diferentes (ou 4G):**
+  ```bash
+  npx expo start --tunnel
+  ```
+  *(Qualquer alteração feita no código atualiza instantaneamente no celular em 1 segundo).*
 
-### 4. **Rodar no Dispositivo Mobile**
-- Abra o aplicativo **Expo Go** no Android ou iOS.
-- Escaneie o QR Code exibido no terminal.
+---
 
-### 5. **Rodar no Navegador (Web)**
+#### ☁️ 🔹 Opção B: Publicar na Nuvem (Abrir no Celular com o PC Desligado)
+Use para demonstrar o app fora de casa, em reuniões ou quando o computador estiver desligado:
+
+1. **Fazer login no Expo (uma única vez):**
+   ```bash
+   npx expo login
+   ```
+   *(Conta configurada: `luishenriquetsi`)*
+
+2. **Publicar/Atualizar a versão na nuvem:**
+   ```bash
+   npx eas-cli update --auto --platform android
+   ```
+
+3. **Como abrir no celular (sem precisar do PC ligado):**
+   * Abra o aplicativo **Expo Go** no celular.
+   * Conecte-se com sua conta Expo (`luishenriquetsi`).
+   * Vá na aba **Projects** (ou **Home**) e toque em **`wefind-app`** (`@luishenriquetsi/wefind-app`).
+   * O aplicativo vai abrir diretamente dos servidores do Expo, 100% autônomo e funcional.
+
+---
+
+### 4. **Rodar no Navegador (Web)**
 ```bash
 npm start
 # Pressione 'w' no terminal para abrir no navegador
