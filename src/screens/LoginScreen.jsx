@@ -228,9 +228,9 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   logoSquircle: {
-    width: 108,
-    height: 108,
-    borderRadius: 32,
+    width: 120,
+    height: 120,
+    borderRadius: 34,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   logoImage: {
     width: '100%',
     height: '100%',
-    transform: [{ scale: 1.25 }],
+    transform: [{ scale: 1.35 }],
   },
   headerBox: {
     alignItems: 'center',
