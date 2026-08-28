@@ -22,7 +22,7 @@ function getRelativeTime(dateString) {
 }
 
 export default function NotificationsScreen({ navigation, onNotificationsUpdated }) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { colors, isDark } = useTheme();
   const [loading, setLoading] = useState(false);
   const [messageNotifications, setMessageNotifications] = useState([]);
@@ -236,39 +236,46 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Botão de Teste Rápido de Notificação */}
-      <View style={{ marginHorizontal: 16, marginTop: 12, marginBottom: 4 }}>
-        <TouchableOpacity
-          onPress={handleTestLostPetNotification}
-          activeOpacity={0.85}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
-            borderRadius: 12,
-            paddingVertical: 10,
-            paddingHorizontal: 14,
-            borderWidth: 1,
-            borderColor: isDark ? '#334155' : '#E2E8F0',
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
-            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEE2E2', alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
-              <MaterialIcons name="notifications-active" size={16} color="#DC2626" />
+      {/* Botão de Teste Rápido de Notificação (Restrito a Administradores) */}
+      {isAdmin && (
+        <View style={{ marginHorizontal: 16, marginTop: 12, marginBottom: 4 }}>
+          <TouchableOpacity
+            onPress={handleTestLostPetNotification}
+            activeOpacity={0.85}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+              borderRadius: 12,
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+              borderWidth: 1,
+              borderColor: isDark ? '#334155' : '#E2E8F0',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
+              <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEE2E2', alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
+                <MaterialIcons name="notifications-active" size={16} color="#DC2626" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
+                    Testar Alerta de Pet Perdido
+                  </Text>
+                  <View style={{ backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#DBEAFE', paddingHorizontal: 5, paddingVertical: 1.5, borderRadius: 4 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary }}>ADMIN</Text>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                  Dispara um push local no celular e insere alerta in-app
+                </Text>
+              </View>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
-                Testar Alerta de Pet Perdido
-              </Text>
-              <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-                Dispara um push local no celular e insere alerta in-app
-              </Text>
-            </View>
-          </View>
-          <MaterialIcons name="play-arrow" size={20} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+            <MaterialIcons name="play-arrow" size={20} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {unreadCount > 0 && (
         <View style={[styles.unreadBanner, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.15)' : '#DCFCE7', borderColor: isDark ? 'rgba(34, 197, 94, 0.3)' : '#BBF7D0' }]}>

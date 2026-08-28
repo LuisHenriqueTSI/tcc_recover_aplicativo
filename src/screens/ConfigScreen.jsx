@@ -13,7 +13,7 @@ const preferenceKeys = {
 };
 
 const ConfigScreen = ({ navigation }) => {
-  const { user, userProfile, signOut, refreshProfile } = useAuth();
+  const { user, userProfile, signOut, refreshProfile, isAdmin } = useAuth();
   const { themeMode, isDark, colors, setThemeMode } = useTheme();
 
   const [preferences, setPreferences] = useState({
@@ -232,15 +232,19 @@ const ConfigScreen = ({ navigation }) => {
             />
           }
         />
-        <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-        <SettingRow
-          icon="send"
-          iconColor="#6366F1"
-          iconBg={isDark ? 'rgba(99, 102, 241, 0.15)' : '#EEF2FF'}
-          title="Testar Envio no WhatsApp"
-          description="Disparar um alerta de teste para seu número"
-          onPress={handleTestWhatsAppNotification}
-        />
+        {isAdmin && (
+          <>
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+            <SettingRow
+              icon="send"
+              iconColor="#6366F1"
+              iconBg={isDark ? 'rgba(99, 102, 241, 0.15)' : '#EEF2FF'}
+              title="Testar Envio no WhatsApp"
+              description="Disparar um alerta de teste para seu número (Admin)"
+              onPress={handleTestWhatsAppNotification}
+            />
+          </>
+        )}
       </View>
 
       {/* SEÇÃO: CONTA */}
