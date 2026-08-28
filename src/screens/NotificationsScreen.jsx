@@ -199,6 +199,24 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
       }
     }
   async function handleTestLostPetNotification() {
+    Alert.alert(
+      '🧪 Testar Notificação Push',
+      'Como deseja testar o alerta no seu aparelho?',
+      [
+        {
+          text: 'Disparar Agora',
+          onPress: () => executeTestNotification(0),
+        },
+        {
+          text: 'Disparar em 4s (Para minimizar o app)',
+          onPress: () => executeTestNotification(4),
+        },
+        { text: 'Cancelar', style: 'cancel' },
+      ]
+    );
+  }
+
+  async function executeTestNotification(delaySeconds = 0) {
     try {
       // Dispara notificação com banner e som no aparelho
       await triggerLocalNotification({
@@ -208,6 +226,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
           itemId: systemAlerts[0]?.itemId || null,
           type: 'nearby_lost_pet',
         },
+        delaySeconds,
       });
 
       // Insere na caixa de notificações in-app
@@ -225,10 +244,17 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
         }
       }
 
-      Alert.alert(
-        '🔔 Notificação Disparada!',
-        'Verifique a barra de notificações do seu celular (desça o topo da tela) e a sua caixa de entrada no app!'
-      );
+      if (delaySeconds > 0) {
+        Alert.alert(
+          '⏳ Notificação agendada!',
+          'Você tem 4 segundos para minimizar o aplicativo (ir para a tela inicial do celular) e ver a notificação push descer com som!'
+        );
+      } else {
+        Alert.alert(
+          '🔔 Notificação Disparada!',
+          'Verifique a barra de notificações do seu celular (desça o topo da tela) e a sua caixa de entrada no app!'
+        );
+      }
     } catch (err) {
       console.warn('[NotificationsScreen] Erro ao testar notificação:', err.message);
     }

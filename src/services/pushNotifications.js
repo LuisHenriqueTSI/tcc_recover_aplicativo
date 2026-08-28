@@ -168,16 +168,39 @@ export async function sendExpoPushNotification({ to, title, body, data = {} }) {
 /**
  * Dispara uma notificação local instantânea no aparelho (ótimo para testes e feedback em tempo real)
  */
-export async function triggerLocalNotification({ title, body, data = {} }) {
+export async function triggerLocalNotification({ title, body, data = {}, delaySeconds = 0 }) {
   try {
+    if (Platform.OS === 'android') {
+      try {
+        await Notifications.setNotificationChannelAsync('wefind-lost-pets', {
+          name: 'Alertas de Pets Perdidos e Mensagens',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#2563EB',
+          sound: 'default',
+          enableVibrate: true,
+          showBadge: true,
+        });
+      } catch (_) {}
+    }
+
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') {
+        await Notifications.requestPermissionsAsync();
+      }
+    } catch (_) {}
+
     await Notifications.scheduleNotificationAsync({
       content: {
         title,
         body,
         data,
         sound: 'default',
+        channelId: 'wefind-lost-pets',
+        priority: Notifications.AndroidNotificationPriority.MAX,
       },
-      trigger: null, // Dispara imediatamente
+      trigger: delaySeconds > 0 ? { seconds: delaySeconds, channelId: 'wefind-lost-pets' } : null,
     });
     return true;
   } catch (error) {
