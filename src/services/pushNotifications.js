@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { dispatchSystemNotificationToWhatsApp } from './whatsappNotifications';
@@ -75,15 +76,24 @@ export async function registerForPushNotificationsAsync(userId = null) {
       return null;
     }
 
-    // Tenta obter o token Expo Push remoto (disponível em Development Builds, APKs e iOS)
+    // Verifica se está rodando no cliente genérico Expo Go
+    const isExpoGo =
+      Constants?.appOwnership === 'expo' ||
+      Constants?.executionEnvironment === ExecutionEnvironment?.StoreClient ||
+      Constants?.executionEnvironment === 'storeClient';
+
     let token = null;
-    try {
-      const tokenData = await Notifications.getExpoPushTokenAsync();
-      token = tokenData?.data || null;
-    } catch (tokenErr) {
-      // No Expo Go (SDK 53+), remote push notifications requerem Development Build.
-      // O app opera 100% com notificações locais e in-app no Expo Go.
-      console.log('[PushNotifications] Modo Expo Go detectado. Ativando suporte a notificações locais e in-app.');
+    if (isExpoGo && Platform.OS === 'android') {
+      // No Expo Go Android (SDK 53+), remote push notifications requerem Development Build / APK.
+      // O app opera com notificações locais e in-app no Expo Go sem poluir o terminal com avisos.
+      console.log('[PushNotifications] Modo Expo Go Android: operando com notificações locais e in-app.');
+    } else {
+      try {
+        const tokenData = await Notifications.getExpoPushTokenAsync();
+        token = tokenData?.data || null;
+      } catch (tokenErr) {
+        console.log('[PushNotifications] Modo Expo Go detectado. Ativando suporte a notificações locais e in-app.');
+      }
     }
 
     if (token) {
