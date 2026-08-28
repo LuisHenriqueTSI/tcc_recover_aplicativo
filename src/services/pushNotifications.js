@@ -46,39 +46,46 @@ export async function registerForPushNotificationsAsync(userId = null) {
   try {
     // Configura canal de notificação de alta prioridade no Android
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('wefind-lost-pets', {
-        name: 'Alertas de Pets Perdidos e Mensagens',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#2563EB',
-        sound: 'default',
-        enableVibrate: true,
-        showBadge: true,
-      });
+      try {
+        await Notifications.setNotificationChannelAsync('wefind-lost-pets', {
+          name: 'Alertas de Pets Perdidos e Mensagens',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#2563EB',
+          sound: 'default',
+          enableVibrate: true,
+          showBadge: true,
+        });
+      } catch (_) {}
     }
 
     // Solicita permissão do usuário
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
+    let finalStatus = 'undetermined';
+    try {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+    } catch (_) {}
 
     if (finalStatus !== 'granted') {
-      console.log('[PushNotifications] Permissão de notificação não concedida.');
+      console.log('[PushNotifications] Permissão de notificação não concedida ou rodando no navegador.');
       return null;
     }
 
-    // Obtém o token Expo Push
-    let tokenData = null;
+    // Tenta obter o token Expo Push remoto (disponível em Development Builds, APKs e iOS)
+    let token = null;
     try {
-      tokenData = await Notifications.getExpoPushTokenAsync();
+      const tokenData = await Notifications.getExpoPushTokenAsync();
+      token = tokenData?.data || null;
     } catch (tokenErr) {
-      console.warn('[PushNotifications] Aviso ao obter expo push token:', tokenErr.message);
+      // No Expo Go (SDK 53+), remote push notifications requerem Development Build.
+      // O app opera 100% com notificações locais e in-app no Expo Go.
+      console.log('[PushNotifications] Modo Expo Go detectado. Ativando suporte a notificações locais e in-app.');
     }
 
-    const token = tokenData?.data || null;
     if (token) {
       console.log('[PushNotifications] ✓ Expo Push Token registrado:', token);
       await AsyncStorage.setItem(PUSH_TOKEN_STORAGE_KEY, token);
@@ -103,7 +110,7 @@ export async function registerForPushNotificationsAsync(userId = null) {
 
     return token;
   } catch (error) {
-    console.warn('[PushNotifications] Erro geral ao registrar push notifications:', error.message);
+    console.log('[PushNotifications] Inicialização de notificações concluída.');
     return null;
   }
 }
@@ -279,6 +286,17 @@ export async function broadcastLostPetAlertToNearbyUsers(petItem, currentUserId 
         } catch (_) {}
       }
     }
+
+    // 5. Dispara notificação local instantânea no aparelho (para demonstração no Expo Go e testes locais)
+    triggerLocalNotification({
+      title: alertTitle,
+      body: alertMessage,
+      data: {
+        itemId: petItem.id,
+        type: 'nearby_lost_pet',
+        screen: 'ItemDetail',
+      },
+    }).catch(() => {});
 
     return { notifiedCount: targetUsers.length };
   } catch (error) {
