@@ -692,37 +692,77 @@ const MapScreen = ({ route, navigation }) => {
     }
   }, [searchTerm, filteredItems]);
 
-  const requestUserLocation = useCallback(async () => {
-    locationStatusRef.current = 'checking';
-    setLocationStatus('checking');
+  const requestUserLocation = useCallback(async (shouldAnimateToUser = true) => {
     try {
-      const permission = await Location.requestForegroundPermissionsAsync();
-      if (!permission.granted) {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      let isGranted = status === 'granted';
+
+      if (!isGranted) {
+        const req = await Location.requestForegroundPermissionsAsync();
+        isGranted = req.status === 'granted';
+      }
+
+      if (!isGranted) {
         locationStatusRef.current = 'denied';
         setLocationStatus('denied');
         return null;
       }
 
-      const lastKnown = await Location.getLastKnownPositionAsync();
-      const current = lastKnown || await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-      const coordinate = {
-        latitude: current.coords.latitude,
-        longitude: current.coords.longitude,
-      };
-      setUserCoords(coordinate);
-      setRegion({ ...coordinate, latitudeDelta: 0.08, longitudeDelta: 0.08 });
       locationStatusRef.current = 'granted';
       setLocationStatus('granted');
-      return coordinate;
+
+      // 1. Tenta obter a última localização conhecida instantaneamente para resposta imediata
+      const lastKnown = await Location.getLastKnownPositionAsync();
+      if (lastKnown?.coords) {
+        const initialCoords = {
+          latitude: lastKnown.coords.latitude,
+          longitude: lastKnown.coords.longitude,
+        };
+        setUserCoords(initialCoords);
+        setRegion({ ...initialCoords, latitudeDelta: 0.015, longitudeDelta: 0.015 });
+
+        const hasFocusParam = route?.params?.focusItemId || route?.params?.targetCoords;
+        if (shouldAnimateToUser && !hasFocusParam && mapRef.current) {
+          mapRef.current.animateToRegion({
+            ...initialCoords,
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.015,
+          }, 600);
+        }
+      }
+
+      // 2. Atualiza a posição via GPS em tempo real
+      const current = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      if (current?.coords) {
+        const liveCoords = {
+          latitude: current.coords.latitude,
+          longitude: current.coords.longitude,
+        };
+        setUserCoords(liveCoords);
+        setRegion({ ...liveCoords, latitudeDelta: 0.015, longitudeDelta: 0.015 });
+
+        const hasFocusParam = route?.params?.focusItemId || route?.params?.targetCoords;
+        if (shouldAnimateToUser && !hasFocusParam && mapRef.current) {
+          mapRef.current.animateToRegion({
+            ...liveCoords,
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.015,
+          }, 600);
+        }
+        return liveCoords;
+      }
+
+      return lastKnown?.coords || null;
     } catch (error) {
       console.warn('[MapScreen] Não foi possível obter a localização:', error.message);
       locationStatusRef.current = 'unavailable';
       setLocationStatus('unavailable');
       return null;
     }
-  }, []);
+  }, [route?.params?.focusItemId, route?.params?.targetCoords]);
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -863,12 +903,12 @@ const MapScreen = ({ route, navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      requestUserLocation();
+      requestUserLocation(true);
       loadItems();
     }, [loadItems, requestUserLocation])
   );
 
-  if (locationStatus === 'checking') {
+  if (locationStatus === 'checking' && !userCoords) {
     return (
       <View style={styles.permissionState}>
         <ActivityIndicator color="#2563EB" size="large" />
