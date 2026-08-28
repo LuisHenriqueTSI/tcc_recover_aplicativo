@@ -399,7 +399,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [foundModalMessage, setFoundModalMessage] = useState('');
   const [foundModalItemId, setFoundModalItemId] = useState(null);
   const [deleting, setDeleting] = useState(false);
-
   // Verificação Inteligente de Avistamentos Duplicados / Próximos
   const [nearbyMatches, setNearbyMatches] = useState([]);
   const [showMatchingModal, setShowMatchingModal] = useState(false);
@@ -407,260 +406,365 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [selectedMatchPet, setSelectedMatchPet] = useState(null);
   const [submittingMatchSighting, setSubmittingMatchSighting] = useState(false);
 
-  const renderLocationAndRewardSection = () => (
-    <View>
-      <Text style={[styles.label, { color: colors.text }]}>Localização</Text>
-      <Text style={[styles.locationHint, { color: colors.textSecondary }]}>
-        Escolha no mapa onde o animal foi {status === 'lost' ? 'perdido' : 'encontrado'}.
-      </Text>
-      {renderMapLocationButton()}
+  const renderLocationAndRewardSection = () => {
+    const isLost = status === 'lost';
+    const isSpotted = status === 'found' && foundCustody === 'spotted';
+    const isSheltered = status === 'found' && foundCustody === 'with_me';
 
-      <View style={styles.datePickerContainer}>
-        <Text style={[styles.label, { color: colors.text }]}>Data do Evento *</Text>
-        <TouchableOpacity
-          style={[styles.datePickerButton, { backgroundColor: isDark ? '#161F30' : '#F9FAFB', borderColor: colors.border }]}
-          onPress={() => setShowDatePicker(true)}
-        >
-          <Text style={[styles.datePickerButtonText, { color: colors.text }]}>
-            {formatDateDisplay(date)}
-          </Text>
-        </TouchableOpacity>
-      </View>
+    return (
+      <View>
+        <Text style={[styles.label, { color: colors.text }]}>
+          {isLost
+            ? 'Região do Desaparecimento (Epicentro)'
+            : isSpotted
+            ? 'Local do Avistamento na Rua'
+            : 'Local de Resgate do Animal'}
+        </Text>
 
-      <Modal
-        visible={showDatePicker}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowDatePicker(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={[styles.calendarWrapper, { backgroundColor: colors.surface }]}>
-            <View style={[styles.calendarHeader, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.calendarTitle, { color: colors.text }]}>Selecione a Data</Text>
-              <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                <Text style={[styles.closeButton, { color: colors.textSecondary }]}>✕</Text>
-              </TouchableOpacity>
+        {/* Card Educativo de Privacidade e Proteção Anti-Golpes */}
+        {isLost && (
+          <View style={{
+            backgroundColor: isDark ? '#1E293B' : '#EFF6FF',
+            borderColor: isDark ? '#334155' : '#BFDBFE',
+            borderWidth: 1,
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 12,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            gap: 10,
+          }}>
+            <MaterialIcons name="security" size={22} color="#2563EB" style={{ marginTop: 2 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, fontWeight: '800', color: isDark ? '#93C5FD' : '#1D4ED8', marginBottom: 3 }}>
+                🛡️ Privacidade do Tutor Protegida
+              </Text>
+              <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#334155', lineHeight: 17 }}>
+                O número da sua residência <Text style={{ fontWeight: '800' }}>NÃO é divulgado</Text>. Usamos a coordenada marcada apenas como <Text style={{ fontWeight: '800' }}>epicentro geográfico</Text> para enviar notificações automáticas a voluntários e lares temporários no raio do desaparecimento.
+              </Text>
             </View>
-            <Calendar
-              current={date}
-              minDate="2020-01-01"
-              maxDate={new Date().toISOString().split('T')[0]}
-              onDayPress={handleDateSelect}
-              markedDates={{ [date]: { selected: true, selectedColor: colors.primary, selectedTextColor: '#FFFFFF' } }}
-              theme={{
-                backgroundColor: colors.surface,
-                calendarBackground: colors.surface,
-                textSectionTitleColor: colors.textSecondary,
-                selectedDayBackgroundColor: colors.primary,
-                selectedDayTextColor: '#FFFFFF',
-                todayTextColor: colors.primary,
-                dayTextColor: colors.text,
-                arrowColor: colors.primary,
-                monthTextColor: colors.text,
-              }}
-            />
-            <Button title="Confirmar data" onPress={() => setShowDatePicker(false)} style={styles.modalButton} />
-          </View>
-        </View>
-      </Modal>
-
-      {status === 'lost' && (
-        <View style={[styles.rewardSection, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <TouchableOpacity
-            style={styles.checkboxContainer}
-            onPress={() => setOfferReward(!offerReward)}
-          >
-            <View style={[styles.checkbox, { borderColor: colors.border }, offerReward && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
-              {offerReward && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-            <Text style={[styles.checkboxLabel, { color: colors.text }]}>Oferecer Recompensa</Text>
-          </TouchableOpacity>
-
-          {offerReward && (
-            <>
-              <Input
-                label="Valor da Recompensa"
-                placeholder="Ex: 100"
-                value={rewardAmount}
-                onChangeText={setRewardAmount}
-                keyboardType="decimal-pad"
-                style={styles.input}
-              />
-            </>
-          )}
-        </View>
-      )}
-
-      {/* Seção de Publicação em nome de terceiro */}
-      <View style={[styles.thirdPartySection, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-        <TouchableOpacity
-          style={styles.checkboxContainer}
-          onPress={() => setIsThirdPartyOwner(!isThirdPartyOwner)}
-          activeOpacity={0.8}
-        >
-          <View style={[styles.checkbox, { borderColor: colors.border }, isThirdPartyOwner && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
-            {isThirdPartyOwner && <Text style={styles.checkmark}>✓</Text>}
-          </View>
-          <Text style={[styles.checkboxLabel, { color: colors.text }]}>
-            Estou publicando em nome de outra pessoa
-          </Text>
-        </TouchableOpacity>
-
-        {isThirdPartyOwner && (
-          <View style={[styles.thirdPartyInputsBox, { borderTopColor: colors.border }]}>
-            <Text style={[styles.thirdPartyHint, { color: colors.textSecondary }]}>
-              Informe o nome e telefone do tutor/dono real para contato direto:
-            </Text>
-            <Input
-              label="Nome do Tutor / Responsável *"
-              placeholder="Ex: Dona Maria"
-              value={thirdPartyName}
-              onChangeText={setThirdPartyName}
-              style={styles.input}
-            />
-            <Input
-              label="Telefone / WhatsApp do Tutor *"
-              placeholder="Ex: (53) 99999-8888"
-              value={thirdPartyPhone}
-              onChangeText={(text) => {
-                const digits = String(text).replace(/\D/g, '').slice(0, 11);
-                let formatted = digits;
-                if (digits.length > 2 && digits.length <= 6) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-                else if (digits.length > 6 && digits.length <= 10) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-                else if (digits.length > 10) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-                setThirdPartyPhone(formatted);
-              }}
-              keyboardType="phone-pad"
-              style={styles.input}
-            />
           </View>
         )}
-      </View>
-    </View>
-  );
 
-  const renderMapLocationButton = () => (
-    <>
-      <TouchableOpacity
-        style={[styles.mapButton, { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' }]}
-        onPress={() => setMapModalVisible(true)}
-      >
-        <Text style={[styles.mapButtonText, { color: colors.primary }]}>
-          {mapLocation ? '📍 Alterar localização no mapa' : '🗺️ Escolher localização no mapa'}
-        </Text>
-      </TouchableOpacity>
-      {mapLocation && (
-        <Text style={[styles.mapSelectedText, { color: colors.textSecondary }]}>
-          Ponto selecionado: {mapLocation.latitude.toFixed(5)}, {mapLocation.longitude.toFixed(5)}
-        </Text>
-      )}
-      {mapLocation && (
-        <View style={[styles.addressFieldsContainer, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <Text style={[styles.label, { marginBottom: 8, color: colors.text }]}>Endereço no local (editável)</Text>
-          
-          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
-            <View style={{ flex: 2.2 }}>
-              <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Rua / Logradouro</Text>
-              <TextInput
-                style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-                value={mapLocationDetails?.street || ''}
-                onChangeText={(t) => {
-                  const updated = { ...(mapLocationDetails || {}), street: t };
-                  setMapLocationDetails(updated);
-                  const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
-                  setMapAddressText(formatted);
-                }}
-                placeholder="Ex: Rua das Flores"
-                placeholderTextColor={colors.textMuted}
-              />
-            </View>
+        {isSheltered && (
+          <View style={{
+            backgroundColor: isDark ? '#064E3B' : '#F0FDF4',
+            borderColor: isDark ? '#047857' : '#BBF7D0',
+            borderWidth: 1,
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 12,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            gap: 10,
+          }}>
+            <MaterialIcons name="home" size={22} color="#16A34A" style={{ marginTop: 2 }} />
             <View style={{ flex: 1 }}>
-              <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Nº da Casa</Text>
-              <TextInput
-                style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-                value={mapLocationDetails?.number || ''}
-                onChangeText={(t) => {
-                  const updated = { ...(mapLocationDetails || {}), number: t };
-                  setMapLocationDetails(updated);
-                  const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
-                  setMapAddressText(formatted);
-                }}
-                placeholder="Ex: 123"
-                placeholderTextColor={colors.textMuted}
-              />
+              <Text style={{ fontSize: 13, fontWeight: '800', color: isDark ? '#86EFAC' : '#15803D', marginBottom: 3 }}>
+                🔒 Acolhimento Seguro
+              </Text>
+              <Text style={{ fontSize: 11.5, color: isDark ? '#D1FAE5' : '#166534', lineHeight: 17 }}>
+                O endereço do seu lar permanece em sigilo. O tutor verá apenas o bairro e a cidade onde o animal foi resgatado, entrando em contato através do chat seguro.
+              </Text>
             </View>
           </View>
+        )}
 
-          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
-            <View style={{ flex: 1.5 }}>
-              <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Bairro</Text>
-              <TextInput
-                style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-                value={mapLocationDetails?.district || neighborhood || ''}
-                onChangeText={(t) => {
-                  setNeighborhood(t);
-                  const updated = { ...(mapLocationDetails || {}), district: t };
-                  setMapLocationDetails(updated);
-                  const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
-                  setMapAddressText(formatted);
-                }}
-                placeholder="Ex: Centro"
-                placeholderTextColor={colors.textMuted}
-              />
-            </View>
-            <View style={{ flex: 1.5 }}>
-              <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Cidade</Text>
-              <TextInput
-                style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-                value={city}
-                onChangeText={(t) => {
-                  setCity(t);
-                  const updated = { ...(mapLocationDetails || {}), city: t };
-                  setMapLocationDetails(updated);
-                  const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
-                  setMapAddressText(formatted);
-                }}
-                placeholder="Ex: Pelotas"
-                placeholderTextColor={colors.textMuted}
-              />
-            </View>
-            <View style={{ flex: 0.8 }}>
-              <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Estado</Text>
-              <TextInput
-                style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-                value={state}
-                onChangeText={(t) => {
-                  const upper = t.toUpperCase();
-                  setState(upper);
-                  const updated = { ...(mapLocationDetails || {}), state: upper };
-                  setMapLocationDetails(updated);
-                  const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
-                  setMapAddressText(formatted);
-                }}
-                placeholder="Ex: RS"
-                maxLength={2}
-                autoCapitalize="characters"
-                placeholderTextColor={colors.textMuted}
-              />
+        {isSpotted && (
+          <View style={{
+            backgroundColor: isDark ? '#78350F' : '#FEF3C7',
+            borderColor: isDark ? '#B45309' : '#FDE68A',
+            borderWidth: 1,
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 12,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            gap: 10,
+          }}>
+            <MaterialIcons name="add-location-alt" size={22} color="#D97706" style={{ marginTop: 2 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, fontWeight: '800', color: isDark ? '#FDE68A' : '#B45309', marginBottom: 3 }}>
+                📍 Avistamento em Via Pública
+              </Text>
+              <Text style={{ fontSize: 11.5, color: isDark ? '#FEF3C7' : '#92400E', lineHeight: 17 }}>
+                O endereço deste ponto da rua ficará visível para que o tutor e a comunidade possam traçar a rota até onde o animal foi visto.
+              </Text>
             </View>
           </View>
+        )}
 
-          <View style={styles.addressEditorContainer}>
-            <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Endereço Completo</Text>
-            <TextInput
-              style={[styles.addressInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
-              value={mapAddressText}
-              onChangeText={setMapAddressText}
-              placeholder="Edite o endereço gerado pelo mapa"
-              placeholderTextColor={colors.textMuted}
-              multiline
-              textAlignVertical="top"
-            />
-          </View>
+        <Text style={[styles.locationHint, { color: colors.textSecondary }]}>
+          {isLost
+            ? 'Escolha no mapa o ponto ou região aproximada onde o pet fugiu ou foi visto pela última vez.'
+            : isSpotted
+            ? 'Marque no mapa o ponto exato da rua onde você viu o animal solto.'
+            : 'Marque no mapa o local onde você encontrou e recolheu o animal.'}
+        </Text>
+        {renderMapLocationButton()}
+
+        <View style={styles.datePickerContainer}>
+          <Text style={[styles.label, { color: colors.text }]}>Data do Evento *</Text>
+          <TouchableOpacity
+            style={[styles.datePickerButton, { backgroundColor: isDark ? '#161F30' : '#F9FAFB', borderColor: colors.border }]}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={[styles.datePickerButtonText, { color: colors.text }]}>
+              {formatDateDisplay(date)}
+            </Text>
+          </TouchableOpacity>
         </View>
-      )}
-    </>
-  );
+
+        <Modal
+          visible={showDatePicker}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowDatePicker(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={[styles.calendarWrapper, { backgroundColor: colors.surface }]}>
+              <View style={[styles.calendarHeader, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.calendarTitle, { color: colors.text }]}>Selecione a Data</Text>
+                <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                  <Text style={[styles.closeButton, { color: colors.textSecondary }]}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <Calendar
+                current={date}
+                minDate="2020-01-01"
+                maxDate={new Date().toISOString().split('T')[0]}
+                onDayPress={handleDateSelect}
+                markedDates={{ [date]: { selected: true, selectedColor: colors.primary, selectedTextColor: '#FFFFFF' } }}
+                theme={{
+                  backgroundColor: colors.surface,
+                  calendarBackground: colors.surface,
+                  textSectionTitleColor: colors.textSecondary,
+                  selectedDayBackgroundColor: colors.primary,
+                  selectedDayTextColor: '#FFFFFF',
+                  todayTextColor: colors.primary,
+                  dayTextColor: colors.text,
+                  arrowColor: colors.primary,
+                  monthTextColor: colors.text,
+                }}
+              />
+              <Button title="Confirmar data" onPress={() => setShowDatePicker(false)} style={styles.modalButton} />
+            </View>
+          </View>
+        </Modal>
+
+        {status === 'lost' && (
+          <View style={[styles.rewardSection, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <TouchableOpacity
+              style={styles.checkboxContainer}
+              onPress={() => setOfferReward(!offerReward)}
+            >
+              <View style={[styles.checkbox, { borderColor: colors.border }, offerReward && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
+                {offerReward && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <Text style={[styles.checkboxLabel, { color: colors.text }]}>Oferecer Recompensa</Text>
+            </TouchableOpacity>
+
+            {offerReward && (
+              <>
+                <Input
+                  label="Valor da Recompensa"
+                  placeholder="Ex: 100"
+                  value={rewardAmount}
+                  onChangeText={setRewardAmount}
+                  keyboardType="decimal-pad"
+                  style={styles.input}
+                />
+              </>
+            )}
+          </View>
+        )}
+
+        {/* Seção de Publicação em nome de terceiro */}
+        <View style={[styles.thirdPartySection, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setIsThirdPartyOwner(!isThirdPartyOwner)}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.checkbox, { borderColor: colors.border }, isThirdPartyOwner && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
+              {isThirdPartyOwner && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <Text style={[styles.checkboxLabel, { color: colors.text }]}>
+              Estou publicando em nome de outra pessoa
+            </Text>
+          </TouchableOpacity>
+
+          {isThirdPartyOwner && (
+            <View style={[styles.thirdPartyInputsBox, { borderTopColor: colors.border }]}>
+              <Text style={[styles.thirdPartyHint, { color: colors.textSecondary }]}>
+                Informe o nome e telefone do tutor/dono real para contato direto:
+              </Text>
+              <Input
+                label="Nome do Tutor / Responsável *"
+                placeholder="Ex: Dona Maria"
+                value={thirdPartyName}
+                onChangeText={setThirdPartyName}
+                style={styles.input}
+              />
+              <Input
+                label="Telefone / WhatsApp do Tutor *"
+                placeholder="Ex: (54) 99999-9999"
+                value={thirdPartyPhone}
+                onChangeText={(text) => {
+                  const digits = String(text).replace(/\D/g, '').slice(0, 11);
+                  let formatted = digits;
+                  if (digits.length > 2 && digits.length <= 6) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+                  else if (digits.length > 6 && digits.length <= 10) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+                  else if (digits.length > 10) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+                  setThirdPartyPhone(formatted);
+                }}
+                keyboardType="phone-pad"
+                style={styles.input}
+              />
+            </View>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  const renderMapLocationButton = () => {
+    const isLost = status === 'lost';
+    const isSpotted = status === 'found' && foundCustody === 'spotted';
+
+    return (
+      <>
+        <TouchableOpacity
+          style={[styles.mapButton, { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' }]}
+          onPress={() => setMapModalVisible(true)}
+        >
+          <Text style={[styles.mapButtonText, { color: colors.primary }]}>
+            {mapLocation
+              ? '📍 Alterar ponto no mapa'
+              : (isLost ? '📍 Marcar Região de Desaparecimento no Mapa' : '🗺️ Escolher localização no mapa')}
+          </Text>
+        </TouchableOpacity>
+        {mapLocation && (
+          <Text style={[styles.mapSelectedText, { color: colors.textSecondary }]}>
+            Epicentro GPS: {mapLocation.latitude.toFixed(5)}, {mapLocation.longitude.toFixed(5)}
+          </Text>
+        )}
+        {mapLocation && (
+          <View style={[styles.addressFieldsContainer, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <Text style={[styles.label, { marginBottom: 8, color: colors.text }]}>
+              {isLost ? 'Região e Referências (Sem expor residência)' : 'Endereço do Local (Editável)'}
+            </Text>
+            
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+              <View style={{ flex: isLost ? 1.5 : 2.2 }}>
+                <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>
+                  {isLost ? 'Ponto de Referência / Rua' : 'Rua / Logradouro'}
+                </Text>
+                <TextInput
+                  style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+                  value={mapLocationDetails?.street || ''}
+                  onChangeText={(t) => {
+                    const updated = { ...(mapLocationDetails || {}), street: t };
+                    setMapLocationDetails(updated);
+                    const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
+                    setMapAddressText(formatted);
+                  }}
+                  placeholder={isLost ? 'Ex: Próximo à Praça / Mercado' : 'Ex: Rua das Flores'}
+                  placeholderTextColor={colors.textMuted}
+                />
+              </View>
+
+              {!isLost && (
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>
+                    {isSpotted ? 'Nº Aprox.' : 'Nº da Casa'}
+                  </Text>
+                  <TextInput
+                    style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+                    value={mapLocationDetails?.number || ''}
+                    onChangeText={(t) => {
+                      const updated = { ...(mapLocationDetails || {}), number: t };
+                      setMapLocationDetails(updated);
+                      const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
+                      setMapAddressText(formatted);
+                    }}
+                    placeholder={isSpotted ? 'Ex: 450' : 'Ex: 123'}
+                    placeholderTextColor={colors.textMuted}
+                  />
+                </View>
+              )}
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+              <View style={{ flex: 1.5 }}>
+                <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Bairro</Text>
+                <TextInput
+                  style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+                  value={mapLocationDetails?.district || neighborhood || ''}
+                  onChangeText={(t) => {
+                    setNeighborhood(t);
+                    const updated = { ...(mapLocationDetails || {}), district: t };
+                    setMapLocationDetails(updated);
+                    const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
+                    setMapAddressText(formatted);
+                  }}
+                  placeholder="Ex: Centro"
+                  placeholderTextColor={colors.textMuted}
+                />
+              </View>
+              <View style={{ flex: 1.5 }}>
+                <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Cidade</Text>
+                <TextInput
+                  style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+                  value={city}
+                  onChangeText={(t) => {
+                    setCity(t);
+                    const updated = { ...(mapLocationDetails || {}), city: t };
+                    setMapLocationDetails(updated);
+                    const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
+                    setMapAddressText(formatted);
+                  }}
+                  placeholder="Ex: Passo Fundo"
+                  placeholderTextColor={colors.textMuted}
+                />
+              </View>
+              <View style={{ flex: 0.8 }}>
+                <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Estado</Text>
+                <TextInput
+                  style={[styles.singleLineInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+                  value={state}
+                  onChangeText={(t) => {
+                    const upper = t.toUpperCase();
+                    setState(upper);
+                    const updated = { ...(mapLocationDetails || {}), state: upper };
+                    setMapLocationDetails(updated);
+                    const formatted = [updated.street, updated.number, updated.district, updated.city, updated.state].filter(Boolean).join(', ');
+                    setMapAddressText(formatted);
+                  }}
+                  placeholder="UF"
+                  maxLength={2}
+                  placeholderTextColor={colors.textMuted}
+                />
+              </View>
+            </View>
+
+            <View style={styles.addressEditorContainer}>
+              <Text style={[styles.smallInputLabel, { color: colors.textSecondary }]}>Endereço Completo</Text>
+              <TextInput
+                style={[styles.addressInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+                value={mapAddressText}
+                onChangeText={setMapAddressText}
+                placeholder="Edite o endereço gerado pelo mapa"
+                placeholderTextColor={colors.textMuted}
+                multiline
+                textAlignVertical="top"
+              />
+            </View>
+          </View>
+        )}
+      </>
+    );
+  };
 
   const renderMapLocationPicker = () => (
     <MapLocationPicker

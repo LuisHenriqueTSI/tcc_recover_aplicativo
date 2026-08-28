@@ -230,6 +230,35 @@ Quando um usuário encontra um animal na rua e inicia o cadastro:
 
 ---
 
+### 5. 🛡️ Arquitetura de Privacidade e Segurança do Tutor (Privacy by Design - LGPD)
+
+Um dos pilares acadêmicos e operacionais mais críticos do **WeFIND** é a proteção integral da integridade física, psicológica e patrimonial dos tutores em momentos de vulnerabilidade:
+
+```
+                      [ CADASTRO DE ANIMAL PERDIDO ]
+                                     │
+               ┌─────────────────────┴─────────────────────┐
+               ▼                                           ▼
+   [ O que o Sistema Utiliza ]                [ O que o Público Visualiza ]
+   • Coordenada GPS (Epicentro)               • Apenas Bairro e Cidade
+   • Algoritmo de Haversine (Raio de Alerta)  • Ponto de Referência Opcional
+   • Disparo para Voluntários Próximos        • NUNCA o número da casa do tutor
+```
+
+#### 📌 Princípios Implementados:
+1. **Desacoplamento do Endereço Residencial (*Anti-Scam* / Prevenção a Extorsões):**
+   - Ao cadastrar que perdeu um animal, o tutor **NÃO** deve e **NÃO** é solicitado a informar o número de sua residência.
+   - Isso elimina fraudes comuns onde golpistas usam o endereço da vítima para fingir sequestro/resgate com exigência de transferências bancárias (Pix).
+2. **Conceito de Epicentro Geográfico de Busca:**
+   - A coordenada registrada funciona como o **centro do círculo de busca**.
+   - O algoritmo geoespacial do WeFIND calcula a proximidade e envia notificações automáticas em lote para voluntários e lares temporários situados num raio de **5 km a 10 km** do ponto de desaparecimento.
+3. **Diferenciação Contextual de Localização por Tipo de Publicação:**
+   - **Animal Perdido (`status === 'lost'`):** O público visualiza apenas o bairro e referências gerais (*ex: "Região do Centro • Proximidades da Praça Tochetto"*).
+   - **Animal Visto na Rua (`found_custody === 'spotted'`):** O endereço do logradouro público fica visível (*ex: "Av. Brasil, 450 - Centro"*), permitindo que a comunidade e o tutor tracem rotas de resgate imediatas.
+   - **Animal Acolhido (`found_custody === 'with_me'`):** O endereço do lar temporário permanece sob sigilo absoluto; o tutor só obtém contato após passar pela triagem no chat interno com comprovação de posse (características particulares, cicatrizes e validação por fotos).
+
+---
+
 ✅ **Segurança — Senhas Fortes e Mensagens Amigáveis**
 - **Medidor Visual de Força de Senha (`PasswordStrengthIndicator.jsx`):**
   - Barra de progresso colorida em tempo real com nível: Fraca / Média / Forte / Excelente.

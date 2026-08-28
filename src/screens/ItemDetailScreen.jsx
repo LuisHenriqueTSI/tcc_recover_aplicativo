@@ -55,15 +55,30 @@ const formatCityState = (item) => {
 };
 
 const formatStreetNumberNeighborhood = (item, isAuthorized = false) => {
+  const isLost = item?.status === 'lost';
   const isFoundHome = item?.status === 'found' && item?.extra_fields?.found_custody !== 'spotted';
+  const isSpotted = item?.extra_fields?.found_custody === 'spotted';
   const details = item?.extra_fields?.location_details;
   const district = (details?.district || item?.neighborhood || '').trim();
 
-  // Se o animal foi acolhido em casa / lar temporário e NÃO tem autorização/aprovação, protege a privacidade ocultando rua e número
-  if (isFoundHome && !isAuthorized) {
-    return district ? `Região do Bairro ${district} (Endereço protegido)` : 'Região do Bairro (Endereço protegido)';
+  // 1. ANIMAL PERDIDO: Exibe como Região de Desaparecimento (sem expor o número da casa do tutor)
+  if (isLost) {
+    const reference = (details?.reference || details?.street || item?.street || '').trim();
+    if (reference && district && reference !== district) {
+      return `Região de ${district} • Proximidades: ${reference}`;
+    }
+    if (district) {
+      return `Região do Bairro ${district}`;
+    }
+    return 'Região de Desaparecimento informada pelo tutor';
   }
 
+  // 2. ANIMAL ACOLHIDO (Lar / Custódia Provisória): Protege a casa do acolhedor
+  if (isFoundHome && !isAuthorized) {
+    return district ? `Região do Bairro ${district} (Endereço protegido)` : 'Região de Acolhimento (Endereço protegido)';
+  }
+
+  // 3. ANIMAL VISTO NA RUA / AUTORIZADO: Exibe endereço completo da via pública
   const street = (details?.street || item?.street || '').trim();
   const number = (details?.number || item?.house_number || '').trim();
 
@@ -1082,13 +1097,30 @@ const ItemDetailScreen = ({ route, navigation }) => {
       {/* 4. CARD DE LOCALIZAÇÃO E DATA COM ROTA GPS */}
       <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <View style={styles.sectionHeaderRow}>
-            <View style={[styles.sectionIconWrap, { backgroundColor: colors.primaryLight }]}>
-              <MaterialIcons name="place" size={20} color={colors.primary} />
+          <View style={[styles.sectionHeaderRow, { flex: 1 }]}>
+            <View style={[styles.sectionIconWrap, { backgroundColor: item.status === 'lost' ? (isDark ? '#1E293B' : '#EFF6FF') : colors.primaryLight }]}>
+              <MaterialIcons
+                name={item.status === 'lost' ? 'security' : (item?.extra_fields?.found_custody === 'spotted' ? 'add-location-alt' : 'home')}
+                size={20}
+                color={item.status === 'lost' ? '#2563EB' : colors.primary}
+              />
             </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              {item.status === 'lost' ? 'Último Local Visto' : 'Local Onde Foi Encontrado'}
-            </Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                {item.status === 'lost'
+                  ? 'Região do Desaparecimento'
+                  : item?.extra_fields?.found_custody === 'spotted'
+                  ? 'Local de Avistamento na Rua'
+                  : 'Local Onde Foi Encontrado'}
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.textSecondary, marginTop: 1 }}>
+                {item.status === 'lost'
+                  ? '🛡️ Epicentro geográfico seguro para busca'
+                  : item?.extra_fields?.found_custody === 'spotted'
+                  ? '📍 Ponto em via pública aberto para rota de resgate'
+                  : '🔒 Acolhimento seguro com endereço preservado'}
+              </Text>
+            </View>
           </View>
         </View>
 
