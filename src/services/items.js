@@ -551,8 +551,8 @@ export const deleteItem = async (itemId, options = {}) => {
       await supabase.from('item_photos').delete().eq('item_id', itemId);
     }
 
-    // Delete messages
-    await supabase.from('messages').delete().eq('item_id', itemId);
+    // ATENÇÃO: As mensagens NÃO são excluídas para manter o histórico ativo para os usuários,
+    // exibindo o aviso de que a publicação associada foi excluída/encerrada.
 
     // Delete sightings
     await supabase.from('sightings').delete().eq('item_id', itemId);

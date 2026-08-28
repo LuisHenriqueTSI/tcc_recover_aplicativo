@@ -46,6 +46,7 @@ const ChatScreen = (props) => {
   const [otherName, setOtherName] = useState(conversation?.otherName || '');
   const [avatarUrl, setAvatarUrl] = useState(conversation?.avatarUrl || null);
   const [itemData, setItemData] = useState(null);
+  const [isItemDeleted, setIsItemDeleted] = useState(Boolean(conversation?.isItemDeleted));
 
   const [sending, setSending] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -164,13 +165,18 @@ const ChatScreen = (props) => {
             .from('items')
             .select('id, title, status, owner_id, species, city, state, neighborhood, street, house_number, latitude, longitude, extra_fields')
             .eq('id', itemId)
-            .single()
+            .maybeSingle()
             .then(({ data: iData }) => {
               if (iData) {
                 setItemData(iData);
                 if (iData.title) setPetTitle(iData.title);
+                setIsItemDeleted(false);
+              } else {
+                setIsItemDeleted(true);
               }
-            }).catch(() => {});
+            }).catch(() => {
+              setIsItemDeleted(true);
+            });
         }
       } catch (err) {
         console.log('[ChatScreen] Erro ao carregar mensagens:', err.message);
@@ -182,15 +188,15 @@ const ChatScreen = (props) => {
   }, [user?.id, otherId, itemId]);
 
   // Identifica papéis na conversa
-  const isFoundPet = itemData?.status === 'found' || conversation?.itemStatus === 'found';
+  const isFoundPet = !isItemDeleted && (itemData?.status === 'found' || conversation?.itemStatus === 'found');
   const isMeFinder = itemData ? itemData.owner_id === user?.id : conversation?.itemOwnerId === user?.id;
   const hasUserSentMessage = messages.some(m => m.sender_id === user?.id);
 
   // Visitante precisa comprovar posse se o pet foi encontrado e ainda não mandou nada
-  const requiresInitialProof = Boolean(itemId && isFoundPet && !isMeFinder && !hasUserSentMessage && !loading);
+  const requiresInitialProof = Boolean(itemId && !isItemDeleted && isFoundPet && !isMeFinder && !hasUserSentMessage && !loading);
 
   // Resgatista pode confirmar o tutor e liberar o local de retirada
-  const canShareLocation = Boolean(itemId && isFoundPet && isMeFinder);
+  const canShareLocation = Boolean(itemId && !isItemDeleted && isFoundPet && isMeFinder);
 
   // Endereço cadastrado do item
   const registeredStreet = itemData?.extra_fields?.location_details?.street || itemData?.street || '';
@@ -639,9 +645,9 @@ const ChatScreen = (props) => {
               <Text style={[styles.chatHeaderName, { color: colors.headerText }]} numberOfLines={1}>
                 {otherName || 'Usuário'}
               </Text>
-              {petTitle ? (
-                <Text style={[styles.chatHeaderPet, { color: colors.headerSubText }]} numberOfLines={1}>
-                  Pet: {petTitle}
+              {petTitle || isItemDeleted ? (
+                <Text style={[styles.chatHeaderPet, { color: isItemDeleted ? (isDark ? '#FCA5A5' : '#DC2626') : colors.headerSubText }]} numberOfLines={1}>
+                  Pet: {petTitle || 'Animal'} {isItemDeleted ? '(Publicação Excluída)' : ''}
                 </Text>
               ) : null}
             </View>
@@ -650,6 +656,28 @@ const ChatScreen = (props) => {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+
+      {/* Banner Informativo de Publicação Excluída/Encerrada */}
+      {isItemDeleted && (
+        <View style={{
+          backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2',
+          borderColor: isDark ? 'rgba(239, 68, 68, 0.35)' : '#FCA5A5',
+          borderWidth: 1,
+          borderRadius: 10,
+          paddingVertical: 8,
+          paddingHorizontal: 12,
+          marginHorizontal: 12,
+          marginTop: 8,
+          marginBottom: 4,
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}>
+          <MaterialIcons name="info-outline" size={20} color="#DC2626" style={{ marginRight: 8 }} />
+          <Text style={{ color: isDark ? '#FCA5A5' : '#B91C1C', fontSize: 12, flex: 1, fontWeight: '600', lineHeight: 16 }}>
+            Esta publicação não existe mais (foi encerrada ou excluída pelo autor). As mensagens e o histórico continuam disponíveis para consulta.
+          </Text>
+        </View>
+      )}
 
       {/* Banner de Ação para o Resgatista: Compartilhar Localização */}
       {canShareLocation && (

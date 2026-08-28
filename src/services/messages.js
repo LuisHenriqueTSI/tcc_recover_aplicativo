@@ -147,7 +147,7 @@ export const getConversations = async (userId) => {
         ? supabase.from('profiles').select('id, name, avatar_url').in('id', Array.from(otherUserIds))
         : Promise.resolve({ data: [] }),
       itemIds.size > 0
-        ? supabase.from('items').select('id, title, species').in('id', Array.from(itemIds))
+        ? supabase.from('items').select('id, title, species, status').in('id', Array.from(itemIds))
         : Promise.resolve({ data: [] }),
     ]);
 
@@ -155,13 +155,15 @@ export const getConversations = async (userId) => {
     (profilesRes?.data || []).forEach(p => profileMap.set(p.id, p));
 
     const itemMap = new Map();
-    (itemsRes?.data || []).forEach(i => itemMap.set(i.id, i.title || i.species || ''));
+    (itemsRes?.data || []).forEach(i => itemMap.set(i.id, i));
 
     // 4. Monta o resultado final instantaneamente
     const result = [];
     for (const [key, { otherId, msg }] of rawConvs.entries()) {
       const prof = profileMap.get(otherId);
-      const itemTitle = msg.item_id ? (itemMap.get(msg.item_id) || '') : '';
+      const itemInfo = msg.item_id ? itemMap.get(msg.item_id) : null;
+      const isItemDeleted = Boolean(msg.item_id && !itemInfo);
+      const itemTitle = itemInfo?.title || itemInfo?.species || (isItemDeleted ? 'Publicação excluída' : '');
 
       result.push({
         otherId,
@@ -173,6 +175,8 @@ export const getConversations = async (userId) => {
         unread: msg.receiver_id === userId && !msg.read,
         itemId: msg.item_id,
         itemTitle,
+        itemStatus: itemInfo?.status || (isItemDeleted ? 'deleted' : null),
+        isItemDeleted,
       });
     }
 

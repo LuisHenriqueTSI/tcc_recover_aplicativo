@@ -162,14 +162,31 @@ const InboxScreen = () => {
             </View>
 
             {/* Chip de Pet Relacionado */}
-            {item.itemTitle ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>
+            {(item.itemTitle || item.isItemDeleted) ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 3, flexWrap: 'wrap', gap: 4 }}>
                 <View style={[styles.petChip, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
                   <MaterialIcons name="pets" size={10} color={colors.primary} style={{ marginRight: 3 }} />
                   <Text style={[styles.petChipText, { color: colors.primary }]} numberOfLines={1}>
-                    {item.itemTitle}
+                    {item.itemTitle || 'Pet'}
                   </Text>
                 </View>
+                {item.isItemDeleted && (
+                  <View style={{
+                    backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEE2E2',
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: 6,
+                    borderWidth: 1,
+                    borderColor: isDark ? 'rgba(239, 68, 68, 0.3)' : '#FCA5A5',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}>
+                    <MaterialIcons name="error-outline" size={10} color={isDark ? '#FCA5A5' : '#DC2626'} style={{ marginRight: 2 }} />
+                    <Text style={{ fontSize: 9.5, fontWeight: '700', color: isDark ? '#FCA5A5' : '#DC2626' }}>
+                      Publicação Excluída
+                    </Text>
+                  </View>
+                )}
               </View>
             ) : null}
 
