@@ -198,6 +198,8 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
         onNotificationsUpdated();
       }
     }
+  }
+
   async function handleTestLostPetNotification() {
     Alert.alert(
       '🧪 Testar Notificação Push',
