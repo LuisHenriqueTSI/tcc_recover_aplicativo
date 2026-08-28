@@ -47,7 +47,7 @@ const MapLocationPicker = ({
   initialLocation,
   mode,
   radiusKm = 25,
-  showRadius = true,
+  showRadius = mode === 'profile',
   onClose,
   onConfirm,
   onSelectLocation,

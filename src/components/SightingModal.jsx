@@ -293,6 +293,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
         visible={mapPickerVisible}
         initialLocation={coordinate}
         mode="pin"
+        showRadius={false}
         onClose={() => setMapPickerVisible(false)}
         onConfirm={handleConfirmLocation}
         onSelectLocation={handleConfirmLocation}

@@ -771,6 +771,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     <MapLocationPicker
       visible={mapModalVisible}
       initialLocation={mapLocation}
+      showRadius={false}
       onClose={() => setMapModalVisible(false)}
       onConfirm={({ coordinate, address, addressDetails, addressText }) => {
         setMapLocation(coordinate);
