@@ -315,8 +315,8 @@ const AdminScreen = ({ navigation }) => {
   const executeAdminPushTest = async (delaySeconds = 0) => {
     try {
       await triggerLocalNotification({
-        title: '🚨 Alerta de Pet Perdido na sua Região!',
-        body: 'Um cão ("Thor") foi dado como perdido nas proximidades. Toque para ver fotos e ajudar nas buscas!',
+        title: '🚨 Alerta WeFIND: Cão Perdido',
+        body: '🐾 Cão ("Thor", Labrador) perdido no seu bairro. Toque para abrir detalhes e fotos.',
         data: {
           type: 'nearby_lost_pet',
         },
@@ -326,8 +326,8 @@ const AdminScreen = ({ navigation }) => {
       await notificationsService.createNotification({
         user_id: user.id,
         type: 'nearby_lost_pet',
-        title: '🚨 Alerta de Pet Perdido na sua Região!',
-        message: 'Um cão ("Thor") foi dado como perdido nas proximidades. Fique atento e avise caso o veja!',
+        title: '🚨 Alerta WeFIND: Cão Perdido',
+        message: '🐾 Cão ("Thor", Labrador) perdido nas proximidades. Toque para abrir detalhes e fotos.',
         item_id: null,
       });
 

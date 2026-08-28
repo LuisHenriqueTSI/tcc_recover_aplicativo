@@ -139,8 +139,8 @@ const ConfigScreen = ({ navigation }) => {
           onPress: async () => {
             const { triggerLocalNotification } = require('../services/pushNotifications');
             await triggerLocalNotification({
-              title: '🚨 Alerta de Pet Perdido na sua Região!',
-              body: 'Um cão ("Thor") foi dado como perdido no seu bairro. Toque para ver fotos e ajudar!',
+              title: '🚨 Alerta WeFIND: Cão Perdido',
+              body: '🐾 Cão ("Thor", Labrador) perdido no seu bairro. Toque para abrir detalhes e fotos.',
               data: { type: 'nearby_lost_pet' },
               delaySeconds: 0,
             });
@@ -152,8 +152,8 @@ const ConfigScreen = ({ navigation }) => {
           onPress: async () => {
             const { triggerLocalNotification } = require('../services/pushNotifications');
             await triggerLocalNotification({
-              title: '🚨 Alerta de Pet Perdido na sua Região!',
-              body: 'Um cão ("Thor") foi dado como perdido no seu bairro. Toque para ver fotos e ajudar!',
+              title: '🚨 Alerta WeFIND: Cão Perdido',
+              body: '🐾 Cão ("Thor", Labrador) perdido no seu bairro. Toque para abrir detalhes e fotos.',
               data: { type: 'nearby_lost_pet' },
               delaySeconds: 4,
             });

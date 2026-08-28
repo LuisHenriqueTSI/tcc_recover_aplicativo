@@ -269,9 +269,16 @@ export async function broadcastLostPetAlertToNearbyUsers(petItem, currentUserId 
 
     console.log(`[broadcastLostPetAlert] 📍 ${targetUsers.length} usuários situados na proximidade do epicentro.`);
 
-    const alertTitle = '🚨 Alerta de Pet Perdido na sua Região!';
-    const locationHint = petDistrict ? `no Bairro ${petDistrict}` : (petCity ? `em ${petCity}` : 'na sua proximidade');
-    const alertMessage = `Um ${petTitle} foi dado como perdido ${locationHint}. Fique atento(a) e ajude a avisar caso o veja!`;
+    const speciesLabel = petItem.species === 'dog' || petItem.species === 'cachorro' || petItem.species === 'cão'
+      ? 'Cão'
+      : (petItem.species === 'cat' || petItem.species === 'gato' ? 'Gato' : (petItem.species || 'Pet'));
+    const breedText = petItem.breed || petItem.extra_fields?.breed || '';
+    const nameText = petItem.title || '';
+    const petIdentification = [nameText ? `"${nameText}"` : '', breedText ? `(${breedText})` : ''].filter(Boolean).join(' ') || speciesLabel;
+    const locationHint = petDistrict ? `no Bairro ${petDistrict}` : (petCity ? `em ${petCity}` : 'na sua região');
+
+    const alertTitle = `🚨 Alerta WeFIND: ${speciesLabel} Perdido`;
+    const alertMessage = `🐾 ${speciesLabel} ${petIdentification} perdido ${locationHint}. Toque para abrir detalhes e fotos.`;
 
     // 2. Cria notificações in-app persistentes no Supabase para cada usuário próximo
     const inAppNotifications = targetUsers.map((target) => ({

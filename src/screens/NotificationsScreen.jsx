@@ -222,8 +222,8 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
     try {
       // Dispara notificação com banner e som no aparelho
       await triggerLocalNotification({
-        title: '🚨 Alerta de Pet Perdido na sua Região!',
-        body: 'Um cão ("Thor") foi dado como perdido no seu bairro. Toque para ver fotos e ajudar!',
+        title: '🚨 Alerta WeFIND: Cão Perdido',
+        body: '🐾 Cão ("Thor", Labrador) perdido no seu bairro. Toque para abrir detalhes e fotos.',
         data: {
           itemId: systemAlerts[0]?.itemId || null,
           type: 'nearby_lost_pet',
@@ -236,8 +236,8 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
         await createNotification({
           user_id: user.id,
           type: 'nearby_lost_pet',
-          title: '🚨 Alerta de Pet Perdido na sua Região!',
-          message: 'Um cão ("Thor") foi dado como perdido nas proximidades. Fique atento e ajude a avisar caso o veja!',
+          title: '🚨 Alerta WeFIND: Cão Perdido',
+          message: '🐾 Cão ("Thor", Labrador) perdido nas proximidades. Toque para abrir detalhes e fotos.',
           item_id: systemAlerts[0]?.itemId || null,
         });
         await fetchNotifications();
