@@ -24,9 +24,128 @@ const loadDeletedSightingsSet = async () => {
 // Executa o carregamento inicial silenciosamente
 loadDeletedSightingsSet().catch(() => {});
 
+/**
+ * Converte qualquer formato de localização (objeto de coordenadas, JSON ou string) em endereço completo legível
+ */
+export const resolveReadableAddress = async (locationInput) => {
+  if (!locationInput) return '';
+
+  // Se já for uma string de endereço legível e não JSON/coordenadas puras
+  if (typeof locationInput === 'string') {
+    const trimmed = locationInput.trim();
+    if (!trimmed.startsWith('{') && !trimmed.startsWith('[') && !/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(trimmed)) {
+      return trimmed;
+    }
+  }
+
+  let lat = null;
+  let lng = null;
+  let explicitAddress = '';
+
+  if (typeof locationInput === 'object' && locationInput !== null) {
+    if (locationInput.address && typeof locationInput.address === 'string' && !locationInput.address.startsWith('{')) {
+      explicitAddress = locationInput.address.trim();
+    }
+    lat = locationInput.latitude ?? locationInput.lat ?? locationInput.coords?.latitude;
+    lng = locationInput.longitude ?? locationInput.lng ?? locationInput.coords?.longitude;
+  } else if (typeof locationInput === 'string') {
+    try {
+      const parsed = JSON.parse(locationInput);
+      if (typeof parsed === 'object' && parsed !== null) {
+        if (parsed.address && typeof parsed.address === 'string' && !parsed.address.startsWith('{')) {
+          explicitAddress = parsed.address.trim();
+        }
+        lat = parsed.latitude ?? parsed.lat;
+        lng = parsed.longitude ?? parsed.lng;
+      }
+    } catch {
+      const parts = locationInput.split(',').map(p => Number(p.trim()));
+      if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        lat = parts[0];
+        lng = parts[1];
+      }
+    }
+  }
+
+  if (explicitAddress) {
+    return explicitAddress;
+  }
+
+  if (lat != null && lng != null && !isNaN(lat) && !isNaN(lng)) {
+    // 1. Tenta geocodificação reversa nativa pelo Expo Location
+    try {
+      const Location = await import('expo-location');
+      const addresses = await Location.reverseGeocodeAsync({ latitude: Number(lat), longitude: Number(lng) });
+      const addr = addresses?.[0];
+      if (addr) {
+        const st = addr.street || addr.name || '';
+        const num = (addr.name && /^\d+$/.test(String(addr.name))) ? addr.name : (addr.streetNumber || '');
+        const dist = addr.district || addr.subregion || '';
+        const ct = addr.city || addr.subregion || '';
+        const state = addr.region || '';
+
+        const parts = [];
+        if (st) parts.push(num ? `${st}, ${num}` : st);
+        if (dist && dist !== st) parts.push(dist);
+        if (ct && state) parts.push(`${ct} - ${state}`);
+        else if (ct) parts.push(ct);
+        else if (state) parts.push(state);
+
+        const result = parts.join(' - ');
+        if (result.trim()) return result.trim();
+      }
+    } catch (expoErr) {
+      console.log('[resolveReadableAddress] Aviso Expo Location:', expoErr?.message);
+    }
+
+    // 2. Fallback: Consulta ao Nominatim OpenStreetMap
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'WeFindApp/1.0', 'Accept-Language': 'pt-BR,pt;q=0.9' },
+      });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        const a = data?.address;
+        if (a) {
+          const road = a.road || a.pedestrian || a.suburb || '';
+          const houseNumber = a.house_number || '';
+          const suburb = a.suburb || a.neighbourhood || '';
+          const city = a.city || a.town || a.municipality || a.village || '';
+          const state = a.state || '';
+
+          const parts = [];
+          if (road) parts.push(houseNumber ? `${road}, ${houseNumber}` : road);
+          if (suburb && suburb !== road) parts.push(suburb);
+          if (city && state) parts.push(`${city} - ${state}`);
+          else if (city) parts.push(city);
+
+          const result = parts.join(' - ');
+          if (result.trim()) return result.trim();
+        }
+      }
+    } catch (osmErr) {
+      console.log('[resolveReadableAddress] Aviso OSM Nominatim:', osmErr?.message);
+    }
+
+    return 'Localização marcada no mapa';
+  }
+
+  return typeof locationInput === 'string' ? locationInput : 'Localização marcada no mapa';
+};
+
 export const createSighting = async (sightingData) => {
   try {
     console.log('[createSighting] Criando novo avistamento...');
+
+    // Resolve o endereço legível para salvar sempre como texto humanizado no banco
+    let locationAddress = sightingData.location;
+    if (typeof locationAddress === 'object' || (typeof locationAddress === 'string' && (locationAddress.startsWith('{') || locationAddress.includes(',')))) {
+      locationAddress = await resolveReadableAddress(sightingData.location);
+    }
 
     // Garante que contact_info será sempre um objeto (JSON)
     let contact_info = sightingData.contact_info;
@@ -42,7 +161,7 @@ export const createSighting = async (sightingData) => {
       .insert({
         item_id: sightingData.item_id,
         user_id: sightingData.user_id,
-        location: sightingData.location,
+        location: locationAddress || 'Localização marcada no mapa',
         description: sightingData.description,
         contact_info,
         photo_url: sightingData.photo_url,
@@ -103,7 +222,7 @@ export const getSightings = async (itemId) => {
       }
     }
 
-    // Monta resultado, parseando contact_info se for JSON
+    // Monta resultado, sanitizando location se for JSON ou coordenadas brutas
     return validSightings.map(s => {
       let contact_info = s.contact_info;
       if (typeof contact_info === 'string') {
@@ -114,8 +233,27 @@ export const getSightings = async (itemId) => {
           }
         } catch {}
       }
+
+      let locationText = s.location;
+      if (locationText && typeof locationText === 'string') {
+        const trimmed = locationText.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+          try {
+            const parsedLoc = JSON.parse(trimmed);
+            locationText = parsedLoc.address || 'Localização marcada no mapa';
+          } catch {
+            locationText = 'Localização marcada no mapa';
+          }
+        } else if (/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(trimmed)) {
+          locationText = 'Localização marcada no mapa';
+        }
+      } else if (locationText && typeof locationText === 'object') {
+        locationText = locationText.address || 'Localização marcada no mapa';
+      }
+
       return {
         ...s,
+        location: locationText,
         contact_info,
         profiles: profilesMap[s.user_id] || null,
       };
@@ -332,20 +470,22 @@ export const findNearbyPotentialMatches = async ({ latitude, longitude, species,
  */
 export const recordSightingAndUpdateItemLocation = async ({ itemId, userId, location, description, photoUrl, contactInfo }) => {
   try {
-    // 1. Cria o avistamento no histórico
+    // 1. Resolve o endereço completo humanizado
+    const resolvedAddress = await resolveReadableAddress(location);
+
+    // 2. Cria o avistamento no histórico
     const sighting = await createSighting({
       item_id: itemId,
       user_id: userId,
-      location: typeof location === 'object' ? location : { address: location },
+      location: resolvedAddress || 'Localização marcada no mapa',
       description,
       photo_url: photoUrl,
       contact_info: contactInfo,
     });
 
-    // 2. Atualiza a localização atual do item e o timestamp de último avistamento
+    // 3. Atualiza a localização atual do item e o timestamp de último avistamento
     const lat = location?.latitude ?? location?.coords?.latitude;
     const lng = location?.longitude ?? location?.coords?.longitude;
-    const address = location?.address || description || '';
 
     const updatePayload = {
       updated_at: new Date().toISOString(),
@@ -354,8 +494,8 @@ export const recordSightingAndUpdateItemLocation = async ({ itemId, userId, loca
       updatePayload.latitude = Number(lat);
       updatePayload.longitude = Number(lng);
     }
-    if (address) {
-      updatePayload.address = address;
+    if (resolvedAddress && resolvedAddress !== 'Localização marcada no mapa') {
+      updatePayload.address = resolvedAddress;
     }
 
     const { data: currentItem } = await supabase
@@ -372,7 +512,7 @@ export const recordSightingAndUpdateItemLocation = async ({ itemId, userId, loca
       sighting_count: newCount,
       last_sighting_at: new Date().toISOString(),
       last_sighting_by: userId,
-      last_sighting_address: address,
+      last_sighting_address: resolvedAddress || updatePayload.address || '',
     };
 
     await supabase

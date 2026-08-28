@@ -1619,12 +1619,38 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
                 <Text style={[styles.commentContentText, { color: colors.text }]}>{s.description}</Text>
 
-                {s.location ? (
-                  <View style={[styles.commentLocationChip, { backgroundColor: isDark ? '#0F172A' : '#EFF6FF' }]}>
-                    <MaterialIcons name="location-on" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-                    <Text style={[styles.commentLocationText, { color: colors.primary }]}>{s.location}</Text>
-                  </View>
-                ) : null}
+                {(() => {
+                  const loc = s.location;
+                  let displayLoc = null;
+                  if (loc) {
+                    if (typeof loc === 'object') {
+                      displayLoc = loc.address || 'Localização marcada no mapa';
+                    } else {
+                      const str = String(loc).trim();
+                      if (str.startsWith('{') || str.startsWith('[')) {
+                        try {
+                          const parsed = JSON.parse(str);
+                          displayLoc = parsed.address || 'Localização marcada no mapa';
+                        } catch {
+                          displayLoc = 'Localização marcada no mapa';
+                        }
+                      } else if (/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(str)) {
+                        displayLoc = 'Localização marcada no mapa';
+                      } else {
+                        displayLoc = str;
+                      }
+                    }
+                  }
+
+                  if (!displayLoc) return null;
+
+                  return (
+                    <View style={[styles.commentLocationChip, { backgroundColor: isDark ? '#0F172A' : '#EFF6FF' }]}>
+                      <MaterialIcons name="location-on" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                      <Text style={[styles.commentLocationText, { color: colors.primary }]}>{displayLoc}</Text>
+                    </View>
+                  );
+                })()}
 
                 {s.photo_url ? (
                   <Image source={{ uri: s.photo_url }} style={styles.commentAttachedImage} resizeMode="cover" />
