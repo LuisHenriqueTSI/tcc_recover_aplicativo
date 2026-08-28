@@ -94,14 +94,34 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
     items = (items || []).filter(item => item && item.id);
     const renewalAlerts = buildRenewalAlerts(items);
     const mappedSystemAlerts = [...renewalAlerts, ...(systemAlertsData || [])]
-      .filter(alert => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed'))
+      .filter(alert => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed' || alert.type === 'nearby_lost_pet' || alert.type === 'match' || alert.type === 'sighting'))
       .map(alert => ({
         ...alert,
-        icon: alert.type === 'renewal_reminder' ? 'schedule' : 'info-outline',
-        iconColor: alert.type === 'renewal_reminder' ? '#D97706' : '#DC2626',
+        icon: alert.type === 'renewal_reminder'
+          ? 'schedule'
+          : alert.type === 'nearby_lost_pet'
+          ? 'radar'
+          : alert.type === 'match'
+          ? 'auto-awesome'
+          : alert.type === 'sighting'
+          ? 'visibility'
+          : 'info-outline',
+        iconColor: alert.type === 'renewal_reminder'
+          ? '#D97706'
+          : alert.type === 'nearby_lost_pet'
+          ? '#DC2626'
+          : alert.type === 'match'
+          ? '#8B5CF6'
+          : alert.type === 'sighting'
+          ? '#2563EB'
+          : '#DC2626',
         bgColor: alert.type === 'renewal_reminder'
           ? (isDark ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7')
-          : (isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2'),
+          : alert.type === 'nearby_lost_pet'
+          ? (isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2')
+          : alert.type === 'match'
+          ? (isDark ? 'rgba(139, 92, 246, 0.15)' : '#F5F3FF')
+          : (isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF'),
       }));
 
     setSystemAlerts(mappedSystemAlerts);
@@ -143,6 +163,16 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
     if (notification.type === 'item_removed' && notification.itemId) {
       await markNotificationRead(notification.id.replace('system_', ''));
       navigation.navigate('ItemDetail', { itemId: notification.itemId });
+      return;
+    }
+
+    const targetItemId = notification.item_id || notification.itemId;
+    if ((notification.type === 'nearby_lost_pet' || notification.type === 'match' || notification.type === 'sighting') && targetItemId) {
+      const normalizedId = String(notification.id).replace('system_', '');
+      if (/^\d+$/.test(normalizedId)) {
+        await markNotificationRead(normalizedId);
+      }
+      navigation.navigate('ItemDetail', { itemId: targetItemId });
       return;
     }
 

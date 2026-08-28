@@ -259,6 +259,46 @@ Um dos pilares acadêmicos e operacionais mais críticos do **WeFIND** é a prot
 
 ---
 
+### 6. 🔔 Sistema de Push Notifications e Alertas Comunitários por Proximidade (Expo + Supabase)
+
+O **WeFIND** implementa uma arquitetura completa de notificações móveis push em tempo real utilizando o ecossistema oficial do **Expo (`expo-notifications`)** integrado ao banco de dados Supabase e à fórmula geodésica de Haversine:
+
+```
+               [ TUTOR CADASTRA ANIMAL PERDIDO ]
+                               │
+               ┌───────────────┴───────────────┐
+               ▼                               ▼
+       [ Supabase DB ]             [ Algoritmo Geoespacial ]
+   Registra o Pet Perdido         Calcula Raio de Proximidade (15 km)
+               │                               │
+               └───────────────┬───────────────┘
+                               ▼
+            [ Identifica Moradores e Voluntários ]
+            (Filtra por Coordenadas / Cidade)
+                               │
+       ┌───────────────────────┼───────────────────────┐
+       ▼                       ▼                       ▼
+[ Push Notification ]   [ In-App Notification ]   [ WhatsApp Alert ]
+  Expo Push Service       Caixa de Entrada          Disparo Opcional
+(Notificação Celular)   (Tela de Notificações)    (Com Consentimento)
+```
+
+#### 📌 Como Funciona o Ciclo de Vida Push no Expo:
+1. **Registro Automático de Token Push (`pushNotifications.js` / `AuthContext.jsx`):**
+   - Ao inicializar a sessão do usuário ou realizar login, o aplicativo solicita permissão e obtém o `ExpoPushToken` (`ExponentPushToken[...]`).
+   - O token é automaticamente sincronizado com a tabela `profiles` no Supabase e no `AsyncStorage`.
+   - No Android, é provisionado o canal de alta importância com som, vibração e banner `wefind-lost-pets`.
+2. **Disparo Geodistribuído em Tempo Real (`broadcastLostPetAlertToNearbyUsers`):**
+   - No momento em que um animal é cadastrado com `status === 'lost'`, o sistema calcula a distância de todos os usuários registrados até o epicentro do desaparecimento.
+   - Os usuários e voluntários que residem no raio de alerta (até **15 km**) recebem:
+     - **Push Notification com Banner Sonoro no Celular:** `🚨 Alerta de Pet Perdido na sua Região! Um [Pet] foi perdido no [Bairro]. Fique atento e avise caso o veja!`
+     - **Notificação In-App Persistente:** Registrada na tabela `notifications` com o tipo `nearby_lost_pet`.
+     - **Alerta WhatsApp (Opcional):** Disparado caso o voluntário tenha ativado notificações externas.
+3. **Deep Linking e Navegação Automática ao Tocar na Notificação (`App.js`):**
+   - O ouvinte global `Notifications.addNotificationResponseReceivedListener` intercepta o toque do usuário na notificação da barra do Android/iOS e abre instantaneamente a tela de detalhes do pet perdido ([`ItemDetailScreen.jsx`](file:///c:/Users/luish/OneDrive/Documentos/GitHub/tcc_recover_aplicativo/mobile/src/screens/ItemDetailScreen.jsx)).
+
+---
+
 ✅ **Segurança — Senhas Fortes e Mensagens Amigáveis**
 - **Medidor Visual de Força de Senha (`PasswordStrengthIndicator.jsx`):**
   - Barra de progresso colorida em tempo real com nível: Fraca / Média / Forte / Excelente.

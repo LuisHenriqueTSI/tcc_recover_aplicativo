@@ -20,6 +20,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import * as itemsService from '../services/items';
 import * as sightingsService from '../services/sightings';
 import * as rewardsService from '../services/rewards';
+import { broadcastLostPetAlertToNearbyUsers } from '../services/pushNotifications';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import MapLocationPicker from '../components/MapLocationPicker';
@@ -1487,14 +1488,31 @@ const RegisterItemScreen = ({ navigation, route }) => {
           });
         }
 
-        Alert.alert('Sucesso', 'Animal registrado com sucesso!', [
-          {
-            text: 'Ir para Home',
-            onPress: () => {
-              goToHomeAfterPublish();
+        if (status === 'lost' && resultItem) {
+          // Dispara alerta comunitário por proximidade para todos os voluntários e moradores da região
+          broadcastLostPetAlertToNearbyUsers(resultItem, user.id)
+            .then(({ notifiedCount }) => {
+              if (notifiedCount > 0) {
+                console.log(`[RegisterItem] 📢 ${notifiedCount} usuários notificados por proximidade.`);
+              }
+            })
+            .catch((e) => console.warn('[RegisterItem] Erro ao disparar alerta de proximidade:', e.message));
+        }
+
+        Alert.alert(
+          status === 'lost' ? '🚨 Alerta Comunitário Emitido!' : 'Sucesso',
+          status === 'lost'
+            ? 'Seu pet foi publicado e voluntários na região foram notificados para ajudar nas buscas!'
+            : 'Animal registrado com sucesso!',
+          [
+            {
+              text: 'Ir para Home',
+              onPress: () => {
+                goToHomeAfterPublish();
+              },
             },
-          },
-        ]);
+          ]
+        );
       }
     } catch (err) {
       const errorMsg = err.message || 'Erro ao registrar animal';

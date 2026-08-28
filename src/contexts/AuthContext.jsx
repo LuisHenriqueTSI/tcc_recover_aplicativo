@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import * as supabaseAuth from '../services/supabaseAuth';
 import * as userService from '../services/user';
+import { registerForPushNotificationsAsync } from '../services/pushNotifications';
 import { supabase } from '../lib/supabase';
 import { useTheme } from './ThemeContext';
 
@@ -36,6 +37,9 @@ export const AuthProvider = ({ children }) => {
         if (currentUser) {
           console.log('[Auth] Usuário encontrado:', currentUser.id);
           setUser(currentUser);
+
+          // Registra token para push notifications
+          registerForPushNotificationsAsync(currentUser.id).catch(() => {});
 
           // Garante que o perfil exista após restaurar a sessão
           const userPhone = currentUser.user_metadata?.whatsapp || currentUser.user_metadata?.phone || '';
