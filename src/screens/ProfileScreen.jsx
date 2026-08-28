@@ -134,6 +134,14 @@ const ProfileScreen = ({ navigation }) => {
 
   const communityLinks = [
     {
+      label: 'Rede de Lares Temporários',
+      description: 'Encontre voluntários disponíveis para abrigar pets',
+      icon: 'groups',
+      iconColor: '#16A34A',
+      bgColor: '#F0FDF4',
+      route: 'FosterVolunteers',
+    },
+    {
       label: 'Mural de Reencontros',
       description: 'Animais recuperados e relatos de tutores',
       icon: 'favorite',

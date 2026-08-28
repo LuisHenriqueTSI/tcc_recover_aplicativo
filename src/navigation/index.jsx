@@ -36,6 +36,7 @@ import SobreScreen from '../screens/SobreScreen';
 import MuralReencontrosScreen from '../screens/MuralReencontrosScreen';
 import RecoveredPetsScreen from '../screens/RecoveredPetsScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
+import FosterVolunteersScreen from '../screens/FosterVolunteersScreen';
 import { listItems } from '../services/items';
 import { buildRenewalAlerts } from '../services/notifications';
 
@@ -250,6 +251,11 @@ const PublicStack = () => {
         name="UserProfile"
         component={UserProfileScreen}
         options={{ title: 'Perfil do Membro' }}
+      />
+      <Stack.Screen
+        name="FosterVolunteers"
+        component={FosterVolunteersScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
@@ -634,6 +640,11 @@ const MainStack = () => {
         name="UserProfile"
         component={UserProfileScreen}
         options={{ title: 'Perfil do Membro' }}
+      />
+      <Stack.Screen
+        name="FosterVolunteers"
+        component={FosterVolunteersScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

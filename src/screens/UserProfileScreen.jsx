@@ -51,22 +51,29 @@ const UserProfileScreen = ({ route, navigation }) => {
   const loadUserData = useCallback(async () => {
     if (!userId) {
       setLoading(false);
+      setRefreshing(false);
       return;
     }
     try {
-      const [profileData, itemsData, userRatings, fosterData] = await Promise.all([
+      const [profileRes, itemsRes, ratingsRes, fosterRes] = await Promise.allSettled([
         userService.getUserById(userId),
         itemsService.getUserItems(userId),
         ratingsService.getUserRatings(userId),
         getFosterProfile(userId),
       ]);
-      setProfile(profileData || { name: initialName, avatar_url: initialAvatar });
+
+      const profileData = profileRes.status === 'fulfilled' ? profileRes.value : null;
+      const itemsData = itemsRes.status === 'fulfilled' ? itemsRes.value : [];
+      const userRatings = ratingsRes.status === 'fulfilled' ? ratingsRes.value : null;
+      const fosterData = fosterRes.status === 'fulfilled' ? fosterRes.value : null;
+
+      setProfile(profileData || { id: userId, name: initialName || 'Membro WeFIND', avatar_url: initialAvatar });
       setFosterProfile(fosterData);
-      setUserItems(itemsData || []);
+      setUserItems(Array.isArray(itemsData) ? itemsData : []);
       setRatingsData(userRatings || { ratings: [], average: 5.0, total: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
 
       // Se o usuário logado já tiver avaliação existente, pré-carrega
-      if (currentUser && userRatings?.ratings) {
+      if (currentUser && userRatings?.ratings && Array.isArray(userRatings.ratings)) {
         const existing = userRatings.ratings.find(r => r.reviewerId === currentUser.id);
         if (existing) {
           setSelectedStars(existing.stars || 5);
@@ -76,6 +83,7 @@ const UserProfileScreen = ({ route, navigation }) => {
       }
     } catch (error) {
       console.log('[UserProfileScreen] Erro ao carregar dados do usuário:', error.message);
+      setProfile({ id: userId, name: initialName || 'Membro WeFIND', avatar_url: initialAvatar });
     } finally {
       setLoading(false);
       setRefreshing(false);

@@ -1378,26 +1378,47 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
               {/* Ação Especial: Oferecer Lar Temporário Solidário */}
               {(item.status === 'lost' || (item.status === 'found' && !isAdoption)) && (
-                <TouchableOpacity
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: isDark ? 'rgba(22, 163, 74, 0.15)' : '#F0FDF4',
-                    borderColor: isDark ? 'rgba(22, 163, 74, 0.3)' : '#BBF7D0',
-                    borderWidth: 1.5,
-                    borderRadius: 14,
-                    paddingVertical: 12,
-                    marginTop: 10,
-                  }}
-                  onPress={handleOfferFoster}
-                  activeOpacity={0.85}
-                >
-                  <MaterialIcons name="home-work" size={19} color="#16A34A" style={{ marginRight: 6 }} />
-                  <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#15803D' }}>
-                    🏡 Oferecer Lar Temporário
-                  </Text>
-                </TouchableOpacity>
+                <View style={{ gap: 8, marginTop: 10 }}>
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF',
+                      borderColor: isDark ? 'rgba(37, 99, 235, 0.3)' : '#BFDBFE',
+                      borderWidth: 1.5,
+                      borderRadius: 14,
+                      paddingVertical: 12,
+                    }}
+                    onPress={() => navigation.navigate('FosterVolunteers', { city: item.city || item.address || '', species: item.species || 'all' })}
+                    activeOpacity={0.85}
+                  >
+                    <MaterialIcons name="groups" size={19} color="#2563EB" style={{ marginRight: 6 }} />
+                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#2563EB' }}>
+                      🤝 Buscar Lar Temporário na Região
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: isDark ? 'rgba(22, 163, 74, 0.15)' : '#F0FDF4',
+                      borderColor: isDark ? 'rgba(22, 163, 74, 0.3)' : '#BBF7D0',
+                      borderWidth: 1.5,
+                      borderRadius: 14,
+                      paddingVertical: 12,
+                    }}
+                    onPress={handleOfferFoster}
+                    activeOpacity={0.85}
+                  >
+                    <MaterialIcons name="home-work" size={19} color="#16A34A" style={{ marginRight: 6 }} />
+                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#15803D' }}>
+                      🏡 Oferecer Lar Temporário
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               )}
 
               <TouchableOpacity

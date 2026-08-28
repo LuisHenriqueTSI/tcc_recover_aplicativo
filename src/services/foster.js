@@ -30,23 +30,38 @@ const FOSTER_ALL_REGISTRY_KEY = '@wefind_foster_all_registry';
 export const getFosterProfile = async (userId) => {
   if (!userId) return null;
   try {
-    // 1. Tenta recuperar do cache local
+    // 1. Tenta recuperar do cache local individual
     const local = await AsyncStorage.getItem(`${FOSTER_STORAGE_KEY_PREFIX}${userId}`);
     if (local) {
-      return JSON.parse(local);
+      try {
+        return JSON.parse(local);
+      } catch {}
     }
 
-    // 2. Tenta recuperar dos metadados do usuário autenticado no Supabase
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user && user.id === userId && user.user_metadata?.foster_profile) {
-      const profile = user.user_metadata.foster_profile;
-      await AsyncStorage.setItem(`${FOSTER_STORAGE_KEY_PREFIX}${userId}`, JSON.stringify(profile));
-      return profile;
+    // 2. Tenta recuperar do registro comunitário geral
+    const allRegistryRaw = await AsyncStorage.getItem(FOSTER_ALL_REGISTRY_KEY);
+    if (allRegistryRaw) {
+      try {
+        const registry = JSON.parse(allRegistryRaw);
+        if (registry && registry[userId]) {
+          return registry[userId];
+        }
+      } catch {}
     }
+
+    // 3. Tenta recuperar dos metadados do usuário autenticado no Supabase
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && user.id === userId && user.user_metadata?.foster_profile) {
+        const profile = user.user_metadata.foster_profile;
+        await AsyncStorage.setItem(`${FOSTER_STORAGE_KEY_PREFIX}${userId}`, JSON.stringify(profile));
+        return profile;
+      }
+    } catch {}
 
     return null;
   } catch (error) {
-    console.log('[fosterService] Erro ao buscar perfil de lar temporário:', error.message);
+    console.log('[fosterService] Aviso ao buscar perfil de lar temporário:', error.message);
     return null;
   }
 };
@@ -59,10 +74,11 @@ export const saveFosterProfile = async (userId, fosterData) => {
 
   try {
     const payload = {
+      userId,
       isActive: Boolean(fosterData.isActive),
-      species: fosterData.species || [],
-      sizes: fosterData.sizes || [],
-      housing: fosterData.housing || '',
+      species: fosterData.species || ['dogs', 'cats'],
+      sizes: fosterData.sizes || ['small', 'medium'],
+      housing: fosterData.housing || 'house_yard',
       hasOtherPets: Boolean(fosterData.hasOtherPets),
       otherPetsInfo: fosterData.otherPetsInfo || '',
       experienceNotes: fosterData.experienceNotes || '',
@@ -86,52 +102,66 @@ export const saveFosterProfile = async (userId, fosterData) => {
         },
       });
     } catch (authErr) {
-      console.log('[fosterService] Aviso ao salvar nos metadados do auth:', authErr.message);
+      console.log('[fosterService] Aviso ao salvar nos metadados do auth:', authErr?.message);
     }
 
-    // 3. Atualiza o registro global local de voluntários (para busca comunitária rápida)
+    // 3. Atualiza o registro global de voluntários
     try {
       const allRegistryRaw = await AsyncStorage.getItem(FOSTER_ALL_REGISTRY_KEY);
       const allRegistry = allRegistryRaw ? JSON.parse(allRegistryRaw) : {};
       if (payload.isActive) {
-        allRegistry[userId] = { ...payload, userId };
+        allRegistry[userId] = payload;
       } else {
         delete allRegistry[userId];
       }
       await AsyncStorage.setItem(FOSTER_ALL_REGISTRY_KEY, JSON.stringify(allRegistry));
     } catch (regErr) {
-      console.log('[fosterService] Erro ao atualizar registro de voluntários:', regErr.message);
+      console.log('[fosterService] Erro ao atualizar registro de voluntários:', regErr?.message);
     }
 
     return payload;
   } catch (error) {
-    console.log('[fosterService] Erro ao salvar lar temporário:', error.message);
+    console.log('[fosterService] Erro ao salvar lar temporário:', error?.message);
     throw error;
   }
 };
 
 /**
- * Lista voluntários de lar temporário disponíveis para uma cidade/estado
+ * Lista voluntários de lar temporário disponíveis para uma cidade/estado/espécie
  */
-export const listFosterVolunteers = async ({ city = '', state = '' } = {}) => {
+export const listFosterVolunteers = async ({ city = '', state = '', species = '', housing = '' } = {}) => {
   try {
     const allRegistryRaw = await AsyncStorage.getItem(FOSTER_ALL_REGISTRY_KEY);
     if (!allRegistryRaw) return [];
 
-    const registry = JSON.parse(allRegistryRaw);
-    let volunteers = Object.values(registry).filter(v => v.isActive);
+    let registry = {};
+    try {
+      registry = JSON.parse(allRegistryRaw);
+    } catch {
+      return [];
+    }
 
-    if (city) {
+    let volunteers = Object.values(registry).filter(v => v && v.isActive);
+
+    if (city && city.trim()) {
       const normCity = city.trim().toLowerCase();
       volunteers = volunteers.filter(v => (v.city || '').toLowerCase().includes(normCity));
     }
 
-    if (state) {
+    if (state && state.trim()) {
       const normState = state.trim().toLowerCase();
       volunteers = volunteers.filter(v => (v.state || '').toLowerCase().includes(normState));
     }
 
-    return volunteers;
+    if (species && species !== 'all') {
+      volunteers = volunteers.filter(v => Array.isArray(v.species) && v.species.includes(species));
+    }
+
+    if (housing && housing !== 'all') {
+      volunteers = volunteers.filter(v => v.housing === housing);
+    }
+
+    return volunteers.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
   } catch (error) {
     console.log('[fosterService] Erro ao listar lares temporários:', error.message);
     return [];
