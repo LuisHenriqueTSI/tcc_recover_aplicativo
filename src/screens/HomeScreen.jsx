@@ -111,19 +111,35 @@ const formatCityState = (item) => {
 };
 
 const formatStreetNumberNeighborhood = (item) => {
+  const isLost = item?.status === 'lost';
   const isFoundHome = item?.status === 'found' && item?.extra_fields?.found_custody !== 'spotted';
+  const isSpotted = item?.extra_fields?.found_custody === 'spotted';
   const details = item?.extra_fields?.location_details;
   const district = (details?.district || item?.neighborhood || '').trim();
 
-  // Se o animal foi acolhido em casa / lar temporário, protege a privacidade ocultando rua e número
-  if (isFoundHome) {
-    return district ? `Região do Bairro ${district} (Endereço protegido)` : 'Região do Bairro (Endereço protegido)';
+  // 1. ANIMAL PERDIDO: Exibe como Região de Desaparecimento (Bairro / Referência sem número)
+  if (isLost) {
+    const reference = (details?.reference || details?.street || item?.street || '').trim();
+    if (reference && district && reference !== district) {
+      const cleanRef = reference.replace(/,\s*\d+.*$/, '').replace(/Nº\s*\d+/i, '').trim();
+      return cleanRef ? `Região de ${district} • Próx. a ${cleanRef}` : `Região do Bairro ${district}`;
+    }
+    if (district) {
+      return `Região do Bairro ${district}`;
+    }
+    return 'Região de Desaparecimento';
   }
 
+  // 2. ANIMAL ACOLHIDO EM LAR: Protege o endereço do lar temporário
+  if (isFoundHome) {
+    return district ? `Região do Bairro ${district} (Endereço protegido)` : 'Região de Acolhimento (Endereço protegido)';
+  }
+
+  // 3. ANIMAL VISTO NA RUA: Exibe rua e altura de via pública
   const street = (details?.street || item?.street || '').trim();
   const number = (details?.number || item?.house_number || item?.number || '').trim();
 
-  const streetPart = street && number ? `${street}, ${number}` : street || (number ? `Nº ${number}` : '');
+  const streetPart = street && number ? `${street}, ${number}` : street;
   const parts = [streetPart, district].filter(Boolean);
 
   if (parts.length > 0) {
@@ -132,10 +148,10 @@ const formatStreetNumberNeighborhood = (item) => {
 
   const rawText = (details?.text || item?.address || '').trim();
   if (rawText && rawText !== formatCityState(item)) {
-    return rawText;
+    return rawText.replace(/,\s*\d+.*$/, '').trim() || district || '';
   }
 
-  return '';
+  return district || '';
 };
 
 const getColorHex = (colorName = '') => {
