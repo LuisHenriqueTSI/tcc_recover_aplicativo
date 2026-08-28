@@ -378,14 +378,18 @@ const RegisterScreen = ({ navigation }) => {
             returnKeyType="next"
           />
 
-          {/* INDICADOR DE FORÇA DA SENHA EM TEMPO REAL */}
+          {/* INDICADOR DE FORÇA DA SENHA COMPACTO EM TEMPO REAL */}
           {password.length > 0 && !pendingVerification && (() => {
             const pwdStrength = calculatePasswordStrength(password);
             return (
               <View style={[styles.passwordStrengthBox, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#F8FAFC', borderColor: colors.cardBorder }]}>
                 <View style={styles.strengthHeaderRow}>
-                  <Text style={[styles.strengthLabelTitle, { color: colors.textSecondary }]}>Segurança da senha:</Text>
-                  <Text style={[styles.strengthBadgeText, { color: pwdStrength.color }]}>{pwdStrength.label}</Text>
+                  <Text style={[styles.strengthLabelTitle, { color: colors.textSecondary }]}>
+                    Força: <Text style={{ color: pwdStrength.color, fontWeight: '800' }}>{pwdStrength.label}</Text>
+                  </Text>
+                  <Text style={{ fontSize: 10.5, color: colors.textMuted }}>
+                    {pwdStrength.isValid ? 'Requisitos atendidos ✅' : 'mín. 8 chars, letras e números'}
+                  </Text>
                 </View>
 
                 {/* Barra de 4 segmentos */}
@@ -401,42 +405,6 @@ const RegisterScreen = ({ navigation }) => {
                       ]}
                     />
                   ))}
-                </View>
-
-                {/* Critérios em Tempo Real */}
-                <View style={styles.criteriaContainer}>
-                  <View style={styles.criteriaItem}>
-                    <MaterialIcons
-                      name={pwdStrength.rules.hasMinLength ? 'check-circle' : 'radio-button-unchecked'}
-                      size={13}
-                      color={pwdStrength.rules.hasMinLength ? '#10B981' : colors.textMuted}
-                    />
-                    <Text style={[styles.criteriaText, { color: pwdStrength.rules.hasMinLength ? (isDark ? '#34D399' : '#059669') : colors.textMuted }]}>
-                      Pelo menos 8 caracteres
-                    </Text>
-                  </View>
-
-                  <View style={styles.criteriaItem}>
-                    <MaterialIcons
-                      name={pwdStrength.rules.hasLetters ? 'check-circle' : 'radio-button-unchecked'}
-                      size={13}
-                      color={pwdStrength.rules.hasLetters ? '#10B981' : colors.textMuted}
-                    />
-                    <Text style={[styles.criteriaText, { color: pwdStrength.rules.hasLetters ? (isDark ? '#34D399' : '#059669') : colors.textMuted }]}>
-                      Letras (maiúsculas ou minúsculas)
-                    </Text>
-                  </View>
-
-                  <View style={styles.criteriaItem}>
-                    <MaterialIcons
-                      name={pwdStrength.rules.hasNumber ? 'check-circle' : 'radio-button-unchecked'}
-                      size={13}
-                      color={pwdStrength.rules.hasNumber ? '#10B981' : colors.textMuted}
-                    />
-                    <Text style={[styles.criteriaText, { color: pwdStrength.rules.hasNumber ? (isDark ? '#34D399' : '#059669') : colors.textMuted }]}>
-                      Pelo menos um número (0-9)
-                    </Text>
-                  </View>
                 </View>
               </View>
             );
@@ -460,21 +428,21 @@ const RegisterScreen = ({ navigation }) => {
 
           {/* Feedback de Confirmação de Senha em Tempo Real */}
           {confirmPassword.length > 0 && !pendingVerification && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: -6, marginBottom: 12, paddingHorizontal: 2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: -4, marginBottom: 8, paddingHorizontal: 2 }}>
               <MaterialIcons
                 name={password === confirmPassword ? 'check-circle' : 'cancel'}
-                size={14}
+                size={13}
                 color={password === confirmPassword ? '#10B981' : '#EF4444'}
-                style={{ marginRight: 5 }}
+                style={{ marginRight: 4 }}
               />
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: 11.5,
                   fontWeight: '700',
                   color: password === confirmPassword ? (isDark ? '#34D399' : '#059669') : '#EF4444',
                 }}
               >
-                {password === confirmPassword ? 'As senhas conferem perfeitamente' : 'As senhas não conferem'}
+                {password === confirmPassword ? 'As senhas conferem!' : 'As senhas não conferem'}
               </Text>
             </View>
           )}
@@ -562,31 +530,31 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingHorizontal: 18,
+    paddingTop: 8,
+    paddingBottom: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   brandHeroContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
-    marginTop: 4,
+    marginBottom: 6,
+    marginTop: 0,
   },
   logoSquircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 28,
+    width: 64,
+    height: 64,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    borderWidth: 2,
+    borderWidth: 1.5,
     shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.22,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 4,
   },
   logoImage: {
     width: '100%',
@@ -595,98 +563,86 @@ const styles = StyleSheet.create({
   },
   headerBox: {
     alignItems: 'center',
-    marginBottom: 18,
-    marginTop: 4,
+    marginBottom: 10,
+    marginTop: 2,
     paddingHorizontal: 16,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '900',
-    marginBottom: 6,
-    letterSpacing: -0.4,
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 2,
+    letterSpacing: -0.3,
     textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 13.5,
-    lineHeight: 19,
+    fontSize: 12,
+    lineHeight: 16,
     textAlign: 'center',
   },
   formBox: {
     width: '100%',
     maxWidth: 390,
-    borderRadius: 24,
-    paddingVertical: 22,
-    paddingHorizontal: 20,
+    borderRadius: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
     borderWidth: 1,
   },
   input: {
-    marginBottom: 12,
+    marginBottom: 8,
   },
   inputField: {
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    paddingHorizontal: 14,
-    fontSize: 15,
-    height: 50,
+    paddingHorizontal: 12,
+    fontSize: 14,
+    height: 44,
   },
   passwordStrengthBox: {
-    borderRadius: 14,
+    borderRadius: 10,
     borderWidth: 1,
-    padding: 12,
-    marginBottom: 14,
-    marginTop: -4,
+    padding: 8,
+    marginBottom: 8,
+    marginTop: -2,
   },
   strengthHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   strengthLabelTitle: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '600',
   },
   strengthBadgeText: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '800',
   },
   strengthBarRow: {
     flexDirection: 'row',
     gap: 4,
-    marginBottom: 10,
+    marginBottom: 2,
   },
   strengthBarSegment: {
     flex: 1,
-    height: 5,
-    borderRadius: 3,
-  },
-  criteriaContainer: {
-    gap: 4,
-  },
-  criteriaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  criteriaText: {
-    fontSize: 11.5,
-    fontWeight: '600',
+    height: 4,
+    borderRadius: 2,
   },
   consentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 12,
-    gap: 10,
+    marginVertical: 8,
+    gap: 8,
   },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
+    width: 18,
+    height: 18,
+    borderRadius: 5,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
@@ -696,58 +652,58 @@ const styles = StyleSheet.create({
   },
   consentText: {
     flex: 1,
-    fontSize: 12.5,
-    lineHeight: 17,
+    fontSize: 11.5,
+    lineHeight: 15,
   },
   verificationBox: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1.5,
-    padding: 14,
-    marginVertical: 12,
+    padding: 12,
+    marginVertical: 8,
   },
   verificationHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   verificationTitle: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: '800',
   },
   editDataText: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '700',
   },
   verificationDesc: {
-    fontSize: 12.5,
-    lineHeight: 18,
-    marginBottom: 6,
+    fontSize: 12,
+    lineHeight: 16,
+    marginBottom: 4,
   },
   resendBtn: {
     alignItems: 'center',
-    paddingVertical: 6,
+    paddingVertical: 4,
   },
   resendBtnText: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '700',
   },
   registerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 16,
-    paddingVertical: 14,
-    marginTop: 6,
+    borderRadius: 13,
+    paddingVertical: 11,
+    marginTop: 4,
     shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
   },
   registerButtonText: {
     fontWeight: '800',
-    fontSize: 15.5,
+    fontSize: 14.5,
     letterSpacing: 0.2,
     color: '#FFFFFF',
   },
@@ -755,15 +711,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 22,
+    marginTop: 10,
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
   },
   loginLinkText: {
     fontWeight: '800',
-    fontSize: 14,
+    fontSize: 13,
   },
 });
 
