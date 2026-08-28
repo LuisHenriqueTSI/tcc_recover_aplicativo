@@ -254,6 +254,7 @@ const MapScreen = ({ route, navigation }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showMapInfoModal, setShowMapInfoModal] = useState(false);
+  const [centeringLoading, setCenteringLoading] = useState(false);
 
   const filteredItems = useMemo(() => {
     if (!searchTerm.trim()) return items;
@@ -770,28 +771,93 @@ const MapScreen = ({ route, navigation }) => {
   }, []);
 
   const handleCenterOnUser = async () => {
+    setCenteringLoading(true);
     try {
-      const permission = await Location.requestForegroundPermissionsAsync();
-      if (!permission.granted) {
+      // 1. Se já temos coordenadas em memória, anima IMEDIATAMENTE (0ms de espera)
+      if (userCoords?.latitude && userCoords?.longitude && mapRef.current) {
+        mapRef.current.animateToRegion({
+          latitude: Number(userCoords.latitude),
+          longitude: Number(userCoords.longitude),
+          latitudeDelta: 0.015,
+          longitudeDelta: 0.015,
+        }, 500);
+      }
+
+      // 2. Verifica / solicita permissão de localização
+      const { status } = await Location.getForegroundPermissionsAsync();
+      let hasPermission = status === 'granted';
+
+      if (!hasPermission) {
+        const req = await Location.requestForegroundPermissionsAsync();
+        hasPermission = req.status === 'granted';
+      }
+
+      if (!hasPermission) {
         setLocationStatus('denied');
+        locationStatusRef.current = 'denied';
+        Alert.alert(
+          'Permissão de Localização',
+          'Ative a permissão de localização nas configurações do seu celular para centralizar o mapa na sua posição atual.'
+        );
         return;
       }
 
-      const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const userCoord = {
-        latitude: current.coords.latitude,
-        longitude: current.coords.longitude,
-        latitudeDelta: 0.08,
-        longitudeDelta: 0.08,
-      };
-      setRegion(userCoord);
-      if (mapRef.current) {
-        mapRef.current.animateToRegion(userCoord, 500);
+      // 3. Tenta obter a última localização conhecida instantaneamente
+      const lastKnown = await Location.getLastKnownPositionAsync();
+      if (lastKnown?.coords) {
+        const lastCoords = {
+          latitude: lastKnown.coords.latitude,
+          longitude: lastKnown.coords.longitude,
+        };
+        setUserCoords(lastCoords);
+        if (mapRef.current) {
+          mapRef.current.animateToRegion({
+            ...lastCoords,
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.015,
+          }, 500);
+        }
       }
-      locationStatusRef.current = 'granted';
-      setLocationStatus('granted');
+
+      // 4. Busca a posição em tempo real com alta precisão
+      const current = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      if (current?.coords) {
+        const liveCoords = {
+          latitude: current.coords.latitude,
+          longitude: current.coords.longitude,
+        };
+        setUserCoords(liveCoords);
+        setLocationStatus('granted');
+        locationStatusRef.current = 'granted';
+        if (mapRef.current) {
+          mapRef.current.animateToRegion({
+            ...liveCoords,
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.015,
+          }, 500);
+        }
+      }
     } catch (error) {
-      console.warn('[MapScreen] Não foi possível recentralizar no usuário:', error.message);
+      console.warn('[MapScreen] Não foi possível recentralizar no usuário:', error?.message || error);
+      // Se não conseguiu nova coordenada mas tem a anterior, centraliza na anterior
+      if (userCoords?.latitude && userCoords?.longitude && mapRef.current) {
+        mapRef.current.animateToRegion({
+          latitude: Number(userCoords.latitude),
+          longitude: Number(userCoords.longitude),
+          latitudeDelta: 0.015,
+          longitudeDelta: 0.015,
+        }, 500);
+      } else {
+        Alert.alert(
+          'GPS indisponível',
+          'Verifique se a localização (GPS) do seu celular está ativada e tente novamente.'
+        );
+      }
+    } finally {
+      setCenteringLoading(false);
     }
   };
 
@@ -1443,18 +1509,23 @@ const MapScreen = ({ route, navigation }) => {
         </View>
       )}
 
-      {locationStatus === 'granted' && (
-        <TouchableOpacity
-          style={[
-            styles.centerLocationButton,
-            isNavigating ? { bottom: 155 } : (selectedItem ? styles.centerLocationButtonRaised : null),
-          ]}
-          onPress={handleCenterOnUser}
-          accessibilityLabel="Voltar para minha localização"
-        >
+      {/* Botão de Centralizar / Marco Zero na Localização do Usuário */}
+      <TouchableOpacity
+        style={[
+          styles.centerLocationButton,
+          isNavigating ? { bottom: 155 } : (selectedItem ? styles.centerLocationButtonRaised : null),
+        ]}
+        onPress={handleCenterOnUser}
+        disabled={centeringLoading}
+        activeOpacity={0.8}
+        accessibilityLabel="Centralizar na minha localização"
+      >
+        {centeringLoading ? (
+          <ActivityIndicator size="small" color="#2563EB" />
+        ) : (
           <MaterialIcons name="my-location" size={24} color="#2563EB" />
-        </TouchableOpacity>
-      )}
+        )}
+      </TouchableOpacity>
 
       {locationStatus !== 'granted' && (
         <View style={styles.locationNotice}>
@@ -1694,8 +1765,28 @@ const styles = StyleSheet.create({
     elevation: 4,
     zIndex: 50,
   },
-  centerLocationButton: { position: 'absolute', right: 16, bottom: 175, width: 50, height: 50, borderRadius: 25, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 5 },
-  centerLocationButtonRaised: { bottom: 435 },
+  centerLocationButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 30,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 6,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    zIndex: 50,
+  },
+  centerLocationButtonRaised: {
+    bottom: 370,
+  },
   permissionState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28, backgroundColor: '#F9FAFB' },
   permissionTitle: { color: '#111827', fontSize: 18, fontWeight: '700', marginTop: 14 },
   permissionText: { color: '#6B7280', textAlign: 'center', marginTop: 6, lineHeight: 20 },
