@@ -108,6 +108,49 @@ const getColorHex = (colorName = '') => {
   return '#64748B';
 };
 
+const formatItemFullAddress = (item) => {
+  if (!item) return '';
+
+  // 1. Endereço do último avistamento
+  const lastSighting = item.extra_fields?.last_sighting_address;
+  if (lastSighting && typeof lastSighting === 'string' && !lastSighting.startsWith('{') && !/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(lastSighting.trim())) {
+    return lastSighting.trim();
+  }
+
+  // 2. Endereço completo gravado
+  const directAddress = item.address || item.extra_fields?.address || item.extra_fields?.location_details?.fullAddressText;
+  if (directAddress && typeof directAddress === 'string' && !directAddress.startsWith('{') && !/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(directAddress.trim())) {
+    return directAddress.trim();
+  }
+
+  // 3. Montagem a partir de rua, número, bairro, cidade, uf
+  const street = item.street || item.extra_fields?.street || item.extra_fields?.location_details?.street || '';
+  const number = item.house_number || item.number || item.extra_fields?.house_number || item.extra_fields?.location_details?.number || '';
+  const neighborhood = item.neighborhood || item.extra_fields?.neighborhood || item.extra_fields?.location_details?.neighborhood || '';
+  const city = item.city || item.extra_fields?.city || item.extra_fields?.location_details?.city || '';
+  const state = item.state || item.extra_fields?.state || item.extra_fields?.location_details?.state || '';
+
+  const parts = [];
+  if (street) {
+    parts.push(number ? `${street}, ${number}` : street);
+  }
+  if (neighborhood && neighborhood !== street) {
+    parts.push(neighborhood);
+  }
+  if (city && state) {
+    parts.push(`${city} - ${state}`);
+  } else if (city) {
+    parts.push(city);
+  } else if (state) {
+    parts.push(state);
+  }
+
+  const composed = parts.join(' - ');
+  if (composed.trim()) return composed.trim();
+
+  return [item.neighborhood, item.city, item.state].filter(Boolean).join(' - ') || 'Localização marcada no mapa';
+};
+
 const buildSelectedChips = (item) => {
   if (!item) return [];
   const breed = String(item.breed || item.extra_fields?.breed || '').trim();
@@ -206,11 +249,36 @@ const MapScreen = ({ route, navigation }) => {
   const [isNavigating, setIsNavigating] = useState(false);
   const isNavigatingRef = useRef(false);
   const handledRouteParamRef = useRef(null);
+  const [resolvedItemAddress, setResolvedItemAddress] = useState('');
 
   // Sighting Modal State
   const [sightingModalVisible, setSightingModalVisible] = useState(false);
   const [submittingSighting, setSubmittingSighting] = useState(false);
   const [targetSightingItem, setTargetSightingItem] = useState(null);
+
+  // Auto-resolução do endereço completo do animal visto na rua
+  useEffect(() => {
+    if (!selectedItem) {
+      setResolvedItemAddress('');
+      return;
+    }
+
+    const staticAddr = formatItemFullAddress(selectedItem);
+    setResolvedItemAddress(staticAddr);
+
+    const lat = selectedItem.latitude ?? selectedItem.extra_fields?.location_details?.latitude;
+    const lng = selectedItem.longitude ?? selectedItem.extra_fields?.location_details?.longitude;
+
+    if (lat != null && lng != null && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
+      sightingsService.resolveReadableAddress({ latitude: Number(lat), longitude: Number(lng) })
+        .then((addr) => {
+          if (addr && addr !== 'Localização marcada no mapa') {
+            setResolvedItemAddress(addr);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [selectedItem?.id, selectedItem?.latitude, selectedItem?.longitude]);
 
   const handleOpenSightingModal = (item) => {
     if (!user) {
@@ -809,7 +877,7 @@ const MapScreen = ({ route, navigation }) => {
                 {routeInfo.distanceKm} km • ~{routeInfo.durationMin} min
               </Text>
               <Text style={{ fontSize: 11, fontWeight: '600', color: '#64748B' }} numberOfLines={1}>
-                Até {selectedItem?.title || 'o animal'}
+                📍 {resolvedItemAddress || formatItemFullAddress(selectedItem)}
               </Text>
             </View>
           </View>
@@ -1123,24 +1191,29 @@ const MapScreen = ({ route, navigation }) => {
             </View>
           )}
 
-          {/* 6. Localização */}
+          {/* 6. Endereço Completo do Animal Visto na Rua */}
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: '#F8FAFC',
-            padding: 7,
-            borderRadius: 9,
+            padding: 8,
+            borderRadius: 10,
             borderWidth: 1,
             borderColor: '#E2E8F0',
             marginBottom: 8,
           }}>
-            <MaterialIcons name="place" size={15} color="#2563EB" style={{ marginRight: 5 }} />
-            <Text style={{ fontSize: 12, color: '#334155', fontWeight: '600', flex: 1 }} numberOfLines={1}>
-              {[selectedItem.neighborhood, selectedItem.city, selectedItem.state].filter(Boolean).join(' - ') || 'Localização marcada'}
-            </Text>
+            <MaterialIcons name="place" size={17} color="#2563EB" style={{ marginRight: 6 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 10.5, fontWeight: '800', color: '#2563EB', textTransform: 'uppercase', letterSpacing: 0.3, marginBottom: 1 }}>
+                Endereço do Animal Visto na Rua
+              </Text>
+              <Text style={{ fontSize: 12, color: '#1E293B', fontWeight: '700' }} numberOfLines={2}>
+                {resolvedItemAddress || formatItemFullAddress(selectedItem)}
+              </Text>
+            </View>
           </View>
 
-          {/* 7. Ações: Ver Detalhes, Informar Avistamento e Traçar Rota */}
+          {/* 7. Ações: Ver Detalhes, Informar Avistamento e Iniciar Rota com Aproximação Automática */}
           <View style={{ flexDirection: 'row', gap: 6, marginTop: 2 }}>
             <TouchableOpacity
               style={[styles.detailsButton, { flex: 1, marginTop: 0, paddingHorizontal: 8 }]}
@@ -1171,68 +1244,47 @@ const MapScreen = ({ route, navigation }) => {
               </Text>
             </TouchableOpacity>
 
-            {routeCoordinates.length > 0 ? (
-              <TouchableOpacity
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#16A34A',
-                  borderRadius: 12,
-                  paddingHorizontal: 12,
-                  paddingVertical: 10,
-                  shadowColor: '#16A34A',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}
-                onPress={() => startNavigation()}
-                activeOpacity={0.85}
-              >
-                <MaterialIcons name="navigation" size={16} color="#FFFFFF" style={{ marginRight: 3 }} />
-                <Text style={{ fontSize: 12, fontWeight: '800', color: '#FFFFFF' }}>
-                  Iniciar
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#EFF6FF',
-                  borderColor: '#BFDBFE',
-                  borderWidth: 1,
-                  borderRadius: 12,
-                  paddingHorizontal: 10,
-                  paddingVertical: 10,
-                }}
-                onPress={() => {
-                  if (userCoords && selectedItem?.latitude && selectedItem?.longitude) {
-                    calculateRoute(userCoords, {
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: routeCoordinates.length > 0 ? '#16A34A' : '#2563EB',
+                borderRadius: 12,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                shadowColor: routeCoordinates.length > 0 ? '#16A34A' : '#2563EB',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 4,
+                elevation: 3,
+              }}
+              onPress={async () => {
+                let current = userCoords;
+                if (!current) {
+                  current = await requestUserLocation();
+                }
+                if (current && selectedItem?.latitude && selectedItem?.longitude) {
+                  // Se a rota ainda não foi calculada, calcula sem afastar a câmera e inicia navegação
+                  if (routeCoordinates.length === 0) {
+                    await calculateRoute(current, {
                       latitude: Number(selectedItem.latitude),
                       longitude: Number(selectedItem.longitude),
-                    });
-                  } else {
-                    requestUserLocation().then((coords) => {
-                      if (coords && selectedItem?.latitude && selectedItem?.longitude) {
-                        calculateRoute(coords, {
-                          latitude: Number(selectedItem.latitude),
-                          longitude: Number(selectedItem.longitude),
-                        });
-                      }
-                    });
+                    }, false);
                   }
-                }}
-                activeOpacity={0.85}
-              >
-                <MaterialIcons name="directions" size={16} color="#2563EB" style={{ marginRight: 3 }} />
-                <Text style={{ fontSize: 12, fontWeight: '700', color: '#1D4ED8' }}>
-                  Rota
-                </Text>
-              </TouchableOpacity>
-            )}
+                  // Inicia navegação e recentraliza com aproximação direta na posição do usuário
+                  startNavigation(current);
+                } else if (!current) {
+                  Alert.alert('Localização necessária', 'Ative o GPS do seu dispositivo para iniciar a rota até o animal.');
+                }
+              }}
+              activeOpacity={0.85}
+            >
+              <MaterialIcons name="navigation" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
+              <Text style={{ fontSize: 12, fontWeight: '800', color: '#FFFFFF' }}>
+                {isNavigating ? 'Navegando' : (routeCoordinates.length > 0 ? 'Iniciar' : 'Iniciar Rota')}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       )}
@@ -1252,6 +1304,9 @@ const MapScreen = ({ route, navigation }) => {
               </View>
               <Text style={{ fontSize: 12.5, fontWeight: '700', color: '#1E293B', marginTop: 1 }} numberOfLines={1}>
                 Indo até {selectedItem?.title || 'o animal'}
+              </Text>
+              <Text style={{ fontSize: 11, fontWeight: '600', color: '#64748B', marginTop: 2 }} numberOfLines={1}>
+                📍 {resolvedItemAddress || formatItemFullAddress(selectedItem)}
               </Text>
             </View>
 
