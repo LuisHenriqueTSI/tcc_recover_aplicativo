@@ -972,32 +972,33 @@ const HomeScreen = ({ navigation, route }) => {
     }
     setUserCoords(coords || null);
 
-    // Salva no AsyncStorage apenas se o usuário estiver autenticado
-    if (user?.id) {
-      try {
-        await AsyncStorage.setItem(
-          '@wefind/saved_location',
-          JSON.stringify({
-            addressText: fullText,
-            street: profileEditStreet,
-            district: profileEditDistrict,
-            neighborhood: profileEditDistrict,
-            city: profileEditCity,
-            state: profileEditState,
-            coords: coords || null,
-            radiusKm: chosenRadius,
-          })
-        );
-        await AsyncStorage.setItem('@wefind/search_radius', String(chosenRadius));
-      } catch (e) {
-        console.warn('[HomeScreen] Falha ao salvar localização no AsyncStorage:', e.message);
-      }
+    // Salva no AsyncStorage para manter a preferência de localidade e raio
+    try {
+      await AsyncStorage.setItem(
+        '@wefind/saved_location',
+        JSON.stringify({
+          addressText: fullText,
+          street: profileEditStreet,
+          district: profileEditDistrict,
+          neighborhood: profileEditDistrict,
+          city: profileEditCity,
+          state: profileEditState,
+          coords: coords || null,
+          radiusKm: chosenRadius,
+        })
+      );
+      await AsyncStorage.setItem('@wefind/search_radius', String(chosenRadius));
+    } catch (e) {
+      console.warn('[HomeScreen] Falha ao salvar localização no AsyncStorage:', e.message);
+    }
 
+    if (user?.id) {
       try {
         await userService.updateProfile(user.id, {
           state: profileEditState,
           city: profileEditCity,
           neighborhood: profileEditDistrict,
+          search_radius_km: chosenRadius,
         });
         if (typeof setUserProfile === 'function') {
           setUserProfile((prev) => ({
@@ -1005,6 +1006,7 @@ const HomeScreen = ({ navigation, route }) => {
             state: profileEditState,
             city: profileEditCity,
             neighborhood: profileEditDistrict,
+            search_radius_km: chosenRadius,
           }));
         }
         if (typeof refreshProfile === 'function') refreshProfile();
@@ -1016,10 +1018,15 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   const handleSaveQuickRadius = async (newRadius) => {
-    const val = Number(newRadius);
-    if (!val || Number.isNaN(val)) return;
+    const rawVal = (typeof newRadius === 'number' && !Number.isNaN(newRadius)) ? newRadius : selectedQuickRadius;
+    const val = Number(rawVal);
+    if (!val || Number.isNaN(val)) {
+      setShowQuickRadiusModal(false);
+      return;
+    }
     setSearchRadiusKm(val);
     setProfileEditRadiusKm(val);
+    setSelectedQuickRadius(val);
     try {
       await AsyncStorage.setItem('@wefind/search_radius', String(val));
       const storedLoc = await AsyncStorage.getItem('@wefind/saved_location');
@@ -2530,7 +2537,7 @@ const HomeScreen = ({ navigation, route }) => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={handleSaveQuickRadius}
+                onPress={() => handleSaveQuickRadius(selectedQuickRadius)}
                 style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center' }}
                 activeOpacity={0.85}
               >
