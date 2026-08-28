@@ -295,6 +295,15 @@ const RegisterScreen = ({ navigation }) => {
       >
 
 
+        {/* Top App Logo */}
+        <View style={styles.brandHeroContainer}>
+          <Image
+            source={require('../assets/logo_wefind.png')}
+            style={styles.heroLogoImage}
+            resizeMode="contain"
+          />
+        </View>
+
         <View style={styles.headerBox}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Criar nova conta</Text>
           <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
@@ -557,10 +566,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  brandHeroContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+    marginTop: 4,
+  },
+  heroLogoImage: {
+    width: 200,
+    height: 110,
+  },
   headerBox: {
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 8,
+    marginBottom: 18,
+    marginTop: 4,
     paddingHorizontal: 16,
   },
   headerTitle: {
