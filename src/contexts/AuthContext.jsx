@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }) => {
       async (event, session) => {
         console.log('[Auth] Auth state changed:', event);
         
-        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        if (event === 'SIGNED_IN') {
           if (session?.user) {
             setUser(session.user);
             const sessionPhone = session.user.user_metadata?.whatsapp || session.user.user_metadata?.phone || '';
@@ -88,6 +88,10 @@ export const AuthProvider = ({ children }) => {
               setUserProfile(profile);
               setIsAdmin(profileIsAdmin(profile, session.user));
             }
+          }
+        } else if (event === 'USER_UPDATED') {
+          if (session?.user) {
+            setUser(session.user);
           }
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
@@ -173,18 +177,18 @@ export const AuthProvider = ({ children }) => {
   }, [resetThemeToLight, setThemeMode]);
 
   const refreshProfile = useCallback(async () => {
-    if (user) {
+    if (user?.id) {
       try {
         const profile = await userService.getUser(user.id);
         if (profile) {
           setUserProfile(profile);
-          setIsAdmin(profileIsAdmin(profile));
+          setIsAdmin(profileIsAdmin(profile, user));
         }
       } catch (error) {
         console.log('[refreshProfile] Erro:', error.message);
       }
     }
-  }, [user]);
+  }, [user?.id]);
 
   const value = {
     user,

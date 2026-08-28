@@ -31,25 +31,30 @@ const ProfileScreen = ({ navigation }) => {
   const [fosterProfile, setFosterProfile] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
     const loadProfileData = async () => {
-      setLoading(true);
       try {
         const stored = await AsyncStorage.getItem('@wefind/saved_location');
-        if (stored) setLocalSavedLocation(JSON.parse(stored));
+        if (stored && isMounted) setLocalSavedLocation(JSON.parse(stored));
       } catch (e) {}
-      if (user) {
-        await refreshProfile();
-        const [items, fosterData] = await Promise.all([
+
+      if (user?.id) {
+        const [itemsRes, fosterRes] = await Promise.allSettled([
           itemsService.getUserItems(user.id),
           getFosterProfile(user.id),
         ]);
-        setUserItems(items || []);
-        setFosterProfile(fosterData);
+        if (isMounted) {
+          if (itemsRes.status === 'fulfilled') setUserItems(itemsRes.value || []);
+          if (fosterRes.status === 'fulfilled') setFosterProfile(fosterRes.value);
+        }
       }
-      setLoading(false);
+      if (isMounted) {
+        setLoading(false);
+      }
     };
     loadProfileData();
-  }, [user, refreshProfile]);
+    return () => { isMounted = false; };
+  }, [user?.id]);
 
   useFocusEffect(
     useCallback(() => {
@@ -60,11 +65,11 @@ const ProfileScreen = ({ navigation }) => {
           } catch (e) {}
         }
       });
-      if (user) {
-        refreshProfile();
+      if (user?.id) {
         itemsService.getUserItems(user.id).then((items) => setUserItems(items || []));
+        getFosterProfile(user.id).then((fp) => setFosterProfile(fp));
       }
-    }, [user, refreshProfile])
+    }, [user?.id])
   );
 
   useEffect(() => {
