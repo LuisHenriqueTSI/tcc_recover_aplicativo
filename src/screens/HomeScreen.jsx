@@ -1773,53 +1773,55 @@ const HomeScreen = ({ navigation, route }) => {
                   ? 'Escolha sua cidade e estado para personalizar o feed e seu perfil:'
                   : 'Escolha uma cidade e estado para visualizar publicações dessa região:'}
               </Text>
-              {/* Seletor Interativo de Raio de Busca */}
-              <View style={{
-                backgroundColor: isDark ? colors.card : colors.primaryLight,
-                padding: 12,
-                borderRadius: 12,
-                marginBottom: 14,
-                borderWidth: 1,
-                borderColor: isDark ? colors.cardBorder : '#DBEAFE',
-              }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-                  <MaterialIcons name="radar" size={18} color={colors.primary} style={{ marginRight: 6 }} />
-                  <Text style={{ color: isDark ? '#93C5FD' : '#1E40AF', fontSize: 13, fontWeight: '700' }}>
-                    Raio de Busca: <Text style={{ fontWeight: '900', color: colors.primary }}>{profileEditRadiusKm} km</Text>
+              {/* Seletor Interativo de Raio de Busca (Apenas se houver cidade/estado selecionado) */}
+              {Boolean(profileEditCity || profileEditState || sessionCity || sessionState) && (
+                <View style={{
+                  backgroundColor: isDark ? colors.card : colors.primaryLight,
+                  padding: 12,
+                  borderRadius: 12,
+                  marginBottom: 14,
+                  borderWidth: 1,
+                  borderColor: isDark ? colors.cardBorder : '#DBEAFE',
+                }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                    <MaterialIcons name="radar" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+                    <Text style={{ color: isDark ? '#93C5FD' : '#1E40AF', fontSize: 13, fontWeight: '700' }}>
+                      Raio de Busca: <Text style={{ fontWeight: '900', color: colors.primary }}>{profileEditRadiusKm} km</Text>
+                    </Text>
+                  </View>
+                  <Text style={{ color: isDark ? colors.textSecondary : '#475569', fontSize: 11.5, marginBottom: 10 }}>
+                    Selecione a distância máxima para filtrar publicações ao redor de você:
                   </Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                    {[15, 30, 60, 100, 150, 250].map((r) => {
+                      const isSelected = profileEditRadiusKm === r;
+                      return (
+                        <TouchableOpacity
+                          key={r}
+                          onPress={() => setProfileEditRadiusKm(r)}
+                          activeOpacity={0.75}
+                          style={{
+                            paddingHorizontal: 10,
+                            paddingVertical: 6,
+                            borderRadius: 8,
+                            borderWidth: 1,
+                            borderColor: isSelected ? colors.primary : colors.border,
+                            backgroundColor: isSelected ? colors.primary : (isDark ? colors.surface : '#FFFFFF'),
+                          }}
+                        >
+                          <Text style={{
+                            fontSize: 12,
+                            fontWeight: isSelected ? '800' : '600',
+                            color: isSelected ? '#FFFFFF' : colors.text,
+                          }}>
+                            {r} km
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
                 </View>
-                <Text style={{ color: isDark ? colors.textSecondary : '#475569', fontSize: 11.5, marginBottom: 10 }}>
-                  Selecione a distância máxima para filtrar publicações ao redor de você:
-                </Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                  {[15, 30, 60, 100, 150, 250].map((r) => {
-                    const isSelected = profileEditRadiusKm === r;
-                    return (
-                      <TouchableOpacity
-                        key={r}
-                        onPress={() => setProfileEditRadiusKm(r)}
-                        activeOpacity={0.75}
-                        style={{
-                          paddingHorizontal: 10,
-                          paddingVertical: 6,
-                          borderRadius: 8,
-                          borderWidth: 1,
-                          borderColor: isSelected ? colors.primary : colors.border,
-                          backgroundColor: isSelected ? colors.primary : (isDark ? colors.surface : '#FFFFFF'),
-                        }}
-                      >
-                        <Text style={{
-                          fontSize: 12,
-                          fontWeight: isSelected ? '800' : '600',
-                          color: isSelected ? '#FFFFFF' : colors.text,
-                        }}>
-                          {r} km
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
+              )}
 
               <TouchableOpacity
                 onPress={() => {
@@ -2414,8 +2416,8 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
         </View>
       )}
-      {/* Banner Informativo do Raio de Busca */}
-      {Boolean(locationFilter) && (
+      {/* Banner Informativo do Raio de Busca (Apenas quando houver cidade/estado específico) */}
+      {Boolean(locationFilter && locationFilter.trim().length > 0 && headerLocationSummary !== 'Todo o Brasil') && (
         <View style={[styles.radiusBanner, { backgroundColor: isDark ? '#161F30' : '#EFF6FF', borderColor: isDark ? '#243248' : '#BFDBFE' }]}>
           <View style={styles.radiusBannerLeft}>
             <View style={[styles.radarIconContainer, { backgroundColor: isDark ? '#0F172A' : '#DBEAFE' }]}>
@@ -2468,19 +2470,11 @@ const HomeScreen = ({ navigation, route }) => {
             </View>
 
             <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 10, marginBottom: 6, lineHeight: 18 }}>
-              Escolha a distância máxima para exibir {radiusStatusText} próximos a sua localização:
+              Escolha a distância máxima para exibir os pets cadastrados nesta região:
             </Text>
 
-            {/* Localização do Usuário (Discreta e Integrada ao Design) */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: isDark ? '#1E293B' : '#F1F5F9', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, marginBottom: 14, borderWidth: 1, borderColor: colors.cardBorder }}>
-              <MaterialIcons name="location-on" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-              <Text style={{ fontSize: 12, color: colors.textSecondary, flex: 1 }} numberOfLines={1}>
-                Sua localização: <Text style={{ color: colors.text, fontWeight: '700' }}>{userFullLocation}</Text>
-              </Text>
-            </View>
-
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-              {[15, 30, 60, 100, 150, 250, 500].map((r) => {
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 12 }}>
+              {[15, 30, 60, 100, 150, 250].map((r) => {
                 const isSelected = selectedQuickRadius === r;
                 return (
                   <TouchableOpacity
@@ -2488,16 +2482,18 @@ const HomeScreen = ({ navigation, route }) => {
                     onPress={() => setSelectedQuickRadius(r)}
                     activeOpacity={0.75}
                     style={{
-                      paddingHorizontal: 14,
-                      paddingVertical: 9,
-                      borderRadius: 12,
-                      borderWidth: 1.5,
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      borderRadius: 10,
+                      borderWidth: 1,
                       borderColor: isSelected ? colors.primary : colors.border,
-                      backgroundColor: isSelected ? colors.primary : (isDark ? '#1E293B' : '#F8FAFC'),
+                      backgroundColor: isSelected ? colors.primary : (isDark ? colors.surface : '#FFFFFF'),
+                      minWidth: 70,
+                      alignItems: 'center',
                     }}
                   >
                     <Text style={{
-                      fontSize: 13.5,
+                      fontSize: 13,
                       fontWeight: isSelected ? '800' : '600',
                       color: isSelected ? '#FFFFFF' : colors.text,
                     }}>
@@ -2508,19 +2504,22 @@ const HomeScreen = ({ navigation, route }) => {
               })}
             </View>
 
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <Button
-                title="Cancelar"
-                variant="secondary"
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+              <TouchableOpacity
                 onPress={() => setShowQuickRadiusModal(false)}
-                style={{ flex: 1, minHeight: 46 }}
-              />
-              <Button
-                title="Salvar e Aplicar"
-                variant="primary"
-                onPress={() => handleSaveQuickRadius(selectedQuickRadius)}
-                style={{ flex: 1.3, minHeight: 46 }}
-              />
+                style={{ flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}
+                activeOpacity={0.75}
+              >
+                <Text style={{ color: colors.text, fontWeight: '700', fontSize: 14 }}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleSaveQuickRadius}
+                style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center' }}
+                activeOpacity={0.85}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>Aplicar Raio</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -2568,11 +2567,11 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={styles.emptyContainer}>
             <MaterialIcons name="pets" size={46} color={isDark ? '#334155' : '#CBD5E1'} style={{ marginBottom: 10 }} />
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              {locationFilter
+              {locationFilter && headerLocationSummary !== 'Todo o Brasil'
                 ? `Nenhum animal encontrado em um raio de ${searchRadiusKm} km de ${headerLocationSummary}.`
-                : 'Nenhum animal encontrado'}
+                : 'Nenhum animal cadastrado nesta categoria.'}
             </Text>
-            {locationFilter ? (
+            {locationFilter && headerLocationSummary !== 'Todo o Brasil' ? (
               <TouchableOpacity
                 onPress={handleResetToBrazil}
                 style={{
