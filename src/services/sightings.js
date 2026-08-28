@@ -253,3 +253,136 @@ export const uploadSightingPhoto = async (sightingId, photoUri) => {
     throw error;
   }
 };
+
+/**
+ * Calcula a distância geodésica em quilômetros (Fórmula de Haversine)
+ */
+export const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+  const nLat1 = Number(lat1);
+  const nLon1 = Number(lon1);
+  const nLat2 = Number(lat2);
+  const nLon2 = Number(lon2);
+  if (isNaN(nLat1) || isNaN(nLon1) || isNaN(nLat2) || isNaN(nLon2)) return null;
+
+  const R = 6371; // Raio da Terra em km
+  const dLat = ((nLat2 - nLat1) * Math.PI) / 180;
+  const dLon = ((nLon2 - nLon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((nLat1 * Math.PI) / 180) *
+      Math.cos((nLat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+/**
+ * Busca por possíveis animais já cadastrados e avistados na mesma região (raio de 3 a 5 km)
+ */
+export const findNearbyPotentialMatches = async ({ latitude, longitude, species, maxRadiusKm = 5, currentItemId = null }) => {
+  try {
+    if (latitude == null || longitude == null) return [];
+    
+    let query = supabase
+      .from('items')
+      .select('id, title, description, status, species, breed, photo_urls, latitude, longitude, address, neighborhood, city, state, created_at, extra_fields')
+      .eq('resolved', false)
+      .not('latitude', 'is', null)
+      .not('longitude', 'is', null);
+
+    if (species) {
+      query = query.ilike('species', `%${species}%`);
+    }
+
+    if (currentItemId) {
+      query = query.neq('id', currentItemId);
+    }
+
+    const { data: items, error } = await query;
+    if (error || !items) return [];
+
+    const matches = items
+      .map(item => {
+        const itemLat = item.latitude ?? item.extra_fields?.location_details?.latitude;
+        const itemLng = item.longitude ?? item.extra_fields?.location_details?.longitude;
+        const distanceKm = calculateDistanceKm(latitude, longitude, itemLat, itemLng);
+        
+        // Prioriza animais vistos na rua ou perdidos
+        const isSpotted = item.extra_fields?.found_custody === 'spotted' || item.status === 'lost';
+        return {
+          ...item,
+          distanceKm,
+          isSpotted,
+        };
+      })
+      .filter(item => item.distanceKm != null && item.distanceKm <= maxRadiusKm && item.isSpotted)
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+
+    return matches.slice(0, 4);
+  } catch (err) {
+    console.log('[findNearbyPotentialMatches] Erro:', err.message);
+    return [];
+  }
+};
+
+/**
+ * Registra novo avistamento e move o pin do animal no mapa para a localização mais recente
+ */
+export const recordSightingAndUpdateItemLocation = async ({ itemId, userId, location, description, photoUrl, contactInfo }) => {
+  try {
+    // 1. Cria o avistamento no histórico
+    const sighting = await createSighting({
+      item_id: itemId,
+      user_id: userId,
+      location: typeof location === 'object' ? location : { address: location },
+      description,
+      photo_url: photoUrl,
+      contact_info: contactInfo,
+    });
+
+    // 2. Atualiza a localização atual do item e o timestamp de último avistamento
+    const lat = location?.latitude ?? location?.coords?.latitude;
+    const lng = location?.longitude ?? location?.coords?.longitude;
+    const address = location?.address || description || '';
+
+    const updatePayload = {
+      updated_at: new Date().toISOString(),
+    };
+    if (lat && lng) {
+      updatePayload.latitude = Number(lat);
+      updatePayload.longitude = Number(lng);
+    }
+    if (address) {
+      updatePayload.address = address;
+    }
+
+    const { data: currentItem } = await supabase
+      .from('items')
+      .select('extra_fields')
+      .eq('id', itemId)
+      .single();
+
+    const currentExtra = currentItem?.extra_fields || {};
+    const newCount = (currentExtra.sighting_count || 0) + 1;
+
+    updatePayload.extra_fields = {
+      ...currentExtra,
+      sighting_count: newCount,
+      last_sighting_at: new Date().toISOString(),
+      last_sighting_by: userId,
+      last_sighting_address: address,
+    };
+
+    await supabase
+      .from('items')
+      .update(updatePayload)
+      .eq('id', itemId);
+
+    return sighting;
+  } catch (err) {
+    console.error('[recordSightingAndUpdateItemLocation] Erro:', err);
+    throw err;
+  }
+};

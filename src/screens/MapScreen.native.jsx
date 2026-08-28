@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import MapView, { Callout, Marker, Polyline } from 'react-native-maps';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import * as itemsService from '../services/items';
+import * as sightingsService from '../services/sightings';
+import SightingModal from '../components/SightingModal';
 import { useAuth } from '../contexts/AuthContext';
 
 const BRAZIL_REGION = {
@@ -204,6 +206,70 @@ const MapScreen = ({ route, navigation }) => {
   const [isNavigating, setIsNavigating] = useState(false);
   const isNavigatingRef = useRef(false);
   const handledRouteParamRef = useRef(null);
+
+  // Sighting Modal State
+  const [sightingModalVisible, setSightingModalVisible] = useState(false);
+  const [submittingSighting, setSubmittingSighting] = useState(false);
+  const [targetSightingItem, setTargetSightingItem] = useState(null);
+
+  const handleOpenSightingModal = (item) => {
+    if (!user) {
+      Alert.alert('Login necessário', 'Faça login para registrar um novo avistamento do pet.', [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+      ]);
+      return;
+    }
+    setTargetSightingItem(item);
+    setSightingModalVisible(true);
+  };
+
+  const handleSubmitSighting = async (form) => {
+    if (!targetSightingItem) return;
+    setSubmittingSighting(true);
+    try {
+      let photoUrl = form.photo_url;
+      if (photoUrl && (photoUrl.startsWith('file://') || photoUrl.startsWith('content://'))) {
+        try {
+          photoUrl = await sightingsService.uploadSightingPhoto(targetSightingItem.id, photoUrl);
+        } catch (uploadErr) {
+          console.warn('[MapScreen] Erro upload foto avistamento:', uploadErr);
+        }
+      }
+
+      await sightingsService.recordSightingAndUpdateItemLocation({
+        itemId: targetSightingItem.id,
+        userId: user.id,
+        location: form.coordinate || { address: form.location },
+        description: form.description,
+        contactInfo: form.contact_info,
+        photoUrl,
+      });
+
+      setSightingModalVisible(false);
+      Alert.alert('Avistamento Registrado! 🎯', 'A nova localização do pet foi atualizada no mapa e os voluntários e tutores foram avisados.');
+
+      await loadItems();
+      if (form.coordinate?.latitude && form.coordinate?.longitude) {
+        const updatedItem = {
+          ...targetSightingItem,
+          latitude: Number(form.coordinate.latitude),
+          longitude: Number(form.coordinate.longitude),
+        };
+        setSelectedItem(updatedItem);
+        mapRef.current?.animateToRegion({
+          latitude: Number(form.coordinate.latitude),
+          longitude: Number(form.coordinate.longitude),
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
+        }, 600);
+      }
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível registrar o avistamento. Tente novamente.');
+    } finally {
+      setSubmittingSighting(false);
+    }
+  };
 
   const locationSubRef = useRef(null);
 
@@ -528,7 +594,13 @@ const MapScreen = ({ route, navigation }) => {
         })
       );
 
-      const validItems = resolvedList.filter(Boolean);
+      // Apenas animais na rua aparecem no mapa (vistos na rua 'spotted' ou perdidos 'lost')
+      const validItems = resolvedList.filter((item) => {
+        if (!item) return false;
+        const isSpotted = item.extra_fields?.found_custody === 'spotted';
+        const isLost = item.status === 'lost';
+        return isSpotted || isLost;
+      });
       setItems(validItems);
 
       // Se o usuário ainda não concedeu GPS, centraliza no primeiro animal encontrado ou região padrão
@@ -990,6 +1062,28 @@ const MapScreen = ({ route, navigation }) => {
             </View>
           )}
 
+          {/* Banner de Último Avistamento (se houver) */}
+          {Boolean(selectedItem.extra_fields?.sighting_count > 0 || selectedItem.extra_fields?.last_sighting_at) && (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#FEF3C7',
+              borderColor: '#FDE68A',
+              borderWidth: 1,
+              borderRadius: 8,
+              paddingHorizontal: 8,
+              paddingVertical: 4.5,
+              marginBottom: 8,
+            }}>
+              <MaterialIcons name="visibility" size={14} color="#D97706" style={{ marginRight: 4 }} />
+              <Text style={{ fontSize: 11.5, fontWeight: '800', color: '#B45309', flex: 1 }}>
+                {selectedItem.extra_fields?.sighting_count > 1
+                  ? `📍 ${selectedItem.extra_fields.sighting_count} avistamentos registrados pela comunidade`
+                  : '📍 Avistado recentemente nesta localização'}
+              </Text>
+            </View>
+          )}
+
           {/* 6. Localização */}
           <View style={{
             flexDirection: 'row',
@@ -1007,15 +1101,35 @@ const MapScreen = ({ route, navigation }) => {
             </Text>
           </View>
 
-          {/* 7. Ações: Ver Detalhes e Traçar Rota */}
-          <View style={{ flexDirection: 'row', gap: 8, marginTop: 2 }}>
+          {/* 7. Ações: Ver Detalhes, Informar Avistamento e Traçar Rota */}
+          <View style={{ flexDirection: 'row', gap: 6, marginTop: 2 }}>
             <TouchableOpacity
-              style={[styles.detailsButton, { flex: 1, marginTop: 0 }]}
+              style={[styles.detailsButton, { flex: 1, marginTop: 0, paddingHorizontal: 8 }]}
               onPress={() => navigation.navigate('ItemDetail', { itemId: selectedItem.id })}
               activeOpacity={0.85}
             >
-              <Text style={styles.detailsButtonText}>Ver Detalhes</Text>
-              <MaterialIcons name="chevron-right" size={18} color="#FFFFFF" style={{ marginLeft: 4 }} />
+              <Text style={[styles.detailsButtonText, { fontSize: 11.5 }]}>Detalhes</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#FEF3C7',
+                borderColor: '#FDE68A',
+                borderWidth: 1,
+                borderRadius: 12,
+                paddingHorizontal: 9,
+                paddingVertical: 10,
+              }}
+              onPress={() => handleOpenSightingModal(selectedItem)}
+              activeOpacity={0.85}
+            >
+              <MaterialIcons name="add-location-alt" size={16} color="#D97706" style={{ marginRight: 3 }} />
+              <Text style={{ fontSize: 11.5, fontWeight: '800', color: '#B45309' }}>
+                Vi o Pet
+              </Text>
             </TouchableOpacity>
 
             {routeCoordinates.length > 0 ? (
@@ -1026,7 +1140,7 @@ const MapScreen = ({ route, navigation }) => {
                   justifyContent: 'center',
                   backgroundColor: '#16A34A',
                   borderRadius: 12,
-                  paddingHorizontal: 14,
+                  paddingHorizontal: 12,
                   paddingVertical: 10,
                   shadowColor: '#16A34A',
                   shadowOffset: { width: 0, height: 2 },
@@ -1037,9 +1151,9 @@ const MapScreen = ({ route, navigation }) => {
                 onPress={() => startNavigation()}
                 activeOpacity={0.85}
               >
-                <MaterialIcons name="navigation" size={18} color="#FFFFFF" style={{ marginRight: 4 }} />
-                <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#FFFFFF' }}>
-                  Iniciar Rota
+                <MaterialIcons name="navigation" size={16} color="#FFFFFF" style={{ marginRight: 3 }} />
+                <Text style={{ fontSize: 12, fontWeight: '800', color: '#FFFFFF' }}>
+                  Iniciar
                 </Text>
               </TouchableOpacity>
             ) : (
@@ -1052,7 +1166,7 @@ const MapScreen = ({ route, navigation }) => {
                   borderColor: '#BFDBFE',
                   borderWidth: 1,
                   borderRadius: 12,
-                  paddingHorizontal: 12,
+                  paddingHorizontal: 10,
                   paddingVertical: 10,
                 }}
                 onPress={() => {
@@ -1074,9 +1188,9 @@ const MapScreen = ({ route, navigation }) => {
                 }}
                 activeOpacity={0.85}
               >
-                <MaterialIcons name="directions" size={18} color="#2563EB" style={{ marginRight: 4 }} />
-                <Text style={{ fontSize: 12.5, fontWeight: '700', color: '#1D4ED8' }}>
-                  Traçar Rota
+                <MaterialIcons name="directions" size={16} color="#2563EB" style={{ marginRight: 3 }} />
+                <Text style={{ fontSize: 12, fontWeight: '700', color: '#1D4ED8' }}>
+                  Rota
                 </Text>
               </TouchableOpacity>
             )}
@@ -1208,6 +1322,14 @@ const MapScreen = ({ route, navigation }) => {
           <Text style={styles.loadingText}>Carregando animais no mapa...</Text>
         </View>
       )}
+
+      {/* Modal de Registro de Novo Avistamento com Atualização de Localização */}
+      <SightingModal
+        visible={sightingModalVisible}
+        onClose={() => setSightingModalVisible(false)}
+        onSubmit={handleSubmitSighting}
+        loading={submittingSighting}
+      />
     </View>
   );
 };

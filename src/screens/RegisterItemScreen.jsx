@@ -18,6 +18,7 @@ import { Calendar } from 'react-native-calendars';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import * as itemsService from '../services/items';
+import * as sightingsService from '../services/sightings';
 import * as rewardsService from '../services/rewards';
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -398,6 +399,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [foundModalMessage, setFoundModalMessage] = useState('');
   const [foundModalItemId, setFoundModalItemId] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Verificação Inteligente de Avistamentos Duplicados / Próximos
+  const [nearbyMatches, setNearbyMatches] = useState([]);
+  const [showMatchingModal, setShowMatchingModal] = useState(false);
+  const [bypassedMatchCheck, setBypassedMatchCheck] = useState(false);
+  const [selectedMatchPet, setSelectedMatchPet] = useState(null);
+  const [submittingMatchSighting, setSubmittingMatchSighting] = useState(false);
 
   const renderLocationAndRewardSection = () => (
     <View>
@@ -1109,11 +1117,104 @@ const RegisterItemScreen = ({ navigation, route }) => {
     }
   };
 
+  const handleConfirmMatchSighting = async () => {
+    if (!selectedMatchPet) return;
+    setSubmittingMatchSighting(true);
+    try {
+      let photoUrl = null;
+      if (photos && photos.length > 0 && photos[0]?.uri) {
+        try {
+          photoUrl = await sightingsService.uploadSightingPhoto(selectedMatchPet.id, photos[0].uri);
+        } catch (uploadErr) {
+          console.warn('[RegisterItem] Erro ao subir foto do avistamento:', uploadErr);
+        }
+      }
+
+      await sightingsService.recordSightingAndUpdateItemLocation({
+        itemId: selectedMatchPet.id,
+        userId: user.id,
+        location: mapLocation ? { latitude: Number(mapLocation.latitude), longitude: Number(mapLocation.longitude), address: mapAddressText } : mapAddressText,
+        description: description?.trim() || 'Avistado novamente por um usuário nesta região.',
+        photoUrl,
+      });
+
+      setShowMatchingModal(false);
+      Alert.alert(
+        'Localização Atualizada! 🎯',
+        `A localização de "${selectedMatchPet.title}" foi atualizada no mapa para o ponto onde você o viu. O tutor e voluntários foram avisados!`,
+        [
+          {
+            text: 'Ver no Mapa',
+            onPress: () => {
+              navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: 'MainApp',
+                    params: {
+                      screen: 'MapTab',
+                      params: {
+                        focusItemId: selectedMatchPet.id,
+                        showRoute: true,
+                        targetCoords: mapLocation,
+                      },
+                    },
+                  },
+                ],
+              });
+            },
+          },
+        ]
+      );
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível atualizar o avistamento. Tente publicar como um novo registro.');
+    } finally {
+      setSubmittingMatchSighting(false);
+    }
+  };
+
+  const handleContinueWithNewRegistration = () => {
+    setShowMatchingModal(false);
+    setBypassedMatchCheck(true);
+    setTimeout(() => {
+      handlePublish();
+    }, 150);
+  };
+
   const handlePublish = async () => {
     console.log('[RegisterItem] handlePublish acionado! Status:', status, 'ItemType:', itemType, 'Fotos:', photos.length);
     if (!validateFields()) {
       console.log('[RegisterItem] Falha na validação dos campos.');
       return;
+    }
+
+    // 1. Verificação Inteligente de Animais Semelhantes Já Registrados na Região
+    if (
+      !editItem &&
+      itemType === 'animal' &&
+      (foundCustody === 'spotted' || status === 'found' || status === 'lost') &&
+      !bypassedMatchCheck &&
+      mapLocation?.latitude &&
+      mapLocation?.longitude
+    ) {
+      try {
+        const effectiveSpecies = isCustomSpecies ? customSpecies.trim() : animalSpecies.trim();
+        const matches = await sightingsService.findNearbyPotentialMatches({
+          latitude: Number(mapLocation.latitude),
+          longitude: Number(mapLocation.longitude),
+          species: effectiveSpecies,
+          maxRadiusKm: 5,
+        });
+
+        if (matches && matches.length > 0) {
+          setNearbyMatches(matches);
+          setSelectedMatchPet(matches[0]);
+          setShowMatchingModal(true);
+          return;
+        }
+      } catch (matchErr) {
+        console.warn('[RegisterItem] Erro ao buscar correspondências próximas:', matchErr);
+      }
     }
 
     setLoading(true);
@@ -1329,6 +1430,129 @@ const RegisterItemScreen = ({ navigation, route }) => {
               disabled={deleting}
               style={{ flex: 1, marginLeft: 8 }}
             />
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  // Modal de Detecção Inteligente de Animais Semelhantes Já Registrados na Região
+  const renderNearbyMatchingModal = () => (
+    <Modal
+      visible={showMatchingModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowMatchingModal(false)}
+    >
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.72)', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
+        <View style={{ backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#DBEAFE', borderWidth: 1.5, borderRadius: 24, padding: 20, width: '100%', maxWidth: 420, maxHeight: '85%' }}>
+          
+          <View style={{ alignItems: 'center', marginBottom: 12 }}>
+            <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginBottom: 8, borderWidth: 1, borderColor: '#93C5FD' }}>
+              <MaterialIcons name="radar" size={26} color="#2563EB" />
+            </View>
+            <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text, textAlign: 'center', marginBottom: 4 }}>
+              Animal Semelhante por Perto!
+            </Text>
+            <Text style={{ fontSize: 12.5, color: colors.textSecondary, textAlign: 'center', lineHeight: 17 }}>
+              Encontramos este(s) pet(s) parecido(s) registrado(s) nessa mesma região. Você está vendo este mesmo animal?
+            </Text>
+          </View>
+
+          <ScrollView style={{ maxHeight: 220, marginBottom: 14 }} showsVerticalScrollIndicator={false}>
+            {nearbyMatches.map((match) => {
+              const isSelected = selectedMatchPet?.id === match.id;
+              const photoUrl = match.photo_urls?.[0];
+              const distText = match.distanceKm < 1 ? `${Math.round(match.distanceKm * 1000)}m de você` : `${match.distanceKm.toFixed(1)} km de você`;
+
+              return (
+                <TouchableOpacity
+                  key={String(match.id)}
+                  onPress={() => setSelectedMatchPet(match)}
+                  activeOpacity={0.85}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 10,
+                    borderRadius: 14,
+                    borderWidth: 2,
+                    borderColor: isSelected ? colors.primary : (isDark ? '#334155' : '#E2E8F0'),
+                    backgroundColor: isSelected ? (isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF') : (isDark ? '#1E293B' : '#F8FAFC'),
+                    marginBottom: 8,
+                  }}
+                >
+                  <Image
+                    source={photoUrl ? { uri: photoUrl } : require('../assets/logo_wefind.png')}
+                    style={{ width: 52, height: 52, borderRadius: 10, backgroundColor: isDark ? '#0F172A' : '#E2E8F0', marginRight: 10 }}
+                    resizeMode="cover"
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: colors.text }} numberOfLines={1}>
+                      {match.title || 'Pet sem nome'}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: colors.textSecondary }} numberOfLines={1}>
+                      {match.species || 'Animal'}{match.breed ? ` • ${match.breed}` : ''}
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
+                      <MaterialIcons name="place" size={13} color="#2563EB" style={{ marginRight: 2 }} />
+                      <Text style={{ fontSize: 11.5, fontWeight: '700', color: colors.primary }}>
+                        {distText}
+                      </Text>
+                    </View>
+                  </View>
+                  <MaterialIcons
+                    name={isSelected ? 'radio-button-checked' : 'radio-button-unchecked'}
+                    size={22}
+                    color={isSelected ? colors.primary : colors.textMuted}
+                  />
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          <View style={{ gap: 8 }}>
+            <TouchableOpacity
+              onPress={handleConfirmMatchSighting}
+              disabled={submittingMatchSighting}
+              style={{
+                backgroundColor: '#16A34A',
+                paddingVertical: 12,
+                borderRadius: 14,
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'row',
+              }}
+              activeOpacity={0.85}
+            >
+              {submittingMatchSighting ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <MaterialIcons name="check-circle" size={17} color="#FFFFFF" style={{ marginRight: 6 }} />
+                  <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13.5 }}>
+                    Sim, é ele! Atualizar Localização
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleContinueWithNewRegistration}
+              disabled={submittingMatchSighting}
+              style={{
+                paddingVertical: 10,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: colors.border,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              activeOpacity={0.75}
+            >
+              <Text style={{ color: colors.textSecondary, fontWeight: '700', fontSize: 13 }}>
+                Não, é outro animal (Criar Novo)
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -1787,6 +2011,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           </ScrollView>
           {renderMapLocationPicker()}
           {renderFoundModal()}
+          {renderNearbyMatchingModal()}
           <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: colors.border, zIndex: 100, elevation: 10 }}>
             <Button
               title={loading ? 'Publicando...' : 'Publicar'}
@@ -1964,6 +2189,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </ScrollView>
         {renderMapLocationPicker()}
         {renderFoundModal()}
+        {renderNearbyMatchingModal()}
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: colors.border }}>
           <Button
             title={loading ? 'Publicando...' : 'Publicar'}
@@ -2080,6 +2306,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         </ScrollView>
         {renderMapLocationPicker()}
         {renderFoundModal()}
+        {renderNearbyMatchingModal()}
         <View style={[styles.navigation, { position: 'absolute', left: 0, right: 0, bottom: 44, backgroundColor: colors.surface, borderTopWidth: 1, borderColor: colors.border, padding: 16, zIndex: 10 }]}> 
           <Button
             title="Voltar"

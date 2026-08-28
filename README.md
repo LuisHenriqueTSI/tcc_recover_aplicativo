@@ -129,6 +129,107 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 
 ---
 
+## 🧭 Arquitetura de Avistamentos em Tempo Real & Rastro de Deslocamento (TCC)
+
+O sistema WeFIND implementa uma arquitetura inédita de **"Rede Viva de Avistamentos Comunitários"** (*Sighting Trail & Live Pin Tracking*), desenhada especificamente para solucionar dois desafios fundamentais do resgate animal urbano:
+
+```
+                  ┌──────────────────────────────────────────────────────────┐
+                  │          NOVO USUÁRIO AVISTA ANIMAL NA RUA               │
+                  └─────────────────────────────┬────────────────────────────┘
+                                                │
+                 ┌──────────────────────────────┴────────────────────────────┐
+                 ▼                                                           ▼
+       [Opção A: No Mapa Interativo]                             [Opção B: No Cadastro do App]
+       • Toca em "Vi o Pet Aqui" no Card                         • Seleciona "Visto na rua (não fiquei)"
+       • Dispara captura instantânea de GPS                      • Informa espécie e localização GPS
+                 │                                                           │
+                 │                                                           ▼
+                 │                                       [Motor de Correspondência Geodésica]
+                 │                                       • Busca ativa em raio de 5 km (Haversine)
+                 │                                       • Validação de espécie e temporalidade
+                 │                                                           │
+                 │                              ┌────────────────────────────┴──────────────────────────┐
+                 │                              ▼                                                       ▼
+                 │                    [Sem correspondência]                                  [Encontrado Pet Similar!]
+                 │                    • Prossegue com novo cadastro                          • Abre Modal com Fotos & Distância
+                 │                              │                                            • "Sim, é este pet!" ────────┐
+                 │                              ▼                                                       │                 │
+                 │                    [Cria Novo Pin no Mapa]                                           │                 │
+                 │                                                                                      │                 │
+                 └──────────────────────────────────────┬───────────────────────────────────────────────┘                 │
+                                                        ▼                                                                 ▼
+                                        [Execução da Atualização Atômica]                                   [Notificação Instantânea]
+                                        1. Insere histórico em `item_sightings`                              • Dispara alerta ao tutor
+                                        2. Atualiza coordenadas vivas em `items`                             • Alerta voluntários da área
+                                        3. Move o marcador GPS no mapa para o ponto atual
+                                        4. Atualiza a Rota de Navegação até o animal
+```
+
+---
+
+### 1. 🧮 Fundamentação Matemática: Fórmula de Haversine
+Para determinar a distância ortodrômica (em linha reta sobre a superfície esférica da Terra) entre a localização atual do usuário e as coordenadas dos animais registrados na base de dados, utilizamos a **Fórmula de Haversine**:
+
+$$\Delta\sigma = 2 \cdot \arcsin\left( \sqrt{ \sin^2\left(\frac{\Delta\phi}{2}\right) + \cos(\phi_1) \cdot \cos(\phi_2) \cdot \sin^2\left(\frac{\Delta\lambda}{2}\right) } \right)$$
+
+$$d = R \cdot \Delta\sigma$$
+
+Onde:
+* $\phi_1, \phi_2$: Latitude do ponto 1 e ponto 2 em radianos.
+* $\Delta\phi = \phi_2 - \phi_1$: Diferença de latitudes.
+* $\Delta\lambda = \lambda_2 - \lambda_1$: Diferença de longitudes.
+* $R = 6.371\text{ km}$: Raio médio volumétrico da Terra.
+* $d$: Distância geodésica resultante em quilômetros.
+
+No código-fonte, a função está implementada de forma otimizada em `src/services/sightings.js`:
+```javascript
+export const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+  const R = 6371; // km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+```
+
+---
+
+### 2. 🛡️ Segurança e Privacidade: Segregação de Custódia (`spotted` vs `with_me`)
+Para garantir a integridade física e a privacidade dos membros da comunidade:
+1. **Animais Vistos na Rua (`found_custody === 'spotted'` e `status === 'lost'`):**
+   - São os **únicos** exibidos publicamente nos pins do mapa.
+   - O objetivo é mobilizar a comunidade para o resgate imediato de animais em situação de vulnerabilidade e deslocamento.
+2. **Animais Acolhidos em Lar Temporário (`found_custody === 'with_me'`):**
+   - O endereço residencial do voluntário **não é plotado no mapa público**.
+   - A entrega é realizada de forma segura mediante o fluxo formal de comprovação de tutela e chat autenticado com liberação do ponto de encontro.
+
+---
+
+### 3. 🔍 Detecção Inteligente de Duplicidade no Cadastro (`RegisterItemScreen.jsx`)
+Quando um usuário encontra um animal na rua e inicia o cadastro:
+1. Ao definir a espécie e selecionar a localização GPS, o sistema invoca silenciosamente `findNearbyPotentialMatches(...)`.
+2. Se houver registros de animais perdidos ou vistos na mesma área em um raio de até **5 km**, o modal interativo `NearbyMatchingModal` é exibido.
+3. Se o usuário confirmar (*"Sim, é este pet!"*):
+   - O sistema cria o registro de avistamento com a nova foto tirada.
+   - A localização do pin no mapa do animal existente é movida **automaticamente** para as novas coordenadas.
+   - O tutor e voluntários são notificados imediatamente sobre a nova posição do pet.
+4. Se o usuário recusar (*"Não, é outro animal"*):
+   - O fluxo prossegue e cria uma publicação inédita sem atrito.
+
+---
+
+### 4. 🚗 Rota GPS e Navegação Dinâmica até o Último Avistamento (`MapScreen.native.jsx`)
+* **Cálculo de Trajeto OSRM (Open Source Routing Machine):** Rota traçada dinamicamente entre a posição em tempo real do voluntário/tutor e as coordenadas mais recentes do animal.
+* **HUD de Navegação Ativa:** Exibição da distância em quilômetros, tempo estimado de chegada e botão para navegação assistida por GPS.
+
+---
+
 ✅ **Segurança — Senhas Fortes e Mensagens Amigáveis**
 - **Medidor Visual de Força de Senha (`PasswordStrengthIndicator.jsx`):**
   - Barra de progresso colorida em tempo real com nível: Fraca / Média / Forte / Excelente.
