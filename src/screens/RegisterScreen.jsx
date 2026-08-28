@@ -293,18 +293,10 @@ const RegisterScreen = ({ navigation }) => {
         extraHeight={Platform.OS === 'ios' ? 120 : 160}
         keyboardOpeningTime={0}
       >
-        {/* Brand Header */}
+        {/* Top Header Badge */}
         <View style={styles.brandHeroContainer}>
-          <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#EFF6FF' }]}>
-            <Image
-              source={require('../assets/logo_wefind.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-          </View>
-
           <View style={[styles.badgePill, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.18)' : '#EFF6FF', borderColor: isDark ? '#1E3A8A' : '#BFDBFE' }]}>
-            <MaterialIcons name="security" size={13} color={colors.primary} style={{ marginRight: 5 }} />
+            <MaterialIcons name="pets" size={13} color={colors.primary} style={{ marginRight: 5 }} />
             <Text style={[styles.badgePillText, { color: colors.primary }]}>CADASTRO RÁPIDO E SEGURO</Text>
           </View>
         </View>
@@ -573,25 +565,7 @@ const styles = StyleSheet.create({
   },
   brandHeroContainer: {
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  logoSquircle: {
-    width: 90,
-    height: 90,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 12,
-    elevation: 5,
     marginBottom: 12,
-  },
-  logoImage: {
-    width: 66,
-    height: 66,
   },
   badgePill: {
     flexDirection: 'row',
