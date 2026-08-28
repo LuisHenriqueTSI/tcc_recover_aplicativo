@@ -111,19 +111,56 @@ const getColorHex = (colorName = '') => {
 const formatItemFullAddress = (item) => {
   if (!item) return '';
 
-  // 1. Endereço do último avistamento
+  const isLost = item.status === 'lost';
+  const isFoundHome = item.status === 'found' && item.extra_fields?.found_custody !== 'spotted';
+  const isSpotted = item.extra_fields?.found_custody === 'spotted';
+
+  // 1. ANIMAL PERDIDO: Exibe apenas Bairro / Referência sem número residencial
+  if (isLost) {
+    const neighborhood = item.neighborhood || item.extra_fields?.neighborhood || item.extra_fields?.location_details?.district || item.extra_fields?.location_details?.neighborhood || '';
+    const reference = item.extra_fields?.location_details?.reference || item.extra_fields?.street || item.street || '';
+    const city = item.city || item.extra_fields?.city || item.extra_fields?.location_details?.city || '';
+    const state = item.state || item.extra_fields?.state || item.extra_fields?.location_details?.state || '';
+
+    const cleanRef = reference ? reference.replace(/,\s*\d+.*$/, '').replace(/Nº\s*\d+/i, '').trim() : '';
+
+    const parts = [];
+    if (neighborhood) parts.push(`Região de ${neighborhood}`);
+    if (cleanRef && cleanRef !== neighborhood) parts.push(`Próx. a ${cleanRef}`);
+    if (city && state) parts.push(`${city} - ${state}`);
+    else if (city) parts.push(city);
+
+    const composed = parts.join(' • ');
+    if (composed.trim()) return composed.trim();
+
+    return [neighborhood, city, state].filter(Boolean).join(' - ') || 'Região de Desaparecimento';
+  }
+
+  // 2. ANIMAL ACOLHIDO (Lar Temporário): Protege o endereço do acolhedor
+  if (isFoundHome) {
+    const neighborhood = item.neighborhood || item.extra_fields?.neighborhood || item.extra_fields?.location_details?.district || '';
+    const city = item.city || item.extra_fields?.city || item.extra_fields?.location_details?.city || '';
+    const state = item.state || item.extra_fields?.state || item.extra_fields?.location_details?.state || '';
+
+    const parts = [];
+    if (neighborhood) parts.push(`Região do Bairro ${neighborhood} (Endereço protegido)`);
+    if (city && state) parts.push(`${city} - ${state}`);
+    else if (city) parts.push(city);
+
+    return parts.join(' • ') || 'Região de Acolhimento (Endereço protegido)';
+  }
+
+  // 3. ANIMAL VISTO NA RUA / AVISTAMENTO: Pode exibir rua e altura da via pública
   const lastSighting = item.extra_fields?.last_sighting_address;
   if (lastSighting && typeof lastSighting === 'string' && !lastSighting.startsWith('{') && !/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(lastSighting.trim())) {
     return lastSighting.trim();
   }
 
-  // 2. Endereço completo gravado
   const directAddress = item.address || item.extra_fields?.address || item.extra_fields?.location_details?.fullAddressText;
   if (directAddress && typeof directAddress === 'string' && !directAddress.startsWith('{') && !/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(directAddress.trim())) {
     return directAddress.trim();
   }
 
-  // 3. Montagem a partir de rua, número, bairro, cidade, uf
   const street = item.street || item.extra_fields?.street || item.extra_fields?.location_details?.street || '';
   const number = item.house_number || item.number || item.extra_fields?.house_number || item.extra_fields?.location_details?.number || '';
   const neighborhood = item.neighborhood || item.extra_fields?.neighborhood || item.extra_fields?.location_details?.neighborhood || '';
@@ -148,7 +185,7 @@ const formatItemFullAddress = (item) => {
   const composed = parts.join(' - ');
   if (composed.trim()) return composed.trim();
 
-  return [item.neighborhood, item.city, item.state].filter(Boolean).join(' - ') || 'Localização marcada no mapa';
+  return [item.neighborhood, item.city, item.state].filter(Boolean).join(' - ') || 'Localização na rua';
 };
 
 const buildSelectedChips = (item) => {
@@ -266,19 +303,23 @@ const MapScreen = ({ route, navigation }) => {
     const staticAddr = formatItemFullAddress(selectedItem);
     setResolvedItemAddress(staticAddr);
 
-    const lat = selectedItem.latitude ?? selectedItem.extra_fields?.location_details?.latitude;
-    const lng = selectedItem.longitude ?? selectedItem.extra_fields?.location_details?.longitude;
+    // Auto-resolução com número de rua APENAS se for animal avistado solto na via pública
+    const isSpottedStreet = selectedItem.status === 'found' && selectedItem.extra_fields?.found_custody === 'spotted';
+    if (isSpottedStreet) {
+      const lat = selectedItem.latitude ?? selectedItem.extra_fields?.location_details?.latitude;
+      const lng = selectedItem.longitude ?? selectedItem.extra_fields?.location_details?.longitude;
 
-    if (lat != null && lng != null && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
-      sightingsService.resolveReadableAddress({ latitude: Number(lat), longitude: Number(lng) })
-        .then((addr) => {
-          if (addr && addr !== 'Localização marcada no mapa') {
-            setResolvedItemAddress(addr);
-          }
-        })
-        .catch(() => {});
+      if (lat != null && lng != null && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
+        sightingsService.resolveReadableAddress({ latitude: Number(lat), longitude: Number(lng) })
+          .then((addr) => {
+            if (addr && addr !== 'Localização marcada no mapa') {
+              setResolvedItemAddress(addr);
+            }
+          })
+          .catch(() => {});
+      }
     }
-  }, [selectedItem?.id, selectedItem?.latitude, selectedItem?.longitude]);
+  }, [selectedItem?.id, selectedItem?.latitude, selectedItem?.longitude, selectedItem?.status, selectedItem?.extra_fields?.found_custody]);
 
   const handleOpenSightingModal = (item) => {
     if (!user) {
