@@ -272,60 +272,84 @@ const MapScreen = ({ route, navigation }) => {
   };
 
   const locationSubRef = useRef(null);
+  const lastRouteCalcCoordRef = useRef(null);
+  const lastRouteCalcTimeRef = useRef(0);
 
   const calculateRoute = useCallback(async (fromCoords, toCoords, autoFit = true) => {
-    if (!fromCoords?.latitude || !toCoords?.latitude) return;
+    const fromLng = Number(fromCoords?.longitude);
+    const fromLat = Number(fromCoords?.latitude);
+    const toLng = Number(toCoords?.longitude);
+    const toLat = Number(toCoords?.latitude);
+
+    if (isNaN(fromLat) || isNaN(fromLng) || isNaN(toLat) || isNaN(toLng)) return;
+
     setLoadingRoute(true);
-    try {
-      const url = `https://router.project-osrm.org/route/v1/driving/${fromCoords.longitude},${fromCoords.latitude};${toCoords.longitude},${toCoords.latitude}?overview=full&geometries=geojson`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data?.routes?.[0]?.geometry?.coordinates) {
-        const coords = data.routes[0].geometry.coordinates.map(([lng, lat]) => ({
-          latitude: Number(lat),
-          longitude: Number(lng),
-        }));
-        setRouteCoordinates(coords);
-        setRouteInfo({
-          distanceKm: (data.routes[0].distance / 1000).toFixed(1),
-          durationMin: Math.max(1, Math.round(data.routes[0].duration / 60)),
-        });
 
-        // Só ajusta visão geral se NÃO estiver no modo de navegação ativa
-        if (autoFit && !isNavigatingRef.current && mapRef.current && coords.length > 0) {
-          setTimeout(() => {
-            if (!isNavigatingRef.current) {
-              mapRef.current?.fitToCoordinates([fromCoords, toCoords, ...coords], {
-                edgePadding: { top: 140, right: 60, bottom: 440, left: 60 },
-                animated: true,
-              });
-            }
-          }, 300);
-        }
-        return;
-      }
-    } catch (err) {
-      console.log('[MapScreen] Erro na rota OSRM:', err);
-    } finally {
-      setLoadingRoute(false);
-    }
-
-    // Fallback: linha direta se não houver internet ou OSRM offline
-    const fallbackCoords = [
-      { latitude: Number(fromCoords.latitude), longitude: Number(fromCoords.longitude) },
-      { latitude: Number(toCoords.latitude), longitude: Number(toCoords.longitude) },
+    // Servidores de roteamento de alta disponibilidade (OSRM / OpenStreetMap)
+    const endpoints = [
+      `https://routing.openstreetmap.de/routed-car/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`,
+      `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`,
     ];
-    setRouteCoordinates(fallbackCoords);
-    if (autoFit && !isNavigatingRef.current && mapRef.current) {
-      setTimeout(() => {
-        if (!isNavigatingRef.current) {
-          mapRef.current?.fitToCoordinates(fallbackCoords, {
-            edgePadding: { top: 140, right: 60, bottom: 440, left: 60 },
-            animated: true,
-          });
+
+    let successData = null;
+
+    for (const url of endpoints) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+        const res = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'WeFindApp/1.0 (React Native Mobile)',
+          },
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.routes?.[0]?.geometry?.coordinates && data.routes[0].geometry.coordinates.length > 1) {
+            successData = data;
+            break;
+          }
         }
-      }, 300);
+      } catch (err) {
+        console.log(`[MapScreen] Aviso no servidor de rota (${url.split('/')[2]}):`, err?.message);
+      }
     }
+
+    if (successData?.routes?.[0]?.geometry?.coordinates) {
+      const coords = successData.routes[0].geometry.coordinates.map(([lng, lat]) => ({
+        latitude: Number(lat),
+        longitude: Number(lng),
+      }));
+
+      setRouteCoordinates(coords);
+      lastRouteCalcCoordRef.current = { latitude: fromLat, longitude: fromLng };
+      lastRouteCalcTimeRef.current = Date.now();
+
+      setRouteInfo({
+        distanceKm: (successData.routes[0].distance / 1000).toFixed(1),
+        durationMin: Math.max(1, Math.round(successData.routes[0].duration / 60)),
+      });
+
+      // Só ajusta visão geral se NÃO estiver no modo de navegação ativa
+      if (autoFit && !isNavigatingRef.current && mapRef.current && coords.length > 0) {
+        setTimeout(() => {
+          if (!isNavigatingRef.current) {
+            mapRef.current?.fitToCoordinates([{ latitude: fromLat, longitude: fromLng }, { latitude: toLat, longitude: toLng }, ...coords], {
+              edgePadding: { top: 140, right: 60, bottom: 440, left: 60 },
+              animated: true,
+            });
+          }
+        }, 300);
+      }
+    } else {
+      console.log('[MapScreen] Servidores de rota indisponíveis no momento.');
+    }
+
+    setLoadingRoute(false);
   }, []);
 
   // Inicia a navegação aproximando a câmera do usuário automaticamente (estilo Google Maps)
@@ -441,11 +465,26 @@ const MapScreen = ({ route, navigation }) => {
             }, 600);
           }
 
-          // Atualiza o traçado da rota e o tempo estimado em tempo real (autoFit = false)
-          calculateRoute(newCoord, {
-            latitude: Number(selectedItem.latitude),
-            longitude: Number(selectedItem.longitude),
-          }, false);
+          // Atualiza o traçado da rota e o tempo estimado de forma inteligente (a cada 25m ou 12s)
+          const lastCoord = lastRouteCalcCoordRef.current;
+          const timeSinceLast = Date.now() - (lastRouteCalcTimeRef.current || 0);
+
+          let shouldRecalculate = false;
+          if (!lastCoord || timeSinceLast > 12000) {
+            shouldRecalculate = true;
+          } else {
+            const movedDistKm = sightingsService.calculateDistanceKm(lastCoord.latitude, lastCoord.longitude, newCoord.latitude, newCoord.longitude);
+            if (movedDistKm != null && movedDistKm >= 0.025) { // 25 metros
+              shouldRecalculate = true;
+            }
+          }
+
+          if (shouldRecalculate) {
+            calculateRoute(newCoord, {
+              latitude: Number(selectedItem.latitude),
+              longitude: Number(selectedItem.longitude),
+            }, false);
+          }
         }
       ).then((sub) => {
         locationSubRef.current = sub;
