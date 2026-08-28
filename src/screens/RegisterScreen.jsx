@@ -293,13 +293,7 @@ const RegisterScreen = ({ navigation }) => {
         extraHeight={Platform.OS === 'ios' ? 120 : 160}
         keyboardOpeningTime={0}
       >
-        {/* Top Header Badge */}
-        <View style={styles.brandHeroContainer}>
-          <View style={[styles.badgePill, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.18)' : '#EFF6FF', borderColor: isDark ? '#1E3A8A' : '#BFDBFE' }]}>
-            <MaterialIcons name="pets" size={13} color={colors.primary} style={{ marginRight: 5 }} />
-            <Text style={[styles.badgePillText, { color: colors.primary }]}>CADASTRO RÁPIDO E SEGURO</Text>
-          </View>
-        </View>
+
 
         <View style={styles.headerBox}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Criar nova conta</Text>
@@ -558,31 +552,15 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingTop: 16,
     paddingBottom: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brandHeroContainer: {
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  badgePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  badgePillText: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
   headerBox: {
     alignItems: 'center',
     marginBottom: 20,
+    marginTop: 8,
     paddingHorizontal: 16,
   },
   headerTitle: {
