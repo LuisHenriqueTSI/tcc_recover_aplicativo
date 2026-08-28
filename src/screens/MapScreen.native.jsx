@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import MapView, { Callout, Marker, Polyline } from 'react-native-maps';
@@ -253,6 +253,7 @@ const MapScreen = ({ route, navigation }) => {
   const [userCoords, setUserCoords] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showMapInfoModal, setShowMapInfoModal] = useState(false);
 
   const filteredItems = useMemo(() => {
     if (!searchTerm.trim()) return items;
@@ -851,6 +852,23 @@ const MapScreen = ({ route, navigation }) => {
           )}
         </View>
 
+        {/* Pill Informativo: Apenas pets nas ruas */}
+        <TouchableOpacity
+          style={styles.streetNoticePill}
+          onPress={() => setShowMapInfoModal(true)}
+          activeOpacity={0.85}
+        >
+          <View style={styles.streetNoticeIconCircle}>
+            <MaterialIcons name="pets" size={12} color="#2563EB" />
+          </View>
+          <Text style={styles.streetNoticeText} numberOfLines={1}>
+            Apenas pets na rua (perdidos e avistamentos)
+          </Text>
+          <View style={styles.streetNoticeInfoBadge}>
+            <MaterialIcons name="info-outline" size={13} color="#2563EB" />
+          </View>
+        </TouchableOpacity>
+
         {/* Feedback visual caso nenhum animal seja encontrado */}
         {searchTerm.trim().length > 0 && filteredItems.length === 0 && (
           <View style={styles.noResultsBox}>
@@ -1048,6 +1066,13 @@ const MapScreen = ({ route, navigation }) => {
                     </Text>
                   </View>
                 ) : null}
+
+                {/* Status na Rua: Perdido ou Visto na Rua */}
+                {selectedItem.status === 'lost' && (
+                  <View style={{ backgroundColor: '#FEF2F2', borderColor: '#FECACA', borderWidth: 1, borderRadius: 7, paddingHorizontal: 6, paddingVertical: 2 }}>
+                    <Text style={{ color: '#DC2626', fontWeight: '700', fontSize: 10.5 }}>📍 Perdido na Rua</Text>
+                  </View>
+                )}
 
                 {/* Custódia (se encontrado e não for adoção) */}
                 {!isAdoption && selectedItem.status === 'found' && (
@@ -1446,8 +1471,21 @@ const MapScreen = ({ route, navigation }) => {
 
       {!loading && items.length === 0 && (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>Nenhuma localização marcada</Text>
-          <Text style={styles.emptyText}>Os animais aparecerão aqui quando um ponto for escolhido no cadastro.</Text>
+          <View style={styles.emptyIconCircle}>
+            <MaterialIcons name="location-off" size={26} color="#2563EB" />
+          </View>
+          <Text style={styles.emptyTitle}>Nenhum pet na rua nesta região</Text>
+          <Text style={styles.emptyText}>
+            No mapa interativo são exibidos apenas animais perdidos ou avistados soltos em vias públicas.
+          </Text>
+          <TouchableOpacity
+            style={styles.emptyFeedButton}
+            onPress={() => navigation.navigate('HomeTab')}
+            activeOpacity={0.85}
+          >
+            <MaterialIcons name="grid-view" size={15} color="#FFFFFF" style={{ marginRight: 6 }} />
+            <Text style={styles.emptyFeedButtonText}>Ver todos os pets no Feed</Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -1457,6 +1495,85 @@ const MapScreen = ({ route, navigation }) => {
           <Text style={styles.loadingText}>Carregando animais no mapa...</Text>
         </View>
       )}
+
+      {/* Modal Explicativo: Por que apenas pets na rua aparecem no mapa? */}
+      <Modal
+        visible={showMapInfoModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowMapInfoModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowMapInfoModal(false)}
+        >
+          <View style={styles.modalContainer} onStartShouldSetResponder={() => true}>
+            <View style={styles.modalHeaderRow}>
+              <View style={styles.modalHeaderIconBox}>
+                <MaterialIcons name="map" size={22} color="#2563EB" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.modalHeaderTitle}>Mapa Interativo WeFIND</Text>
+                <Text style={styles.modalHeaderSubtitle}>Foco em buscas ativas e resgates</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowMapInfoModal(false)}
+                style={styles.modalCloseBtn}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="close" size={20} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalBody}>
+              <View style={styles.infoRowItem}>
+                <View style={[styles.infoRowIcon, { backgroundColor: '#FEF2F2' }]}>
+                  <Text style={{ fontSize: 16 }}>📍</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.infoRowTitle}>Apenas pets na rua</Text>
+                  <Text style={styles.infoRowDesc}>
+                    O mapa exibe exclusivamente animais desaparecidos e avistamentos de pets soltos nas ruas, agilizando rotas de socorro e buscas em tempo real.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRowItem}>
+                <View style={[styles.infoRowIcon, { backgroundColor: '#DCFCE7' }]}>
+                  <Text style={{ fontSize: 16 }}>🏠</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.infoRowTitle}>Privacidade e Lares Seguros</Text>
+                  <Text style={styles.infoRowDesc}>
+                    Animais já resgatados e acolhidos em lares temporários não têm seu endereço residencial divulgado no mapa para segurança de todos.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRowItem}>
+                <View style={[styles.infoRowIcon, { backgroundColor: '#EFF6FF' }]}>
+                  <Text style={{ fontSize: 16 }}>📋</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.infoRowTitle}>Lista Completa no Feed</Text>
+                  <Text style={styles.infoRowDesc}>
+                    Para ver a lista completa de todos os pets cadastrados (inclusive os acolhidos e para adoção), acesse a aba Início.
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.modalConfirmBtn}
+              onPress={() => setShowMapInfoModal(false)}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.modalConfirmBtnText}>Entendi</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Modal de Registro de Novo Avistamento com Atualização de Localização */}
       <SightingModal
@@ -1637,16 +1754,187 @@ const styles = StyleSheet.create({
   calloutAction: { color: '#6B7280', fontSize: 12, marginTop: 6 },
   emptyState: {
     position: 'absolute',
-    left: 24,
-    right: 24,
+    left: 20,
+    right: 20,
     bottom: 28,
-    padding: 16,
-    borderRadius: 12,
+    padding: 18,
+    borderRadius: 16,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
-  emptyTitle: { color: '#111827', fontSize: 16, fontWeight: '700' },
-  emptyText: { color: '#6B7280', textAlign: 'center', marginTop: 5 },
+  emptyIconCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  emptyTitle: { color: '#0F172A', fontSize: 15, fontWeight: '800' },
+  emptyText: { color: '#64748B', textAlign: 'center', marginTop: 4, fontSize: 12.5, lineHeight: 17 },
+  emptyFeedButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 12,
+    marginTop: 12,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  emptyFeedButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 12.5,
+  },
+  streetNoticePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginTop: 6,
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+  },
+  streetNoticeIconCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+  },
+  streetNoticeText: {
+    color: '#1E40AF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  streetNoticeInfoBadge: {
+    marginLeft: 6,
+    padding: 2,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalContainer: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalHeaderIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  modalHeaderTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  modalHeaderSubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  modalCloseBtn: {
+    padding: 6,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+  },
+  modalBody: {
+    gap: 14,
+    marginBottom: 18,
+  },
+  infoRowItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#F8FAFC',
+    padding: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  infoRowIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    marginTop: 1,
+  },
+  infoRowTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1E293B',
+    marginBottom: 2,
+  },
+  infoRowDesc: {
+    fontSize: 11.5,
+    color: '#64748B',
+    lineHeight: 16,
+  },
+  modalConfirmBtn: {
+    backgroundColor: '#2563EB',
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  modalConfirmBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
   loadingState: {
     position: 'absolute',
     alignSelf: 'center',
