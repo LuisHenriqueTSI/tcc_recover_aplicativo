@@ -5,7 +5,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { getConversations, markMessagesAsRead } from '../services/messages';
 import { listItems, cleanupExpiredItems } from '../services/items';
-import { getUserNotifications, markAllNotificationsRead, markNotificationRead, buildRenewalAlerts } from '../services/notifications';
+import { getUserNotifications, markAllNotificationsRead, markNotificationRead, buildRenewalAlerts, createNotification } from '../services/notifications';
+import { triggerLocalNotification } from '../services/pushNotifications';
 import { renewItem } from '../services/items';
 
 function getRelativeTime(dateString) {
@@ -197,10 +198,78 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
         onNotificationsUpdated();
       }
     }
+  async function handleTestLostPetNotification() {
+    try {
+      // Dispara notificação com banner e som no aparelho
+      await triggerLocalNotification({
+        title: '🚨 Alerta de Pet Perdido na sua Região!',
+        body: 'Um cão ("Thor") foi dado como perdido no seu bairro. Toque para ver fotos e ajudar!',
+        data: {
+          itemId: systemAlerts[0]?.itemId || null,
+          type: 'nearby_lost_pet',
+        },
+      });
+
+      // Insere na caixa de notificações in-app
+      if (user?.id) {
+        await createNotification({
+          user_id: user.id,
+          type: 'nearby_lost_pet',
+          title: '🚨 Alerta de Pet Perdido na sua Região!',
+          message: 'Um cão ("Thor") foi dado como perdido nas proximidades. Fique atento e ajude a avisar caso o veja!',
+          item_id: systemAlerts[0]?.itemId || null,
+        });
+        await fetchNotifications();
+        if (typeof onNotificationsUpdated === 'function') {
+          onNotificationsUpdated();
+        }
+      }
+
+      Alert.alert(
+        '🔔 Notificação Disparada!',
+        'Verifique a barra de notificações do seu celular (desça o topo da tela) e a sua caixa de entrada no app!'
+      );
+    } catch (err) {
+      console.warn('[NotificationsScreen] Erro ao testar notificação:', err.message);
+    }
   }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Botão de Teste Rápido de Notificação */}
+      <View style={{ marginHorizontal: 16, marginTop: 12, marginBottom: 4 }}>
+        <TouchableOpacity
+          onPress={handleTestLostPetNotification}
+          activeOpacity={0.85}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+            borderRadius: 12,
+            paddingVertical: 10,
+            paddingHorizontal: 14,
+            borderWidth: 1,
+            borderColor: isDark ? '#334155' : '#E2E8F0',
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
+            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEE2E2', alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
+              <MaterialIcons name="notifications-active" size={16} color="#DC2626" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
+                Testar Alerta de Pet Perdido
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                Dispara um push local no celular e insere alerta in-app
+              </Text>
+            </View>
+          </View>
+          <MaterialIcons name="play-arrow" size={20} color={colors.primary} />
+        </TouchableOpacity>
+      </View>
+
       {unreadCount > 0 && (
         <View style={[styles.unreadBanner, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.15)' : '#DCFCE7', borderColor: isDark ? 'rgba(34, 197, 94, 0.3)' : '#BBF7D0' }]}>
           <View style={styles.unreadBannerTextContainer}>
