@@ -21,6 +21,7 @@ import * as itemsService from '../services/items';
 import * as userService from '../services/user';
 import * as storiesService from '../services/stories';
 import * as notificationsService from '../services/notifications';
+import { triggerLocalNotification } from '../services/pushNotifications';
 import {
   listPendingVerifications,
   approveVerification,
@@ -293,6 +294,59 @@ const AdminScreen = ({ navigation }) => {
     }
   };
 
+  const handleTestPushNotification = async () => {
+    Alert.alert(
+      '🧪 Testar Notificação Push no Celular',
+      'Como você deseja disparar o alerta de teste?',
+      [
+        {
+          text: 'Disparar Agora (Instantâneo)',
+          onPress: () => executeAdminPushTest(0),
+        },
+        {
+          text: 'Disparar em 4s (Para Minimizar)',
+          onPress: () => executeAdminPushTest(4),
+        },
+        { text: 'Cancelar', style: 'cancel' },
+      ]
+    );
+  };
+
+  const executeAdminPushTest = async (delaySeconds = 0) => {
+    try {
+      await triggerLocalNotification({
+        title: '🚨 Alerta de Pet Perdido na sua Região!',
+        body: 'Um cão ("Thor") foi dado como perdido nas proximidades. Toque para ver fotos e ajudar nas buscas!',
+        data: {
+          type: 'nearby_lost_pet',
+        },
+        delaySeconds,
+      });
+
+      await notificationsService.createNotification({
+        user_id: user.id,
+        type: 'nearby_lost_pet',
+        title: '🚨 Alerta de Pet Perdido na sua Região!',
+        message: 'Um cão ("Thor") foi dado como perdido nas proximidades. Fique atento e avise caso o veja!',
+        item_id: null,
+      });
+
+      if (delaySeconds > 0) {
+        Alert.alert(
+          '⏳ Notificação Agendada em 4s!',
+          'Aperte o botão Home do seu celular agora para ir à tela inicial e ver a notificação push descer com som!'
+        );
+      } else {
+        Alert.alert(
+          '🔔 Notificação Disparada!',
+          'Verifique a barra de notificações no topo do seu celular e a sua central de alertas!'
+        );
+      }
+    } catch (err) {
+      Alert.alert('Erro', err.message || 'Falha ao disparar push');
+    }
+  };
+
   if (!isAdmin) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
@@ -560,6 +614,26 @@ const AdminScreen = ({ navigation }) => {
             <Text style={[styles.sectionSubtitle, { color: colors.textSecondary, marginBottom: 12 }]}>
               Validação de webhooks, disparadores e notificações do sistema.
             </Text>
+
+            <TouchableOpacity
+              onPress={handleTestPushNotification}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#DC2626',
+                borderRadius: 12,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                marginBottom: 10,
+              }}
+              activeOpacity={0.85}
+            >
+              <MaterialIcons name="notifications-active" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+              <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#FFFFFF' }}>
+                Testar Alerta Push no Celular (Banner/Som)
+              </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               onPress={handleSendTestWhatsAppNotification}

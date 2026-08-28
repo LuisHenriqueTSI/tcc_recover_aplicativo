@@ -20,7 +20,7 @@ import FosterVolunteerModal from '../components/FosterVolunteerModal';
 import { getFosterProfile } from '../services/foster';
 
 const ProfileScreen = ({ navigation }) => {
-  const { userProfile, user, signOut, refreshProfile } = useAuth();
+  const { userProfile, user, signOut, refreshProfile, isAdmin } = useAuth();
   const { colors, isDark } = useTheme();
   const [userItems, setUserItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -318,6 +318,31 @@ const ProfileScreen = ({ navigation }) => {
         </View>
         <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ marginLeft: 4 }} />
       </TouchableOpacity>
+
+      {/* CARD ESPECIAL: PAINEL ADMINISTRATIVO (ADMIN) */}
+      {isAdmin && (
+        <TouchableOpacity
+          style={[styles.postsCard, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: isDark ? '#3B82F6' : '#BFDBFE', marginTop: 12, marginBottom: 4 }]}
+          onPress={() => navigation.navigate('Admin')}
+          activeOpacity={0.85}
+        >
+          <View style={[styles.postsIconBox, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#DBEAFE' }]}>
+            <MaterialIcons name="admin-panel-settings" size={24} color="#2563EB" />
+          </View>
+          <View style={styles.postsTextBox}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={[styles.postsTitle, { color: colors.text }]}>Painel do Administrador</Text>
+              <View style={{ backgroundColor: '#2563EB', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 4 }}>
+                <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#FFFFFF' }}>SUPER ADMIN</Text>
+              </View>
+            </View>
+            <Text style={[styles.postsSubtitle, { color: colors.textSecondary }]}>
+              Gerenciamento, denúncias, tutela e testes de sistema
+            </Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={22} color="#2563EB" style={{ marginLeft: 4 }} />
+        </TouchableOpacity>
+      )}
 
       {/* 4. GRUPO: COMUNIDADE & IMPACTO */}
       <Text style={[styles.groupTitle, { color: colors.textSecondary }]}>COMUNIDADE & IMPACTO</Text>

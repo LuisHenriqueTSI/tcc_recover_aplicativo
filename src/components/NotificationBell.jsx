@@ -5,6 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { getUnreadCount } from '../services/messages';
 import { listItems, markItemAsResolved, bumpItemFeedPriority } from '../services/items';
+import { triggerLocalNotification } from '../services/pushNotifications';
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000; // 48 horas (2 dias)
 const DISMISSED_CHECK_KEY = '@pet_found_dismissed_timestamps';
@@ -48,7 +49,7 @@ async function getPendingNotificationItems(userId) {
 }
 
 export default function NotificationBell({ style }) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
   const [pendingItems, setPendingItems] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -71,6 +72,41 @@ export default function NotificationBell({ style }) {
     setUnreadCount(unread || 0);
     setLoading(false);
   }
+
+  const handleTestPush = () => {
+    setModalVisible(false);
+    Alert.alert(
+      '🧪 Testar Push no Celular',
+      'Escolha a forma de disparo:',
+      [
+        {
+          text: 'Disparar Agora',
+          onPress: async () => {
+            await triggerLocalNotification({
+              title: '🚨 Alerta de Pet Perdido na sua Região!',
+              body: 'Um cão ("Thor") foi dado como perdido no seu bairro. Toque para ver fotos e ajudar!',
+              data: { type: 'nearby_lost_pet' },
+              delaySeconds: 0,
+            });
+            Alert.alert('🔔 Push Disparado!', 'Verifique a barra de notificações do seu celular!');
+          },
+        },
+        {
+          text: 'Disparar em 4s (Para Minimizar)',
+          onPress: async () => {
+            await triggerLocalNotification({
+              title: '🚨 Alerta de Pet Perdido na sua Região!',
+              body: 'Um cão ("Thor") foi dado como perdido no seu bairro. Toque para ver fotos e ajudar!',
+              data: { type: 'nearby_lost_pet' },
+              delaySeconds: 4,
+            });
+            Alert.alert('⏳ Agendado!', 'Você tem 4 segundos para ir para a tela inicial do celular e ver o push descer com som!');
+          },
+        },
+        { text: 'Cancelar', style: 'cancel' },
+      ]
+    );
+  };
 
   async function handleYes(item) {
     setLoading(true);
@@ -136,6 +172,38 @@ export default function NotificationBell({ style }) {
         <TouchableOpacity style={styles.overlay} onPress={() => setModalVisible(false)} />
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Notificações</Text>
+
+          {isAdmin && (
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: '#FEF2F2',
+                borderWidth: 1,
+                borderColor: '#FECACA',
+                borderRadius: 12,
+                paddingVertical: 10,
+                paddingHorizontal: 12,
+                marginBottom: 12,
+              }}
+              onPress={handleTestPush}
+              activeOpacity={0.85}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 6 }}>
+                <MaterialIcons name="notifications-active" size={20} color="#DC2626" style={{ marginRight: 8 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#991B1B' }}>
+                    Testar Notificação Push (Admin)
+                  </Text>
+                  <Text style={{ fontSize: 11, color: '#B91C1C' }}>
+                    Tocar som e exibir banner no topo do celular
+                  </Text>
+                </View>
+              </View>
+              <MaterialIcons name="play-arrow" size={20} color="#DC2626" />
+            </TouchableOpacity>
+          )}
           {loading ? (
             <ActivityIndicator size="large" color="#2563EB" style={{ marginVertical: 24 }} />
           ) : (

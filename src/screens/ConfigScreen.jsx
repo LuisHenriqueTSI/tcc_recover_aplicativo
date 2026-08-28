@@ -129,6 +129,42 @@ const ConfigScreen = ({ navigation }) => {
     }
   };
 
+  const handleTestPushNotification = () => {
+    Alert.alert(
+      '🧪 Testar Push no Celular',
+      'Como deseja testar o alerta de pet perdido?',
+      [
+        {
+          text: 'Disparar Agora (Instantâneo)',
+          onPress: async () => {
+            const { triggerLocalNotification } = require('../services/pushNotifications');
+            await triggerLocalNotification({
+              title: '🚨 Alerta de Pet Perdido na sua Região!',
+              body: 'Um cão ("Thor") foi dado como perdido no seu bairro. Toque para ver fotos e ajudar!',
+              data: { type: 'nearby_lost_pet' },
+              delaySeconds: 0,
+            });
+            Alert.alert('🔔 Push Disparado!', 'Verifique a barra de notificações no topo do seu celular!');
+          },
+        },
+        {
+          text: 'Disparar em 4s (Para Minimizar)',
+          onPress: async () => {
+            const { triggerLocalNotification } = require('../services/pushNotifications');
+            await triggerLocalNotification({
+              title: '🚨 Alerta de Pet Perdido na sua Região!',
+              body: 'Um cão ("Thor") foi dado como perdido no seu bairro. Toque para ver fotos e ajudar!',
+              data: { type: 'nearby_lost_pet' },
+              delaySeconds: 4,
+            });
+            Alert.alert('⏳ Agendado em 4s!', 'Você tem 4 segundos para ir para a tela inicial do celular e ver o push descer com som!');
+          },
+        },
+        { text: 'Cancelar', style: 'cancel' },
+      ]
+    );
+  };
+
   const themeOptions = [
     { id: 'light', label: 'Modo Claro', icon: 'light-mode', description: 'Visual clássico e luminoso' },
     { id: 'dark', label: 'Modo Escuro', icon: 'dark-mode', description: 'Descanso visual e economia de bateria' },
@@ -234,6 +270,15 @@ const ConfigScreen = ({ navigation }) => {
         />
         {isAdmin && (
           <>
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+            <SettingRow
+              icon="notifications-active"
+              iconColor="#DC2626"
+              iconBg={isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEE2E2'}
+              title="Testar Notificação Push"
+              description="Disparar push com som e banner no celular (Admin)"
+              onPress={handleTestPushNotification}
+            />
             <View style={[styles.divider, { backgroundColor: colors.divider }]} />
             <SettingRow
               icon="send"
