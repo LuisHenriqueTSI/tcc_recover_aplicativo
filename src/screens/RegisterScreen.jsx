@@ -298,7 +298,7 @@ const RegisterScreen = ({ navigation }) => {
         <View style={styles.headerBox}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Criar nova conta</Text>
           <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-            Faça parte da maior rede de proteção e reencontro de pets
+            Preencha seus dados para começar no WeFIND
           </Text>
         </View>
 

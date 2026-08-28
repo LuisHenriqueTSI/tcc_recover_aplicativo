@@ -97,7 +97,7 @@ const LoginScreen = ({ navigation }) => {
         extraHeight={Platform.OS === 'ios' ? 80 : 100}
         keyboardOpeningTime={0}
       >
-        {/* Top Floating App Brand Badge */}
+        {/* Top App Logo */}
         <View style={styles.brandHeroContainer}>
           <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#EFF6FF' }]}>
             <Image
@@ -106,18 +106,13 @@ const LoginScreen = ({ navigation }) => {
               resizeMode="contain"
             />
           </View>
-
-          <View style={[styles.badgePill, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.18)' : '#EFF6FF', borderColor: isDark ? '#1E3A8A' : '#BFDBFE' }]}>
-            <MaterialIcons name="pets" size={13} color={colors.primary} style={{ marginRight: 5 }} />
-            <Text style={[styles.badgePillText, { color: colors.primary }]}>REDE DE REENCONTRO ANIMAL</Text>
-          </View>
         </View>
 
         {/* Title Header */}
         <View style={styles.headerBox}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Acesse sua conta</Text>
           <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-            Conecte-se para buscar, resgatar e proteger animais
+            Digite seu e-mail e senha para continuar
           </Text>
         </View>
 
@@ -248,19 +243,6 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 96,
     height: 96,
-  },
-  badgePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  badgePillText: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    letterSpacing: 0.8,
   },
   headerBox: {
     alignItems: 'center',
