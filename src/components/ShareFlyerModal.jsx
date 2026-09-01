@@ -11,6 +11,7 @@ import {
   Share,
 } from 'react-native';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import * as itemsService from '../services/items';
@@ -20,6 +21,7 @@ import COLORS from '../constants/theme';
 
 const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
   const { colors, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
   const flyerRef = useRef(null);
   const [capturing, setCapturing] = useState(false);
 
@@ -140,7 +142,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
           </ScrollView>
 
           {/* Botão de Ação Inferior */}
-          <View style={[styles.actionsContainer, { borderTopColor: colors.border }]}>
+          <View style={[styles.actionsContainer, { borderTopColor: colors.border, paddingBottom: Math.max(insets.bottom, 16) }]}>
             <TouchableOpacity
               style={[styles.primaryShareBtn, { backgroundColor: colors.primary }, capturing && styles.btnDisabled]}
               onPress={handleShareImage}
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '92%',
-    paddingBottom: 20,
+    paddingBottom: 0,
     shadowColor: '#000',
     shadowOpacity: 0.25,
     shadowRadius: 16,
