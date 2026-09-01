@@ -7,11 +7,12 @@ import {
   Keyboard,
   BackHandler,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useFocusEffect } from '@react-navigation/native';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { MaterialIcons, Feather, FontAwesome } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import Input from '../components/Input';
@@ -50,6 +51,7 @@ const VerifyPhoneScreen = ({ navigation, route }) => {
   const [resendCooldown, setResendCooldown] = useState(45);
   const [errorMsg, setErrorMsg] = useState('');
   const [codeError, setCodeError] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     if (devCode) {
@@ -182,7 +184,7 @@ const VerifyPhoneScreen = ({ navigation, route }) => {
         </Text>
 
         <View style={[styles.phoneBadge, { backgroundColor: isDark ? '#0F172A' : '#F0FDF4', borderColor: isDark ? '#334155' : '#86EFAC' }]}>
-          <MaterialIcons name="whatsapp" size={18} color="#25D366" />
+          <FontAwesome name="whatsapp" size={18} color="#25D366" />
           <Text style={[styles.phoneText, { color: isDark ? '#34D399' : '#166534' }]}>
             {maskPhone(whatsapp)}
           </Text>
@@ -194,26 +196,54 @@ const VerifyPhoneScreen = ({ navigation, route }) => {
             Digite o codigo recebido:
           </Text>
 
-          <Input
-            placeholder="000000"
-            value={verificationCode}
-            onChangeText={(text) => {
-              setVerificationCode(text.replace(/\D/g, '').slice(0, 6));
-              if (codeError) setCodeError('');
-            }}
-            keyboardType="number-pad"
-            maxLength={6}
-            returnKeyType="done"
-            onSubmitEditing={handleConfirm}
-            inputStyle={[
-              styles.otpInput,
-              {
-                backgroundColor: isDark ? '#0F172A' : '#F8FAFC',
-                borderColor: codeError ? '#EF4444' : (isDark ? '#334155' : '#CBD5E1'),
-                color: colors.text,
-              },
-            ]}
-          />
+          <View style={styles.otpContainer}>
+            {/* The hidden input */}
+            <TextInput
+              value={verificationCode}
+              onChangeText={(text) => {
+                setVerificationCode(text.replace(/\D/g, '').slice(0, 6));
+                if (codeError) setCodeError('');
+              }}
+              keyboardType="number-pad"
+              maxLength={6}
+              returnKeyType="done"
+              onSubmitEditing={handleConfirm}
+              style={styles.hiddenOtpInput}
+              caretHidden={true}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+            />
+            
+            {/* The 6 visual squares */}
+            <View style={styles.otpSquaresRow} pointerEvents="none">
+              {[0, 1, 2, 3, 4, 5].map((index) => {
+                const digit = verificationCode[index] || '';
+                const isCurrentDigit = isFocused && verificationCode.length === index;
+                
+                return (
+                  <View 
+                    key={index} 
+                    style={[
+                      styles.otpSquare,
+                      {
+                        backgroundColor: isDark ? '#0F172A' : '#F8FAFC',
+                        borderColor: codeError 
+                          ? '#EF4444' 
+                          : isCurrentDigit 
+                            ? colors.primary 
+                            : (isDark ? '#334155' : '#CBD5E1'),
+                      },
+                      isCurrentDigit && styles.otpSquareActive
+                    ]}
+                  >
+                    <Text style={[styles.otpSquareText, { color: colors.text }]}>
+                      {digit}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
 
           {codeError ? (
             <View style={styles.errorRow}>
@@ -370,15 +400,42 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
   },
-  otpInput: {
-    textAlign: 'center',
-    fontSize: 28,
-    letterSpacing: 12,
-    fontWeight: '800',
+  otpContainer: {
+    position: 'relative',
     height: 64,
-    borderRadius: 14,
+    width: '100%',
+    marginBottom: 8,
+  },
+  hiddenOtpInput: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0,
+    zIndex: 10,
+  },
+  otpSquaresRow: {
+    width: '100%',
+    height: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    position: 'absolute',
+    zIndex: 1,
+  },
+  otpSquare: {
+    width: '14.5%', // 6 squares fitting in 100% with some gap
+    height: 64,
+    borderRadius: 12,
     borderWidth: 1.5,
-    paddingHorizontal: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  otpSquareActive: {
+    borderWidth: 2,
+  },
+  otpSquareText: {
+    fontSize: 24,
+    fontWeight: '800',
   },
   errorRow: {
     flexDirection: 'row',
