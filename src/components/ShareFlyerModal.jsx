@@ -242,10 +242,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 3,
   },
   primaryShareBtnText: {
     color: '#FFFFFF',
