@@ -1625,19 +1625,19 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start', marginRight: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
               <View style={{
-                width: 34,
-                height: 34,
-                borderRadius: 17,
+                width: 26,
+                height: 26,
+                borderRadius: 13,
                 backgroundColor: '#FFFFFF',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginRight: 8,
-                padding: 4,
+                marginRight: 7,
+                padding: 2.5,
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1.5 },
-                shadowOpacity: 0.18,
-                shadowRadius: 2.5,
-                elevation: 3,
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.15,
+                shadowRadius: 1.5,
+                elevation: 2,
               }}>
                 <Image
                   source={require('../../assets/logo.png')}
