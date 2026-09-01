@@ -1141,13 +1141,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
       return false;
     }
 
-    if (!photos || photos.length === 0) {
-      const msg = 'Adicione pelo menos uma foto do animal para facilitar a identificação pela comunidade.';
-      setError(msg);
-      Alert.alert('Foto obrigatória', msg);
-      return false;
-    }
-
     if (editItem) {
       if (!date.trim() && !editItem.date) {
         const msg = 'Selecione a data';
@@ -2005,7 +1998,14 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   style={[styles.uploadButton, { backgroundColor: isDark ? '#161F30' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB', marginTop: 8 }]}
                   onPress={pickAndCropImage}
                 >
-                  <Text style={[styles.uploadButtonText, { color: colors.primary }]}>+ Adicionar Foto * ({photos.length}/{MAX_PHOTOS})</Text>
+                  <Text style={[styles.uploadButtonText, { color: colors.primary }]}>
+                    📷 + Adicionar Fotos (Opcional) ({photos.length}/{MAX_PHOTOS})
+                  </Text>
+                  {photos.length === 0 && (
+                    <Text style={{ fontSize: 11.5, color: colors.textMuted, marginTop: 3, textAlign: 'center' }}>
+                      Se não tiver fotos agora, geramos uma ilustração com os traços do pet.
+                    </Text>
+                  )}
                 </TouchableOpacity>
               ) : (
                 <View style={[styles.uploadButton, { borderColor: colors.border, backgroundColor: colors.inputBg, paddingVertical: 14 }]}>

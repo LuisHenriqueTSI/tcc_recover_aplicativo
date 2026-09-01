@@ -31,6 +31,7 @@ import COLORS from '../constants/theme';
 
 import SightingModal from '../components/SightingModal';
 import ProofUploadModal from '../components/ProofUploadModal';
+import PetFallbackImage from '../components/PetFallbackImage';
 import * as sightingsService from '../services/sightings';
 import { getRenewalInfo } from '../services/itemExpiration';
 import { createRenewalReminderNotification } from '../services/notifications';
@@ -798,9 +799,14 @@ const ItemDetailScreen = ({ route, navigation }) => {
             )}
           </View>
         ) : (
-          <View style={[styles.noPhotoHero, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
-            <MaterialIcons name="pets" size={54} color={colors.textMuted} />
-            <Text style={[styles.noPhotoText, { color: colors.textMuted }]}>Sem fotos cadastradas</Text>
+          <View style={{ width: screenWidth, height: 320 }}>
+            <PetFallbackImage
+              species={item.species}
+              breed={item.breed || item.animal_breed}
+              color={item.color}
+              size={item.size}
+              style={{ width: '100%', height: '100%' }}
+            />
           </View>
         )}
 

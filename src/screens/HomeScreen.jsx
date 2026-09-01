@@ -38,6 +38,7 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import NotificationBell from '../components/NotificationBell';
 import OptimizedImage from '../components/OptimizedImage';
+import PetFallbackImage from '../components/PetFallbackImage';
 import MapLocationPicker from '../components/MapLocationPicker';
 import { WeFindText, WeFindLogo } from '../components/WeFindBrand';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -304,10 +305,13 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
             />
           )
         ) : (
-          <View style={{ width: '100%', height: IMAGE_HEIGHT, justifyContent: 'center', alignItems: 'center' }}>
-            <MaterialIcons name="pets" size={44} color={colors.textMuted} />
-            <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 4 }}>Sem foto</Text>
-          </View>
+          <PetFallbackImage
+            species={item.species}
+            breed={item.breed || item.animal_breed}
+            color={item.color}
+            size={item.size}
+            style={{ width: '100%', height: IMAGE_HEIGHT }}
+          />
         )}
 
         {/* Badges Flutuantes Superiores */}

@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { listItems, renewItem } from '../services/items';
 import { getRenewalInfo } from '../services/itemExpiration';
+import PetFallbackImage from '../components/PetFallbackImage';
 import COLORS from '../constants/theme';
 
 const getStatusConfig = (isDark) => ({
@@ -101,8 +102,13 @@ const MeusAnunciosScreen = ({ navigation }) => {
             resizeMode="cover"
           />
         ) : (
-          <View style={[styles.petThumbFallback, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
-            <MaterialIcons name="pets" size={28} color={colors.textMuted} />
+          <View style={{ width: 84, height: 84, borderRadius: 14, overflow: 'hidden' }}>
+            <PetFallbackImage
+              species={item.species}
+              breed={item.breed || item.animal_breed}
+              color={item.color}
+              compact
+            />
           </View>
         )}
 

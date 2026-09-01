@@ -1,14 +1,34 @@
 import React, { useState } from 'react';
 import { Image, View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
+import PetFallbackImage from './PetFallbackImage';
 
-const OptimizedImage = ({ uri, style, resizeMode = 'cover', onLoad, onError, ...props }) => {
+const OptimizedImage = ({
+  uri,
+  style,
+  resizeMode = 'cover',
+  onLoad,
+  onError,
+  species,
+  breed,
+  color,
+  size,
+  compactFallback,
+  ...props
+}) => {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
   if (!uri || failed) {
     return (
-      <View style={[style, styles.fallbackContainer]}>
-        <View style={styles.fallbackBox} />
+      <View style={[style, styles.container]}>
+        <PetFallbackImage
+          species={species}
+          breed={breed}
+          color={color}
+          size={size}
+          compact={compactFallback}
+          style={[StyleSheet.absoluteFill, style]}
+        />
       </View>
     );
   }
@@ -44,16 +64,6 @@ const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
     position: 'relative',
-  },
-  fallbackContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F1F5F9',
-  },
-  fallbackBox: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#E2E8F0',
   },
   loadingContainer: {
     alignItems: 'center',

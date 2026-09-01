@@ -15,7 +15,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
-import { MaterialIcons, Ionicons, Feather } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons, Feather, FontAwesome5 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../contexts/ThemeContext';
 import { submitOwnershipProof } from '../services/proofVerification';
@@ -29,7 +29,12 @@ export default function ProofUploadModal({
   onSuccess,
 }) {
   const { colors, isDark } = useTheme();
+
+  // Tipo de prova selecionada: 'photos' | 'documents' | 'secret_marks'
+  const [proofType, setProofType] = useState('photos');
   const [message, setMessage] = useState('');
+  const [secretMarks, setSecretMarks] = useState('');
+  const [vetDocNumber, setVetDocNumber] = useState('');
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -90,12 +95,35 @@ export default function ProofUploadModal({
       return;
     }
 
-    if (!message.trim()) {
-      Alert.alert(
-        'Descrição necessária',
-        'Por favor, descreva como comprova ser o tutor (ex: marcas singulares, histórico, hábitos do animal ou carteira de vacinação).'
-      );
-      return;
+    let compiledMessage = message.trim();
+
+    if (proofType === 'secret_marks') {
+      if (!secretMarks.trim() && !compiledMessage) {
+        Alert.alert(
+          'Detalhes necessários',
+          'Por favor, descreva as marcas secretas, cicatrizes ou particularidades que só o verdadeiro tutor saberia.'
+        );
+        return;
+      }
+      compiledMessage = `[Comprovação por Marcas Secretas & Particularidades]\n${secretMarks.trim()}\n\nObservações adicionais: ${compiledMessage || 'Nenhuma'}`;
+    } else if (proofType === 'documents') {
+      if (photos.length === 0 && !vetDocNumber.trim() && !compiledMessage) {
+        Alert.alert(
+          'Documento necessário',
+          'Por favor, anexe uma foto da carteirinha de vacinação/termo ou informe o número de registro/microchip.'
+        );
+        return;
+      }
+      compiledMessage = `[Comprovação por Documentação Veterinária/Sanitária]\nRegistro/Microchip: ${vetDocNumber.trim() || 'Foto em anexo'}\n\nDetalhes: ${compiledMessage || 'Documento veterinário em anexo'}`;
+    } else {
+      if (photos.length === 0 && !compiledMessage) {
+        Alert.alert(
+          'Comprovação necessária',
+          'Por favor, anexe fotos anteriores com o animal ou descreva a comprovação de tutela.'
+        );
+        return;
+      }
+      compiledMessage = `[Comprovação por Fotos Anteriores & Relato]\n${compiledMessage}`;
     }
 
     setLoading(true);
@@ -103,20 +131,23 @@ export default function ProofUploadModal({
       await submitOwnershipProof({
         itemId: item.id,
         claimantId: userId,
-        message: message.trim(),
+        message: compiledMessage,
         proofPhotos: photos,
         itemTitle: item.title || item.species || 'o animal',
         finderId: item.owner_id,
+        proofType,
       });
 
       Alert.alert(
         'Comprovação Enviada com Sucesso! 🛡️',
-        'Sua solicitação foi enviada para análise. Assim que a comprovação for verificada pela moderação, o endereço exato e a rota completa serão liberados para você!',
+        'Sua solicitação foi enviada para verificação. Assim que confirmada, você terá acesso direto ao endereço completo e ao contato do acolhedor.',
         [
           {
             text: 'Entendido',
             onPress: () => {
               setMessage('');
+              setSecretMarks('');
+              setVetDocNumber('');
               setPhotos([]);
               onSuccess?.();
               onClose?.();
@@ -148,22 +179,22 @@ export default function ProofUploadModal({
               style={[
                 styles.container,
                 {
-                  backgroundColor: colors.surface || (isDark ? '#1E293B' : '#FFFFFF'),
+                  backgroundColor: colors.surface || (isDark ? '#132218' : '#FFFFFF'),
                   borderColor: colors.border,
                 },
               ]}
             >
               {/* Header */}
               <View style={styles.headerRow}>
-                <View style={[styles.iconBadge, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.2)' : COLORS.primaryLight }]}>
+                <View style={[styles.iconBadge, { backgroundColor: isDark ? 'rgba(46, 86, 52, 0.25)' : '#EAF2EB' }]}>
                   <MaterialIcons name="verified-user" size={24} color={COLORS.primary} />
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={[styles.title, { color: colors.text }]}>
-                    Comprovação de Tutor
+                    Comprovação de Tutela
                   </Text>
                   <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                    Liberação Segura do Endereço
+                    Liberação Segura do Animal
                   </Text>
                 </View>
                 <TouchableOpacity
@@ -180,85 +211,194 @@ export default function ProofUploadModal({
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 16 }}
               >
-                {/* Banner de Segurança & Reassurance */}
+                {/* Banner de Segurança */}
                 <View
                   style={[
                     styles.securityNotice,
                     {
-                      backgroundColor: isDark ? 'rgba(5, 150, 105, 0.12)' : '#ECFDF5',
-                      borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0',
+                      backgroundColor: isDark ? 'rgba(46, 86, 52, 0.16)' : '#EAF2EB',
+                      borderColor: isDark ? '#1E3626' : '#CDE1D1',
                     },
                   ]}
                 >
-                  <MaterialIcons name="security" size={20} color="#2E5634" style={{ marginTop: 2 }} />
-                  <Text style={[styles.securityNoticeText, { color: isDark ? '#D1FAE5' : '#065F46' }]}>
-                    Para proteger a integridade do animal e a segurança da família acolhedora, o endereço exato só é liberado após a comprovação de tutela com fotos anteriores ou documentos.
+                  <MaterialIcons name="shield" size={18} color={COLORS.primary} style={{ marginTop: 2 }} />
+                  <Text style={[styles.securityNoticeText, { color: isDark ? '#E2E8F0' : '#1E3626' }]}>
+                    Escolha a forma mais fácil e rápida para comprovar que o animal é seu.
                   </Text>
                 </View>
 
-                {/* Descrição / Justificativa */}
-                <Text style={[styles.inputLabel, { color: colors.text }]}>
-                  Como você comprova ser o tutor? <Text style={{ color: '#EF4444' }}>*</Text>
+                {/* Seleção do Tipo de Comprovante */}
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Como deseja comprovar?
                 </Text>
-                <TextInput
-                  value={message}
-                  onChangeText={setMessage}
-                  multiline
-                  numberOfLines={4}
-                  placeholder="Ex: 'Sou o tutor do pet. Ele atende pelo nome de Bob, tem uma manchinha branca na pata esquerda traseira e estou anexando fotos nossas e da carteirinha de vacinação.'"
-                  placeholderTextColor={colors.textMuted}
-                  style={[
-                    styles.textInput,
-                    {
-                      backgroundColor: isDark ? '#0F172A' : '#F8FAFC',
-                      borderColor: colors.border,
-                      color: colors.text,
-                    },
-                  ]}
-                  editable={!loading}
-                />
 
-                {/* Anexos de Fotos */}
-                <View style={styles.photoSectionHeader}>
-                  <Text style={[styles.inputLabel, { color: colors.text, marginBottom: 0 }]}>
-                    Fotos de Comprovação (Opcional, mas recomendado)
-                  </Text>
-                </View>
-
-                {/* Botões para selecionar foto */}
-                <View style={styles.photoPickersRow}>
+                <View style={styles.proofTypeRow}>
+                  {/* 1. Fotos */}
                   <TouchableOpacity
                     style={[
-                      styles.photoPickerBtn,
-                      {
-                        backgroundColor: isDark ? '#0F172A' : '#F1F5F9',
-                        borderColor: colors.border,
-                      },
+                      styles.proofTypeCard,
+                      proofType === 'photos' && styles.proofTypeCardActive,
+                      { backgroundColor: isDark ? '#0A120D' : '#F8FAFC', borderColor: proofType === 'photos' ? COLORS.primary : (isDark ? '#1E3626' : '#E2E8F0') },
                     ]}
-                    onPress={handlePickImage}
-                    disabled={loading}
+                    onPress={() => setProofType('photos')}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="images-outline" size={18} color={colors.primary} style={{ marginRight: 6 }} />
-                    <Text style={[styles.photoPickerBtnText, { color: colors.primary }]}>Galeria</Text>
+                    <Ionicons
+                      name="images"
+                      size={20}
+                      color={proofType === 'photos' ? COLORS.primary : colors.textMuted}
+                    />
+                    <Text
+                      style={[
+                        styles.proofTypeLabel,
+                        { color: proofType === 'photos' ? COLORS.primary : colors.textSecondary },
+                        proofType === 'photos' && styles.proofTypeLabelActive,
+                      ]}
+                    >
+                      Fotos do Pet
+                    </Text>
                   </TouchableOpacity>
 
+                  {/* 2. Documento */}
                   <TouchableOpacity
                     style={[
-                      styles.photoPickerBtn,
-                      {
-                        backgroundColor: isDark ? '#0F172A' : '#F1F5F9',
-                        borderColor: colors.border,
-                      },
+                      styles.proofTypeCard,
+                      proofType === 'documents' && styles.proofTypeCardActive,
+                      { backgroundColor: isDark ? '#0A120D' : '#F8FAFC', borderColor: proofType === 'documents' ? COLORS.primary : (isDark ? '#1E3626' : '#E2E8F0') },
                     ]}
-                    onPress={handleTakePhoto}
-                    disabled={loading}
+                    onPress={() => setProofType('documents')}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="camera-outline" size={18} color={colors.primary} style={{ marginRight: 6 }} />
-                    <Text style={[styles.photoPickerBtnText, { color: colors.primary }]}>Tirar Foto</Text>
+                    <MaterialIcons
+                      name="medical-services"
+                      size={20}
+                      color={proofType === 'documents' ? COLORS.primary : colors.textMuted}
+                    />
+                    <Text
+                      style={[
+                        styles.proofTypeLabel,
+                        { color: proofType === 'documents' ? COLORS.primary : colors.textSecondary },
+                        proofType === 'documents' && styles.proofTypeLabelActive,
+                      ]}
+                    >
+                      Vacina / Doc
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* 3. Marcas Secretas */}
+                  <TouchableOpacity
+                    style={[
+                      styles.proofTypeCard,
+                      proofType === 'secret_marks' && styles.proofTypeCardActive,
+                      { backgroundColor: isDark ? '#0A120D' : '#F8FAFC', borderColor: proofType === 'secret_marks' ? COLORS.primary : (isDark ? '#1E3626' : '#E2E8F0') },
+                    ]}
+                    onPress={() => setProofType('secret_marks')}
+                    activeOpacity={0.8}
+                  >
+                    <MaterialIcons
+                      name="fingerprint"
+                      size={20}
+                      color={proofType === 'secret_marks' ? COLORS.primary : colors.textMuted}
+                    />
+                    <Text
+                      style={[
+                        styles.proofTypeLabel,
+                        { color: proofType === 'secret_marks' ? COLORS.primary : colors.textSecondary },
+                        proofType === 'secret_marks' && styles.proofTypeLabelActive,
+                      ]}
+                    >
+                      Marcas Ocultas
+                    </Text>
                   </TouchableOpacity>
                 </View>
+
+                {/* Conteúdo dinâmico conforme a opção selecionada */}
+                {proofType === 'photos' && (
+                  <View style={styles.dynamicBox}>
+                    <Text style={[styles.inputLabel, { color: colors.text }]}>
+                      Anexe fotos do animal ou de momentos com você:
+                    </Text>
+                    <View style={styles.photoPickersRow}>
+                      <TouchableOpacity
+                        style={[styles.photoPickerBtn, { backgroundColor: isDark ? '#0A120D' : '#F1F5F9', borderColor: colors.border }]}
+                        onPress={handlePickImage}
+                        disabled={loading}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="images-outline" size={18} color={COLORS.primary} style={{ marginRight: 6 }} />
+                        <Text style={[styles.photoPickerBtnText, { color: COLORS.primary }]}>Galeria</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[styles.photoPickerBtn, { backgroundColor: isDark ? '#0A120D' : '#F1F5F9', borderColor: colors.border }]}
+                        onPress={handleTakePhoto}
+                        disabled={loading}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="camera-outline" size={18} color={COLORS.primary} style={{ marginRight: 6 }} />
+                        <Text style={[styles.photoPickerBtnText, { color: COLORS.primary }]}>Câmera</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {proofType === 'documents' && (
+                  <View style={styles.dynamicBox}>
+                    <Text style={[styles.inputLabel, { color: colors.text }]}>
+                      Número de Microchip / RGA ou Registro Veterinário:
+                    </Text>
+                    <TextInput
+                      value={vetDocNumber}
+                      onChangeText={setVetDocNumber}
+                      placeholder="Ex: Microchip Nº 981098123... ou Carteira Clínica Vet"
+                      placeholderTextColor={colors.textMuted}
+                      style={[styles.singleInput, { backgroundColor: isDark ? '#0A120D' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+                      editable={!loading}
+                    />
+
+                    <Text style={[styles.inputLabel, { color: colors.text, marginTop: 10 }]}>
+                      Foto da Carteira de Vacinação ou Termo de Adoção:
+                    </Text>
+                    <View style={styles.photoPickersRow}>
+                      <TouchableOpacity
+                        style={[styles.photoPickerBtn, { backgroundColor: isDark ? '#0A120D' : '#F1F5F9', borderColor: colors.border }]}
+                        onPress={handlePickImage}
+                        disabled={loading}
+                        activeOpacity={0.8}
+                      >
+                        <MaterialIcons name="photo-library" size={18} color={COLORS.primary} style={{ marginRight: 6 }} />
+                        <Text style={[styles.photoPickerBtnText, { color: COLORS.primary }]}>Anexar Documento</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.photoPickerBtn, { backgroundColor: isDark ? '#0A120D' : '#F1F5F9', borderColor: colors.border }]}
+                        onPress={handleTakePhoto}
+                        disabled={loading}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="camera-outline" size={18} color={COLORS.primary} style={{ marginRight: 6 }} />
+                        <Text style={[styles.photoPickerBtnText, { color: COLORS.primary }]}>Fotografar Doc</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {proofType === 'secret_marks' && (
+                  <View style={styles.dynamicBox}>
+                    <Text style={[styles.inputLabel, { color: colors.text }]}>
+                      Descreva detalhes que só o tutor saberia:
+                    </Text>
+                    <TextInput
+                      value={secretMarks}
+                      onChangeText={setSecretMarks}
+                      multiline
+                      numberOfLines={3}
+                      placeholder="Ex: 'Tem cicatriz na orelha direita, mancha na barriga, atende pelo som de assobio ou responde pelo nome Max.'"
+                      placeholderTextColor={colors.textMuted}
+                      style={[styles.textInput, { backgroundColor: isDark ? '#0A120D' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
+                      editable={!loading}
+                    />
+                  </View>
+                )}
 
                 {/* Lista de Fotos Selecionadas */}
                 {photos.length > 0 && (
@@ -277,6 +417,29 @@ export default function ProofUploadModal({
                     ))}
                   </ScrollView>
                 )}
+
+                {/* Mensagem / Detalhes Adicionais */}
+                <Text style={[styles.inputLabel, { color: colors.text, marginTop: 12 }]}>
+                  Mensagem para o acolhedor (opcional):
+                </Text>
+                <TextInput
+                  value={message}
+                  onChangeText={setMessage}
+                  multiline
+                  numberOfLines={2}
+                  placeholder="Ex: 'Olá, sou o tutor e moro perto de onde ele foi visto. Muito obrigado por cuidar dele!'"
+                  placeholderTextColor={colors.textMuted}
+                  style={[
+                    styles.textInput,
+                    {
+                      minHeight: 52,
+                      backgroundColor: isDark ? '#0A120D' : '#F8FAFC',
+                      borderColor: colors.border,
+                      color: colors.text,
+                    },
+                  ]}
+                  editable={!loading}
+                />
               </ScrollView>
 
               {/* Botões de Ação */}
@@ -285,7 +448,7 @@ export default function ProofUploadModal({
                   style={[
                     styles.cancelBtn,
                     {
-                      backgroundColor: isDark ? '#0F172A' : '#F1F5F9',
+                      backgroundColor: isDark ? '#0A120D' : '#F1F5F9',
                     },
                   ]}
                   onPress={onClose}
@@ -298,7 +461,7 @@ export default function ProofUploadModal({
                   style={[
                     styles.submitBtn,
                     {
-                      backgroundColor: colors.primary,
+                      backgroundColor: COLORS.primary,
                       opacity: loading ? 0.7 : 1,
                     },
                   ]}
@@ -335,11 +498,11 @@ const styles = StyleSheet.create({
   keyboardContainer: {
     width: '100%',
     maxWidth: 480,
-    maxHeight: '90%',
+    maxHeight: '92%',
   },
   container: {
     borderRadius: 20,
-    padding: 20,
+    padding: 18,
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
@@ -350,7 +513,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   iconBadge: {
     width: 44,
@@ -362,48 +525,88 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '800',
+    letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 12.5,
-    marginTop: 2,
+    fontSize: 12,
+    marginTop: 1,
   },
   closeBtn: {
-    padding: 6,
+    padding: 4,
   },
   securityNotice: {
     flexDirection: 'row',
-    padding: 12,
-    borderRadius: 12,
+    alignItems: 'center',
     borderWidth: 1,
-    marginBottom: 16,
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 12,
     gap: 8,
   },
   securityNoticeText: {
     flex: 1,
     fontSize: 12,
-    lineHeight: 17,
+    lineHeight: 16,
+    fontWeight: '600',
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  proofTypeRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 12,
+  },
+  proofTypeCard: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  proofTypeCardActive: {
+    borderWidth: 2,
+  },
+  proofTypeLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  proofTypeLabelActive: {
+    fontWeight: '800',
+  },
+  dynamicBox: {
+    marginTop: 4,
   },
   inputLabel: {
-    fontSize: 13.5,
+    fontSize: 12.5,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: 6,
+  },
+  singleInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13.5,
   },
   textInput: {
     borderWidth: 1,
     borderRadius: 12,
-    padding: 12,
+    padding: 10,
     fontSize: 13.5,
-    minHeight: 90,
+    minHeight: 70,
     textAlignVertical: 'top',
-    marginBottom: 16,
-  },
-  photoSectionHeader: {
-    marginBottom: 8,
   },
   photoPickersRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 12,
+    gap: 8,
+    marginTop: 4,
   },
   photoPickerBtn: {
     flex: 1,
@@ -419,57 +622,58 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   photoList: {
-    flexDirection: 'row',
-    marginBottom: 10,
+    marginTop: 10,
+    maxHeight: 70,
   },
   photoThumbWrap: {
     position: 'relative',
-    marginRight: 10,
+    marginRight: 8,
   },
   photoThumb: {
-    width: 70,
-    height: 70,
+    width: 60,
+    height: 60,
     borderRadius: 10,
   },
   removePhotoBtn: {
     position: 'absolute',
     top: -4,
     right: -4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#EF4444',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   actionButtonsRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 10,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    marginTop: 6,
+    gap: 8,
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   cancelBtn: {
+    flex: 1,
     paddingVertical: 11,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cancelBtnText: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '700',
   },
   submitBtn: {
+    flex: 2,
     flexDirection: 'row',
+    paddingVertical: 11,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 11,
-    paddingHorizontal: 18,
-    borderRadius: 12,
   },
   submitBtnText: {
     color: '#FFFFFF',
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '800',
   },
 });
