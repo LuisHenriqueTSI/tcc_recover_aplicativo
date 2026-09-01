@@ -968,6 +968,50 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
   const MAX_PHOTOS = 6;
 
+  const takeAndCropPhoto = async () => {
+    try {
+      if (photos.length >= MAX_PHOTOS) {
+        Alert.alert('Limite de fotos atingido', `Você pode adicionar no máximo ${MAX_PHOTOS} fotos.`);
+        return;
+      }
+
+      console.log('[takeAndCropPhoto] Requesting camera permissions...');
+      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+
+      if (cameraStatus !== 'granted') {
+        Alert.alert('Permissão necessária', 'Precisamos de acesso à câmera para fotografar o animal em tempo real.');
+        return;
+      }
+
+      console.log('[takeAndCropPhoto] Launching camera with cropping...');
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const optimizedPhoto = await ImageManipulator.manipulateAsync(
+          asset.uri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        const photo = {
+          uri: optimizedPhoto.uri,
+          type: 'image/jpeg',
+          name: `${Date.now()}_camera_pet.jpg`,
+        };
+
+        setPhotos((previousPhotos) => [...previousPhotos, photo]);
+      }
+    } catch (error) {
+      console.error('[RegisterItem] Falha ao capturar foto com câmera:', error);
+      Alert.alert('Erro', 'Falha ao capturar foto: ' + error.message);
+    }
+  };
+
   const pickAndCropImage = async () => {
     try {
       if (photos.length >= MAX_PHOTOS) {
@@ -1005,12 +1049,37 @@ const RegisterItemScreen = ({ navigation, route }) => {
         };
 
         setPhotos((previousPhotos) => [...previousPhotos, photo]);
-        Alert.alert('Sucesso', 'Foto adicionada e recortada com sucesso!');
       }
     } catch (error) {
       console.error('[RegisterItem] Falha ao selecionar foto com corte:', error);
       Alert.alert('Erro', 'Falha ao selecionar foto: ' + error.message);
     }
+  };
+
+  const showPhotoSourceOptions = () => {
+    if (photos.length >= MAX_PHOTOS) {
+      Alert.alert('Limite de fotos atingido', `Você pode adicionar no máximo ${MAX_PHOTOS} fotos.`);
+      return;
+    }
+
+    Alert.alert(
+      'Adicionar Foto do Animal',
+      'Escolha como deseja adicionar a foto:',
+      [
+        {
+          text: '📸 Tirar Foto Agora (Câmera)',
+          onPress: takeAndCropPhoto,
+        },
+        {
+          text: '🖼️ Escolher da Galeria',
+          onPress: pickAndCropImage,
+        },
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+      ]
+    );
   };
 
   const reCropPhoto = async (index) => {
@@ -1994,19 +2063,56 @@ const RegisterItemScreen = ({ navigation, route }) => {
               )}
 
               {photos.length < MAX_PHOTOS ? (
-                <TouchableOpacity
-                  style={[styles.uploadButton, { backgroundColor: isDark ? '#161F30' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB', marginTop: 8 }]}
-                  onPress={pickAndCropImage}
-                >
-                  <Text style={[styles.uploadButtonText, { color: colors.primary }]}>
-                    📷 + Adicionar Fotos (Opcional) ({photos.length}/{MAX_PHOTOS})
-                  </Text>
+                <View style={{ marginTop: 8 }}>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <TouchableOpacity
+                      style={[
+                        styles.uploadButton,
+                        {
+                          flex: 1,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: isDark ? '#161F30' : '#F9FAFB',
+                          borderColor: isDark ? '#334155' : '#E5E7EB',
+                        },
+                      ]}
+                      onPress={takeAndCropPhoto}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="camera" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+                      <Text style={[styles.uploadButtonText, { color: colors.primary, fontSize: 13 }]}>
+                        Tirar Foto
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.uploadButton,
+                        {
+                          flex: 1,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: isDark ? '#161F30' : '#F9FAFB',
+                          borderColor: isDark ? '#334155' : '#E5E7EB',
+                        },
+                      ]}
+                      onPress={pickAndCropImage}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="images" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+                      <Text style={[styles.uploadButtonText, { color: colors.primary, fontSize: 13 }]}>
+                        Galeria ({photos.length}/{MAX_PHOTOS})
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                   {photos.length === 0 && (
-                    <Text style={{ fontSize: 11.5, color: colors.textMuted, marginTop: 3, textAlign: 'center' }}>
-                      Se não tiver fotos agora, geramos uma ilustração com os traços do pet.
+                    <Text style={{ fontSize: 11.5, color: colors.textMuted, marginTop: 5, textAlign: 'center' }}>
+                      Fotos são opcionais: se não tiver fotos agora, geramos uma ilustração com as características do animal.
                     </Text>
                   )}
-                </TouchableOpacity>
+                </View>
               ) : (
                 <View style={[styles.uploadButton, { borderColor: colors.border, backgroundColor: colors.inputBg, paddingVertical: 14 }]}>
                   <Text style={[styles.uploadButtonText, { color: colors.textMuted, fontSize: 14 }]}>Limite de {MAX_PHOTOS} fotos atingido</Text>
@@ -2240,12 +2346,51 @@ const RegisterItemScreen = ({ navigation, route }) => {
             {itemType !== 'document' && (
               <>
                 {photos.length < MAX_PHOTOS ? (
-                  <TouchableOpacity
-                    style={[styles.uploadButton, { backgroundColor: isDark ? '#161F30' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' }]}
-                    onPress={pickAndCropImage}
-                  >
-                    <Text style={[styles.uploadButtonText, { color: colors.primary }]}>+ Adicionar Foto ({photos.length}/{MAX_PHOTOS})</Text>
-                  </TouchableOpacity>
+                  <View style={{ marginTop: 8 }}>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      <TouchableOpacity
+                        style={[
+                          styles.uploadButton,
+                          {
+                            flex: 1,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: isDark ? '#161F30' : '#F9FAFB',
+                            borderColor: isDark ? '#334155' : '#E5E7EB',
+                          },
+                        ]}
+                        onPress={takeAndCropPhoto}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="camera" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+                        <Text style={[styles.uploadButtonText, { color: colors.primary, fontSize: 13 }]}>
+                          Tirar Foto
+                        </Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[
+                          styles.uploadButton,
+                          {
+                            flex: 1,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: isDark ? '#161F30' : '#F9FAFB',
+                            borderColor: isDark ? '#334155' : '#E5E7EB',
+                          },
+                        ]}
+                        onPress={pickAndCropImage}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="images" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+                        <Text style={[styles.uploadButtonText, { color: colors.primary, fontSize: 13 }]}>
+                          Galeria ({photos.length}/{MAX_PHOTOS})
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
                 ) : (
                   <View style={[styles.uploadButton, { borderColor: colors.border, backgroundColor: colors.inputBg, paddingVertical: 14 }]}>
                     <Text style={[styles.uploadButtonText, { color: colors.textMuted, fontSize: 14 }]}>Limite de {MAX_PHOTOS} fotos atingido</Text>
