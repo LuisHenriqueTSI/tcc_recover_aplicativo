@@ -1,5 +1,5 @@
 import * as FileSystem from 'expo-file-system/legacy';
-import { supabase } from '../lib/supabase';
+import { supabase, SUPABASE_URL } from '../lib/supabase';
 
 // Criar uma reivindicação de item
 export const createItemClaim = async ({
@@ -90,8 +90,7 @@ export const createItemClaim = async ({
           throw new Error('Sessão não encontrada para upload');
         }
 
-        const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-        const uploadUrl = `${supabaseUrl}/storage/v1/object/item-photos/${filepath}`;
+        const uploadUrl = `${SUPABASE_URL}/storage/v1/object/item-photos/${filepath}`;
         console.log('[itemClaims] Iniciando upload para storage via REST...', uploadUrl);
 
         const contentType = proofPhoto.type && proofPhoto.type.includes('/')

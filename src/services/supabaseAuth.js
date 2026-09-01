@@ -1,13 +1,6 @@
-import Constants from 'expo-constants';
-import { supabase } from '../lib/supabase';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 
-const expoExtra = Constants.expoConfig?.extra || {};
-const supabaseAnonKey =
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
-  process.env.SUPABASE_KEY ||
-  expoExtra.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
-  expoExtra.SUPABASE_KEY ||
-  '';
+const supabaseAnonKey = SUPABASE_ANON_KEY;
 
 const normalizeWhatsapp = (whatsapp = '') => {
   const digits = String(whatsapp || '').replace(/\D/g, '');
@@ -28,12 +21,7 @@ const normalizeWhatsapp = (whatsapp = '') => {
   return normalized;
 };
 
-const getSupabaseUrl = () =>
-  process.env.EXPO_PUBLIC_SUPABASE_URL ||
-  process.env.SUPABASE_URL ||
-  expoExtra.EXPO_PUBLIC_SUPABASE_URL ||
-  expoExtra.SUPABASE_URL ||
-  '';
+const getSupabaseUrl = () => SUPABASE_URL;
 
 const getCreateUserFunctionUrl = () => {
   const supabaseUrl = getSupabaseUrl();

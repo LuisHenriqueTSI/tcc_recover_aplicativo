@@ -1,6 +1,6 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase } from '../lib/supabase';
+import { supabase, SUPABASE_URL } from '../lib/supabase';
 import { createNotification } from './notifications';
 
 const VERIFICATION_CACHE_PREFIX = '@wefind_proof_verification_';
@@ -18,7 +18,7 @@ export const uploadProofFile = async (itemId, claimantId, fileUri) => {
 
     const session = await supabase.auth.getSession();
     const accessToken = session?.data?.session?.access_token;
-    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+    const supabaseUrl = SUPABASE_URL;
 
     if (accessToken && supabaseUrl) {
       const uploadUrl = `${supabaseUrl}/storage/v1/object/item-photos/${filepath}`;

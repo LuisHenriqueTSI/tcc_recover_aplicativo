@@ -204,21 +204,14 @@ const listItemsWithPhotosAndOwnerFallback = async (filters = {}) => {
     return [];
   }
 };
-import Constants from 'expo-constants';
-import { supabase } from '../lib/supabase';
+import { supabase, SUPABASE_URL } from '../lib/supabase';
 import { removeItemPhoto } from './removeItemPhoto';
 import { shouldHideItem, getExpiredItemIds, getExpirationDays, getRenewalInfo, getPermanentDeleteDays, shouldDeletePermanently } from './itemExpiration';
 import { createItemRemovedNotification } from './notifications';
 export { removeItemPhoto };
 import * as FileSystem from 'expo-file-system/legacy';
 
-const expoExtra = Constants.expoConfig?.extra || {};
-const supabaseUrl =
-  process.env.EXPO_PUBLIC_SUPABASE_URL ||
-  process.env.SUPABASE_URL ||
-  expoExtra.EXPO_PUBLIC_SUPABASE_URL ||
-  expoExtra.SUPABASE_URL ||
-  '';
+const supabaseUrl = SUPABASE_URL;
 
 const getCleanupFunctionUrl = () => {
   if (!supabaseUrl) return '';
@@ -469,8 +462,7 @@ export const saveItemPhoto = async (itemId, photo) => {
       throw new Error('Sessão não encontrada para upload');
     }
 
-    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-    const uploadUrl = `${supabaseUrl}/storage/v1/object/item-photos/${filepath}`;
+    const uploadUrl = `${SUPABASE_URL}/storage/v1/object/item-photos/${filepath}`;
     console.log('[saveItemPhoto] Uploading via FileSystem to:', uploadUrl);
 
     const uploadResponse = await FileSystem.uploadAsync(uploadUrl, photoUri, {
