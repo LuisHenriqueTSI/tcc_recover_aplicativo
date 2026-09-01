@@ -1463,15 +1463,27 @@ const RegisterItemScreen = ({ navigation, route }) => {
           }
         }
 
-        Alert.alert('Sucesso', 'Pet atualizado com sucesso!', [
+        Alert.alert('Sucesso', 'Publicação atualizada com sucesso!', [
           {
-            text: 'OK',
+            text: 'Ver Publicação',
             onPress: () => {
-              if (navigation.canGoBack()) {
-                navigation.goBack();
+              if (editItem?.id) {
+                navigation.navigate('ItemDetail', { itemId: editItem.id });
               } else {
-                navigation.navigate('MainApp');
+                navigation.navigate('MeusAnuncios');
               }
+            },
+          },
+          {
+            text: 'Minhas Publicações',
+            onPress: () => {
+              navigation.navigate('MeusAnuncios');
+            },
+          },
+          {
+            text: 'Tela Inicial',
+            onPress: () => {
+              navigation.navigate('MainApp');
             },
           },
         ]);
@@ -1501,19 +1513,39 @@ const RegisterItemScreen = ({ navigation, route }) => {
             .catch((e) => console.warn('[RegisterItem] Erro ao disparar alerta de proximidade:', e.message));
         }
 
+        const successTitle = status === 'lost' ? '🚨 Publicado com Sucesso!' : '🐾 Publicação Criada com Sucesso!';
+        const successMessage = status === 'lost'
+          ? 'Seu alerta foi publicado no mapa e voluntários da região foram notificados. Você pode conferir os detalhes agora ou gerenciar em "Minhas Publicações".'
+          : 'Seu anúncio foi salvo e já está ativo no mapa da região informada e na sua lista de anúncios.';
+
         Alert.alert(
-          status === 'lost' ? '🚨 Alerta Comunitário Emitido!' : 'Sucesso',
-          status === 'lost'
-            ? 'Seu pet foi publicado e voluntários na região foram notificados para ajudar nas buscas!'
-            : 'Animal registrado com sucesso!',
+          successTitle,
+          successMessage,
           [
+            {
+              text: 'Ver Publicação',
+              onPress: () => {
+                if (resultItem?.id) {
+                  navigation.navigate('ItemDetail', { itemId: resultItem.id });
+                } else {
+                  navigation.navigate('MeusAnuncios');
+                }
+              },
+            },
+            {
+              text: 'Minhas Publicações',
+              onPress: () => {
+                navigation.navigate('MeusAnuncios');
+              },
+            },
             {
               text: 'Ir para Home',
               onPress: () => {
                 goToHomeAfterPublish();
               },
             },
-          ]
+          ],
+          { cancelable: false }
         );
       }
     } catch (err) {
