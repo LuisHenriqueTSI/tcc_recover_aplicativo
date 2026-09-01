@@ -367,6 +367,23 @@ Use para demonstrar o app fora de casa, em reuniões ou quando o computador esti
 
 ---
 
+#### 📦 🔹 Opção C: Gerar o Instalador Android (.APK) Standalone
+Gera um arquivo instalável `.apk` (sem depender do Expo Go) para instalar em qualquer Android, enviar no WhatsApp ou apresentar na banca:
+
+1. **Gerar a compilação do APK na nuvem do Expo:**
+   ```bash
+   npx eas-cli build --platform android --profile preview
+   ```
+   *(Ou: `npm run build:apk`)*
+
+2. **Como baixar e instalar:**
+   * O terminal exibirá um link do EAS Build (e um QR Code).
+   * Abra o link no celular ou no computador para baixar o arquivo `.apk` final.
+   * Transfira para o celular (ou baixe direto) e toque para instalar!
+   * *Nota:* Todas as variáveis de ambiente (`.env`) já estão configuradas no `eas.json` e serão embutidas automaticamente no APK.
+
+---
+
 ### 4. **Rodar no Navegador (Web)**
 ```bash
 npm start
