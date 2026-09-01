@@ -1624,27 +1624,11 @@ const HomeScreen = ({ navigation, route }) => {
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48 }}>
           <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start', marginRight: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-              <View style={{
-                width: 26,
-                height: 26,
-                borderRadius: 13,
-                backgroundColor: '#FFFFFF',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: 7,
-                padding: 2.5,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.15,
-                shadowRadius: 1.5,
-                elevation: 2,
-              }}>
-                <Image
-                  source={require('../../assets/logo.png')}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="contain"
-                />
-              </View>
+              <Image
+                source={require('../../assets/logo_outlined.png')}
+                style={{ width: 28, height: 28, marginRight: 7 }}
+                resizeMode="contain"
+              />
               <Text style={{ fontWeight: '900', fontSize: 22, letterSpacing: 0.5 }}>
                 <Text style={{ color: '#F3D2BE' }}>We</Text>
                 <Text style={{ color: '#FFFFFF' }}>FIND</Text>
