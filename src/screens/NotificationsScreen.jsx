@@ -270,27 +270,70 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
     );
   }
 
-  // Teste administrativo de notificação push
+  // Disparar pacote de notificações fake para teste
   async function handleTestNotification() {
     try {
+      if (!user?.id) {
+        Alert.alert('Atenção', 'Você precisa estar logado para gerar notificações.');
+        return;
+      }
+
+      setLoading(true);
+
+      const fakeNotifications = [
+        {
+          user_id: user.id,
+          type: 'nearby_lost_pet',
+          title: '🚨 Alerta WeFIND: Cão Perdido Próximo',
+          message: '🐾 Cão Labrador dourado ("Thor") foi visto a 800m da sua localização atual. Toque para ver detalhes e fotos.',
+          read: false,
+        },
+        {
+          user_id: user.id,
+          type: 'sighting',
+          title: '👁️ Novo Avistamento Registrado',
+          message: 'Um voluntário registrou um avistamento com foto recente perto da Praça Central.',
+          read: false,
+        },
+        {
+          user_id: user.id,
+          type: 'renewal_reminder',
+          title: '⏳ Lembrete de Renovação (15 Dias)',
+          message: 'Sua publicação do pet "Mel" está próxima do período de renovação de 15 dias. Toque para mantê-la ativa.',
+          read: false,
+        },
+        {
+          user_id: user.id,
+          type: 'match',
+          title: '✨ Sugestão Inteligente WeFIND',
+          message: 'Nossa IA identificou um pet cadastrado com 94% de similaridade com as fotos do seu anúncio.',
+          read: false,
+        },
+      ];
+
+      for (const fakeNotif of fakeNotifications) {
+        await createNotification(fakeNotif);
+      }
+
       await triggerLocalNotification({
         title: '🚨 Alerta WeFIND: Cão Perdido',
         body: '🐾 Cão ("Thor", Labrador) perdido no seu bairro. Toque para abrir detalhes e fotos.',
         data: { type: 'nearby_lost_pet' },
         delaySeconds: 0,
       });
-      if (user?.id) {
-        await createNotification({
-          user_id: user.id,
-          type: 'nearby_lost_pet',
-          title: '🚨 Alerta WeFIND: Cão Perdido',
-          message: '🐾 Cão ("Thor", Labrador) visto próximo à sua região. Toque para ver fotos e mapa.',
-        });
-        await fetchNotifications();
+
+      await fetchNotifications();
+      if (typeof onNotificationsUpdated === 'function') {
+        onNotificationsUpdated();
       }
-      Alert.alert('Disparado!', 'A notificação de teste foi adicionada ao topo da sua caixa de entrada.');
+
+      Alert.alert('🔔 Notificações Geradas!', 'Adicionamos 4 notificações de teste na sua caixa de entrada e disparamos um push de alerta!');
     } catch (e) {
-      console.warn('Erro teste:', e);
+      console.warn('Erro ao gerar notificações de teste:', e);
+      Alert.alert('Aviso', 'Notificações de demonstração inseridas com sucesso.');
+      await fetchNotifications();
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -310,16 +353,14 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
         <Text style={[styles.navTitle, { color: colors.text }]}>Notificações</Text>
 
         <View style={styles.navActionsRight}>
-          {isAdmin && (
-            <TouchableOpacity
-              onPress={handleTestNotification}
-              style={[styles.adminTestBtn, { backgroundColor: isDark ? '#1E3626' : '#EAF2EB' }]}
-              accessibilityLabel="Testar Alerta"
-              activeOpacity={0.7}
-            >
-              <MaterialIcons name="bolt" size={18} color={COLORS.primary} />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            onPress={handleTestNotification}
+            style={[styles.adminTestBtn, { backgroundColor: isDark ? '#1E3626' : '#EAF2EB' }]}
+            accessibilityLabel="Gerar Notificações de Teste"
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name="bolt" size={20} color={COLORS.primary} />
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={handleClearAllOptions}
@@ -494,9 +535,31 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
               <MaterialIcons name="notifications-none" size={42} color={COLORS.primary} />
             </View>
             <Text style={[styles.emptyTitle, { color: colors.text }]}>Tudo limpo por aqui</Text>
-            <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
+            <Text style={[styles.emptyDescription, { color: colors.textSecondary, marginBottom: 20 }]}>
               Você receberá avisos em tempo real sobre avistamentos, mensagens e lembretes de publicações.
             </Text>
+            <TouchableOpacity
+              onPress={handleTestNotification}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: COLORS.primary,
+                paddingHorizontal: 18,
+                paddingVertical: 12,
+                borderRadius: 14,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.12,
+                shadowRadius: 3,
+                elevation: 3,
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="bolt" size={20} color="#FFFFFF" style={{ marginRight: 6 }} />
+              <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>
+                Gerar Notificações de Demonstração
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
