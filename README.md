@@ -21,7 +21,7 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 * **Controle de Aparência nas Configurações:** Seção "Aparência" na tela de Configurações com switch rápido e modal de seleção detalhada.
 * **Redefinição Automática para Modo Claro no Logout:** Ao desconectar a conta, o sistema automaticamente redefine as preferências e o estado para o modo claro, garantindo visualização padrão a visitantes.
 * **Telas Totalmente Adaptadas ao Tema Escuro:**
-  - Tela Inicial (`HomeScreen.jsx`), busca, barra de filtros rápidos, painel avançado e banner de raio de 60 km.
+  - Tela Inicial (`HomeScreen.jsx`), busca, barra de filtros rápidos e painel de Filtros Avançados em formato Bottom Sheet (`AdvancedFiltersModal.jsx`).
   - Tela de Detalhes do Animal (`ItemDetailScreen.jsx`).
   - Tela de Mensagens e Chat (`InboxScreen.jsx` e `ChatScreen.jsx`).
   - Tela de Minhas Publicações (`MeusAnunciosScreen.jsx`).
@@ -52,7 +52,7 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 
 ✅ **Autenticação, Notificações e Segurança por WhatsApp**
 - Registro e login direto e simplificado com nome, email, WhatsApp e senha.
-- **Verificação em 2 etapas por WhatsApp:** Envio do código de 6 dígitos via Evolution API / Supabase Functions com opção de reenvio com timer de recarga e edição rápida de dados.
+- **Verificação em 2 etapas por WhatsApp:** Envio do código de 6 dígitos via Evolution API / Supabase Functions, com interface de entrada otimizada em blocos visuais individuais (6 quadrados tipo OTP), opção de reenvio com timer de recarga e edição rápida de dados.
 - **Redefinição de Senha e Alteração de WhatsApp com Código:**
   - Redefinição de senha diretamente pelo perfil através do fluxo oficial de WhatsApp (`EsqueciSenhaScreen.jsx`).
   - Validação obrigatória por código de 6 dígitos no WhatsApp ao atualizar o número de telefone no perfil.
