@@ -13,7 +13,7 @@ import {
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { listItems, renewItem } from '../services/items';
+import { listItemsWithPhotosAndOwner, renewItem } from '../services/items';
 import { getRenewalInfo } from '../services/itemExpiration';
 import PetFallbackImage from '../components/PetFallbackImage';
 import COLORS from '../constants/theme';
@@ -52,7 +52,7 @@ const MeusAnunciosScreen = ({ navigation }) => {
     if (!user?.id) return;
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
-    const data = await listItems({ owner_id: user.id, resolved: false });
+    const data = await listItemsWithPhotosAndOwner({ owner_id: user.id });
     setItems(data || []);
     setLoading(false);
     setRefreshing(false);
@@ -84,7 +84,7 @@ const MeusAnunciosScreen = ({ navigation }) => {
   const renderItem = (item) => {
     const config = statusConfig[item.renewalInfo.inactive ? 'inativos' : item.renewalInfo.needsRenewal ? 'renovar' : 'ativos'];
     const location = [item.neighborhood, item.city, item.state].filter(Boolean).join(' - ');
-    const photoUrl = item.item_photos?.[0]?.url || item.photo_url;
+    const photoUrl = item.item_photos?.[0]?.url || item.photo_url || item.photos?.[0]?.url;
     const isAdoption = Boolean(item.extra_fields?.is_direct_adoption);
 
     return (
