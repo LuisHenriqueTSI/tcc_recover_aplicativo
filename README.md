@@ -2,12 +2,13 @@
 
 Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitária e Inteligente de Animais Perdidos e Encontrados.
 
-## 🎨 Identidade Visual e Design System (WeFind)
+## 🎨 Identidade Visual e Design System Oficial (WeFind)
 
-* **Azul Principal (Confiança e Esperança):** `#2563EB` (Azul Real vibrante, luminoso e acolhedor).
-* **Laranja Ações:** `#F28213` (Botões secundários e destaques).
-* **Dourado:** `#FEA937` (Pins de mapa, estrelas e recompensas).
-* **Neutros:** Fundo `#F8FAFB`, Superfície `#FFFFFF`, Destaques `#EFF6FF` e Bordas `#DBEAFE`.
+* **Verde Floresta (Pin Central & Confiança):** `#2E5634` (Cor primária do sistema, cabeçalhos, botões principais, marcadores e destaques).
+* **Marrom Caramelo (Cão & Gato):** `#B1734A` (Cor secundária da marca, contrastes e tipografia de marca).
+* **Tipografia de Marca Bicolor:** Componente oficial `<WeFindText />` com **We** em Marrom (`#B1734A`) e **Find / FIND** em Verde Floresta (`#2E5634` ou `#FFFFFF` no topo).
+* **Nova Logo Oficial:** Imagem oficial em alta definição `assets/logo.png` (ícone, splash e app icon) e `assets/logo_outlined.png` (versão com contorno de silhueta suave para contraste sobre fundo escuro/verde).
+* **Tons Pastéis de Suporte:** `#EAF2EB` (verde suave) e `#F8EFE9` (marrom suave).
 * **Centralização de Tokens:** `src/constants/theme.js` e `src/contexts/ThemeContext.jsx`.
 
 ---
@@ -39,6 +40,15 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - **Paleta de Cores Padronizada:** 100% alinhada à identidade visual WeFIND (Azul Real `#2563EB`, Verde Sucesso `#10B981`/`#16A34A`, Dourado `#FEA937` e Neutros/Ardósia), sem cores roxas.
 - Atalhos diretos para acessar **"Mural de Reencontros"** e **"Sobre o WeFIND"** no menu do perfil e configurações.
 - Telas de Login e Cadastro acolhedoras ("Bem-vindo de volta" e "Criar sua conta").
+
+✅ **Central de Notificações no Estilo TikTok (`NotificationsScreen.jsx`)**
+- **Abas Segmentadas:** Organização em abas `Comunidade` (mensagens e conversas de pets com badge contador) e `Sistema (X)` (alertas de proximidade, avistamentos e renovações).
+- **Banner Informativo Retrátil:** Aviso discreto *"Notificações e alertas ficam salvos por 30 dias"* com fechamento `×`.
+- **Filtro Dropdown / Bottom Sheet:** Seleção rápida para filtrar por *Todas*, *Não lidas*, *Alertas de Proximidade*, *Avistamentos* ou *Lembretes de Renovação*.
+- **Agrupamento Temporal:** Divisão dinâmica entre `⚡ Notificações importantes` (recentes/não lidas) e `Mais antigas`.
+- **Cards TikTok:** Ícones circulares limpos, títulos com prefixos em negrito, tempo relativo compacto (`2m`, `3h`, `1d`) e ponto indicador vermelho de não lido `🔴`.
+- **Ações Rápidas & Segurança:** Marcar todas como lidas via botão de cabeçalho `done-all` e gerador de notificações demo restrito à conta de Administrador (`isAdmin`).
+- **Sino da Home Conectado:** O botão de sino no topo da tela inicial abre diretamente a central completa de notificações.
 
 ✅ **Autenticação, Notificações e Segurança por WhatsApp**
 - Registro e login direto e simplificado com nome, email, WhatsApp e senha.
