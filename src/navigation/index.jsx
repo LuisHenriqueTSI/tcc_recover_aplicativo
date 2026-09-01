@@ -13,6 +13,7 @@ import { supabase } from '../lib/supabase';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
+import VerifyPhoneScreen from '../screens/VerifyPhoneScreen';
 
 // Main Screens
 import HomeScreen from '../screens/HomeScreen';
@@ -222,6 +223,11 @@ const PublicStack = () => {
       <Stack.Screen
         name="Register"
         component={RegisterScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="VerifyPhone"
+        component={VerifyPhoneScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -651,6 +657,16 @@ const MainStack = () => {
       <Stack.Screen
         name="Notifications"
         component={NotificationsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Register"
+        component={RegisterScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="VerifyPhone"
+        component={VerifyPhoneScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

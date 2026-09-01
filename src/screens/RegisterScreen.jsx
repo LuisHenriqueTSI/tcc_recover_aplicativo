@@ -83,9 +83,12 @@ export const calculatePasswordStrength = (pwd = '') => {
   };
 };
 
-const RegisterScreen = ({ navigation }) => {
-  const { signUp, confirmSignUp, loading, user } = useAuth();
+const RegisterScreen = ({ navigation, route }) => {
+  const { signUp, loading, user } = useAuth();
   const { colors, isDark } = useTheme();
+
+  // Dados pre-preenchidos ao voltar da tela de verificacao
+  const prefill = route?.params?.prefill || {};
 
   // Captura o botão físico de voltar do Android e redireciona para a tela inicial
   useFocusEffect(
@@ -107,31 +110,19 @@ const RegisterScreen = ({ navigation }) => {
     }, [navigation, user])
   );
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [whatsappConsent, setWhatsappConsent] = useState(true);
+  const [name, setName] = useState(prefill.name || '');
+  const [email, setEmail] = useState(prefill.email || '');
+  const [password, setPassword] = useState(prefill.password || '');
+  const [confirmPassword, setConfirmPassword] = useState(prefill.password || '');
+  const [whatsapp, setWhatsapp] = useState(prefill.whatsapp || '');
+  const [whatsappConsent, setWhatsappConsent] = useState(
+    prefill.whatsappConsent !== undefined ? prefill.whatsappConsent : true
+  );
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pendingVerification, setPendingVerification] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [pendingSignupData, setPendingSignupData] = useState(null);
-  const [resendCooldown, setResendCooldown] = useState(0);
 
   const scrollRef = useRef(null);
-
-  useEffect(() => {
-    let timer;
-    if (resendCooldown > 0) {
-      timer = setInterval(() => {
-        setResendCooldown(prev => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [resendCooldown]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -145,12 +136,19 @@ const RegisterScreen = ({ navigation }) => {
     }
     if (!password) {
       newErrors.password = 'Senha é obrigatória';
-    } else if (password.length < 8) {
-      newErrors.password = 'A senha deve ter no mínimo 8 caracteres';
-    } else if (!/[0-9]/.test(password)) {
-      newErrors.password = 'A senha deve conter pelo menos um número';
-    } else if (!/[A-Za-z]/.test(password)) {
-      newErrors.password = 'A senha deve conter pelo menos uma letra';
+    } else {
+      const strength = calculatePasswordStrength(password);
+      if (!strength.isValid) {
+        if (!strength.rules.hasMinLength) {
+          newErrors.password = 'A senha deve ter no mínimo 8 caracteres';
+        } else if (!strength.rules.hasLetters) {
+          newErrors.password = 'A senha deve ter letras maiúsculas e minúsculas';
+        } else if (!strength.rules.hasNumber) {
+          newErrors.password = 'A senha deve conter pelo menos um número';
+        } else {
+          newErrors.password = 'Senha fraca. Use letras maiúsculas, minúsculas e números';
+        }
+      }
     }
     if (!whatsapp.trim()) {
       newErrors.whatsapp = 'WhatsApp é obrigatório';
@@ -166,47 +164,8 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     Keyboard.dismiss();
-
-    if (pendingVerification) {
-      if (!verificationCode.trim()) {
-        Alert.alert('Código necessário', 'Informe o código enviado para o WhatsApp.');
-        return;
-      }
-
-      if (isSubmitting) return;
-      setIsSubmitting(true);
-
-      try {
-        await confirmSignUp({
-          email: email.trim(),
-          password,
-          name: name.trim(),
-          city: '',
-          state: '',
-          whatsapp: whatsapp.replace(/\D/g, ''),
-          whatsapp_notifications_enabled: whatsappConsent,
-          verificationCode: verificationCode.trim(),
-        });
-        Alert.alert('Conta criada com sucesso! 🎉', 'Seja bem-vindo ao WeFIND. Faça login para começar.');
-        setPendingVerification(false);
-        setVerificationCode('');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        setWhatsapp('');
-        setName('');
-        navigation.navigate('Login');
-      } catch (error) {
-        Alert.alert('Erro de Cadastro', error?.message || 'Falha ao confirmar o código.');
-      } finally {
-        setIsSubmitting(false);
-      }
-      return;
-    }
-
     if (!validateForm()) return;
     if (isSubmitting) return;
-
     setIsSubmitting(true);
 
     try {
@@ -220,20 +179,14 @@ const RegisterScreen = ({ navigation }) => {
         whatsappConsent
       );
       if (result?.pendingVerification) {
-        setPendingVerification(true);
-        setPendingSignupData(result);
-        setResendCooldown(30);
-        setTimeout(() => {
-          scrollRef.current?.scrollToEnd?.({ animated: true });
-        }, 250);
-        if (result?.devCode) {
-          Alert.alert(
-            'Código de Confirmação',
-            `Código de verificação para testes: ${result.devCode}\n\n(Aviso Twilio Sandbox: para o WhatsApp ser entregue em outros números, eles precisam entrar no sandbox da Twilio).`
-          );
-        } else {
-          Alert.alert('Código enviado', `Enviamos um código para o WhatsApp ${whatsapp}. Informe-o abaixo para concluir o cadastro.`);
-        }
+        navigation.navigate('VerifyPhone', {
+          email: email.trim(),
+          password,
+          name: name.trim(),
+          whatsapp: whatsapp.replace(/\D/g, ''),
+          whatsappConsent,
+          devCode: result.devCode || null,
+        });
       }
     } catch (error) {
       Alert.alert('Erro de Cadastro', error?.message || 'Falha ao criar conta');
@@ -242,51 +195,11 @@ const RegisterScreen = ({ navigation }) => {
     }
   };
 
-  const handleResendCode = async () => {
-    if (resendCooldown > 0 || isSubmitting) return;
-
-    Keyboard.dismiss();
-    setIsSubmitting(true);
-
-    try {
-      const result = await signUp(
-        email.trim(),
-        password,
-        name.trim(),
-        '',
-        '',
-        whatsapp.replace(/\D/g, ''),
-        whatsappConsent
-      );
-      setResendCooldown(45);
-      if (result?.devCode) {
-        Alert.alert(
-          'Novo Código Gerado',
-          `Novo código de verificação para testes: ${result.devCode}`
-        );
-      } else {
-        Alert.alert('Código Reenviado', `Um novo código foi enviado para o WhatsApp ${formatBrazilianPhone(whatsapp)}.`);
-      }
-    } catch (error) {
-      Alert.alert('Erro ao Reenviar', error?.message || 'Não foi possível reenviar o código agora.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleCancelVerification = () => {
-    setPendingVerification(false);
-    setVerificationCode('');
-  };
-
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <KeyboardAwareScrollView
         ref={scrollRef}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: pendingVerification ? 140 : 60 }
-        ]}
+        contentContainerStyle={[styles.scrollContent]}
         enableOnAndroid={true}
         enableResetScrollToCoords={false}
         keyboardShouldPersistTaps="handled"
@@ -326,7 +239,7 @@ const RegisterScreen = ({ navigation }) => {
               if (errors.name) setErrors((prev) => ({ ...prev, name: null }));
             }}
             error={errors.name}
-            editable={!pendingVerification}
+            editable
             style={styles.input}
             inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0', color: colors.text }]}
             returnKeyType="next"
@@ -342,7 +255,7 @@ const RegisterScreen = ({ navigation }) => {
             }}
             keyboardType="email-address"
             autoCapitalize="none"
-            editable={!pendingVerification}
+            editable
             error={errors.email}
             style={styles.input}
             inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0', color: colors.text }]}
@@ -358,7 +271,7 @@ const RegisterScreen = ({ navigation }) => {
               if (errors.whatsapp) setErrors((prev) => ({ ...prev, whatsapp: null }));
             }}
             keyboardType="phone-pad"
-            editable={!pendingVerification}
+            editable
             error={errors.whatsapp || errors.phone}
             style={styles.input}
             inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0', color: colors.text }]}
@@ -374,7 +287,7 @@ const RegisterScreen = ({ navigation }) => {
               if (errors.password) setErrors((prev) => ({ ...prev, password: null }));
             }}
             secureTextEntry={true}
-            editable={!pendingVerification}
+            editable
             error={errors.password}
             style={styles.input}
             inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0', color: colors.text }]}
@@ -382,7 +295,7 @@ const RegisterScreen = ({ navigation }) => {
           />
 
           {/* INDICADOR DE FORÇA DA SENHA COMPACTO EM TEMPO REAL */}
-          {password.length > 0 && !pendingVerification && (() => {
+          {password.length > 0 && (() => {
             const pwdStrength = calculatePasswordStrength(password);
             return (
               <View style={[styles.passwordStrengthBox, { backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#F8FAFC', borderColor: colors.cardBorder }]}>
@@ -422,7 +335,7 @@ const RegisterScreen = ({ navigation }) => {
               if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: null }));
             }}
             secureTextEntry={true}
-            editable={!pendingVerification}
+            editable
             error={errors.confirmPassword}
             style={styles.input}
             inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0', color: colors.text }]}
@@ -430,7 +343,7 @@ const RegisterScreen = ({ navigation }) => {
           />
 
           {/* Feedback de Confirmação de Senha em Tempo Real */}
-          {confirmPassword.length > 0 && !pendingVerification && (
+          {confirmPassword.length > 0 && (
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: -4, marginBottom: 8, paddingHorizontal: 2 }}>
               <MaterialIcons
                 name={password === confirmPassword ? 'check-circle' : 'cancel'}
@@ -451,8 +364,7 @@ const RegisterScreen = ({ navigation }) => {
           )}
 
           {/* Checkbox de Consentimento de Notificações por WhatsApp */}
-          {!pendingVerification && (
-            <TouchableOpacity
+          <TouchableOpacity
               style={styles.consentRow}
               onPress={() => setWhatsappConsent(prev => !prev)}
               activeOpacity={0.8}
@@ -464,44 +376,6 @@ const RegisterScreen = ({ navigation }) => {
                 Desejo receber avisos em tempo real de animais encontrados no meu WhatsApp
               </Text>
             </TouchableOpacity>
-          )}
-
-          {pendingVerification ? (
-            <View style={[styles.verificationBox, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FFF7ED', borderColor: isDark ? 'rgba(245, 158, 11, 0.35)' : '#FDBA74' }]}>
-              <View style={styles.verificationHeader}>
-                <Text style={[styles.verificationTitle, { color: isDark ? '#FBBF24' : '#C2410C' }]}>🔐 Validação por WhatsApp</Text>
-                <TouchableOpacity onPress={handleCancelVerification} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Text style={[styles.editDataText, { color: colors.primary }]}>Editar dados</Text>
-                </TouchableOpacity>
-              </View>
-
-              <Text style={[styles.verificationDesc, { color: isDark ? '#FDE68A' : '#7C2D12' }]}>
-                Enviamos um código de segurança de 6 dígitos para o WhatsApp <Text style={{ fontWeight: '800' }}>{formatBrazilianPhone(whatsapp)}</Text>:
-              </Text>
-
-              <Input
-                placeholder="000000"
-                value={verificationCode}
-                onChangeText={setVerificationCode}
-                keyboardType="number-pad"
-                maxLength={6}
-                style={{ marginVertical: 8 }}
-                inputStyle={[styles.inputField, { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', borderColor: isDark ? '#334155' : '#CBD5E1', color: colors.text, textAlign: 'center', fontSize: 22, letterSpacing: 8, fontWeight: '800' }]}
-                returnKeyType="done"
-              />
-
-              <TouchableOpacity
-                onPress={handleResendCode}
-                disabled={resendCooldown > 0 || isSubmitting}
-                style={styles.resendBtn}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.resendBtnText, { color: resendCooldown > 0 ? colors.textMuted : colors.primary }]}>
-                  {resendCooldown > 0 ? `Reenviar código em ${resendCooldown}s` : 'Reenviar código por WhatsApp'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : null}
 
           <TouchableOpacity
             onPress={handleRegister}
@@ -510,7 +384,7 @@ const RegisterScreen = ({ navigation }) => {
             activeOpacity={0.85}
           >
             <Text style={styles.registerButtonText}>
-              {isSubmitting ? 'Processando...' : (pendingVerification ? 'Confirmar e Concluir' : 'Criar Minha Conta')}
+              {isSubmitting ? 'Processando...' : 'Criar Minha Conta'}
             </Text>
             {!isSubmitting && <Feather name="arrow-right" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />}
           </TouchableOpacity>
