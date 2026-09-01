@@ -1010,27 +1010,33 @@ const MapScreen = ({ route, navigation }) => {
         {routeCoordinates.length > 1 && (
           <>
             <Polyline
-              coordinates={routeCoordinates}
-              strokeColor="#065F46"
+              coordinates={routeCoordinates.filter(c => c && Number.isFinite(c.latitude) && Number.isFinite(c.longitude))}
+              strokeColor="#1E3E24"
               strokeWidth={7}
             />
             <Polyline
-              coordinates={routeCoordinates}
+              coordinates={routeCoordinates.filter(c => c && Number.isFinite(c.latitude) && Number.isFinite(c.longitude))}
               strokeColor={COLORS.primary}
               strokeWidth={4.5}
             />
           </>
         )}
 
-        {filteredItems.map((item) => (
-          <PetMapMarker
-            key={String(item.id)}
-            item={item}
-            isSelected={selectedItem?.id === item.id}
-            onPress={() => setSelectedItem(item)}
-            onCalloutPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
-          />
-        ))}
+        {filteredItems
+          .filter(item => {
+            const lat = Number(item.latitude);
+            const lng = Number(item.longitude);
+            return Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0;
+          })
+          .map((item) => (
+            <PetMapMarker
+              key={String(item.id)}
+              item={item}
+              isSelected={selectedItem?.id === item.id}
+              onPress={() => setSelectedItem(item)}
+              onCalloutPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
+            />
+          ))}
       </MapView>
 
       {/* Banner Superior de Rota Ativa com botão Iniciar Navegação */}
@@ -2221,4 +2227,45 @@ const PetMapMarker = React.memo(({ item, isSelected, onPress, onCalloutPress }) 
   );
 });
 
-export default MapScreen;
+class MapErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.warn('[MapScreen] Erro capturado no mapa nativo:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, backgroundColor: '#F6F8F6', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <View style={{ width: 68, height: 68, borderRadius: 34, backgroundColor: '#EAF2EB', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <MaterialIcons name="map" size={34} color={COLORS.primary} />
+          </View>
+          <Text style={{ fontSize: 20, fontWeight: '800', color: '#0F172A', textAlign: 'center', marginBottom: 8 }}>
+            Mapa Interativo WeFind
+          </Text>
+          <Text style={{ fontSize: 13.5, color: '#64748B', textAlign: 'center', lineHeight: 20, marginBottom: 20, maxWidth: 300 }}>
+            Para ativar o mapa no APK, certifique-se de configurar a chave da API do Google Maps ou consulte a lista no feed.
+          </Text>
+          <TouchableOpacity
+            style={{ backgroundColor: COLORS.primary, paddingHorizontal: 22, paddingVertical: 12, borderRadius: 12 }}
+            onPress={() => this.setState({ hasError: false })}
+          >
+            <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 14 }}>Tentar Novamente</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return <MapScreen {...this.props} />;
+  }
+}
+
+export default MapErrorBoundary;
+
