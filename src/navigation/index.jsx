@@ -651,7 +651,7 @@ const MainStack = () => {
       <Stack.Screen
         name="Notifications"
         component={NotificationsScreen}
-        options={{ title: 'Notificações & Alertas' }}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
