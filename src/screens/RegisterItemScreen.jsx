@@ -1271,6 +1271,36 @@ const RegisterItemScreen = ({ navigation, route }) => {
     }
   };
 
+  const navigateToItemDetailAfterPublish = (targetId) => {
+    try {
+      navigation.reset({
+        index: 1,
+        routes: [
+          { name: 'MainApp', params: { screen: 'HomeTab' } },
+          { name: 'ItemDetail', params: { itemId: targetId } },
+        ],
+      });
+    } catch (error) {
+      console.warn('[RegisterItem] Falha ao resetar rota para detalhes:', error.message);
+      navigation.navigate('ItemDetail', { itemId: targetId });
+    }
+  };
+
+  const navigateToMyItemsAfterPublish = () => {
+    try {
+      navigation.reset({
+        index: 1,
+        routes: [
+          { name: 'MainApp', params: { screen: 'HomeTab' } },
+          { name: 'MeusAnuncios' },
+        ],
+      });
+    } catch (error) {
+      console.warn('[RegisterItem] Falha ao resetar rota para meus anúncios:', error.message);
+      navigation.navigate('MeusAnuncios');
+    }
+  };
+
   const handleFoundItemConfirm = async () => {
     if (!foundModalItemId) return;
     setDeleting(true);
@@ -1530,22 +1560,22 @@ const RegisterItemScreen = ({ navigation, route }) => {
             text: 'Ver Publicação',
             onPress: () => {
               if (editItem?.id) {
-                navigation.navigate('ItemDetail', { itemId: editItem.id });
+                navigateToItemDetailAfterPublish(editItem.id);
               } else {
-                navigation.navigate('MeusAnuncios');
+                navigateToMyItemsAfterPublish();
               }
             },
           },
           {
             text: 'Minhas Publicações',
             onPress: () => {
-              navigation.navigate('MeusAnuncios');
+              navigateToMyItemsAfterPublish();
             },
           },
           {
             text: 'Tela Inicial',
             onPress: () => {
-              navigation.navigate('MainApp');
+              goToHomeAfterPublish();
             },
           },
         ]);
@@ -1588,16 +1618,16 @@ const RegisterItemScreen = ({ navigation, route }) => {
               text: 'Ver Publicação',
               onPress: () => {
                 if (resultItem?.id) {
-                  navigation.navigate('ItemDetail', { itemId: resultItem.id });
+                  navigateToItemDetailAfterPublish(resultItem.id);
                 } else {
-                  navigation.navigate('MeusAnuncios');
+                  navigateToMyItemsAfterPublish();
                 }
               },
             },
             {
               text: 'Minhas Publicações',
               onPress: () => {
-                navigation.navigate('MeusAnuncios');
+                navigateToMyItemsAfterPublish();
               },
             },
             {
