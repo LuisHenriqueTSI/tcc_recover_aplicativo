@@ -666,7 +666,7 @@ const RootNavigator = () => {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background || '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
         <Image
-          source={require('../assets/logo.png')}
+          source={require('../../assets/logo.png')}
           style={{ width: 140, height: 140 }}
           resizeMode="contain"
         />

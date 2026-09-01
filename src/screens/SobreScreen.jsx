@@ -71,7 +71,7 @@ const SobreScreen = ({ navigation }) => {
           <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start', marginRight: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
               <Image
-                source={require('../assets/logo.png')}
+                source={require('../../assets/logo.png')}
                 style={{ width: 28, height: 28, marginRight: 7 }}
                 resizeMode="contain"
               />

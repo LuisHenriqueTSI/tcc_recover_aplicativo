@@ -637,7 +637,7 @@ const ChatScreen = (props) => {
           >
             <View style={styles.chatAvatar}>
               <Image
-                source={avatarUrl ? { uri: avatarUrl } : require('../assets/logo_wefind.png')}
+                source={avatarUrl ? { uri: avatarUrl } : require('../../assets/logo.png')}
                 style={styles.chatAvatarImage}
               />
             </View>

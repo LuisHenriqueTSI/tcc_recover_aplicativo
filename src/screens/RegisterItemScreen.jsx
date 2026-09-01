@@ -1606,7 +1606,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   }}
                 >
                   <Image
-                    source={photoUrl ? { uri: photoUrl } : require('../assets/logo_wefind.png')}
+                    source={photoUrl ? { uri: photoUrl } : require('../../assets/logo.png')}
                     style={{ width: 52, height: 52, borderRadius: 10, backgroundColor: isDark ? '#0F172A' : '#E2E8F0', marginRight: 10 }}
                     resizeMode="cover"
                   />
