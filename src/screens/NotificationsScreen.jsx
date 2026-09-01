@@ -270,8 +270,13 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
     );
   }
 
-  // Disparar pacote de notificações fake para teste
+  // Disparar pacote de notificações fake para teste (Exclusivo Admin)
   async function handleTestNotification() {
+    if (!isAdmin) {
+      Alert.alert('Acesso Restrito', 'Esta funcionalidade de teste é exclusiva para a conta de Administrador.');
+      return;
+    }
+
     try {
       if (!user?.id) {
         Alert.alert('Atenção', 'Você precisa estar logado para gerar notificações.');
@@ -353,14 +358,16 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
         <Text style={[styles.navTitle, { color: colors.text }]}>Notificações</Text>
 
         <View style={styles.navActionsRight}>
-          <TouchableOpacity
-            onPress={handleTestNotification}
-            style={[styles.adminTestBtn, { backgroundColor: isDark ? '#1E3626' : '#EAF2EB' }]}
-            accessibilityLabel="Gerar Notificações de Teste"
-            activeOpacity={0.7}
-          >
-            <MaterialIcons name="bolt" size={20} color={COLORS.primary} />
-          </TouchableOpacity>
+          {isAdmin && (
+            <TouchableOpacity
+              onPress={handleTestNotification}
+              style={[styles.adminTestBtn, { backgroundColor: isDark ? '#1E3626' : '#EAF2EB' }]}
+              accessibilityLabel="Gerar Notificações de Teste (Admin)"
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="bolt" size={20} color={COLORS.primary} />
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
             onPress={handleClearAllOptions}
@@ -538,28 +545,30 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
             <Text style={[styles.emptyDescription, { color: colors.textSecondary, marginBottom: 20 }]}>
               Você receberá avisos em tempo real sobre avistamentos, mensagens e lembretes de publicações.
             </Text>
-            <TouchableOpacity
-              onPress={handleTestNotification}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: COLORS.primary,
-                paddingHorizontal: 18,
-                paddingVertical: 12,
-                borderRadius: 14,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.12,
-                shadowRadius: 3,
-                elevation: 3,
-              }}
-              activeOpacity={0.8}
-            >
-              <MaterialIcons name="bolt" size={20} color="#FFFFFF" style={{ marginRight: 6 }} />
-              <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>
-                Gerar Notificações de Demonstração
-              </Text>
-            </TouchableOpacity>
+            {isAdmin && (
+              <TouchableOpacity
+                onPress={handleTestNotification}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: COLORS.primary,
+                  paddingHorizontal: 18,
+                  paddingVertical: 12,
+                  borderRadius: 14,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.12,
+                  shadowRadius: 3,
+                  elevation: 3,
+                }}
+                activeOpacity={0.8}
+              >
+                <MaterialIcons name="bolt" size={20} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>
+                  Gerar Notificações de Teste (Admin)
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </ScrollView>
