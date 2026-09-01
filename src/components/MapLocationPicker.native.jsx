@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -54,6 +55,7 @@ const MapLocationPicker = ({
   onSelectLocation,
   onRadiusChange,
 }) => {
+  const insets = useSafeAreaInsets();
   const [coordinate, setCoordinate] = useState(initialLocation || null);
   const [currentRadiusKm, setCurrentRadiusKm] = useState(radiusKm || 25);
   const [loadingLocation, setLoadingLocation] = useState(false);
@@ -150,6 +152,23 @@ const MapLocationPicker = ({
     }
   };
 
+  const loadCurrentLocation = async () => {
+    setLoadingLocation(true);
+    try {
+      const permission = await Location.requestForegroundPermissionsAsync();
+      if (permission.granted) {
+        const result = await Location.getCurrentPositionAsync({});
+        const currentCoord = { latitude: result.coords.latitude, longitude: result.coords.longitude };
+        setCoordinate(currentCoord);
+        reverseGeocodeCoordinate(currentCoord);
+      }
+    } catch (error) {
+      console.warn('[MapLocationPicker] Não foi possível obter a localização atual:', error.message);
+    } finally {
+      setLoadingLocation(false);
+    }
+  };
+
   useEffect(() => {
     if (!visible) return;
     setCoordinate(initialLocation || null);
@@ -158,23 +177,6 @@ const MapLocationPicker = ({
       reverseGeocodeCoordinate(initialLocation);
       return;
     }
-
-    const loadCurrentLocation = async () => {
-      setLoadingLocation(true);
-      try {
-        const permission = await Location.requestForegroundPermissionsAsync();
-        if (permission.granted) {
-          const result = await Location.getCurrentPositionAsync({});
-          const currentCoord = { latitude: result.coords.latitude, longitude: result.coords.longitude };
-          setCoordinate(currentCoord);
-          reverseGeocodeCoordinate(currentCoord);
-        }
-      } catch (error) {
-        console.warn('[MapLocationPicker] Não foi possível obter a localização atual:', error.message);
-      } finally {
-        setLoadingLocation(false);
-      }
-    };
 
     loadCurrentLocation();
   }, [visible, initialLocation]);
@@ -232,16 +234,16 @@ const MapLocationPicker = ({
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.container}>
-        {/* Cabeçalho */}
-        <View style={styles.header}>
-          <View style={{ flex: 1 }}>
+        {/* Cabeçalho Compacto */}
+        <View style={[styles.header, { paddingTop: Math.max(insets.top, 14) }]}>
+          <View style={{ flex: 1, paddingRight: 8 }}>
             <Text style={styles.title}>
               {mode === 'profile' ? 'Atualize sua localização' : 'Escolha no mapa'}
             </Text>
-            <Text style={styles.subtitle} numberOfLines={2}>
+            <Text style={styles.subtitle} numberOfLines={1}>
               {mode === 'profile'
-                ? 'Toque no mapa para marcar o ponto exato e ver o raio de alcance.'
-                : 'Toque no ponto no mapa e edite o endereço se necessário.'}
+                ? 'Toque no mapa para marcar seu local e ver o raio.'
+                : 'Toque no mapa e confirme o endereço abaixo.'}
             </Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeButton} activeOpacity={0.7}>
@@ -256,7 +258,7 @@ const MapLocationPicker = ({
             initialRegion={coordinate ? { ...coordinate, latitudeDelta: 0.15, longitudeDelta: 0.15 } : BRAZIL_REGION}
             onPress={handleMapPress}
             showsUserLocation
-            showsMyLocationButton
+            showsMyLocationButton={false}
           >
             {coordinate && (
               <>
@@ -264,13 +266,23 @@ const MapLocationPicker = ({
                 <Circle
                   center={coordinate}
                   radius={currentRadiusKm * 1000}
-                  fillColor="rgba(5, 150, 105, 0.16)"
+                  fillColor="rgba(46, 86, 52, 0.16)"
                   strokeColor={COLORS.primary}
                   strokeWidth={2}
                 />
               </>
             )}
           </MapView>
+
+          {/* Botão GPS Flutuante no Mapa */}
+          <TouchableOpacity
+            style={styles.gpsFabButton}
+            onPress={loadCurrentLocation}
+            activeOpacity={0.8}
+            accessibilityLabel="Minha Localização"
+          >
+            <MaterialIcons name="my-location" size={22} color={COLORS.primary} />
+          </TouchableOpacity>
 
           {(loadingLocation || geocoding) && (
             <View style={styles.loadingOverlay}>
@@ -282,28 +294,36 @@ const MapLocationPicker = ({
           )}
         </View>
 
-        {/* Painel Inferior de Endereço Editável */}
+        {/* Painel Inferior de Endereço Editável (Mais Compacto e com Botão Fixo) */}
         <View style={styles.bottomCard}>
+          <View style={styles.bottomCardHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <MaterialIcons name="edit-location-alt" size={18} color={COLORS.primary} />
+              <Text style={styles.cardTitle}>Endereço selecionado</Text>
+            </View>
+            {coordinate && (
+              <View style={styles.coordBadge}>
+                <Text style={styles.coordBadgeText}>Ponto Marcado</Text>
+              </View>
+            )}
+          </View>
+
           <ScrollView
             style={styles.formScroll}
-            contentContainerStyle={{ paddingBottom: 16 }}
+            contentContainerStyle={{ paddingBottom: 10 }}
             keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            <View style={styles.cardHeader}>
-              <MaterialIcons name="edit-location-alt" size={20} color={COLORS.primary} />
-              <Text style={styles.cardTitle}>Endereço selecionado (editável)</Text>
-            </View>
-
             {/* Seletor Visual de Raio no Mapa */}
             {showRadius && coordinate ? (
               <View style={styles.radiusSelectorBox}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-                  <MaterialIcons name="radar" size={17} color={COLORS.primary} style={{ marginRight: 6 }} />
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                  <MaterialIcons name="radar" size={15} color={COLORS.primary} style={{ marginRight: 5 }} />
                   <Text style={styles.radiusLabel}>
-                    Raio visível no mapa: <Text style={{ fontWeight: '800', color: COLORS.primary }}>{currentRadiusKm} km</Text>
+                    Raio visível: <Text style={{ fontWeight: '800', color: COLORS.primary }}>{currentRadiusKm} km</Text>
                   </Text>
                 </View>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>
                   {[5, 10, 20, 35, 50, 80].map((r) => {
                     const isSel = currentRadiusKm === r;
                     return (
@@ -327,7 +347,7 @@ const MapLocationPicker = ({
               <>
                 {/* Linha 1: Rua e Número */}
                 <View style={styles.inputRow}>
-                  <View style={{ flex: 2.2, marginRight: 8 }}>
+                  <View style={{ flex: 2.2, marginRight: 6 }}>
                     <Text style={styles.inputLabel}>Rua / Logradouro</Text>
                     <TextInput
                       style={styles.inputField}
@@ -349,21 +369,19 @@ const MapLocationPicker = ({
                   </View>
                 </View>
 
-                {/* Linha 2: Bairro */}
-                <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Bairro</Text>
-                  <TextInput
-                    style={styles.inputField}
-                    value={district}
-                    onChangeText={(t) => updateAddressFields({ district: t })}
-                    placeholder="Ex: Centro"
-                    placeholderTextColor="#9CA3AF"
-                  />
-                </View>
-
-                {/* Linha 3: Cidade e Estado */}
+                {/* Linha 2: Bairro, Cidade e UF */}
                 <View style={styles.inputRow}>
-                  <View style={{ flex: 2.2, marginRight: 8 }}>
+                  <View style={{ flex: 1.4, marginRight: 6 }}>
+                    <Text style={styles.inputLabel}>Bairro</Text>
+                    <TextInput
+                      style={styles.inputField}
+                      value={district}
+                      onChangeText={(t) => updateAddressFields({ district: t })}
+                      placeholder="Ex: Centro"
+                      placeholderTextColor="#9CA3AF"
+                    />
+                  </View>
+                  <View style={{ flex: 1.4, marginRight: 6 }}>
                     <Text style={styles.inputLabel}>Cidade</Text>
                     <TextInput
                       style={styles.inputField}
@@ -373,13 +391,13 @@ const MapLocationPicker = ({
                       placeholderTextColor="#9CA3AF"
                     />
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.inputLabel}>Estado (UF)</Text>
+                  <View style={{ flex: 0.8 }}>
+                    <Text style={styles.inputLabel}>UF</Text>
                     <TextInput
                       style={styles.inputField}
                       value={stateUf}
                       onChangeText={(t) => updateAddressFields({ stateUf: t.toUpperCase() })}
-                      placeholder="Ex: PR"
+                      placeholder="PR"
                       maxLength={2}
                       autoCapitalize="characters"
                       placeholderTextColor="#9CA3AF"
@@ -403,23 +421,26 @@ const MapLocationPicker = ({
               </>
             ) : (
               <View style={styles.emptyPromptBox}>
-                <MaterialIcons name="touch-app" size={24} color={COLORS.primary} />
+                <MaterialIcons name="touch-app" size={22} color={COLORS.primary} />
                 <Text style={styles.emptyPromptText}>
-                  Toque em qualquer ponto do mapa acima para marcar seu local e preencher o endereço completo.
+                  Toque em qualquer ponto do mapa para marcar o local do animal.
                 </Text>
               </View>
             )}
+          </ScrollView>
 
-            {/* Botão de Confirmação */}
+          {/* Botão de Confirmação FIXO na Base (Com Safe Area Insets) */}
+          <View style={[styles.bottomCardFooter, { paddingBottom: Math.max(insets.bottom, 12) }]}>
             <TouchableOpacity
               style={[styles.confirmButton, !coordinate && styles.disabledButton]}
               onPress={handleConfirm}
               disabled={!coordinate}
               activeOpacity={0.85}
             >
+              <MaterialIcons name="check-circle" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
               <Text style={styles.confirmText}>Usar esta localização</Text>
             </TouchableOpacity>
-          </ScrollView>
+          </View>
         </View>
       </View>
     </Modal>
@@ -430,83 +451,111 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: {
     paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 12,
+    paddingBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E2E8F0',
     zIndex: 10,
   },
-  title: { fontSize: 18, fontWeight: '700', color: '#111827' },
-  subtitle: { marginTop: 2, color: '#6B7280', fontSize: 13 },
-  closeButton: { padding: 8, paddingHorizontal: 12 },
-  closeText: { color: COLORS.primary, fontWeight: '700', fontSize: 15 },
+  title: { fontSize: 16, fontWeight: '800', color: '#0F172A', letterSpacing: -0.2 },
+  subtitle: { marginTop: 1, color: '#64748B', fontSize: 12 },
+  closeButton: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 8, backgroundColor: '#F1F5F9' },
+  closeText: { color: COLORS.primary, fontWeight: '800', fontSize: 13 },
   mapContainer: { flex: 1, position: 'relative' },
   map: { width: '100%', height: '100%' },
+  gpsFabButton: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    elevation: 4,
+  },
   loadingOverlay: {
     position: 'absolute',
-    top: 16,
+    top: 14,
     alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 20,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOpacity: 0.15,
-    shadowRadius: 5,
+    shadowRadius: 4,
     elevation: 4,
   },
-  loadingText: { color: '#374151', fontSize: 13, fontWeight: '600' },
+  loadingText: { color: '#334155', fontSize: 12, fontWeight: '700' },
   bottomCard: {
-    maxHeight: '52%',
+    maxHeight: '44%',
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
     elevation: 8,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: '#F1F5F9',
   },
-  formScroll: { paddingHorizontal: 16, paddingTop: 14 },
-  cardHeader: {
+  bottomCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 8,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 6,
   },
   cardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 13.5,
+    fontWeight: '800',
     color: '#0F172A',
   },
+  coordBadge: {
+    backgroundColor: '#EAF2EB',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  coordBadgeText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  formScroll: { paddingHorizontal: 16 },
   radiusSelectorBox: {
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
+    backgroundColor: '#EAF2EB',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
     borderWidth: 1,
-    borderColor: COLORS.primaryBorder,
+    borderColor: '#CDE1D1',
   },
   radiusLabel: {
-    fontSize: 12.5,
+    fontSize: 11.5,
     fontWeight: '600',
     color: COLORS.primaryDark,
   },
   radiusChip: {
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: COLORS.primaryBorder,
+    borderColor: '#CDE1D1',
     backgroundColor: '#FFFFFF',
   },
   radiusChipActive: {
@@ -514,7 +563,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primaryDark,
   },
   radiusChipText: {
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: '600',
     color: COLORS.primaryDark,
   },
@@ -524,56 +573,69 @@ const styles = StyleSheet.create({
   },
   inputRow: {
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   inputGroup: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
   inputLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#4B5563',
-    marginBottom: 4,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+    marginBottom: 2,
   },
   inputField: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    fontSize: 14,
-    color: '#111827',
-    backgroundColor: '#F9FAFB',
+    borderColor: '#CBD5E1',
+    borderRadius: 7,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    fontSize: 13,
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
+    height: 36,
   },
   multilineInput: {
-    minHeight: 48,
-    maxHeight: 70,
+    height: 44,
   },
   emptyPromptBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: 10,
-    padding: 12,
-    marginVertical: 10,
+    gap: 8,
+    backgroundColor: '#EAF2EB',
+    borderRadius: 8,
+    padding: 10,
+    marginVertical: 6,
   },
   emptyPromptText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.primaryDark,
-    lineHeight: 18,
+    lineHeight: 16,
+    fontWeight: '600',
+  },
+  bottomCardFooter: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
   },
   confirmButton: {
+    flexDirection: 'row',
     backgroundColor: COLORS.primary,
-    paddingVertical: 13,
+    paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 8,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  disabledButton: { backgroundColor: COLORS.primaryBorder },
-  confirmText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
+  disabledButton: { backgroundColor: '#94A3B8' },
+  confirmText: { color: '#FFFFFF', fontWeight: '800', fontSize: 14 },
 });
 
 export default MapLocationPicker;
