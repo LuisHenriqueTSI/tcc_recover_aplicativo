@@ -22,6 +22,7 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import MapLocationPicker from '../components/MapLocationPicker';
 import { states } from '../lib/br-locations';
+import COLORS from '../constants/theme';
 
 const normalizeRegionName = (value = '') =>
   String(value || '')
@@ -446,8 +447,8 @@ const EditProfileScreen = ({ navigation }) => {
             style={[
               styles.locationDisplayBox,
               {
-                backgroundColor: isDark ? colors.innerCard : '#F0F9FF',
-                borderColor: isDark ? colors.cardBorder : '#BFDBFE',
+                backgroundColor: isDark ? colors.innerCard : COLORS.primaryLight,
+                borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder,
               },
             ]}
           >
@@ -487,7 +488,7 @@ const EditProfileScreen = ({ navigation }) => {
             styles.mapLauncherBtn,
             {
               borderColor: colors.primary,
-              backgroundColor: isDark ? 'rgba(37, 99, 235, 0.12)' : '#EFF6FF',
+              backgroundColor: isDark ? 'rgba(5, 150, 105, 0.12)' : COLORS.primaryLight,
             },
           ]}
           onPress={() => setMapVisible(true)}
@@ -501,16 +502,16 @@ const EditProfileScreen = ({ navigation }) => {
 
         {/* Seletor de Raio Padrão */}
         <View style={{
-          backgroundColor: isDark ? colors.innerCard : colors.primaryLight,
+          backgroundColor: isDark ? colors.innerCard : COLORS.primaryLight,
           padding: 12,
           borderRadius: 12,
           marginTop: 14,
           borderWidth: 1,
-          borderColor: isDark ? colors.cardBorder : '#DBEAFE',
+          borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder,
         }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
             <MaterialIcons name="radar" size={18} color={colors.primary} style={{ marginRight: 6 }} />
-            <Text style={{ color: isDark ? '#93C5FD' : '#1E40AF', fontSize: 13, fontWeight: '700' }}>
+            <Text style={{ color: isDark ? colors.primaryLight : colors.primaryDark, fontSize: 13, fontWeight: '700' }}>
               Raio de Busca: <Text style={{ fontWeight: '900', color: colors.primary }}>{searchRadiusKm} km</Text>
             </Text>
           </View>

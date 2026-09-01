@@ -407,16 +407,16 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
             <View style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: isDark ? 'rgba(59, 130, 246, 0.18)' : '#EFF6FF',
+              backgroundColor: isDark ? 'rgba(5, 150, 105, 0.18)' : COLORS.primaryLight,
               paddingHorizontal: 8,
               paddingVertical: 3,
               borderRadius: 8,
               borderWidth: 1,
-              borderColor: isDark ? 'rgba(59, 130, 246, 0.35)' : '#DBEAFE',
+              borderColor: isDark ? 'rgba(5, 150, 105, 0.35)' : COLORS.primaryBorder,
               marginLeft: 8,
             }}>
               <MaterialIcons name="near-me" size={11} color={colors.primary} style={{ marginRight: 3 }} />
-              <Text style={{ fontSize: 11, fontWeight: '800', color: isDark ? '#93C5FD' : '#1D4ED8' }}>
+              <Text style={{ fontSize: 11, fontWeight: '800', color: isDark ? colors.primaryLight : colors.primaryDark }}>
                 {item._distanceKm < 1 ? '< 1 km' : `${item._distanceKm < 10 ? item._distanceKm.toFixed(1) : Math.round(item._distanceKm)} km`}
               </Text>
             </View>
@@ -465,15 +465,15 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
                   <View
                     key={chip.key}
                     style={{
-                      backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF',
+                      backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : COLORS.primaryLight,
                       borderRadius: 8,
                       paddingHorizontal: 8,
                       paddingVertical: 3.5,
                       borderWidth: 1,
-                      borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : '#BFDBFE',
+                      borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : COLORS.primaryBorder,
                     }}
                   >
-                    <Text style={{ fontSize: 11.5, color: isDark ? '#93C5FD' : '#1E40AF', fontWeight: '600' }}>
+                    <Text style={{ fontSize: 11.5, color: isDark ? colors.primaryLight : colors.primaryDark, fontWeight: '600' }}>
                       {chip.text}
                     </Text>
                   </View>
@@ -679,7 +679,7 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
               justifyContent: 'center',
               marginRight: 6,
               borderWidth: 1,
-              borderColor: isDark ? colors.cardBorder : '#BFDBFE',
+              borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder,
               overflow: 'hidden',
             }}>
               {ownerAvatar ? (
@@ -1800,16 +1800,16 @@ const HomeScreen = ({ navigation, route }) => {
               {/* Seletor Interativo de Raio de Busca (Apenas se houver cidade/estado selecionado) */}
               {Boolean(profileEditCity || profileEditState || sessionCity || sessionState) && (
                 <View style={{
-                  backgroundColor: isDark ? colors.card : colors.primaryLight,
+                  backgroundColor: isDark ? colors.card : COLORS.primaryLight,
                   padding: 12,
                   borderRadius: 12,
                   marginBottom: 14,
                   borderWidth: 1,
-                  borderColor: isDark ? colors.cardBorder : '#DBEAFE',
+                  borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder,
                 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
                     <MaterialIcons name="radar" size={18} color={colors.primary} style={{ marginRight: 6 }} />
-                    <Text style={{ color: isDark ? '#93C5FD' : '#1E40AF', fontSize: 13, fontWeight: '700' }}>
+                    <Text style={{ color: isDark ? colors.primaryLight : colors.primaryDark, fontSize: 13, fontWeight: '700' }}>
                       Raio de Busca: <Text style={{ fontWeight: '900', color: colors.primary }}>{profileEditRadiusKm} km</Text>
                     </Text>
                   </View>
@@ -2081,13 +2081,13 @@ const HomeScreen = ({ navigation, route }) => {
           <TouchableOpacity
             style={[
               styles.filterToggle,
-              { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: isDark ? '#334155' : '#BFDBFE', position: 'relative' },
+              { backgroundColor: isDark ? '#1E293B' : COLORS.primaryLight, borderColor: isDark ? '#334155' : COLORS.primaryBorder, position: 'relative' },
               showAdvancedFilters && styles.filterToggleActive,
             ]}
             onPress={() => setShowAdvancedFilters(v => !v)}
             accessibilityLabel="Abrir filtros avançados"
           >
-            <MaterialIcons name="tune" size={20} color={showAdvancedFilters ? '#fff' : (isDark ? '#60A5FA' : '#1E3A8A')} />
+            <MaterialIcons name="tune" size={20} color={showAdvancedFilters ? '#fff' : colors.primary} />
             {activeAdvancedFiltersCount > 0 && (
               <View style={{
                 position: 'absolute',
@@ -2199,7 +2199,7 @@ const HomeScreen = ({ navigation, route }) => {
               <MaterialIcons name="tune" size={19} color={colors.primary} />
               <Text style={[styles.advPanelTitle, { color: colors.text }]}>Filtros Avançados</Text>
               {activeAdvancedFiltersCount > 0 && (
-                <View style={[styles.advCountBadge, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : '#BFDBFE' }]}>
+                <View style={[styles.advCountBadge, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder }]}>
                   <Text style={[styles.advCountText, { color: colors.primary }]}>{activeAdvancedFiltersCount} {activeAdvancedFiltersCount === 1 ? 'ativo' : 'ativos'}</Text>
                 </View>
               )}
@@ -2442,16 +2442,16 @@ const HomeScreen = ({ navigation, route }) => {
       )}
       {/* Banner Informativo do Raio de Busca (Apenas quando houver cidade/estado específico) */}
       {Boolean(locationFilter && locationFilter.trim().length > 0 && headerLocationSummary !== 'Todo o Brasil') && (
-        <View style={[styles.radiusBanner, { backgroundColor: isDark ? '#161F30' : '#EFF6FF', borderColor: isDark ? '#243248' : '#BFDBFE' }]}>
+        <View style={[styles.radiusBanner, { backgroundColor: isDark ? '#091512' : COLORS.primaryLight, borderColor: isDark ? '#1C362D' : COLORS.primaryBorder }]}>
           <View style={styles.radiusBannerLeft}>
-            <View style={[styles.radarIconContainer, { backgroundColor: isDark ? '#0F172A' : '#DBEAFE' }]}>
+            <View style={[styles.radarIconContainer, { backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }]}>
               <MaterialIcons name="radar" size={18} color={colors.primary} />
             </View>
             <View style={{ flex: 1, marginLeft: 8 }}>
-              <Text style={[styles.radiusBannerTitle, { color: isDark ? '#93C5FD' : '#1E40AF' }]}>
+              <Text style={[styles.radiusBannerTitle, { color: isDark ? colors.primaryLight : colors.primaryDark }]}>
                 Raio de {searchRadiusKm} km ativo
               </Text>
-              <Text style={[styles.radiusBannerSubtitle, { color: isDark ? '#60A5FA' : '#3B82F6' }]} numberOfLines={1}>
+              <Text style={[styles.radiusBannerSubtitle, { color: isDark ? '#34D399' : '#047857' }]} numberOfLines={1}>
                 Exibindo {radiusStatusText} próximos a sua localização
               </Text>
             </View>
@@ -2635,7 +2635,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#DBEAFE',
+    borderColor: COLORS.primaryBorder,
     shadowColor: '#111827',
     shadowOpacity: 0.18,
     shadowRadius: 14,
@@ -2649,7 +2649,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 4,
     borderRadius: 12,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
   },
   profileMenuAvatar: {
     width: 36,
@@ -2657,7 +2657,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     overflow: 'hidden',
   },
   profileMenuAvatarImage: { width: 36, height: 36 },
@@ -2678,9 +2678,9 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
   },
-  profileMenuAdminIcon: { backgroundColor: '#EFF6FF' },
+  profileMenuAdminIcon: { backgroundColor: COLORS.primaryLight },
   profileMenuLogoutIcon: { backgroundColor: '#FEF2F2' },
   profileMenuItemText: { flex: 1, marginLeft: 10, color: '#1F2937', fontSize: 14, fontWeight: '700' },
   profileMenuLogoutText: { flex: 1, marginLeft: 10, color: '#DC2626', fontSize: 14, fontWeight: '700' },
@@ -2714,13 +2714,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: COLORS.primaryBorder,
   },
   filterToggleActive: {
-    backgroundColor: '#1E3A8A',
-    borderColor: '#1E3A8A',
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   advancedFiltersPanel: {
     padding: 16,

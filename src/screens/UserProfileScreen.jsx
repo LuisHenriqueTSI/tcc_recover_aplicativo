@@ -22,6 +22,7 @@ import * as itemsService from '../services/items';
 import * as ratingsService from '../services/ratings';
 import { getFosterProfile } from '../services/foster';
 import OptimizedImage from '../components/OptimizedImage';
+import COLORS from '../constants/theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -417,7 +418,7 @@ const UserProfileScreen = ({ route, navigation }) => {
     >
       {/* 1. HERO HEADER CARD */}
       <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-        <View style={[styles.heroCover, { backgroundColor: isDark ? '#1E293B' : '#DBEAFE' }]}>
+        <View style={[styles.heroCover, { backgroundColor: isDark ? '#11221C' : COLORS.primaryLight }]}>
           <View style={styles.heroCoverOverlay} />
         </View>
 
@@ -1172,7 +1173,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 14,
     flex: 1,
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -1261,7 +1262,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   mainToggleBtnActive: {
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -1320,128 +1321,128 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  petCardContent: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-  },
-  petImageContainer: {
-    width: 74,
-    height: 74,
-    borderRadius: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 10,
     overflow: 'hidden',
     alignItems: 'center',
-    justifyContent: 'center',
   },
   petImage: {
-    width: 74,
-    height: 74,
+    width: 86,
+    height: 86,
   },
-  petInfoContainer: {
+  petInfo: {
     flex: 1,
-    marginLeft: 12,
-    marginRight: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  petStatusRow: {
+  petNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
+    justifyContent: 'space-between',
+    marginBottom: 3,
   },
-  petStatusBadge: {
+  petName: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    flex: 1,
+    marginRight: 6,
+  },
+  petTag: {
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 6,
   },
-  petStatusBadgeText: {
+  petTagText: {
     fontSize: 10,
     fontWeight: '800',
+    textTransform: 'uppercase',
   },
-  petSpeciesText: {
-    fontSize: 10,
-    fontWeight: '700',
+  petMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+    gap: 4,
   },
-  petTitle: {
-    fontSize: 14.5,
-    fontWeight: '800',
-    marginBottom: 2,
-  },
-  petBreed: {
-    fontSize: 12,
-    marginBottom: 4,
+  petMetaText: {
+    fontSize: 11.5,
+    flex: 1,
   },
   petLocationRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 4,
     gap: 3,
   },
   petLocationText: {
-    fontSize: 11.5,
+    fontSize: 11,
+    flex: 1,
   },
-  ratingsSection: {
+  reviewsSection: {
     paddingHorizontal: 14,
   },
-  ratingSummaryCard: {
+  reviewsHeader: {
+    marginBottom: 12,
+  },
+  ratingOverviewCard: {
     flexDirection: 'row',
-    padding: 18,
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
-    marginBottom: 14,
+    padding: 14,
+    marginBottom: 12,
     alignItems: 'center',
   },
-  ratingSummaryLeft: {
+  ratingBigBox: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingRight: 16,
     borderRightWidth: 1,
-    borderRightColor: 'rgba(150, 150, 150, 0.2)',
   },
-  ratingBigScore: {
+  ratingBigNumber: {
     fontSize: 34,
     fontWeight: '900',
-    lineHeight: 38,
+    letterSpacing: -1,
   },
-  starsRow: {
+  ratingStarsRow: {
     flexDirection: 'row',
-    marginVertical: 4,
+    gap: 2,
+    marginTop: 2,
   },
-  ratingTotalText: {
+  ratingTotalCount: {
     fontSize: 11,
     fontWeight: '600',
+    marginTop: 4,
   },
-  ratingBreakdownContainer: {
+  ratingBarsCol: {
     flex: 1,
-    paddingLeft: 16,
+    paddingLeft: 14,
     gap: 4,
   },
-  breakdownRow: {
+  barRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  breakdownStarLabel: {
+  barStarLabel: {
     fontSize: 11,
     fontWeight: '700',
     width: 20,
   },
-  breakdownBarTrack: {
+  barTrack: {
     flex: 1,
     height: 6,
     borderRadius: 3,
     overflow: 'hidden',
   },
-  breakdownBarFill: {
+  barFill: {
     height: '100%',
     borderRadius: 3,
   },
-  breakdownCountText: {
-    fontSize: 11,
-    width: 16,
+  barCount: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    width: 22,
     textAlign: 'right',
   },
   leaveReviewCTA: {
@@ -1452,7 +1453,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     borderRadius: 16,
     marginBottom: 14,
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -1464,74 +1465,108 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   reviewCard: {
-    padding: 16,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
+    padding: 14,
     marginBottom: 10,
   },
-  reviewHeader: {
+  reviewAuthorRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
   },
-  reviewerAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  reviewAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
+  reviewAvatarFallback: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
   },
-  reviewerAvatarImg: {
-    width: 36,
-    height: 36,
+  reviewAuthorInitial: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
   },
-  reviewerName: {
+  reviewAuthorInfo: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  reviewAuthorName: {
     fontSize: 13.5,
     fontWeight: '800',
   },
   reviewDate: {
     fontSize: 11,
+    marginTop: 1,
   },
-  reviewTagsRow: {
+  reviewStarsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginVertical: 6,
-  },
-  reviewTagBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  reviewTagText: {
-    fontSize: 11,
-    fontWeight: '700',
+    gap: 2,
   },
   reviewCommentText: {
     fontSize: 13,
     lineHeight: 18,
-    fontStyle: 'italic',
-    marginTop: 4,
   },
-  modalOverlay: {
+  reviewPetContextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    gap: 4,
+  },
+  reviewPetContextText: {
+    fontSize: 11.5,
+    fontWeight: '600',
+  },
+  emptyCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 32,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  emptyIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  emptySub: {
+    fontSize: 12.5,
+    lineHeight: 17,
+    textAlign: 'center',
+  },
+  modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
     justifyContent: 'flex-end',
   },
   modalCard: {
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    borderTopWidth: 1,
-    padding: 22,
-    maxHeight: '90%',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 1,
+    padding: 20,
+    paddingBottom: 36,
   },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   modalTitle: {
     fontSize: 17,
@@ -1542,60 +1577,40 @@ const styles = StyleSheet.create({
   },
   modalSubtitle: {
     fontSize: 13,
-    lineHeight: 19,
     marginBottom: 16,
   },
-  starsPickerContainer: {
-    alignItems: 'center',
-    marginVertical: 8,
-    paddingVertical: 12,
-    borderRadius: 16,
-    backgroundColor: 'rgba(245, 158, 11, 0.08)',
-  },
-  starsPickerRow: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  starFeedbackText: {
+  modalRatingPrompt: {
     fontSize: 13,
-    fontWeight: '800',
-    marginTop: 4,
-  },
-  formLabel: {
-    fontSize: 12.5,
-    fontWeight: '800',
-    marginTop: 14,
+    fontWeight: '700',
+    textAlign: 'center',
     marginBottom: 8,
   },
-  tagsContainer: {
+  modalStarsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 16,
   },
-  tagChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 1,
+  starTouchable: {
+    padding: 4,
   },
-  tagChipSelected: {},
-  tagChipText: {
-    fontSize: 11.5,
-    fontWeight: '600',
+  modalInputLabel: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    marginBottom: 6,
   },
-  commentInput: {
-    borderWidth: 1,
+  modalTextInput: {
     borderRadius: 14,
+    borderWidth: 1,
     padding: 12,
     fontSize: 13.5,
-    textAlignVertical: 'top',
     minHeight: 80,
+    textAlignVertical: 'top',
+    marginBottom: 16,
   },
-  modalActionsRow: {
+  modalBtnRow: {
     flexDirection: 'row',
     gap: 10,
-    marginTop: 20,
-    marginBottom: 10,
   },
   modalCancelBtn: {
     flex: 1,
@@ -1615,7 +1630,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,

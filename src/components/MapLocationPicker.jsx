@@ -1,5 +1,6 @@
 import React from 'react';
 import { Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import COLORS from '../constants/theme';
 
 const MapLocationPicker = ({ visible, mode, onClose }) => (
   <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -28,7 +29,7 @@ const styles = StyleSheet.create({
   container: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 20 },
   title: { color: '#111827', fontSize: 18, fontWeight: '700', marginBottom: 8 },
   description: { color: '#4B5563', lineHeight: 20, marginBottom: 18 },
-  button: { backgroundColor: '#2563EB', borderRadius: 8, padding: 13, alignItems: 'center' },
+  button: { backgroundColor: COLORS.primary, borderRadius: 8, padding: 13, alignItems: 'center' },
   buttonText: { color: '#FFFFFF', fontWeight: '700' },
 });
 

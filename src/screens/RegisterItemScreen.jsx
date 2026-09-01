@@ -26,6 +26,7 @@ import Input from '../components/Input';
 import MapLocationPicker from '../components/MapLocationPicker';
 import { states } from '../lib/br-locations';
 import Card from '../components/Card';
+import COLORS from '../constants/theme';
 
 const PET_SPECIES_OPTIONS = [
   { label: 'Selecione a espécie', value: '' },
@@ -120,7 +121,7 @@ const SelectionChips = ({ label, options, value, onChange, multiSelect = false }
                 styles.selectionChip,
                 {
                   backgroundColor: selected
-                    ? (isDark ? 'rgba(37, 99, 235, 0.25)' : '#EFF6FF')
+                    ? (isDark ? 'rgba(5, 150, 105, 0.25)' : colors.primaryLight)
                     : colors.card,
                   borderColor: selected ? colors.primary : colors.cardBorder,
                 },
@@ -133,7 +134,7 @@ const SelectionChips = ({ label, options, value, onChange, multiSelect = false }
               <Text
                 style={[
                   styles.selectionChipText,
-                  { color: selected ? (isDark ? '#93C5FD' : '#1D4ED8') : colors.textSecondary },
+                  { color: selected ? (isDark ? '#34D399' : colors.primary) : colors.textSecondary },
                   selected && styles.selectionChipTextSelected,
                 ]}
               >
@@ -425,8 +426,8 @@ const RegisterItemScreen = ({ navigation, route }) => {
         {/* Card Educativo de Privacidade e Proteção Anti-Golpes */}
         {isLost && (
           <View style={{
-            backgroundColor: isDark ? '#1E293B' : '#EFF6FF',
-            borderColor: isDark ? '#334155' : '#BFDBFE',
+            backgroundColor: isDark ? '#091512' : COLORS.primaryLight,
+            borderColor: isDark ? '#1C362D' : COLORS.primaryBorder,
             borderWidth: 1,
             borderRadius: 12,
             padding: 12,
@@ -435,9 +436,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
             alignItems: 'flex-start',
             gap: 10,
           }}>
-            <MaterialIcons name="security" size={22} color="#2563EB" style={{ marginTop: 2 }} />
+            <MaterialIcons name="security" size={22} color={COLORS.primary} style={{ marginTop: 2 }} />
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 13, fontWeight: '800', color: isDark ? '#93C5FD' : '#1D4ED8', marginBottom: 3 }}>
+              <Text style={{ fontSize: 13, fontWeight: '800', color: isDark ? '#34D399' : COLORS.primaryDark, marginBottom: 3 }}>
                 🛡️ Privacidade do Tutor Protegida
               </Text>
               <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#334155', lineHeight: 17 }}>
@@ -636,7 +637,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
     return (
       <>
         <TouchableOpacity
-          style={[styles.mapButton, { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' }]}
+          style={[styles.mapButton, { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight }]}
           onPress={() => setMapModalVisible(true)}
         >
           <Text style={[styles.mapButtonText, { color: colors.primary }]}>
@@ -1568,11 +1569,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
       onRequestClose={() => setShowMatchingModal(false)}
     >
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.72)', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
-        <View style={{ backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#DBEAFE', borderWidth: 1.5, borderRadius: 24, padding: 20, width: '100%', maxWidth: 420, maxHeight: '85%' }}>
+        <View style={{ backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder, borderWidth: 1.5, borderRadius: 24, padding: 20, width: '100%', maxWidth: 420, maxHeight: '85%' }}>
           
           <View style={{ alignItems: 'center', marginBottom: 12 }}>
-            <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginBottom: 8, borderWidth: 1, borderColor: '#93C5FD' }}>
-              <MaterialIcons name="radar" size={26} color="#2563EB" />
+            <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: isDark ? 'rgba(5, 150, 105, 0.2)' : COLORS.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 8, borderWidth: 1, borderColor: COLORS.primaryBorder }}>
+              <MaterialIcons name="radar" size={26} color={COLORS.primary} />
             </View>
             <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text, textAlign: 'center', marginBottom: 4 }}>
               Animal Semelhante por Perto!
@@ -1600,7 +1601,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     borderRadius: 14,
                     borderWidth: 2,
                     borderColor: isSelected ? colors.primary : (isDark ? '#334155' : '#E2E8F0'),
-                    backgroundColor: isSelected ? (isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF') : (isDark ? '#1E293B' : '#F8FAFC'),
+                    backgroundColor: isSelected ? (isDark ? 'rgba(5, 150, 105, 0.15)' : COLORS.primaryLight) : (isDark ? '#1E293B' : '#F8FAFC'),
                     marginBottom: 8,
                   }}
                 >
@@ -1617,7 +1618,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       {match.species || 'Animal'}{match.breed ? ` • ${match.breed}` : ''}
                     </Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
-                      <MaterialIcons name="place" size={13} color="#2563EB" style={{ marginRight: 2 }} />
+                      <MaterialIcons name="place" size={13} color={COLORS.primary} style={{ marginRight: 2 }} />
                       <Text style={{ fontSize: 11.5, fontWeight: '700', color: colors.primary }}>
                         {distText}
                       </Text>
@@ -1708,7 +1709,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         key: 'animal',
         label: 'Animal',
         desc: 'Cães, gatos, aves, bovinos, cavalos e outros animais',
-        color: '#EFF6FF',
+        color: colors.primaryLight,
         icon: '🐾'
       }
     ];
@@ -1861,19 +1862,19 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       style={[
                         styles.custodyOptionCard,
                         { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', borderColor: isDark ? '#243248' : '#E2E8F0' },
-                        foundCustody === 'with_me' && [styles.custodyOptionCardActive, { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(37, 99, 235, 0.18)' : '#EFF6FF' }],
+                        foundCustody === 'with_me' && [styles.custodyOptionCardActive, { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(5, 150, 105, 0.18)' : colors.primaryLight }],
                       ]}
                       onPress={() => setFoundCustody('with_me')}
                       activeOpacity={0.85}
                     >
-                      <View style={[styles.custodyIconCircle, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF' }, foundCustody === 'with_me' && styles.custodyIconCircleActive]}>
+                      <View style={[styles.custodyIconCircle, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.2)' : colors.primaryLight }, foundCustody === 'with_me' && styles.custodyIconCircleActive]}>
                         <MaterialIcons
                           name="home"
                           size={20}
                           color={foundCustody === 'with_me' ? '#FFFFFF' : colors.primary}
                         />
                       </View>
-                      <Text style={[styles.custodyOptionTitle, { color: colors.text }, foundCustody === 'with_me' && [styles.custodyOptionTitleActive, { color: isDark ? '#93C5FD' : '#1D4ED8' }]]}>
+                      <Text style={[styles.custodyOptionTitle, { color: colors.text }, foundCustody === 'with_me' && [styles.custodyOptionTitleActive, { color: isDark ? '#34D399' : colors.primary }]]}>
                         Estou com ele
                       </Text>
                       <Text style={[styles.custodyOptionSub, { color: colors.textSecondary }]}>
@@ -2524,8 +2525,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   statusButtonActive: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primaryDark,
   },
   // Estilos de Custódia e Adoção
   custodySection: {
@@ -2551,20 +2552,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   custodyOptionCardActive: {
-    borderColor: '#2563EB',
-    backgroundColor: '#EFF6FF',
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
   },
   custodyIconCircle: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   custodyIconCircleActive: {
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
   },
   custodyOptionTitle: {
     fontSize: 13.5,
@@ -2574,7 +2575,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   custodyOptionTitleActive: {
-    color: '#1D4ED8',
+    color: COLORS.primaryDark,
     fontWeight: '800',
   },
   custodyOptionSub: {
@@ -2664,13 +2665,13 @@ const styles = StyleSheet.create({
   uploadButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#2563EB',
+    color: COLORS.primary,
   },
   aiButton: {
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     marginBottom: 16,
   },
   aiButtonText: {
@@ -2794,8 +2795,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   selectionChipSelected: {
-    borderColor: '#2563EB',
-    backgroundColor: '#EFF6FF',
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
   },
   selectionChipText: {
     color: '#4B5563',
@@ -2803,18 +2804,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   selectionChipTextSelected: {
-    color: '#1D4ED8',
+    color: COLORS.primaryDark,
   },
   mapButton: {
     borderWidth: 1,
-    borderColor: '#2563EB',
+    borderColor: COLORS.primary,
     borderRadius: 8,
     paddingVertical: 11,
     alignItems: 'center',
     marginBottom: 12,
   },
   mapButtonText: {
-    color: '#2563EB',
+    color: COLORS.primary,
     fontWeight: '700',
   },
   locationHint: {
@@ -2868,8 +2869,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   checkmark: {
     color: '#FFFFFF',

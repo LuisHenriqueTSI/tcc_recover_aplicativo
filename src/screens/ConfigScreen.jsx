@@ -196,16 +196,16 @@ const ConfigScreen = ({ navigation }) => {
             <Switch
               value={isDark}
               onValueChange={(val) => setThemeMode(val ? 'dark' : 'light')}
-              trackColor={{ false: isDark ? '#334155' : '#DBEAFE', true: colors.primary }}
-              thumbColor={isDark ? '#FFFFFF' : '#2563EB'}
+              trackColor={{ false: isDark ? '#334155' : '#D1FAE5', true: colors.primary }}
+              thumbColor={isDark ? '#FFFFFF' : colors.primary}
             />
           }
         />
         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
         <SettingRow
           icon="palette"
-          iconColor="#3B82F6"
-          iconBg={isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF'}
+          iconColor={colors.primary}
+          iconBg={isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight}
           title="Opções de Tema"
           description={
             themeMode === 'light'
@@ -223,32 +223,32 @@ const ConfigScreen = ({ navigation }) => {
       <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
         <SettingRow
           icon="notifications-active"
-          iconColor="#10B981"
-          iconBg={isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5'}
+          iconColor={colors.primary}
+          iconBg={isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight}
           title="Notificações no App"
           description="Receber alertas sobre pets e mensagens no app"
           right={
             <Switch
               value={preferences.notifications}
               onValueChange={() => togglePreference('notifications')}
-              trackColor={{ false: isDark ? '#334155' : '#DBEAFE', true: colors.primary }}
-              thumbColor={preferences.notifications ? (isDark ? '#FFFFFF' : '#2563EB') : '#F8FAFC'}
+              trackColor={{ false: isDark ? '#334155' : '#D1FAE5', true: colors.primary }}
+              thumbColor={preferences.notifications ? (isDark ? '#FFFFFF' : colors.primary) : '#F8FAFC'}
             />
           }
         />
         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
         <SettingRow
           icon="chat"
-          iconColor="#22C55E"
-          iconBg={isDark ? 'rgba(34, 197, 94, 0.15)' : '#DCFCE7'}
+          iconColor="#10B981"
+          iconBg={isDark ? 'rgba(16, 185, 129, 0.15)' : '#DCFCE7'}
           title="Notificações por WhatsApp"
           description="Receber avisos instantâneos de pets no seu número"
           right={
             <Switch
               value={preferences.whatsappNotifications}
               onValueChange={() => togglePreference('whatsappNotifications')}
-              trackColor={{ false: isDark ? '#334155' : '#DBEAFE', true: colors.primary }}
-              thumbColor={preferences.whatsappNotifications ? (isDark ? '#FFFFFF' : '#2563EB') : '#F8FAFC'}
+              trackColor={{ false: isDark ? '#334155' : '#D1FAE5', true: colors.primary }}
+              thumbColor={preferences.whatsappNotifications ? (isDark ? '#FFFFFF' : colors.primary) : '#F8FAFC'}
             />
           }
         />
@@ -263,8 +263,8 @@ const ConfigScreen = ({ navigation }) => {
             <Switch
               value={preferences.reminders}
               onValueChange={() => togglePreference('reminders')}
-              trackColor={{ false: isDark ? '#334155' : '#DBEAFE', true: colors.primary }}
-              thumbColor={preferences.reminders ? (isDark ? '#FFFFFF' : '#2563EB') : '#F8FAFC'}
+              trackColor={{ false: isDark ? '#334155' : '#D1FAE5', true: colors.primary }}
+              thumbColor={preferences.reminders ? (isDark ? '#FFFFFF' : colors.primary) : '#F8FAFC'}
             />
           }
         />
@@ -297,8 +297,8 @@ const ConfigScreen = ({ navigation }) => {
       <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
         <SettingRow
           icon="person"
-          iconColor="#3B82F6"
-          iconBg={isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF'}
+          iconColor={colors.primary}
+          iconBg={isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight}
           title="Editar perfil"
           description="Nome, telefone, WhatsApp e cidade padrão"
           onPress={() => navigation.navigate('EditProfile')}
@@ -331,8 +331,8 @@ const ConfigScreen = ({ navigation }) => {
       <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
         <SettingRow
           icon="info-outline"
-          iconColor="#3B82F6"
-          iconBg={isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF'}
+          iconColor={colors.primary}
+          iconBg={isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight}
           title="Sobre o WeFIND"
           description="Conheça nossa missão e tecnologia"
           onPress={() => navigation.navigate('Sobre', { forceFullView: true })}
@@ -340,8 +340,8 @@ const ConfigScreen = ({ navigation }) => {
         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
         <SettingRow
           icon="help-outline"
-          iconColor="#10B981"
-          iconBg={isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5'}
+          iconColor={colors.primary}
+          iconBg={isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight}
           title="Ajuda e suporte"
           description="Dúvidas frequentes e canais de atendimento"
           onPress={() => navigation.navigate('AjudaSuporte')}
@@ -406,7 +406,7 @@ const ConfigScreen = ({ navigation }) => {
                   style={[
                     styles.themeOptionCard,
                     {
-                      backgroundColor: isSelected ? (isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF') : (isDark ? '#0F172A' : '#F8FAFC'),
+                      backgroundColor: isSelected ? (isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight) : (isDark ? '#0F172A' : '#F8FAFC'),
                       borderColor: isSelected ? colors.primary : colors.cardBorder,
                     },
                   ]}

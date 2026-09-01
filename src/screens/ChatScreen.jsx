@@ -25,6 +25,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import COLORS from '../constants/theme';
 
 const ChatScreen = (props) => {
   const insets = useSafeAreaInsets();
@@ -531,7 +532,7 @@ const ChatScreen = (props) => {
             isMe
               ? { backgroundColor: colors.primary, borderColor: colors.primary, borderBottomRightRadius: 4 }
               : { backgroundColor: colors.surface, borderColor: colors.border, borderBottomLeftRadius: 4 },
-            isProofMsg && { borderWidth: 1.5, borderColor: isMe ? '#60A5FA' : '#10B981' },
+            isProofMsg && { borderWidth: 1.5, borderColor: isMe ? '#A7F3D0' : '#10B981' },
             isLocationReleaseMsg && { borderWidth: 1.5, borderColor: '#10B981', backgroundColor: isDark ? '#064E3B' : '#ECFDF5' },
             isHighlight && { borderWidth: 2, borderColor: '#F59E0B' },
           ]}
@@ -735,9 +736,9 @@ const ChatScreen = (props) => {
         style={{ flex: 1 }}
         ListEmptyComponent={
           requiresInitialProof ? (
-            <View style={[styles.proofCard, { backgroundColor: colors.surface, borderColor: isDark ? '#2563EB' : '#93C5FD' }]}>
-              <View style={[styles.proofBadge, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF' }]}>
-                <MaterialIcons name="verified-user" size={20} color="#2563EB" />
+            <View style={[styles.proofCard, { backgroundColor: colors.surface, borderColor: isDark ? colors.primary : COLORS.primaryBorder }]}>
+              <View style={[styles.proofBadge, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.2)' : COLORS.primaryLight }]}>
+                <MaterialIcons name="verified-user" size={20} color={colors.primary} />
                 <Text style={[styles.proofBadgeText, { color: colors.primary }]}>Comprovação Obrigatória</Text>
               </View>
 
@@ -1033,7 +1034,7 @@ const styles = StyleSheet.create({
   mainWrapper: { flex: 1 },
   chatHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, height: 60, borderBottomWidth: 1 },
   headerBackBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)', marginRight: 10 },
-  chatAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#EFF6FF', overflow: 'hidden', marginRight: 10, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)' },
+  chatAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.primaryLight, overflow: 'hidden', marginRight: 10, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)' },
   chatAvatarImage: { width: 40, height: 40, borderRadius: 20, resizeMode: 'cover' },
   chatHeaderContent: { flex: 1, minWidth: 0 },
   chatHeaderName: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
@@ -1088,12 +1089,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     borderRadius: 10,
     paddingVertical: 8,
     paddingHorizontal: 12,
     marginTop: 4,
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3,

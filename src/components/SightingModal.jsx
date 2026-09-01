@@ -18,6 +18,7 @@ import { MaterialIcons, Feather, FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import Button from './Button';
 import MapLocationPicker from './MapLocationPicker';
+import COLORS from '../constants/theme';
 
 const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
   const [description, setDescription] = useState('');
@@ -128,7 +129,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
                   <View style={styles.header}>
                     <View style={styles.headerTitleRow}>
                       <View style={styles.iconCircle}>
-                        <MaterialIcons name="visibility" size={20} color="#2563EB" />
+                        <MaterialIcons name="visibility" size={20} color={COLORS.primary} />
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.title}>Compartilhar Informação</Text>
@@ -157,7 +158,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
               <Text style={styles.inputLabel}>Onde foi visto?</Text>
               <View style={styles.locationCard}>
                 <View style={styles.locationCardHeader}>
-                  <MaterialIcons name="location-on" size={20} color="#2563EB" />
+                  <MaterialIcons name="location-on" size={20} color={COLORS.primary} />
                   <Text style={styles.locationCardTitle}>
                     {location ? 'Localização Selecionada' : 'Marcar no mapa'}
                   </Text>
@@ -209,7 +210,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
                 </View>
               ) : (
                 <TouchableOpacity onPress={handlePickImage} style={styles.uploadBox} activeOpacity={0.7}>
-                  <Feather name="camera" size={22} color="#2563EB" />
+                  <Feather name="camera" size={22} color={COLORS.primary} />
                   <Text style={styles.uploadText}>
                     {uploading ? 'Carregando foto...' : 'Adicionar foto da informação'}
                   </Text>
@@ -280,7 +281,7 @@ const SightingModal = ({ visible, onClose, onSubmit, loading }) => {
                 style={styles.button}
               />
             </View>
-            {loading && <ActivityIndicator style={{ marginTop: 8 }} color="#2563EB" />}
+            {loading && <ActivityIndicator style={{ marginTop: 8 }} color={COLORS.primary} />}
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -342,7 +343,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -405,29 +406,29 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   locationPreview: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     borderRadius: 8,
     padding: 10,
     marginBottom: 8,
     borderLeftWidth: 3,
-    borderLeftColor: '#2563EB',
+    borderLeftColor: COLORS.primary,
   },
   locationText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#1E40AF',
+    color: COLORS.primaryDark,
     lineHeight: 18,
   },
   coordsText: {
     fontSize: 11,
-    color: '#3B82F6',
+    color: COLORS.primary,
     marginTop: 2,
   },
   mapButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
     paddingVertical: 9,
     paddingHorizontal: 14,

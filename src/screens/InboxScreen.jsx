@@ -134,7 +134,7 @@ const InboxScreen = () => {
       <View style={[
         styles.convBtn,
         { backgroundColor: colors.card, borderColor: colors.cardBorder },
-        isSelected && { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' },
+        isSelected && { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight },
       ]}>
         <TouchableOpacity
           onPress={() => navigation.navigate('ChatScreen', { conversation: item })}

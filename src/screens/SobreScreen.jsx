@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import * as storiesService from '../services/stories';
 import OptimizedImage from '../components/OptimizedImage';
+import COLORS from '../constants/theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -269,8 +270,8 @@ const SobreScreen = ({ navigation }) => {
           <View style={styles.stepsColumn}>
             {/* Passo 1 */}
             <View style={[styles.stepItemCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-              <View style={[styles.stepNumberBadge, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
-                <Text style={[styles.stepNumberText, { color: '#2563EB' }]}>1</Text>
+              <View style={[styles.stepNumberBadge, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : COLORS.primaryLight, borderColor: isDark ? colors.primary : COLORS.primaryBorder }]}>
+                <Text style={[styles.stepNumberText, { color: colors.primary }]}>1</Text>
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={[styles.stepItemTitle, { color: colors.text }]}>Cadastre com Foto & Local</Text>
@@ -295,7 +296,7 @@ const SobreScreen = ({ navigation }) => {
 
             {/* Passo 3 */}
             <View style={[styles.stepItemCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-              <View style={[styles.stepNumberBadge, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+              <View style={[styles.stepNumberBadge, { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5', borderColor: '#A7F3D0' }]}>
                 <Text style={[styles.stepNumberText, { color: '#059669' }]}>3</Text>
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
@@ -315,8 +316,8 @@ const SobreScreen = ({ navigation }) => {
             style={[styles.quickTile, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
             activeOpacity={0.85}
           >
-            <View style={[styles.quickIconCircle, { backgroundColor: '#EFF6FF' }]}>
-              <MaterialIcons name="map" size={22} color="#2563EB" />
+            <View style={[styles.quickIconCircle, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : COLORS.primaryLight }]}>
+              <MaterialIcons name="map" size={22} color={colors.primary} />
             </View>
             <Text style={[styles.quickTileTitle, { color: colors.text }]}>Mapa Interativo</Text>
             <Text style={[styles.quickTileSub, { color: colors.textMuted }]}>Explorar por raio e radar GPS</Text>

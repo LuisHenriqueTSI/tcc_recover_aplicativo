@@ -21,6 +21,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { calculatePasswordStrength } from './RegisterScreen';
+import COLORS from '../constants/theme';
 
 export default function EsqueciSenhaScreen({ navigation, route }) {
   const { user } = useAuth();
@@ -244,7 +245,7 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
           {/* ======================================================== */}
           {step === 1 && (
             <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-              <View style={[styles.iconCircle, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF' }]}>
+              <View style={[styles.iconCircle, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : COLORS.primaryLight }]}>
                 <MaterialIcons name="phone-android" size={32} color={colors.primary} />
               </View>
 
@@ -270,9 +271,9 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                 </View>
               </View>
 
-              <View style={styles.securityBadge}>
-                <MaterialIcons name="shield" size={18} color="#2563EB" style={{ marginRight: 8 }} />
-                <Text style={styles.securityBadgeText}>
+              <View style={[styles.securityBadge, { backgroundColor: isDark ? '#091512' : COLORS.primaryLight, borderColor: isDark ? '#1C362D' : COLORS.primaryBorder }]}>
+                <MaterialIcons name="shield" size={18} color={COLORS.primary} style={{ marginRight: 8 }} />
+                <Text style={[styles.securityBadgeText, { color: isDark ? '#34D399' : COLORS.primaryDark }]}>
                   Processo protegido com criptografia de uso único.
                 </Text>
               </View>
@@ -284,14 +285,55 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                 activeOpacity={0.85}
               >
                 {loading ? (
-                  <ActivityIndicator color="#FFFFFF" />
+                  <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
                   <>
-                    <Text style={styles.primaryButtonText}>Receber código no WhatsApp</Text>
-                    <MaterialIcons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />
+                    <MaterialIcons name="send" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                    <Text style={styles.primaryButtonText}>Enviar Código por WhatsApp</Text>
                   </>
                 )}
               </TouchableOpacity>
+
+              {/* Múltiplas contas vinculadas ao mesmo número */}
+              {accounts.length > 1 && (
+                <View style={[styles.multiAccountBox, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: colors.border }]}>
+                  <Text style={[styles.multiAccountTitle, { color: colors.textSecondary }]}>Selecione a conta que deseja redefinir:</Text>
+                  {accounts.map((acc) => {
+                    const isSelected = selectedAccount?.id === acc.id;
+                    return (
+                      <TouchableOpacity
+                        key={acc.id}
+                        onPress={() => setSelectedAccount(acc)}
+                        style={[
+                          styles.accountOption,
+                          { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: colors.border },
+                          isSelected && [styles.accountOptionSelected, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : COLORS.primaryLight, borderColor: colors.primary }],
+                        ]}
+                        activeOpacity={0.8}
+                      >
+                        <View style={[styles.accountAvatar, isSelected && styles.accountAvatarSelected]}>
+                          <Text style={[styles.accountAvatarText, isSelected && styles.accountAvatarTextSelected]}>
+                            {acc.name ? acc.name[0].toUpperCase() : 'U'}
+                          </Text>
+                        </View>
+                        <View style={{ flex: 1, marginLeft: 10 }}>
+                          <Text style={[styles.accountName, { color: colors.text }, isSelected && styles.accountNameSelected]} numberOfLines={1}>
+                            {acc.name || 'Usuário'}
+                          </Text>
+                          <Text style={[styles.accountEmail, { color: colors.textSecondary }]} numberOfLines={1}>
+                            {acc.maskedEmail || acc.email}
+                          </Text>
+                        </View>
+                        <MaterialIcons
+                          name={isSelected ? 'radio-button-checked' : 'radio-button-unchecked'}
+                          size={20}
+                          color={isSelected ? colors.primary : colors.textMuted}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
             </View>
           )}
 
@@ -339,7 +381,7 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                         style={[
                           styles.accountOption,
                           { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: colors.border },
-                          isSelected && [styles.accountOptionSelected, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF', borderColor: colors.primary }],
+                          isSelected && [styles.accountOptionSelected, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : COLORS.primaryLight, borderColor: colors.primary }],
                         ]}
                         activeOpacity={0.8}
                       >
@@ -606,7 +648,7 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
   },
   header: {
     height: 56,
@@ -614,7 +656,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
   },
   backButton: {
     width: 38,
@@ -659,8 +701,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepIndicatorActive: {
-    backgroundColor: '#2563EB',
-    shadowColor: '#2563EB',
+    backgroundColor: COLORS.primary,
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.28,
     shadowRadius: 5,
@@ -682,7 +724,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   stepLineActive: {
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
   },
   stepLabel: {
     color: '#64748B',
@@ -743,7 +785,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
@@ -766,10 +808,10 @@ const styles = StyleSheet.create({
   highlightPhone: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#2563EB',
+    color: COLORS.primary,
     textAlign: 'center',
     marginBottom: 16,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 10,
@@ -800,8 +842,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   accountOptionSelected: {
-    borderColor: '#2563EB',
-    backgroundColor: '#EFF6FF',
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
   },
   accountAvatar: {
     width: 38,
@@ -812,7 +854,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   accountAvatarSelected: {
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
   },
   accountAvatarText: {
     color: '#475569',
@@ -828,7 +870,7 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   accountNameSelected: {
-    color: '#2563EB',
+    color: COLORS.primary,
   },
   accountEmail: {
     fontSize: 12,
@@ -869,7 +911,7 @@ const styles = StyleSheet.create({
   codeInput: {
     backgroundColor: '#F8FAFC',
     borderWidth: 2,
-    borderColor: '#2563EB',
+    borderColor: COLORS.primary,
     borderRadius: 14,
     height: 56,
     fontSize: 26,
@@ -881,27 +923,27 @@ const styles = StyleSheet.create({
   securityBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     padding: 10,
     borderRadius: 10,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#DBEAFE',
+    borderColor: COLORS.primaryBorder,
   },
   securityBadgeText: {
-    color: '#1E40AF',
+    color: COLORS.primaryDark,
     fontSize: 12,
     fontWeight: '600',
     flex: 1,
   },
   primaryButton: {
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     height: 50,
     borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.28,
     shadowRadius: 8,
@@ -929,7 +971,7 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   resendText: {
-    color: '#2563EB',
+    color: COLORS.primary,
     fontSize: 13.5,
     fontWeight: '700',
   },

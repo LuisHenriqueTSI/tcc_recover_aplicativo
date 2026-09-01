@@ -1092,7 +1092,7 @@ const MapScreen = ({ route, navigation }) => {
                   style={{ width: 26, height: 26, borderRadius: 13, marginRight: 7, backgroundColor: '#E2E8F0' }}
                 />
               ) : (
-                <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center', marginRight: 7 }}>
+                <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', marginRight: 7 }}>
                   <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 11 }}>
                     {ownerName[0]?.toUpperCase()}
                   </Text>
@@ -1105,9 +1105,9 @@ const MapScreen = ({ route, navigation }) => {
 
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               {selectedDistanceKm != null && (
-                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
-                  <MaterialIcons name="near-me" size={11} color="#2563EB" style={{ marginRight: 2 }} />
-                  <Text style={{ fontSize: 10.5, fontWeight: '700', color: '#1D4ED8' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : COLORS.primaryLight, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                  <MaterialIcons name="near-me" size={11} color={colors.primary} style={{ marginRight: 2 }} />
+                  <Text style={{ fontSize: 10.5, fontWeight: '700', color: colors.primaryDark }}>
                     {selectedDistanceKm < 1 ? '< 1 km' : `${selectedDistanceKm < 10 ? selectedDistanceKm.toFixed(1) : Math.round(selectedDistanceKm)} km`}
                   </Text>
                 </View>
@@ -1248,15 +1248,15 @@ const MapScreen = ({ route, navigation }) => {
                     <View
                       key={chip.key}
                       style={{
-                        backgroundColor: '#EFF6FF',
+                        backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : COLORS.primaryLight,
                         borderRadius: 7,
                         paddingHorizontal: 7,
                         paddingVertical: 2.5,
                         borderWidth: 1,
-                        borderColor: '#BFDBFE',
+                        borderColor: isDark ? colors.primary : COLORS.primaryBorder,
                       }}
                     >
-                      <Text style={{ fontSize: 11, color: '#1E40AF', fontWeight: '600' }}>
+                      <Text style={{ fontSize: 11, color: colors.primaryDark, fontWeight: '600' }}>
                         {chip.text}
                       </Text>
                     </View>
@@ -1370,16 +1370,16 @@ const MapScreen = ({ route, navigation }) => {
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: '#F8FAFC',
+            backgroundColor: COLORS.primaryLight,
             padding: 8,
             borderRadius: 10,
             borderWidth: 1,
-            borderColor: '#E2E8F0',
+            borderColor: COLORS.primaryBorder,
             marginBottom: 8,
           }}>
-            <MaterialIcons name="place" size={17} color="#2563EB" style={{ marginRight: 6 }} />
+            <MaterialIcons name="place" size={17} color={COLORS.primary} style={{ marginRight: 6 }} />
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 10.5, fontWeight: '800', color: '#2563EB', textTransform: 'uppercase', letterSpacing: 0.3, marginBottom: 1 }}>
+              <Text style={{ fontSize: 10.5, fontWeight: '800', color: COLORS.primary, textTransform: 'uppercase', letterSpacing: 0.3, marginBottom: 1 }}>
                 Endereço do Animal Visto na Rua
               </Text>
               <Text style={{ fontSize: 12, color: '#1E293B', fontWeight: '700' }} numberOfLines={2}>
@@ -1424,11 +1424,11 @@ const MapScreen = ({ route, navigation }) => {
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: routeCoordinates.length > 0 ? '#16A34A' : '#2563EB',
+                backgroundColor: routeCoordinates.length > 0 ? '#16A34A' : COLORS.primary,
                 borderRadius: 12,
                 paddingHorizontal: 12,
                 paddingVertical: 10,
-                shadowColor: routeCoordinates.length > 0 ? '#16A34A' : '#2563EB',
+                shadowColor: routeCoordinates.length > 0 ? '#16A34A' : COLORS.primary,
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.25,
                 shadowRadius: 4,
@@ -1507,8 +1507,8 @@ const MapScreen = ({ route, navigation }) => {
               onPress={() => startNavigation()}
               activeOpacity={0.75}
             >
-              <MaterialIcons name="my-location" size={18} color="#2563EB" style={{ marginRight: 4 }} />
-              <Text style={{ fontSize: 12.5, fontWeight: '700', color: '#1E40AF' }}>Recentralizar</Text>
+              <MaterialIcons name="my-location" size={18} color={COLORS.primary} style={{ marginRight: 4 }} />
+              <Text style={{ fontSize: 12.5, fontWeight: '700', color: COLORS.primaryDark }}>Recentralizar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -1666,7 +1666,7 @@ const MapScreen = ({ route, navigation }) => {
               </View>
 
               <View style={styles.infoRowItem}>
-                <View style={[styles.infoRowIcon, { backgroundColor: '#EFF6FF' }]}>
+                <View style={[styles.infoRowIcon, { backgroundColor: COLORS.primaryLight }]}>
                   <Text style={{ fontSize: 16 }}>📋</Text>
                 </View>
                 <View style={{ flex: 1 }}>
@@ -1923,7 +1923,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 12,
     marginTop: 12,
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -1949,19 +1949,19 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     borderWidth: 1,
-    borderColor: '#DBEAFE',
+    borderColor: COLORS.primaryBorder,
   },
   streetNoticeIconCircle: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 6,
   },
   streetNoticeText: {
-    color: '#1E40AF',
+    color: COLORS.primaryDark,
     fontSize: 11,
     fontWeight: '700',
   },
@@ -1997,12 +1997,12 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: COLORS.primaryBorder,
   },
   modalHeaderTitle: {
     fontSize: 16,

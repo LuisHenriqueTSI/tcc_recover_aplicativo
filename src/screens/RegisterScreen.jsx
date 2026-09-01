@@ -16,6 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import COLORS from '../constants/theme';
 import Button from '../components/Button';
 import Input from '../components/Input';
 
@@ -297,7 +298,7 @@ const RegisterScreen = ({ navigation }) => {
 
         {/* Top App Logo */}
         <View style={styles.brandHeroContainer}>
-          <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#DBEAFE' }]}>
+          <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder }]}>
             <Image
               source={require('../assets/logo_wefind.png')}
               style={styles.logoImage}
@@ -550,7 +551,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 2,
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.22,
     shadowRadius: 10,
@@ -695,7 +696,7 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     paddingVertical: 11,
     marginTop: 4,
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,

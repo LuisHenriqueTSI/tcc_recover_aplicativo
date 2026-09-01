@@ -16,6 +16,7 @@ import * as Sharing from 'expo-sharing';
 import * as itemsService from '../services/items';
 import ShareCardFlyer from './ShareCardFlyer';
 import { useTheme } from '../contexts/ThemeContext';
+import COLORS from '../constants/theme';
 
 const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
   const { colors, isDark } = useTheme();
@@ -234,12 +235,12 @@ const styles = StyleSheet.create({
     borderTopColor: '#F1F5F9',
   },
   primaryShareBtn: {
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 3,

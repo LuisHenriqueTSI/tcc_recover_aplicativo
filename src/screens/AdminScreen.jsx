@@ -22,6 +22,7 @@ import * as userService from '../services/user';
 import * as storiesService from '../services/stories';
 import * as notificationsService from '../services/notifications';
 import { triggerLocalNotification } from '../services/pushNotifications';
+import COLORS from '../constants/theme';
 import {
   listPendingVerifications,
   approveVerification,
@@ -373,8 +374,8 @@ const AdminScreen = ({ navigation }) => {
       label: 'Usuários',
       value: statistics?.total_users || usersList.length,
       icon: 'people-outline',
-      color: '#2563EB',
-      background: '#EFF6FF',
+      color: COLORS.primary,
+      background: COLORS.primaryLight,
     },
     {
       label: 'Publicações',
@@ -608,7 +609,7 @@ const AdminScreen = ({ navigation }) => {
           {/* FERRAMENTAS DE TESTE & DIAGNÓSTICO (EXCLUSIVO ADMIN) */}
           <View style={[styles.testSectionCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder, marginTop: 16 }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-              <MaterialIcons name="science" size={20} color="#2563EB" style={{ marginRight: 6 }} />
+              <MaterialIcons name="science" size={20} color={colors.primary} style={{ marginRight: 6 }} />
               <Text style={[styles.sectionTitle, { color: colors.text }]}>Testes & Diagnóstico</Text>
             </View>
             <Text style={[styles.sectionSubtitle, { color: colors.textSecondary, marginBottom: 12 }]}>
@@ -641,17 +642,17 @@ const AdminScreen = ({ navigation }) => {
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF',
+                backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight,
                 borderWidth: 1,
-                borderColor: isDark ? '#2563EB' : '#BFDBFE',
+                borderColor: isDark ? colors.primary : COLORS.primaryBorder,
                 borderRadius: 12,
                 paddingVertical: 12,
                 paddingHorizontal: 16,
               }}
               activeOpacity={0.8}
             >
-              <MaterialIcons name="send" size={17} color="#2563EB" style={{ marginRight: 6 }} />
-              <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#2563EB' }}>
+              <MaterialIcons name="send" size={17} color={colors.primary} style={{ marginRight: 6 }} />
+              <Text style={{ fontSize: 13.5, fontWeight: '800', color: colors.primary }}>
                 Testar Disparo de Notificação / WhatsApp
               </Text>
             </TouchableOpacity>

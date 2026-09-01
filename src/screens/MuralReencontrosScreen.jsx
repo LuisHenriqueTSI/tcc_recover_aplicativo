@@ -20,6 +20,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import * as itemsService from '../services/items';
 import * as storiesService from '../services/stories';
 import OptimizedImage from '../components/OptimizedImage';
+import COLORS from '../constants/theme';
 
 const DEFAULT_FEATURED_STORIES = [
   {
@@ -247,7 +248,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
 
           {/* Linha com Ícone + Badge de Check + Contador */}
           <View style={styles.placarHeroRow}>
-            <View style={[styles.placarIconBadge, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : '#DBEAFE' }]}>
+            <View style={[styles.placarIconBadge, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder }]}>
               <MaterialIcons name="pets" size={30} color={colors.primary} />
               <View style={styles.placarCheckBadge}>
                 <MaterialIcons name="check" size={12} color="#FFFFFF" />
@@ -296,7 +297,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
                   styles.placarMoreButton,
                   {
                     backgroundColor: colors.primaryLight,
-                    borderColor: isDark ? colors.cardBorder : '#DBEAFE',
+                    borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder,
                     marginLeft: -12,
                     zIndex: 1,
                   },
@@ -441,7 +442,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
 
         {/* Botão de Ver Todos os Reencontros no Rodapé */}
         <TouchableOpacity
-          style={[styles.fullRecoveredBtn, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : '#DBEAFE' }]}
+          style={[styles.fullRecoveredBtn, { backgroundColor: colors.primaryLight, borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder }]}
           onPress={() => navigation.navigate('RecoveredPets')}
           activeOpacity={0.8}
         >
@@ -486,7 +487,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
                   styles.photoPickerBox,
                   {
                     backgroundColor: colors.primaryLight,
-                    borderColor: isDark ? colors.cardBorder : '#93C5FD',
+                    borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder,
                   },
                 ]}
                 activeOpacity={0.8}

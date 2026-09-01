@@ -47,7 +47,7 @@ const AjudaSuporteScreen = () => {
                 activeOpacity={0.75}
               >
                 <Text style={[styles.question, { color: colors.text }]}>{faq.question}</Text>
-                <View style={[styles.faqIconCircle, { backgroundColor: isOpen ? colors.primary : (isDark ? '#1E293B' : '#EFF6FF') }]}>
+                <View style={[styles.faqIconCircle, { backgroundColor: isOpen ? colors.primary : (isDark ? '#1E293B' : colors.primaryLight) }]}>
                   <MaterialIcons
                     name={isOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
                     size={20}
@@ -76,7 +76,7 @@ const AjudaSuporteScreen = () => {
           onPress={() => openContact('mailto:suporte@wefindapp.com')}
           activeOpacity={0.8}
         >
-          <View style={[styles.contactIcon, { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF' }]}>
+          <View style={[styles.contactIcon, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight }]}>
             <MaterialIcons name="mail-outline" size={24} color={colors.primary} />
           </View>
           <Text style={[styles.contactTitle, { color: colors.text }]}>E-mail</Text>

@@ -19,6 +19,7 @@ import { MaterialIcons, Ionicons, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../contexts/ThemeContext';
 import { submitOwnershipProof } from '../services/proofVerification';
+import COLORS from '../constants/theme';
 
 export default function ProofUploadModal({
   visible,
@@ -154,8 +155,8 @@ export default function ProofUploadModal({
             >
               {/* Header */}
               <View style={styles.headerRow}>
-                <View style={[styles.iconBadge, { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF' }]}>
-                  <MaterialIcons name="verified-user" size={24} color="#2563EB" />
+                <View style={[styles.iconBadge, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.2)' : COLORS.primaryLight }]}>
+                  <MaterialIcons name="verified-user" size={24} color={COLORS.primary} />
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={[styles.title, { color: colors.text }]}>

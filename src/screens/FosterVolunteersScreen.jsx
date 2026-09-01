@@ -124,7 +124,7 @@ const FosterVolunteersScreen = ({ navigation, route }) => {
         activeOpacity={0.85}
       >
         <View style={styles.beVolunteerLeft}>
-          <View style={[styles.beVolunteerIcon, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF' }]}>
+          <View style={[styles.beVolunteerIcon, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.2)' : colors.primaryLight }]}>
             <MaterialIcons name="home-work" size={22} color={colors.primary} />
           </View>
           <View style={{ flex: 1 }}>
@@ -216,7 +216,7 @@ const FosterVolunteersScreen = ({ navigation, route }) => {
             {item.avatarUrl ? (
               <Image source={{ uri: item.avatarUrl }} style={styles.avatarImage} />
             ) : (
-              <View style={[styles.avatarPlaceholder, { backgroundColor: isDark ? '#1E293B' : '#DBEAFE' }]}>
+              <View style={[styles.avatarPlaceholder, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.2)' : colors.primaryLight }]}>
                 <Text style={[styles.avatarInitial, { color: colors.primary }]}>{initial}</Text>
               </View>
             )}
@@ -236,7 +236,7 @@ const FosterVolunteersScreen = ({ navigation, route }) => {
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
-              <MaterialIcons name="place" size={14} color="#2563EB" style={{ marginRight: 2 }} />
+              <MaterialIcons name="place" size={14} color={colors.primary} style={{ marginRight: 2 }} />
               <Text style={[styles.locationText, { color: colors.textSecondary }]} numberOfLines={1}>
                 {[item.neighborhood, item.city, item.state].filter(Boolean).join(' • ') || 'Localização não informada'}
               </Text>
@@ -626,7 +626,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyActionBtn: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#059669',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 12,

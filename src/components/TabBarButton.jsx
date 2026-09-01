@@ -1,14 +1,19 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from '../contexts/ThemeContext';
+import COLORS from '../constants/theme';
 
-const TabBarButton = ({ onPress, icon, size = 36, color = '#fff', style }) => (
-  <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={[styles.button, style]}>
-    <View style={styles.circle}>
-      <MaterialIcons name={icon} size={size} color={color} />
-    </View>
-  </TouchableOpacity>
-);
+const TabBarButton = ({ onPress, icon, size = 36, color = '#fff', style }) => {
+  const { colors } = useTheme();
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={[styles.button, style]}>
+      <View style={[styles.circle, { backgroundColor: colors.primary || COLORS.primary }]}>
+        <MaterialIcons name={icon} size={size} color={color} />
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
   button: {
@@ -21,7 +26,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

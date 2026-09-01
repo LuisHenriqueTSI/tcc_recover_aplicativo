@@ -27,6 +27,7 @@ import { formatarDataMembro } from './_dateUtils';
 
 import ShareButton from '../components/ShareButton';
 import ShareFlyerModal from '../components/ShareFlyerModal';
+import COLORS from '../constants/theme';
 
 import SightingModal from '../components/SightingModal';
 import ProofUploadModal from '../components/ProofUploadModal';
@@ -147,7 +148,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
     navigation.setOptions({
       title: 'Detalhes',
       headerStyle: {
-        backgroundColor: colors.headerBg || '#1E3A8A',
+        backgroundColor: colors.headerBg || colors.primary,
       },
       headerTintColor: '#fff',
       headerTitleStyle: {
@@ -1098,11 +1099,11 @@ const ItemDetailScreen = ({ route, navigation }) => {
       <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <View style={[styles.sectionHeaderRow, { flex: 1 }]}>
-            <View style={[styles.sectionIconWrap, { backgroundColor: item.status === 'lost' ? (isDark ? '#1E293B' : '#EFF6FF') : colors.primaryLight }]}>
+            <View style={[styles.sectionIconWrap, { backgroundColor: item.status === 'lost' ? (isDark ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5') : (isDark ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5') }]}>
               <MaterialIcons
                 name={item.status === 'lost' ? 'security' : (item?.extra_fields?.found_custody === 'spotted' ? 'add-location-alt' : 'home')}
                 size={20}
-                color={item.status === 'lost' ? '#2563EB' : colors.primary}
+                color={'#059669'}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -1416,8 +1417,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      backgroundColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF',
-                      borderColor: isDark ? 'rgba(37, 99, 235, 0.3)' : '#BFDBFE',
+                      backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight,
+                      borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : COLORS.primaryBorder,
                       borderWidth: 1.5,
                       borderRadius: 14,
                       paddingVertical: 12,
@@ -1425,8 +1426,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
                     onPress={() => navigation.navigate('FosterVolunteers', { city: item.city || item.address || '', species: item.species || 'all' })}
                     activeOpacity={0.85}
                   >
-                    <MaterialIcons name="groups" size={19} color="#2563EB" style={{ marginRight: 6 }} />
-                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#2563EB' }}>
+                    <MaterialIcons name="groups" size={19} color={colors.primary} style={{ marginRight: 6 }} />
+                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: colors.primary }}>
                       🤝 Buscar Lar Temporário na Região
                     </Text>
                   </TouchableOpacity>
@@ -1477,7 +1478,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
               )}
 
               <TouchableOpacity
-                style={[styles.ownerActionBtn, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF', borderColor: colors.border }]}
+                style={[styles.ownerActionBtn, { backgroundColor: isDark ? '#1E293B' : colors.primaryLight, borderColor: colors.border }]}
                 onPress={handleEditItem}
               >
                 <MaterialIcons name="edit" size={17} color={colors.primary} />
@@ -1677,7 +1678,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   if (!displayLoc) return null;
 
                   return (
-                    <View style={[styles.commentLocationChip, { backgroundColor: isDark ? '#0F172A' : '#EFF6FF' }]}>
+                    <View style={[styles.commentLocationChip, { backgroundColor: isDark ? '#0F172A' : colors.primaryLight }]}>
                       <MaterialIcons name="location-on" size={14} color={colors.primary} style={{ marginRight: 4 }} />
                       <Text style={[styles.commentLocationText, { color: colors.primary }]}>{displayLoc}</Text>
                     </View>
@@ -1997,7 +1998,7 @@ const styles = StyleSheet.create({
 
   // Owner Card
   ownerHeader: { flexDirection: 'row', alignItems: 'center' },
-  ownerAvatarImage: { width: 46, height: 46, borderRadius: 23, marginRight: 12, backgroundColor: '#EFF6FF' },
+  ownerAvatarImage: { width: 46, height: 46, borderRadius: 23, marginRight: 12, backgroundColor: COLORS.primaryLight },
   ownerAvatarFallback: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   ownerAvatarInitial: { color: '#FFFFFF', fontSize: 19, fontWeight: '800' },
   ownerInfoTextContainer: { flex: 1 },
@@ -2014,7 +2015,7 @@ const styles = StyleSheet.create({
 
   // Action CTAs
   visitorActionsBlock: { marginTop: 14 },
-  primaryChatCta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 14, paddingVertical: 14, shadowColor: '#2563EB', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 4 },
+  primaryChatCta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 14, paddingVertical: 14, shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 4 },
   primaryChatCtaText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
   reportBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 12, paddingVertical: 6 },
   reportBtnText: { color: '#DC2626', fontSize: 12.5, fontWeight: '700' },
@@ -2044,7 +2045,7 @@ const styles = StyleSheet.create({
   // Comment Bubble
   commentBubble: { borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1 },
   commentHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
-  commentAvatarImg: { width: 34, height: 34, borderRadius: 17, marginRight: 8, backgroundColor: '#EFF6FF' },
+  commentAvatarImg: { width: 34, height: 34, borderRadius: 17, marginRight: 8, backgroundColor: COLORS.primaryLight },
   commentAvatarFallback: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginRight: 8 },
   commentAvatarInitial: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
   commentAuthorName: { fontSize: 13.5, fontWeight: '700' },

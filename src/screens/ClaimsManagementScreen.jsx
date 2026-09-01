@@ -15,6 +15,7 @@ import { getPendingClaimsForItem, approveClaim, rejectClaim } from '../services/
 import { listItems } from '../services/items';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import COLORS from '../constants/theme';
 
 export default function ClaimsManagementScreen({ navigation }) {
   const { user } = useAuth();
@@ -143,7 +144,7 @@ export default function ClaimsManagementScreen({ navigation }) {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#2563EB" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemTabActive: {
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
   },
   itemTabText: {
     fontSize: 14,
@@ -410,7 +411,7 @@ const styles = StyleSheet.create({
   },
   itemLabel: {
     fontSize: 12,
-    color: '#2563EB',
+    color: COLORS.primary,
     marginTop: 6,
     fontWeight: '600',
   },

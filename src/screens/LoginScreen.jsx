@@ -16,6 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import COLORS from '../constants/theme';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import { getFriendlyAuthErrorMessage } from '../utils/authErrors';
@@ -99,7 +100,7 @@ const LoginScreen = ({ navigation }) => {
       >
         {/* Top App Logo */}
         <View style={styles.brandHeroContainer}>
-          <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : '#DBEAFE' }]}>
+          <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder }]}>
             <Image
               source={require('../assets/logo_wefind.png')}
               style={styles.logoImage}
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 2,
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.22,
     shadowRadius: 12,
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 16,
     paddingVertical: 14,
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 8,

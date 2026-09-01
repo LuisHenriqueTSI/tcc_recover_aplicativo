@@ -253,10 +253,10 @@ const FosterVolunteerModal = ({ visible, onClose, onSaved }) => {
                             styles.optionChip,
                             {
                               backgroundColor: selected
-                                ? (isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF')
+                                ? (isDark ? 'rgba(5, 150, 105, 0.2)' : colors.primaryLight)
                                 : (isDark ? '#1E293B' : '#F1F5F9'),
                               borderColor: selected
-                                ? '#2563EB'
+                                ? colors.primary
                                 : (isDark ? '#334155' : '#E2E8F0'),
                             }
                           ]}
@@ -265,7 +265,7 @@ const FosterVolunteerModal = ({ visible, onClose, onSaved }) => {
                         >
                           <Text style={[
                             styles.optionChipText,
-                            { color: selected ? '#1D4ED8' : colors.text }
+                            { color: selected ? colors.primaryDark : colors.text }
                           ]}>
                             {item.label}
                           </Text>

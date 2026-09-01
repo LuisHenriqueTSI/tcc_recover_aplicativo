@@ -158,8 +158,8 @@ const ProfileScreen = ({ navigation }) => {
       label: 'Sobre o WeFIND',
       description: 'Conheça a plataforma e como funciona',
       icon: 'info',
-      iconColor: '#3B82F6',
-      bgColor: '#EFF6FF',
+      iconColor: colors.primary,
+      bgColor: colors.primaryLight,
       route: 'Sobre',
     },
   ];

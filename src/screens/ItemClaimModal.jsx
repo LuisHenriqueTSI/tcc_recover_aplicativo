@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import * as claimsService from '../services/itemClaims';
+import COLORS from '../constants/theme';
 
 const ItemClaimModal = ({ visible, onClose, item, userId, onSuccess }) => {
   const [message, setMessage] = useState('');
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 8,
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
   },
   submitText: {
     color: '#fff',

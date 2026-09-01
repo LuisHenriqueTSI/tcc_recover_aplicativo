@@ -13,6 +13,7 @@ import MapView, { Marker, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { MaterialIcons } from '@expo/vector-icons';
 import { states } from '../lib/br-locations';
+import COLORS from '../constants/theme';
 
 const BRAZIL_REGION = {
   latitude: -14.235,
@@ -260,22 +261,20 @@ const MapLocationPicker = ({
             {coordinate && (
               <>
                 <Marker coordinate={coordinate} />
-                {showRadius && (
-                  <Circle
-                    center={coordinate}
-                    radius={currentRadiusKm * 1000}
-                    fillColor="rgba(37, 99, 235, 0.16)"
-                    strokeColor="#2563EB"
-                    strokeWidth={2}
-                  />
-                )}
+                <Circle
+                  center={coordinate}
+                  radius={currentRadiusKm * 1000}
+                  fillColor="rgba(5, 150, 105, 0.16)"
+                  strokeColor={COLORS.primary}
+                  strokeWidth={2}
+                />
               </>
             )}
           </MapView>
 
           {(loadingLocation || geocoding) && (
             <View style={styles.loadingOverlay}>
-              <ActivityIndicator color="#2563EB" size="small" />
+              <ActivityIndicator color={COLORS.primary} size="small" />
               <Text style={styles.loadingText}>
                 {loadingLocation ? 'Obtendo sua localização...' : 'Identificando endereço...'}
               </Text>
@@ -291,7 +290,7 @@ const MapLocationPicker = ({
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.cardHeader}>
-              <MaterialIcons name="edit-location-alt" size={20} color="#2563EB" />
+              <MaterialIcons name="edit-location-alt" size={20} color={COLORS.primary} />
               <Text style={styles.cardTitle}>Endereço selecionado (editável)</Text>
             </View>
 
@@ -299,9 +298,9 @@ const MapLocationPicker = ({
             {showRadius && coordinate ? (
               <View style={styles.radiusSelectorBox}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-                  <MaterialIcons name="radar" size={17} color="#2563EB" style={{ marginRight: 6 }} />
+                  <MaterialIcons name="radar" size={17} color={COLORS.primary} style={{ marginRight: 6 }} />
                   <Text style={styles.radiusLabel}>
-                    Raio visível no mapa: <Text style={{ fontWeight: '800', color: '#2563EB' }}>{currentRadiusKm} km</Text>
+                    Raio visível no mapa: <Text style={{ fontWeight: '800', color: COLORS.primary }}>{currentRadiusKm} km</Text>
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
@@ -310,12 +309,9 @@ const MapLocationPicker = ({
                     return (
                       <TouchableOpacity
                         key={r}
-                        onPress={() => {
-                          setCurrentRadiusKm(r);
-                          if (onRadiusChange) onRadiusChange(r);
-                        }}
                         style={[styles.radiusChip, isSel && styles.radiusChipActive]}
-                        activeOpacity={0.75}
+                        onPress={() => setCurrentRadiusKm(r)}
+                        activeOpacity={0.8}
                       >
                         <Text style={[styles.radiusChipText, isSel && styles.radiusChipTextActive]}>
                           {r} km
@@ -407,7 +403,7 @@ const MapLocationPicker = ({
               </>
             ) : (
               <View style={styles.emptyPromptBox}>
-                <MaterialIcons name="touch-app" size={24} color="#2563EB" />
+                <MaterialIcons name="touch-app" size={24} color={COLORS.primary} />
                 <Text style={styles.emptyPromptText}>
                   Toque em qualquer ponto do mapa acima para marcar seu local e preencher o endereço completo.
                 </Text>
@@ -447,7 +443,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: '700', color: '#111827' },
   subtitle: { marginTop: 2, color: '#6B7280', fontSize: 13 },
   closeButton: { padding: 8, paddingHorizontal: 12 },
-  closeText: { color: '#2563EB', fontWeight: '700', fontSize: 15 },
+  closeText: { color: COLORS.primary, fontWeight: '700', fontSize: 15 },
   mapContainer: { flex: 1, position: 'relative' },
   map: { width: '100%', height: '100%' },
   loadingOverlay: {
@@ -493,34 +489,34 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   radiusSelectorBox: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#DBEAFE',
+    borderColor: COLORS.primaryBorder,
   },
   radiusLabel: {
     fontSize: 12.5,
     fontWeight: '600',
-    color: '#1E40AF',
+    color: COLORS.primaryDark,
   },
   radiusChip: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: COLORS.primaryBorder,
     backgroundColor: '#FFFFFF',
   },
   radiusChipActive: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primaryDark,
   },
   radiusChipText: {
     fontSize: 11.5,
     fontWeight: '600',
-    color: '#1E40AF',
+    color: COLORS.primaryDark,
   },
   radiusChipTextActive: {
     color: '#FFFFFF',
@@ -557,7 +553,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     borderRadius: 10,
     padding: 12,
     marginVertical: 10,
@@ -565,18 +561,18 @@ const styles = StyleSheet.create({
   emptyPromptText: {
     flex: 1,
     fontSize: 13,
-    color: '#1D4ED8',
+    color: COLORS.primaryDark,
     lineHeight: 18,
   },
   confirmButton: {
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     paddingVertical: 13,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
     marginBottom: 8,
   },
-  disabledButton: { backgroundColor: '#93C5FD' },
+  disabledButton: { backgroundColor: COLORS.primaryBorder },
   confirmText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
 });
 

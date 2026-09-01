@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import * as statisticsService from '../services/statistics';
 import Card from '../components/Card';
+import COLORS from '../constants/theme';
 
 const DashboardScreen = ({ navigation }) => {
   const [statistics, setStatistics] = useState(null);
@@ -32,7 +33,7 @@ const DashboardScreen = ({ navigation }) => {
   if (loading || !statistics) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#2563EB" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2563EB',
+    color: COLORS.primary,
   },
   chartTitle: {
     fontSize: 16,

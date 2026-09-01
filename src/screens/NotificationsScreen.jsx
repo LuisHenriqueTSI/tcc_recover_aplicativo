@@ -8,6 +8,7 @@ import { listItems, cleanupExpiredItems } from '../services/items';
 import { getUserNotifications, markAllNotificationsRead, markNotificationRead, buildRenewalAlerts, createNotification } from '../services/notifications';
 import { triggerLocalNotification } from '../services/pushNotifications';
 import { renewItem } from '../services/items';
+import COLORS from '../constants/theme';
 
 function getRelativeTime(dateString) {
   if (!dateString) return '';
@@ -86,7 +87,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
       otherId: msg.otherId,
       icon: 'chat-bubble',
       iconColor: colors.primary,
-      bgColor: isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF',
+      bgColor: isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight,
     }));
 
     setMessageNotifications(mappedMessageNotifications);
@@ -114,7 +115,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
           : alert.type === 'match'
           ? '#8B5CF6'
           : alert.type === 'sighting'
-          ? '#2563EB'
+          ? colors.primary
           : '#DC2626',
         bgColor: alert.type === 'renewal_reminder'
           ? (isDark ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7')
@@ -122,7 +123,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
           ? (isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2')
           : alert.type === 'match'
           ? (isDark ? 'rgba(139, 92, 246, 0.15)' : '#F5F3FF')
-          : (isDark ? 'rgba(37, 99, 235, 0.15)' : '#EFF6FF'),
+          : (isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight),
       }));
 
     setSystemAlerts(mappedSystemAlerts);
@@ -291,7 +292,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
                   <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
                     Testar Alerta de Pet Perdido
                   </Text>
-                  <View style={{ backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#DBEAFE', paddingHorizontal: 5, paddingVertical: 1.5, borderRadius: 4 }}>
+                  <View style={{ backgroundColor: isDark ? 'rgba(5, 150, 105, 0.2)' : COLORS.primaryLight, paddingHorizontal: 5, paddingVertical: 1.5, borderRadius: 4 }}>
                     <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary }}>ADMIN</Text>
                   </View>
                 </View>
