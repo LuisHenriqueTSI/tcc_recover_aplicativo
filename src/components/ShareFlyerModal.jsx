@@ -180,10 +180,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     maxHeight: '92%',
     paddingBottom: 0,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 10,
   },
   modalHeader: {
     flexDirection: 'row',
