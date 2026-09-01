@@ -275,7 +275,7 @@ const RecoveredPetsScreen = ({ navigation }) => {
       {/* Lista de Cards */}
       {loading && !refreshing ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#059669" />
+          <ActivityIndicator size="large" color="#2E5634" />
           <Text style={styles.loadingText}>Carregando animais reencontrados...</Text>
         </View>
       ) : (
@@ -286,7 +286,7 @@ const RecoveredPetsScreen = ({ navigation }) => {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#059669']} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2E5634']} />
           }
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
@@ -357,8 +357,8 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   filterChipActive: {
-    backgroundColor: '#059669',
-    borderColor: '#047857',
+    backgroundColor: '#2E5634',
+    borderColor: '#1E3E24',
   },
   filterChipText: {
     fontSize: 12,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   topStatusBanner: {
-    backgroundColor: '#059669',
+    backgroundColor: '#2E5634',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

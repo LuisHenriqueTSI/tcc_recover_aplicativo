@@ -357,7 +357,7 @@ const ProfileScreen = ({ navigation }) => {
             <MaterialIcons
               name="home-work"
               size={20}
-              color={fosterProfile?.isActive ? '#16A34A' : '#059669'}
+              color={fosterProfile?.isActive ? '#16A34A' : '#2E5634'}
             />
           </View>
           <View style={styles.menuTextBox}>

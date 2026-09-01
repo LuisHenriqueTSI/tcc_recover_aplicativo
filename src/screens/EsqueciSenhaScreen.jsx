@@ -522,15 +522,15 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                     <View style={{ gap: 3 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <MaterialIcons name={pwdStrength.rules.hasMinLength ? 'check-circle' : 'radio-button-unchecked'} size={13} color={pwdStrength.rules.hasMinLength ? '#10B981' : colors.textMuted} />
-                        <Text style={{ fontSize: 11, color: pwdStrength.rules.hasMinLength ? '#059669' : colors.textMuted }}>Mínimo 8 caracteres</Text>
+                        <Text style={{ fontSize: 11, color: pwdStrength.rules.hasMinLength ? '#2E5634' : colors.textMuted }}>Mínimo 8 caracteres</Text>
                       </View>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <MaterialIcons name={pwdStrength.rules.hasNumber ? 'check-circle' : 'radio-button-unchecked'} size={13} color={pwdStrength.rules.hasNumber ? '#10B981' : colors.textMuted} />
-                        <Text style={{ fontSize: 11, color: pwdStrength.rules.hasNumber ? '#059669' : colors.textMuted }}>Pelo menos um número</Text>
+                        <Text style={{ fontSize: 11, color: pwdStrength.rules.hasNumber ? '#2E5634' : colors.textMuted }}>Pelo menos um número</Text>
                       </View>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <MaterialIcons name={pwdStrength.rules.hasLetters ? 'check-circle' : 'radio-button-unchecked'} size={13} color={pwdStrength.rules.hasLetters ? '#10B981' : colors.textMuted} />
-                        <Text style={{ fontSize: 11, color: pwdStrength.rules.hasLetters ? '#059669' : colors.textMuted }}>Letras maiúsculas e minúsculas</Text>
+                        <Text style={{ fontSize: 11, color: pwdStrength.rules.hasLetters ? '#2E5634' : colors.textMuted }}>Letras maiúsculas e minúsculas</Text>
                       </View>
                     </View>
                   </View>
@@ -577,7 +577,7 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
                     style={{
                       fontSize: 12,
                       fontWeight: '600',
-                      color: newPassword === confirmPassword ? '#059669' : '#EF4444',
+                      color: newPassword === confirmPassword ? '#2E5634' : '#EF4444',
                     }}
                   >
                     {newPassword === confirmPassword ? 'As senhas conferem!' : 'As senhas não conferem.'}

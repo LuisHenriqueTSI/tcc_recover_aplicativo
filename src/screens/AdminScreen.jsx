@@ -381,7 +381,7 @@ const AdminScreen = ({ navigation }) => {
       label: 'Publicações',
       value: statistics?.total_items || items.length,
       icon: 'pets',
-      color: '#059669',
+      color: '#2E5634',
       background: '#ECFDF5',
     },
     {
@@ -548,7 +548,7 @@ const AdminScreen = ({ navigation }) => {
 
           {reports.length === 0 ? (
             <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-              <Feather name="check-circle" size={32} color="#059669" style={{ marginBottom: 6 }} />
+              <Feather name="check-circle" size={32} color="#2E5634" style={{ marginBottom: 6 }} />
               <Text style={[styles.emptyTitle, { color: colors.text }]}>Tudo em dia!</Text>
               <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Nenhuma denúncia pendente para análise no momento.</Text>
             </View>
@@ -589,8 +589,8 @@ const AdminScreen = ({ navigation }) => {
                     onPress={() => handleReviewReport(report, false)}
                     disabled={processingId === report.id}
                   >
-                    <Feather name="check" size={15} color="#059669" />
-                    <Text style={[styles.keepText, { color: '#047857' }]}>Manter</Text>
+                    <Feather name="check" size={15} color="#2E5634" />
+                    <Text style={[styles.keepText, { color: '#1E3E24' }]}>Manter</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -674,7 +674,7 @@ const AdminScreen = ({ navigation }) => {
 
           {verifications.length === 0 ? (
             <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-              <MaterialIcons name="verified-user" size={36} color="#059669" style={{ marginBottom: 6 }} />
+              <MaterialIcons name="verified-user" size={36} color="#2E5634" style={{ marginBottom: 6 }} />
               <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhuma comprovação pendente</Text>
               <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
                 Todas as solicitações de posse de animais foram analisadas.
@@ -685,7 +685,7 @@ const AdminScreen = ({ navigation }) => {
               <View key={String(v.id)} style={[styles.reportCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
                 <View style={styles.reportTopRow}>
                   <View style={[styles.reportIcon, { backgroundColor: '#ECFDF5' }]}>
-                    <MaterialIcons name="verified-user" size={19} color="#059669" />
+                    <MaterialIcons name="verified-user" size={19} color="#2E5634" />
                   </View>
                   <View style={styles.reportMain}>
                     <Text style={[styles.reportTitle, { color: colors.text }]}>
@@ -696,7 +696,7 @@ const AdminScreen = ({ navigation }) => {
                     </Text>
                   </View>
                   <View style={[styles.statusBadge, { backgroundColor: v.status === 'approved' ? '#ECFDF5' : (v.status === 'rejected' ? '#FEF2F2' : '#FFFBEB') }]}>
-                    <Text style={{ fontSize: 10, fontWeight: '800', color: v.status === 'approved' ? '#059669' : (v.status === 'rejected' ? '#DC2626' : '#D97706') }}>
+                    <Text style={{ fontSize: 10, fontWeight: '800', color: v.status === 'approved' ? '#2E5634' : (v.status === 'rejected' ? '#DC2626' : '#D97706') }}>
                       {(v.status || 'PENDENTE').toUpperCase()}
                     </Text>
                   </View>
@@ -748,8 +748,8 @@ const AdminScreen = ({ navigation }) => {
                         onPress={() => handleApproveVerification(v)}
                         disabled={processingId === v.id}
                       >
-                        <MaterialIcons name="check" size={16} color="#059669" style={{ marginRight: 4 }} />
-                        <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#059669' }}>
+                        <MaterialIcons name="check" size={16} color="#2E5634" style={{ marginRight: 4 }} />
+                        <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#2E5634' }}>
                           {processingId === v.id ? 'Aprovando...' : 'Aprovar Tutela'}
                         </Text>
                       </TouchableOpacity>
@@ -800,7 +800,7 @@ const AdminScreen = ({ navigation }) => {
                   </View>
 
                   <View style={[styles.statusBadge, { backgroundColor: item.status === 'lost' ? '#FEF2F2' : (item.status === 'found' ? '#ECFDF5' : '#F1F5F9') }]}>
-                    <Text style={{ fontSize: 10, fontWeight: '800', color: item.status === 'lost' ? '#DC2626' : (item.status === 'found' ? '#059669' : '#64748B') }}>
+                    <Text style={{ fontSize: 10, fontWeight: '800', color: item.status === 'lost' ? '#DC2626' : (item.status === 'found' ? '#2E5634' : '#64748B') }}>
                       {item.status?.toUpperCase() || 'PUBLICADO'}
                     </Text>
                   </View>

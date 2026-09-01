@@ -40,6 +40,7 @@ import UserProfileScreen from '../screens/UserProfileScreen';
 import FosterVolunteersScreen from '../screens/FosterVolunteersScreen';
 import { listItems } from '../services/items';
 import { buildRenewalAlerts } from '../services/notifications';
+import { WeFindText } from '../components/WeFindBrand';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -663,12 +664,13 @@ const RootNavigator = () => {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, backgroundColor: colors.background || '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
         <Image
-          source={require('../assets/logo_wefind.png')}
-          style={{ width: 220, height: 220 }}
+          source={require('../assets/logo.png')}
+          style={{ width: 140, height: 140 }}
           resizeMode="contain"
         />
+        <WeFindText size={30} uppercase style={{ marginTop: 14, letterSpacing: -0.4 }} />
       </View>
     );
   }

@@ -132,7 +132,7 @@ const MeusAnunciosScreen = ({ navigation }) => {
               </View>
             ) : (
               <View style={[styles.tagPill, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.2)' : '#ECFDF5' }]}>
-                <Text style={{ color: '#059669', fontSize: 10.5, fontWeight: '800' }}>Encontrado</Text>
+                <Text style={{ color: '#2E5634', fontSize: 10.5, fontWeight: '800' }}>Encontrado</Text>
               </View>
             )}
 

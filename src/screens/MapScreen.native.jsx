@@ -1276,7 +1276,7 @@ const MapScreen = ({ route, navigation }) => {
                         borderColor: '#A7F3D0',
                       }}
                     >
-                      <Text style={{ fontSize: 11, color: '#047857', fontWeight: '600' }}>
+                      <Text style={{ fontSize: 11, color: '#1E3E24', fontWeight: '600' }}>
                         {chip.text}
                       </Text>
                     </View>

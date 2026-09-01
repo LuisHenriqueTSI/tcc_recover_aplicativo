@@ -19,6 +19,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import COLORS from '../constants/theme';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import { WeFindText } from '../components/WeFindBrand';
 
 const formatBrazilianPhone = (value = '') => {
   const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
@@ -296,21 +297,22 @@ const RegisterScreen = ({ navigation }) => {
       >
 
 
-        {/* Top App Logo */}
+        {/* Top App Logo & Brand */}
         <View style={styles.brandHeroContainer}>
-          <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder }]}>
+          <View style={[styles.logoSquircle, { backgroundColor: isDark ? colors.card : '#FFFFFF', borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder }]}>
             <Image
-              source={require('../assets/logo_wefind.png')}
+              source={require('../assets/logo.png')}
               style={styles.logoImage}
-              resizeMode="cover"
+              resizeMode="contain"
             />
           </View>
+          <WeFindText size={24} uppercase style={{ marginTop: 8, letterSpacing: -0.4 }} />
         </View>
 
         <View style={styles.headerBox}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Criar nova conta</Text>
           <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-            Preencha seus dados para começar no WeFIND
+            Preencha seus dados para começar no <WeFindText size={13} style={{ fontWeight: '800' }} />
           </Text>
         </View>
 
@@ -440,7 +442,7 @@ const RegisterScreen = ({ navigation }) => {
                 style={{
                   fontSize: 11.5,
                   fontWeight: '700',
-                  color: password === confirmPassword ? (isDark ? '#34D399' : '#059669') : '#EF4444',
+                  color: password === confirmPassword ? (isDark ? '#34D399' : '#2E5634') : '#EF4444',
                 }}
               >
                 {password === confirmPassword ? 'As senhas conferem!' : 'As senhas não conferem'}
@@ -544,23 +546,23 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   logoSquircle: {
-    width: 90,
-    height: 90,
-    borderRadius: 26,
+    width: 88,
+    height: 88,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    borderWidth: 2,
+    borderWidth: 1.5,
+    padding: 8,
     shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.22,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   logoImage: {
     width: '100%',
     height: '100%',
-    transform: [{ scale: 1.35 }],
   },
   headerBox: {
     alignItems: 'center',

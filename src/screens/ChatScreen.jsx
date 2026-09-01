@@ -549,8 +549,8 @@ const ChatScreen = (props) => {
           {isLocationReleaseMsg && (
             <View style={{ marginBottom: 6 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 4 }}>
-                <MaterialIcons name="verified-user" size={16} color="#059669" />
-                <Text style={{ fontSize: 11.5, fontWeight: '900', color: '#059669', letterSpacing: 0.3 }}>
+                <MaterialIcons name="verified-user" size={16} color="#2E5634" />
+                <Text style={{ fontSize: 11.5, fontWeight: '900', color: '#2E5634', letterSpacing: 0.3 }}>
                   LOCAL DE RETIRADA CONFIRMADO
                 </Text>
               </View>
@@ -558,7 +558,7 @@ const ChatScreen = (props) => {
                 📍 {displayAddress || 'Ponto de Retirada'}
               </Text>
               {displayInstructions ? (
-                <Text style={{ fontSize: 12, color: isDark ? '#A7F3D0' : '#047857', marginBottom: 8 }}>
+                <Text style={{ fontSize: 12, color: isDark ? '#A7F3D0' : '#1E3E24', marginBottom: 8 }}>
                   📝 {displayInstructions}
                 </Text>
               ) : null}
@@ -687,7 +687,7 @@ const ChatScreen = (props) => {
             <Text style={{ fontSize: 12, fontWeight: '800', color: isDark ? '#D1FAE5' : '#065F46' }}>
               Confirmar Tutor e Liberar Rota
             </Text>
-            <Text style={{ fontSize: 11, color: isDark ? '#A7F3D0' : '#047857' }}>
+            <Text style={{ fontSize: 11, color: isDark ? '#A7F3D0' : '#1E3E24' }}>
               Se as fotos/marcas baterem, compartilhe o local de retirada:
             </Text>
           </View>
@@ -715,7 +715,7 @@ const ChatScreen = (props) => {
           paddingVertical: 7,
           gap: 8,
         }}>
-          <MaterialIcons name="security" size={17} color="#059669" />
+          <MaterialIcons name="security" size={17} color="#2E5634" />
           <Text style={{ flex: 1, fontSize: 11.5, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 15 }}>
             <Text style={{ fontWeight: '800' }}>Dica de Segurança:</Text> Só combine locais de entrega após o tutor apresentar fotos antigas ou características que comprovem que é o dono.
           </Text>
@@ -916,7 +916,7 @@ const ChatScreen = (props) => {
           <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.modalHeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <MaterialIcons name="share-location" size={22} color="#059669" />
+                <MaterialIcons name="share-location" size={22} color="#2E5634" />
                 <Text style={[styles.modalTitle, { color: colors.text }]}>Liberar Local de Retirada</Text>
               </View>
               <TouchableOpacity onPress={() => setShowShareLocationModal(false)}>
@@ -933,7 +933,7 @@ const ChatScreen = (props) => {
               <TouchableOpacity
                 style={[
                   styles.locationOptionCard,
-                  { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: locationType === 'registered' ? '#059669' : colors.border },
+                  { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: locationType === 'registered' ? '#2E5634' : colors.border },
                   locationType === 'registered' && { borderWidth: 2 },
                 ]}
                 onPress={() => setLocationType('registered')}
@@ -943,7 +943,7 @@ const ChatScreen = (props) => {
                   <MaterialIcons
                     name={locationType === 'registered' ? 'radio-button-checked' : 'radio-button-unchecked'}
                     size={20}
-                    color={locationType === 'registered' ? '#059669' : colors.textMuted}
+                    color={locationType === 'registered' ? '#2E5634' : colors.textMuted}
                   />
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.locationOptionTitle, { color: colors.text }]}>
@@ -960,7 +960,7 @@ const ChatScreen = (props) => {
               <TouchableOpacity
                 style={[
                   styles.locationOptionCard,
-                  { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: locationType === 'safe_point' ? '#059669' : colors.border },
+                  { backgroundColor: isDark ? '#0F172A' : '#F8FAFC', borderColor: locationType === 'safe_point' ? '#2E5634' : colors.border },
                   locationType === 'safe_point' && { borderWidth: 2 },
                 ]}
                 onPress={() => setLocationType('safe_point')}
@@ -970,7 +970,7 @@ const ChatScreen = (props) => {
                   <MaterialIcons
                     name={locationType === 'safe_point' ? 'radio-button-checked' : 'radio-button-unchecked'}
                     size={20}
-                    color={locationType === 'safe_point' ? '#059669' : colors.textMuted}
+                    color={locationType === 'safe_point' ? '#2E5634' : colors.textMuted}
                   />
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.locationOptionTitle, { color: colors.text }]}>
@@ -1009,7 +1009,7 @@ const ChatScreen = (props) => {
             </ScrollView>
 
             <TouchableOpacity
-              style={[styles.modalConfirmBtn, { backgroundColor: '#059669' }]}
+              style={[styles.modalConfirmBtn, { backgroundColor: '#2E5634' }]}
               onPress={handleConfirmShareLocation}
               disabled={sharingLocation}
               activeOpacity={0.85}
@@ -1068,11 +1068,11 @@ const styles = StyleSheet.create({
   finderShareBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#059669',
+    backgroundColor: '#2E5634',
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 7,
-    shadowColor: '#059669',
+    shadowColor: '#2E5634',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3,
@@ -1270,7 +1270,7 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     borderRadius: 12,
     marginTop: 14,
-    shadowColor: '#059669',
+    shadowColor: '#2E5634',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,

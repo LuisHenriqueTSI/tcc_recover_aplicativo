@@ -39,6 +39,7 @@ import Input from '../components/Input';
 import NotificationBell from '../components/NotificationBell';
 import OptimizedImage from '../components/OptimizedImage';
 import MapLocationPicker from '../components/MapLocationPicker';
+import { WeFindText, WeFindLogo } from '../components/WeFindBrand';
 import { MaterialIcons } from '@expo/vector-icons';
 
 // Cálculo de distância geográfica precisa em KM (Fórmula de Haversine)
@@ -181,7 +182,7 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
 
   const statusBg = isAdoption ? (isDark ? 'rgba(190, 24, 93, 0.2)' : '#FDF2F8') : isFound ? (isDark ? 'rgba(4, 120, 87, 0.2)' : '#ECFDF5') : (isDark ? 'rgba(220, 38, 38, 0.2)' : '#FEF2F2');
   const statusBorder = isAdoption ? '#F472B6' : isFound ? '#A7F3D0' : '#FECACA';
-  const statusTextColor = isAdoption ? '#DB2777' : isFound ? '#059669' : '#DC2626';
+  const statusTextColor = isAdoption ? '#DB2777' : isFound ? '#2E5634' : '#DC2626';
   const statusIcon = isAdoption ? 'favorite' : isFound ? 'check-circle' : 'error-outline';
   const statusLabel = isAdoption ? 'Para Adoção' : isFound ? 'Encontrado' : 'Perdido';
 
@@ -493,7 +494,7 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
                       borderColor: isDark ? 'rgba(16, 185, 129, 0.3)' : '#A7F3D0',
                     }}
                   >
-                    <Text style={{ fontSize: 11.5, color: isDark ? '#6EE7B7' : '#047857', fontWeight: '600' }}>
+                    <Text style={{ fontSize: 11.5, color: isDark ? '#6EE7B7' : '#1E3E24', fontWeight: '600' }}>
                       {chip.text}
                     </Text>
                   </View>
@@ -1622,7 +1623,17 @@ const HomeScreen = ({ navigation, route }) => {
       <View style={{ backgroundColor: colors.headerBg, paddingTop: 40, paddingBottom: 8, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: colors.border }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48 }}>
           <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start', marginRight: 12 }}>
-            <Text style={{ color: '#fff', fontWeight: '900', fontSize: 23, letterSpacing: 0.8, marginBottom: 2 }}>WeFIND</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+              <Image
+                source={require('../assets/logo.png')}
+                style={{ width: 28, height: 28, marginRight: 7 }}
+                resizeMode="contain"
+              />
+              <Text style={{ fontWeight: '900', fontSize: 23, letterSpacing: 0.5 }}>
+                <Text style={{ color: '#E4AB87' }}>We</Text>
+                <Text style={{ color: '#FFFFFF' }}>FIND</Text>
+              </Text>
+            </View>
             <TouchableOpacity
               style={{
                 flexDirection: 'row',
@@ -2451,7 +2462,7 @@ const HomeScreen = ({ navigation, route }) => {
               <Text style={[styles.radiusBannerTitle, { color: isDark ? colors.primaryLight : colors.primaryDark }]}>
                 Raio de {searchRadiusKm} km ativo
               </Text>
-              <Text style={[styles.radiusBannerSubtitle, { color: isDark ? '#34D399' : '#047857' }]} numberOfLines={1}>
+              <Text style={[styles.radiusBannerSubtitle, { color: isDark ? '#34D399' : '#1E3E24' }]} numberOfLines={1}>
                 Exibindo {radiusStatusText} próximos a sua localização
               </Text>
             </View>

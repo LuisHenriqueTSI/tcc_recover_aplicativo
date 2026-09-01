@@ -218,7 +218,7 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
             </Text>
             {formattedPhone ? (
               <View style={styles.phoneRow}>
-                <MaterialIcons name="phone" size={15} color="#059669" />
+                <MaterialIcons name="phone" size={15} color="#2E5634" />
                 <Text style={styles.contactPhoneText}>{formattedPhone}</Text>
               </View>
             ) : null}
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   contactPhoneText: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#059669',
+    color: '#2E5634',
     letterSpacing: 0.3,
   },
   footerContainer: {

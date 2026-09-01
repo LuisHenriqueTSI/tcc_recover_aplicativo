@@ -827,13 +827,13 @@ const ItemDetailScreen = ({ route, navigation }) => {
             <Ionicons
               name={isAdoption ? 'heart' : isFound ? 'checkmark-circle' : 'alert-circle'}
               size={15}
-              color={isAdoption ? '#BE185D' : isFound ? '#047857' : '#C2410C'}
+              color={isAdoption ? '#BE185D' : isFound ? '#1E3E24' : '#C2410C'}
               style={{ marginRight: 5 }}
             />
             <Text
               style={[
                 styles.statusPillText,
-                { color: isAdoption ? '#BE185D' : isFound ? '#047857' : '#C2410C' },
+                { color: isAdoption ? '#BE185D' : isFound ? '#1E3E24' : '#C2410C' },
               ]}
             >
               {isAdoption ? 'Para Adoção Responsável' : isFound ? 'Animal Encontrado' : 'Animal Perdido'}
@@ -1041,12 +1041,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 <MaterialIcons
                   name={item.extra_fields?.found_custody === 'spotted' ? 'visibility' : 'home'}
                   size={16}
-                  color={item.extra_fields?.found_custody === 'spotted' ? '#D97706' : '#059669'}
+                  color={item.extra_fields?.found_custody === 'spotted' ? '#D97706' : '#2E5634'}
                 />
               </View>
               <Text style={[
                 styles.custodyNoticeTitle,
-                { color: item.extra_fields?.found_custody === 'spotted' ? (isDark ? '#FBBF24' : '#B45309') : (isDark ? '#34D399' : '#047857') },
+                { color: item.extra_fields?.found_custody === 'spotted' ? (isDark ? '#FBBF24' : '#B45309') : (isDark ? '#34D399' : '#1E3E24') },
               ]}>
                 {item.extra_fields?.found_custody === 'spotted'
                   ? 'Animal Avistado na Rua'
@@ -1059,7 +1059,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 fontWeight: '700',
                 color: item.extra_fields?.found_custody === 'spotted'
                   ? (isDark ? '#FBBF24' : '#B45309')
-                  : (isDark ? '#34D399' : '#047857')
+                  : (isDark ? '#34D399' : '#1E3E24')
               }}>
                 {expandedCustodyInfo ? 'Menos' : 'Saiba mais'}
               </Text>
@@ -1068,7 +1068,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 size={18}
                 color={item.extra_fields?.found_custody === 'spotted'
                   ? (isDark ? '#FBBF24' : '#B45309')
-                  : (isDark ? '#34D399' : '#047857')}
+                  : (isDark ? '#34D399' : '#1E3E24')}
               />
             </View>
           </View>
@@ -1103,7 +1103,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
               <MaterialIcons
                 name={item.status === 'lost' ? 'security' : (item?.extra_fields?.found_custody === 'spotted' ? 'add-location-alt' : 'home')}
                 size={20}
-                color={'#059669'}
+                color={'#2E5634'}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -1175,9 +1175,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   padding: 11,
                   gap: 8,
                 }}>
-                  <MaterialIcons name="verified" size={20} color="#059669" style={{ marginTop: 1 }} />
+                  <MaterialIcons name="verified" size={20} color="#2E5634" style={{ marginTop: 1 }} />
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 12.5, fontWeight: '800', color: isDark ? '#34D399' : '#047857' }}>
+                    <Text style={{ fontSize: 12.5, fontWeight: '800', color: isDark ? '#34D399' : '#1E3E24' }}>
                       Comprovação Aprovada • Endereço Liberado
                     </Text>
                     <Text style={{ fontSize: 11.5, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 16, marginTop: 2 }}>
@@ -1256,7 +1256,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   gap: 8,
                 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <MaterialIcons name="security" size={18} color="#059669" />
+                    <MaterialIcons name="security" size={18} color="#2E5634" />
                     <Text style={{ fontSize: 12.5, fontWeight: '800', color: isDark ? '#34D399' : '#065F46' }}>
                       Endereço Protegido por Segurança
                     </Text>
@@ -1280,7 +1280,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       backgroundColor: isDark ? 'rgba(5, 150, 105, 0.25)' : '#D1FAE5',
-                      borderColor: isDark ? '#059669' : '#10B981',
+                      borderColor: isDark ? '#2E5634' : '#10B981',
                       borderWidth: 1,
                       borderRadius: 10,
                       paddingVertical: 9,
@@ -1518,10 +1518,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   <MaterialIcons
                     name="favorite"
                     size={17}
-                    color={item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669'}
+                    color={item.extra_fields?.available_for_adoption ? '#DB2777' : '#2E5634'}
                   />
                   <Text
-                    style={[styles.ownerActionText, { color: item.extra_fields?.available_for_adoption ? '#DB2777' : '#059669' }]}
+                    style={[styles.ownerActionText, { color: item.extra_fields?.available_for_adoption ? '#DB2777' : '#2E5634' }]}
                   >
                     {togglingAdoption ? 'Salvando...' : item.extra_fields?.available_for_adoption ? 'Pausar Adoção' : 'P/ Adoção'}
                   </Text>

@@ -19,6 +19,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import COLORS from '../constants/theme';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import { WeFindText } from '../components/WeFindBrand';
 import { getFriendlyAuthErrorMessage } from '../utils/authErrors';
 
 const LoginScreen = ({ navigation }) => {
@@ -98,15 +99,16 @@ const LoginScreen = ({ navigation }) => {
         extraHeight={Platform.OS === 'ios' ? 80 : 100}
         keyboardOpeningTime={0}
       >
-        {/* Top App Logo */}
+        {/* Top App Logo & Brand */}
         <View style={styles.brandHeroContainer}>
-          <View style={[styles.logoSquircle, { backgroundColor: colors.card, borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder }]}>
+          <View style={[styles.logoSquircle, { backgroundColor: isDark ? colors.card : '#FFFFFF', borderColor: isDark ? colors.cardBorder : COLORS.primaryBorder }]}>
             <Image
-              source={require('../assets/logo_wefind.png')}
+              source={require('../assets/logo.png')}
               style={styles.logoImage}
-              resizeMode="cover"
+              resizeMode="contain"
             />
           </View>
+          <WeFindText size={28} uppercase style={{ marginTop: 10, letterSpacing: -0.5 }} />
         </View>
 
         {/* Title Header */}
@@ -229,23 +231,23 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   logoSquircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 34,
+    width: 104,
+    height: 104,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    borderWidth: 2,
+    borderWidth: 1.5,
+    padding: 10,
     shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.22,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   logoImage: {
     width: '100%',
     height: '100%',
-    transform: [{ scale: 1.35 }],
   },
   headerBox: {
     alignItems: 'center',

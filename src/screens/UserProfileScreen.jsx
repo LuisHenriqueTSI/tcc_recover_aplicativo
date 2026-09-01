@@ -559,7 +559,7 @@ const UserProfileScreen = ({ route, navigation }) => {
           <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
 
           <TouchableOpacity onPress={() => { setActiveMainSection('posts'); setActivePostTab('resolved'); }} style={styles.statBox}>
-            <Text style={[styles.statNumber, { color: '#059669' }]}>{resolvedPosts.length}</Text>
+            <Text style={[styles.statNumber, { color: '#2E5634' }]}>{resolvedPosts.length}</Text>
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>Reencontros</Text>
           </TouchableOpacity>
 
@@ -584,7 +584,7 @@ const UserProfileScreen = ({ route, navigation }) => {
                   Moderação Super Admin
                 </Text>
               </View>
-              <View style={{ backgroundColor: profile?.role === 'admin' || profile?.adm ? '#059669' : '#64748B', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+              <View style={{ backgroundColor: profile?.role === 'admin' || profile?.adm ? '#2E5634' : '#64748B', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
                 <Text style={{ color: '#FFFFFF', fontSize: 10.5, fontWeight: '800' }}>
                   {profile?.role === 'admin' || profile?.adm ? 'ADMIN' : 'USUÁRIO'}
                 </Text>
@@ -707,11 +707,11 @@ const UserProfileScreen = ({ route, navigation }) => {
                 : (isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEF2F2');
 
               const statusTextColor = isResolved
-                ? '#059669'
+                ? '#2E5634'
                 : isAdoption
                 ? '#DB2777'
                 : isFound
-                ? '#059669'
+                ? '#2E5634'
                 : '#DC2626';
 
               const statusLabel = isResolved

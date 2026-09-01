@@ -5,6 +5,7 @@ import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { updatePassword } from '../services/supabaseAuth';
+import { WeFindText } from '../components/WeFindBrand';
 
 const preferenceKeys = {
   notifications: '@recover/preferences/notifications',
@@ -378,7 +379,9 @@ const ConfigScreen = ({ navigation }) => {
         <Feather name="log-out" size={18} color="#DC2626" />
         <Text style={styles.logoutText}>Sair da conta</Text>
       </TouchableOpacity>
-      <Text style={[styles.version, { color: colors.textMuted }]}>WeFIND • Versão 1.0.0</Text>
+      <View style={{ alignItems: 'center', marginTop: 16, marginBottom: 8 }}>
+        <WeFindText size={15} uppercase suffix=" • Versão 1.0.0" />
+      </View>
 
       {/* MODAL DE SELEÇÃO DE TEMA */}
       <Modal

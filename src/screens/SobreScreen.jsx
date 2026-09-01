@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import * as storiesService from '../services/stories';
 import OptimizedImage from '../components/OptimizedImage';
+import { WeFindText, WeFindLogo } from '../components/WeFindBrand';
 import COLORS from '../constants/theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -68,7 +69,17 @@ const SobreScreen = ({ navigation }) => {
       <View style={{ backgroundColor: colors.headerBg, paddingTop: 40, paddingBottom: 10, paddingHorizontal: 18, borderBottomWidth: 1, borderBottomColor: colors.border }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48 }}>
           <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start', marginRight: 12 }}>
-            <Text style={{ color: '#fff', fontWeight: '900', fontSize: 23, letterSpacing: 0.8, marginBottom: 2 }}>WeFIND</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+              <Image
+                source={require('../assets/logo.png')}
+                style={{ width: 28, height: 28, marginRight: 7 }}
+                resizeMode="contain"
+              />
+              <Text style={{ fontWeight: '900', fontSize: 23, letterSpacing: 0.5 }}>
+                <Text style={{ color: '#E4AB87' }}>We</Text>
+                <Text style={{ color: '#FFFFFF' }}>FIND</Text>
+              </Text>
+            </View>
             <View
               style={{
                 flexDirection: 'row',
@@ -139,17 +150,18 @@ const SobreScreen = ({ navigation }) => {
       >
         {/* 1. HERO CARD COMPACTO & LIMPO */}
         <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-          <View style={[styles.heroBadge, { backgroundColor: colors.primaryLight }]}>
+          <WeFindLogo size={72} style={{ alignSelf: 'center', marginBottom: 12 }} />
+          <View style={[styles.heroBadge, { backgroundColor: colors.primaryLight, alignSelf: 'center' }]}>
             <MaterialIcons name="pets" size={14} color={colors.primary} style={{ marginRight: 5 }} />
             <Text style={[styles.heroBadgeText, { color: colors.primary }]}>REDE DE PROTEÇÃO E REENCONTRO</Text>
           </View>
 
-          <Text style={[styles.heroHeadline, { color: colors.text }]}>
+          <Text style={[styles.heroHeadline, { color: colors.text, textAlign: 'center' }]}>
             Reunindo animais e famílias com rapidez, tecnologia e empatia.
           </Text>
 
-          <Text style={[styles.heroDescription, { color: colors.textSecondary }]}>
-            O WeFIND conecta tutores, protetores e a vizinhança através de alertas geolocalizados, radar de busca em tempo real e divulgação facilitada.
+          <Text style={[styles.heroDescription, { color: colors.textSecondary, textAlign: 'center' }]}>
+            O <WeFindText size={15} /> conecta tutores, protetores e a vizinhança através de alertas geolocalizados, radar de busca em tempo real e divulgação facilitada.
           </Text>
         </View>
 
@@ -158,7 +170,7 @@ const SobreScreen = ({ navigation }) => {
           <View style={styles.sectionHeaderRow}>
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <MaterialIcons name="volunteer-activism" size={20} color="#059669" />
+                <MaterialIcons name="volunteer-activism" size={20} color="#2E5634" />
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Mural de Reencontros</Text>
               </View>
               <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
@@ -183,7 +195,7 @@ const SobreScreen = ({ navigation }) => {
             </View>
           ) : displayedStories.length === 0 ? (
             <View style={[styles.emptyMuralBox, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-              <MaterialIcons name="pets" size={36} color="#059669" style={{ marginBottom: 6 }} />
+              <MaterialIcons name="pets" size={36} color="#2E5634" style={{ marginBottom: 6 }} />
               <Text style={[styles.emptyMuralTitle, { color: colors.text }]}>Participe do nosso Mural!</Text>
               <Text style={[styles.emptyMuralSubtitle, { color: colors.textSecondary }]}>
                 Quando encontrar seu pet através do WeFIND, compartilhe seu relato para inspirar a comunidade.
@@ -253,11 +265,11 @@ const SobreScreen = ({ navigation }) => {
               <Text style={[styles.muralCTATitle, { color: isDark ? '#6EE7B7' : '#065F46' }]}>
                 Celebre o seu Reencontro
               </Text>
-              <Text style={[styles.muralCTASubtitle, { color: isDark ? '#A7F3D0' : '#047857' }]}>
+              <Text style={[styles.muralCTASubtitle, { color: isDark ? '#A7F3D0' : '#1E3E24' }]}>
                 Toque aqui para enviar fotos e depoimento direto para o Mural
               </Text>
             </View>
-            <MaterialIcons name="add-photo-alternate" size={24} color={isDark ? '#6EE7B7' : '#059669'} />
+            <MaterialIcons name="add-photo-alternate" size={24} color={isDark ? '#6EE7B7' : '#2E5634'} />
           </TouchableOpacity>
         </View>
 
@@ -297,7 +309,7 @@ const SobreScreen = ({ navigation }) => {
             {/* Passo 3 */}
             <View style={[styles.stepItemCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
               <View style={[styles.stepNumberBadge, { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5', borderColor: '#A7F3D0' }]}>
-                <Text style={[styles.stepNumberText, { color: '#059669' }]}>3</Text>
+                <Text style={[styles.stepNumberText, { color: '#2E5634' }]}>3</Text>
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={[styles.stepItemTitle, { color: colors.text }]}>Chat Seguro & Avaliações</Text>
@@ -329,7 +341,7 @@ const SobreScreen = ({ navigation }) => {
             activeOpacity={0.85}
           >
             <View style={[styles.quickIconCircle, { backgroundColor: '#ECFDF5' }]}>
-              <MaterialIcons name="stars" size={22} color="#059669" />
+              <MaterialIcons name="stars" size={22} color="#2E5634" />
             </View>
             <Text style={[styles.quickTileTitle, { color: colors.text }]}>Reencontros</Text>
             <Text style={[styles.quickTileSub, { color: colors.textMuted }]}>Depoimentos da comunidade</Text>

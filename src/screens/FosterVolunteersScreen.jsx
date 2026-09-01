@@ -626,7 +626,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyActionBtn: {
-    backgroundColor: '#059669',
+    backgroundColor: '#2E5634',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 12,

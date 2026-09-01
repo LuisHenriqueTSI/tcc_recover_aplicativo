@@ -329,7 +329,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
                 <Text style={[styles.seeMoreText, { color: colors.primary }]}>Ver mais</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.sendStoryButton, { backgroundColor: '#059669' }]}
+                style={[styles.sendStoryButton, { backgroundColor: '#2E5634' }]}
                 onPress={() => setShowStoryModal(true)}
                 activeOpacity={0.8}
               >
@@ -464,7 +464,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.modalHeader}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <MaterialIcons name="favorite" size={22} color="#059669" style={{ marginRight: 8 }} />
+                  <MaterialIcons name="favorite" size={22} color="#2E5634" style={{ marginRight: 8 }} />
                   <Text style={[styles.modalTitle, { color: colors.text }]}>Enviar História de Reencontro</Text>
                 </View>
                 <TouchableOpacity
@@ -704,7 +704,7 @@ const styles = StyleSheet.create({
   },
   placarGreenPillBold: {
     fontWeight: '800',
-    color: '#047857',
+    color: '#1E3E24',
   },
   placarRecentSection: {
     marginTop: 2,
@@ -780,7 +780,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 10,
-    shadowColor: '#059669',
+    shadowColor: '#2E5634',
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 2,
@@ -1006,7 +1006,7 @@ const styles = StyleSheet.create({
     flex: 2,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: '#059669',
+    backgroundColor: '#2E5634',
     alignItems: 'center',
     justifyContent: 'center',
   },

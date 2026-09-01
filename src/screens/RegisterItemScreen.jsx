@@ -451,7 +451,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         {isSheltered && (
           <View style={{
             backgroundColor: isDark ? '#064E3B' : '#F0FDF4',
-            borderColor: isDark ? '#047857' : '#BBF7D0',
+            borderColor: isDark ? '#1E3E24' : '#BBF7D0',
             borderWidth: 1,
             borderRadius: 12,
             padding: 12,
@@ -1924,7 +1924,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       marginBottom: 4,
                       gap: 8,
                     }}>
-                      <MaterialIcons name="security" size={17} color="#059669" style={{ marginTop: 1 }} />
+                      <MaterialIcons name="security" size={17} color="#2E5634" style={{ marginTop: 1 }} />
                       <Text style={{ flex: 1, fontSize: 11.5, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 16 }}>
                         <Text style={{ fontWeight: '800' }}>Privacidade Protegida: </Text>
                         O número da sua residência e sua rua exata NÃO serão exibidos publicamente. Apenas seu bairro aproximado será visível para o tutor entrar em contato pelo chat.

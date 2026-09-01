@@ -190,7 +190,7 @@ export default function ProofUploadModal({
                     },
                   ]}
                 >
-                  <MaterialIcons name="security" size={20} color="#059669" style={{ marginTop: 2 }} />
+                  <MaterialIcons name="security" size={20} color="#2E5634" style={{ marginTop: 2 }} />
                   <Text style={[styles.securityNoticeText, { color: isDark ? '#D1FAE5' : '#065F46' }]}>
                     Para proteger a integridade do animal e a segurança da família acolhedora, o endereço exato só é liberado após a comprovação de tutela com fotos anteriores ou documentos.
                   </Text>

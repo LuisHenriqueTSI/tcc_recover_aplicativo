@@ -1,28 +1,45 @@
-// WeFind — Sistema Oficial de Cores e Identidade Visual (Verde Esperança & Acolhimento Pastel)
+// WeFind — Sistema Oficial de Cores e Identidade Visual (Verde Floresta & Marrom Caramelo da Logo)
 
 export const COLORS = {
-  // Brand Primary (Verde Esperança Pastel, Acolhedor, Suave e Confiável)
-  primary: '#059669',
-  primaryDark: '#047857',
-  primaryMedium: '#10B981',
-  primaryLight: '#ECFDF5',
-  primaryBorder: '#A7F3D0',
+  // Brand Primary (Verde Floresta do Pin Central da Logo)
+  primary: '#2E5634',
+  primaryDark: '#1E3E24',
+  primaryMedium: '#3D7246',
+  primaryLight: '#EAF2EB',
+  primaryBorder: '#C5DCC8',
 
-  // Brand Orange (Ações e Destaques)
-  orange: '#F59E0B',
-  orangeDark: '#D97706',
-  orangeLight: '#FEF3C7',
+  // Brand Secondary (Marrom Caramelo do Cão e Gato da Logo)
+  secondary: '#B1734A',
+  secondaryDark: '#875029',
+  secondaryMedium: '#C28359',
+  secondaryLight: '#F8EFE9',
+  secondaryBorder: '#E8D2C2',
 
-  // Brand Gold (Recompensas e Gamificação)
-  gold: '#FEA937',
-  goldLight: '#FFF4DF',
+  // Atalhos de Marca para o Texto WeFind
+  weColor: '#B1734A',
+  findColor: '#2E5634',
+
+  // Aliases úteis
+  brown: '#B1734A',
+  brownDark: '#875029',
+  brownLight: '#F8EFE9',
+  brownBorder: '#E8D2C2',
+
+  // Ações e Destaques
+  orange: '#E67E22',
+  orangeDark: '#D35400',
+  orangeLight: '#FDF2E9',
+
+  // Dourado / Recompensas
+  gold: '#D4AC0D',
+  goldLight: '#FEF9E7',
 
   // Neutros
   white: '#FFFFFF',
-  background: '#F4F8F5',
+  background: '#F6F8F6',
   surface: '#FFFFFF',
   gray50: '#F8FAFC',
-  gray100: '#F0FDF4',
+  gray100: '#F1F6F2',
   gray200: '#E2E8F0',
   gray400: '#94A3B8',
   gray500: '#64748B',
@@ -30,9 +47,9 @@ export const COLORS = {
   gray900: '#0F172A',
 
   // Estados
-  success: '#10B981',
-  successDark: '#047857',
-  successLight: '#ECFDF5',
+  success: '#2E5634',
+  successDark: '#1E3E24',
+  successLight: '#EAF2EB',
 
   error: '#EF4444',
   errorDark: '#DC2626',
