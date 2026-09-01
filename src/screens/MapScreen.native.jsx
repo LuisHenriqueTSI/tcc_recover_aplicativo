@@ -9,6 +9,8 @@ import * as itemsService from '../services/items';
 import * as sightingsService from '../services/sightings';
 import SightingModal from '../components/SightingModal';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
+import COLORS from '../constants/theme';
 
 const BRAZIL_REGION = {
   latitude: -14.235,
@@ -243,6 +245,7 @@ const buildSelectedChips = (item) => {
 
 const MapScreen = ({ route, navigation }) => {
   const { user } = useAuth();
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const mapRef = useRef(null);
   const [items, setItems] = useState([]);
@@ -911,7 +914,7 @@ const MapScreen = ({ route, navigation }) => {
   if (locationStatus === 'checking' && !userCoords) {
     return (
       <View style={styles.permissionState}>
-        <ActivityIndicator color="#2563EB" size="large" />
+        <ActivityIndicator color={COLORS.primary} size="large" />
         <Text style={styles.permissionTitle}>Obtendo sua localização</Text>
         <Text style={styles.permissionText}>Precisamos dela para abrir o mapa perto de você.</Text>
       </View>
@@ -937,7 +940,7 @@ const MapScreen = ({ route, navigation }) => {
       {/* Barra de Pesquisa Flutuante de Animais */}
       <View style={[styles.searchContainer, { top: Math.max(insets.top + 8, 44) }]}>
         <View style={styles.searchBar}>
-          <MaterialIcons name="search" size={22} color="#2563EB" style={{ marginRight: 8 }} />
+          <MaterialIcons name="search" size={22} color={COLORS.primary} style={{ marginRight: 8 }} />
           <TextInput
             style={styles.searchInput}
             placeholder="Nome, raça, espécie ou cidade..."
@@ -965,13 +968,13 @@ const MapScreen = ({ route, navigation }) => {
           activeOpacity={0.85}
         >
           <View style={styles.streetNoticeIconCircle}>
-            <MaterialIcons name="pets" size={12} color="#2563EB" />
+            <MaterialIcons name="pets" size={12} color={COLORS.primary} />
           </View>
           <Text style={styles.streetNoticeText} numberOfLines={1}>
             Apenas pets na rua (perdidos e avistamentos)
           </Text>
           <View style={styles.streetNoticeInfoBadge}>
-            <MaterialIcons name="info-outline" size={13} color="#2563EB" />
+            <MaterialIcons name="info-outline" size={13} color={COLORS.primary} />
           </View>
         </TouchableOpacity>
 
@@ -1008,12 +1011,12 @@ const MapScreen = ({ route, navigation }) => {
           <>
             <Polyline
               coordinates={routeCoordinates}
-              strokeColor="#1E3A8A"
+              strokeColor="#065F46"
               strokeWidth={7}
             />
             <Polyline
               coordinates={routeCoordinates}
-              strokeColor="#2563EB"
+              strokeColor={COLORS.primary}
               strokeWidth={4.5}
             />
           </>
@@ -1034,7 +1037,7 @@ const MapScreen = ({ route, navigation }) => {
       {routeInfo && !isNavigating && (
         <View style={[styles.activeRouteBanner, { top: Math.max(insets.top + 64, 100) }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
-            <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
+            <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
               <MaterialIcons name="directions-car" size={18} color="#FFFFFF" />
             </View>
             <View style={{ flex: 1 }}>
@@ -1561,9 +1564,9 @@ const MapScreen = ({ route, navigation }) => {
         accessibilityLabel="Centralizar na minha localização"
       >
         {centeringLoading ? (
-          <ActivityIndicator size="small" color="#2563EB" />
+          <ActivityIndicator size="small" color={COLORS.primary} />
         ) : (
-          <MaterialIcons name="my-location" size={24} color="#2563EB" />
+          <MaterialIcons name="my-location" size={24} color={COLORS.primary} />
         )}
       </TouchableOpacity>
 
@@ -1583,7 +1586,7 @@ const MapScreen = ({ route, navigation }) => {
       {!loading && items.length === 0 && (
         <View style={styles.emptyState}>
           <View style={styles.emptyIconCircle}>
-            <MaterialIcons name="location-off" size={26} color="#2563EB" />
+            <MaterialIcons name="location-off" size={26} color={COLORS.primary} />
           </View>
           <Text style={styles.emptyTitle}>Nenhum pet na rua nesta região</Text>
           <Text style={styles.emptyText}>
@@ -1602,7 +1605,7 @@ const MapScreen = ({ route, navigation }) => {
 
       {loading && (
         <View style={styles.loadingState}>
-          <ActivityIndicator color="#2563EB" />
+          <ActivityIndicator color={COLORS.primary} />
           <Text style={styles.loadingText}>Carregando animais no mapa...</Text>
         </View>
       )}
@@ -1622,7 +1625,7 @@ const MapScreen = ({ route, navigation }) => {
           <View style={styles.modalContainer} onStartShouldSetResponder={() => true}>
             <View style={styles.modalHeaderRow}>
               <View style={styles.modalHeaderIconBox}>
-                <MaterialIcons name="map" size={22} color="#2563EB" />
+                <MaterialIcons name="map" size={22} color={COLORS.primary} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.modalHeaderTitle}>Mapa Interativo WeFIND</Text>
@@ -1733,16 +1736,16 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   countBadge: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: COLORS.primaryBorder,
     marginLeft: 4,
   },
   countBadgeText: {
-    color: '#2563EB',
+    color: COLORS.primary,
     fontSize: 11,
     fontWeight: '800',
   },
@@ -1797,7 +1800,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: COLORS.primaryBorder,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
@@ -1833,7 +1836,7 @@ const styles = StyleSheet.create({
   locationNotice: { position: 'absolute', left: 16, right: 16, bottom: 22, padding: 14, borderRadius: 12, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 8, elevation: 3 },
   locationNoticeText: { color: '#374151', lineHeight: 19 },
   retryButton: { alignSelf: 'flex-start', marginTop: 8 },
-  retryText: { color: '#2563EB', fontWeight: '700' },
+  retryText: { color: COLORS.primary, fontWeight: '700' },
   markerFallback: { fontSize: 22 },
   infoCard: {
     position: 'absolute',
@@ -1871,8 +1874,8 @@ const styles = StyleSheet.create({
     marginTop: 6,
     paddingVertical: 11,
     borderRadius: 12,
-    backgroundColor: '#2563EB',
-    shadowColor: '#2563EB',
+    backgroundColor: COLORS.primary,
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
@@ -1881,7 +1884,7 @@ const styles = StyleSheet.create({
   detailsButtonText: { color: '#FFFFFF', fontWeight: '800', fontSize: 13.5 },
   callout: { width: 190, padding: 4 },
   calloutTitle: { color: '#111827', fontWeight: '700', fontSize: 15 },
-  calloutStatus: { color: '#2563EB', marginTop: 3 },
+  calloutStatus: { color: COLORS.primary, marginTop: 3 },
   calloutAction: { color: '#6B7280', fontSize: 12, marginTop: 6 },
   emptyState: {
     position: 'absolute',
@@ -1904,7 +1907,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
@@ -1915,7 +1918,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     paddingHorizontal: 16,
     paddingVertical: 9,
     borderRadius: 12,
@@ -2050,12 +2053,12 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   modalConfirmBtn: {
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     borderRadius: 14,
     paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 5,

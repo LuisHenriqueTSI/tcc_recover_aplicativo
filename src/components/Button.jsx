@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
+import COLORS from '../constants/theme';
 
 const Button = ({
   onPress,
@@ -70,7 +71,7 @@ const Button = ({
 
 const styles = StyleSheet.create({
   primaryButton: {
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 10,
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   secondaryButton: {
-    backgroundColor: '#F28213',
+    backgroundColor: COLORS.orange,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 10,
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
   outlineButton: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#2563EB',
+    borderColor: COLORS.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 10,
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   neutralButton: {
-    backgroundColor: '#E2E8F0',
+    backgroundColor: COLORS.gray200,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 10,
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dangerButton: {
-    backgroundColor: '#D64545',
+    backgroundColor: COLORS.error,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 10,
@@ -125,12 +126,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   outlineText: {
-    color: '#2563EB',
+    color: COLORS.primary,
     fontSize: 16,
     fontWeight: 'bold',
   },
   neutralText: {
-    color: '#172B32',
+    color: COLORS.gray900,
     fontSize: 16,
     fontWeight: 'bold',
   },

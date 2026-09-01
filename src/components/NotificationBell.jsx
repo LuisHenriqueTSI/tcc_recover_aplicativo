@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getUnreadCount } from '../services/messages';
 import { listItems, markItemAsResolved, bumpItemFeedPriority } from '../services/items';
 import { triggerLocalNotification } from '../services/pushNotifications';
+import COLORS from '../constants/theme';
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000; // 48 horas (2 dias)
 const DISMISSED_CHECK_KEY = '@pet_found_dismissed_timestamps';
@@ -205,13 +206,13 @@ export default function NotificationBell({ style }) {
             </TouchableOpacity>
           )}
           {loading ? (
-            <ActivityIndicator size="large" color="#2563EB" style={{ marginVertical: 24 }} />
+            <ActivityIndicator size="large" color={COLORS.primary} style={{ marginVertical: 24 }} />
           ) : (
             <>
               {unreadCount > 0 && (
                 <TouchableOpacity style={styles.notificationBox} onPress={() => { setModalVisible(false); }}>
                   <View style={styles.notificationRow}>
-                    <MaterialIcons name="chat" size={22} color="#2563EB" style={{ marginRight: 8 }} />
+                    <MaterialIcons name="chat" size={22} color={COLORS.primary} style={{ marginRight: 8 }} />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.notificationTitle}>{unreadCount === 1 ? 'Nova mensagem' : `${unreadCount} novas mensagens`}</Text>
                       <Text style={styles.notificationDesc}>Clique para ver suas mensagens</Text>
@@ -225,7 +226,7 @@ export default function NotificationBell({ style }) {
                 renderItem={({ item }) => (
                   <View style={styles.notificationBox}>
                     <View style={styles.notificationRow}>
-                      <MaterialIcons name="search" size={22} color="#2563EB" style={{ marginRight: 8 }} />
+                      <MaterialIcons name="search" size={22} color={COLORS.primary} style={{ marginRight: 8 }} />
                       <View style={{ flex: 1 }}>
                         <Text style={styles.notificationTitle}>Você encontrou seu animal?</Text>
                         <Text style={styles.notificationDesc}>{item.title}{item.location ? ` - 📍 ${item.location}` : ''}</Text>
@@ -236,7 +237,7 @@ export default function NotificationBell({ style }) {
                         <Text style={styles.actionButtonText}>{loading ? 'Salvando...' : 'Sim! 🎉'}</Text>
                       </TouchableOpacity>
                       <TouchableOpacity style={[styles.actionButton, styles.actionButtonSecondary]} onPress={() => handleNo(item)} disabled={loading}>
-                        <Text style={[styles.actionButtonText, { color: '#2563EB' }]}>Ainda não</Text>
+                        <Text style={[styles.actionButtonText, { color: COLORS.primary }]}>Ainda não</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -299,7 +300,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontWeight: 'bold',
     fontSize: 18,
-    color: '#2563EB',
+    color: COLORS.primary,
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -319,7 +320,7 @@ const styles = StyleSheet.create({
   notificationTitle: {
     fontWeight: 'bold',
     fontSize: 15,
-    color: '#2563EB',
+    color: COLORS.primary,
   },
   notificationDesc: {
     fontSize: 13,

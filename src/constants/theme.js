@@ -1,17 +1,17 @@
-// WeFind — Sistema Oficial de Cores e Identidade Visual (Azul Confiança e Esperança Claro)
+// WeFind — Sistema Oficial de Cores e Identidade Visual (Verde Esperança & Acolhimento Pastel)
 
 export const COLORS = {
-  // Brand Primary (Azul Claro, Vibrante, Confiável e Acolhedor)
-  primary: '#2563EB',
-  primaryDark: '#1D4ED8',
-  primaryMedium: '#3B82F6',
-  primaryLight: '#EFF6FF',
-  primaryBorder: '#DBEAFE',
+  // Brand Primary (Verde Esperança Pastel, Acolhedor, Suave e Confiável)
+  primary: '#059669',
+  primaryDark: '#047857',
+  primaryMedium: '#10B981',
+  primaryLight: '#ECFDF5',
+  primaryBorder: '#A7F3D0',
 
   // Brand Orange (Ações e Destaques)
-  orange: '#F28213',
-  orangeDark: '#D96608',
-  orangeLight: '#FFF0DE',
+  orange: '#F59E0B',
+  orangeDark: '#D97706',
+  orangeLight: '#FEF3C7',
 
   // Brand Gold (Recompensas e Gamificação)
   gold: '#FEA937',
@@ -19,10 +19,10 @@ export const COLORS = {
 
   // Neutros
   white: '#FFFFFF',
-  background: '#F8FAFB',
+  background: '#F4F8F5',
   surface: '#FFFFFF',
   gray50: '#F8FAFC',
-  gray100: '#F1F5F9',
+  gray100: '#F0FDF4',
   gray200: '#E2E8F0',
   gray400: '#94A3B8',
   gray500: '#64748B',
@@ -30,21 +30,21 @@ export const COLORS = {
   gray900: '#0F172A',
 
   // Estados
-  success: '#2E9B63',
-  successDark: '#217A4C',
-  successLight: '#E5F6ED',
+  success: '#10B981',
+  successDark: '#047857',
+  successLight: '#ECFDF5',
 
-  error: '#D64545',
-  errorDark: '#B73535',
-  errorLight: '#FDEAEA',
+  error: '#EF4444',
+  errorDark: '#DC2626',
+  errorLight: '#FEF2F2',
 
-  warning: '#E6A21A',
-  warningDark: '#B77D0C',
-  warningLight: '#FFF6DD',
+  warning: '#F59E0B',
+  warningDark: '#D97706',
+  warningLight: '#FFFBEB',
 
-  info: '#2563EB',
-  infoDark: '#1D4ED8',
-  infoLight: '#EFF6FF',
+  info: '#0D9488',
+  infoDark: '#0F766E',
+  infoLight: '#F0FDFA',
 };
 
 export default COLORS;

@@ -30,6 +30,7 @@ import * as notificationsService from '../services/notifications';
 import * as claimsService from '../services/itemClaims';
 import Card from '../components/Card';
 import ShareButton from '../components/ShareButton';
+import COLORS from '../constants/theme';
 // Get screen width for carousel
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_IMAGE_HEIGHT = 340; // altura intermediária para a foto do card
@@ -554,7 +555,7 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
                   justifyContent: 'center',
                 }}
               >
-                <Text style={{ fontSize: 11, color: isDark ? '#93C5FD' : '#2563EB', fontWeight: '800', letterSpacing: 1.5 }}>
+                <Text style={{ fontSize: 11, color: isDark ? '#A7F3D0' : colors.primary, fontWeight: '800', letterSpacing: 1.5 }}>
                   •••
                 </Text>
               </TouchableOpacity>
@@ -2460,11 +2461,11 @@ const HomeScreen = ({ navigation, route }) => {
               setSelectedQuickRadius(searchRadiusKm);
               setShowQuickRadiusModal(true);
             }}
-            style={[styles.radiusResetButton, { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', borderColor: isDark ? '#243248' : '#93C5FD', flexDirection: 'row', alignItems: 'center', gap: 4 }]}
+            style={[styles.radiusResetButton, { backgroundColor: isDark ? '#0F172A' : '#FFFFFF', borderColor: isDark ? '#1C362D' : '#A7F3D0', flexDirection: 'row', alignItems: 'center', gap: 4 }]}
             activeOpacity={0.8}
           >
             <MaterialIcons name="tune" size={14} color={colors.primary} />
-            <Text style={[styles.radiusResetText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>Ajustar Raio</Text>
+            <Text style={[styles.radiusResetText, { color: isDark ? '#34D399' : colors.primary }]}>Ajustar Raio</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -2599,16 +2600,16 @@ const HomeScreen = ({ navigation, route }) => {
                 onPress={handleResetToBrazil}
                 style={{
                   marginTop: 12,
-                  backgroundColor: isDark ? '#1E293B' : '#EFF6FF',
+                  backgroundColor: isDark ? '#11221C' : '#ECFDF5',
                   paddingVertical: 8,
                   paddingHorizontal: 16,
                   borderRadius: 20,
                   borderWidth: 1,
-                  borderColor: isDark ? '#334155' : '#DBEAFE',
+                  borderColor: isDark ? '#1C362D' : '#A7F3D0',
                 }}
                 activeOpacity={0.8}
               >
-                <Text style={{ color: isDark ? '#60A5FA' : '#2563EB', fontWeight: 'bold', fontSize: 13 }}>
+                <Text style={{ color: isDark ? '#34D399' : colors.primary, fontWeight: 'bold', fontSize: 13 }}>
                   Ver animais de todo o Brasil
                 </Text>
               </TouchableOpacity>
@@ -2744,45 +2745,48 @@ const styles = StyleSheet.create({
   },
   advPanelTitle: {
     fontSize: 15,
-    fontWeight: '800',
-    letterSpacing: -0.2,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
-  advCountBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    borderWidth: 1,
+  profileMenuIconBox: {
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
-  advCountText: {
-    fontSize: 10.5,
-    fontWeight: '800',
-  },
-  advClearButton: {
+  profileMenuText: { fontSize: 13.5, color: '#1F2937', fontWeight: '600' },
+  profileMenuDivider: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 4 },
+  advFilterHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
   },
-  advClearText: {
-    fontSize: 12,
+  advFilterTitle: {
+    fontSize: 13,
     fontWeight: '700',
+    color: '#334155',
+  },
+  advFilterBody: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
   },
   advSection: {
-    marginBottom: 14,
+    gap: 6,
   },
   advSectionLabel: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '700',
-    marginBottom: 8,
-    letterSpacing: 0.2,
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  advPillRow: {
-    flexDirection: 'row',
-    gap: 6,
-    paddingRight: 10,
-  },
-  advPillWrap: {
+  advPillsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
@@ -2796,7 +2800,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   advPillActive: {
-    shadowColor: '#2563EB',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -2867,8 +2871,8 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   filterChipActive: {
-    backgroundColor: '#2563EB',
-    borderColor: '#1D4ED8',
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primaryDark,
   },
   filterChipText: {
     fontSize: 12,
@@ -2878,10 +2882,15 @@ const styles = StyleSheet.create({
   },
   filterChipTextActive: {
     color: '#fff',
+    fontWeight: '700',
+  },
+  itemsList: {
+    paddingVertical: 8,
+    paddingBottom: 24,
   },
   itemCard: {
-    marginHorizontal: 12,
-    marginVertical: 8,
+    marginHorizontal: 16,
+    marginBottom: 12,
   },
   itemImage: {
     width: '100%',
@@ -2909,44 +2918,46 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 8,
   },
-  itemInfo: {
-    flex: 1,
-    marginRight: 8,
-  },
   itemTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#1F2937',
+    flex: 1,
   },
-  itemStatus: {
-    fontSize: 12,
-    marginTop: 4,
-    color: '#6B7280',
-  },
-  rewardBadge: {
-    backgroundColor: '#FCD34D',
+  statusBadge: {
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 6,
+    marginLeft: 8,
   },
-  rewardBadgeText: {
-    fontSize: 12,
+  statusText: {
+    color: '#fff',
+    fontSize: 11,
     fontWeight: 'bold',
-    color: '#92400E',
   },
   itemDescription: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#4B5563',
     marginBottom: 8,
+    lineHeight: 18,
   },
   itemMeta: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+    alignItems: 'center',
+    marginBottom: 4,
   },
-  metaText: {
+  itemLocation: {
     fontSize: 12,
+    color: '#6B7280',
+  },
+  itemCategory: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  itemDate: {
+    fontSize: 11,
     color: '#9CA3AF',
+    marginTop: 4,
   },
   ownerInfo: {
     paddingTop: 8,
@@ -2956,7 +2967,7 @@ const styles = StyleSheet.create({
   ownerName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#2563EB',
+    color: COLORS.primary,
   },
   ownerEmail: {
     fontSize: 11,
@@ -2970,7 +2981,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderRadius: 6,
     borderLeftWidth: 3,
-    borderLeftColor: '#2563EB',
+    borderLeftColor: COLORS.primary,
   },
   expandedContent: {
     marginVertical: 12,
@@ -3021,14 +3032,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: COLORS.primaryLight,
     marginHorizontal: 16,
     marginBottom: 10,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: COLORS.primaryBorder,
   },
   radiusBannerLeft: {
     flexDirection: 'row',
@@ -3040,18 +3051,18 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#DBEAFE',
+    backgroundColor: COLORS.primaryBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
   radiusBannerTitle: {
     fontSize: 12.5,
     fontWeight: '800',
-    color: '#1E40AF',
+    color: COLORS.primaryDark,
   },
   radiusBannerSubtitle: {
     fontSize: 11,
-    color: '#3B82F6',
+    color: COLORS.primary,
     fontWeight: '500',
     marginTop: 1,
   },
@@ -3061,12 +3072,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#93C5FD',
+    borderColor: COLORS.primaryBorder,
   },
   radiusResetText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#2563EB',
+    color: COLORS.primary,
   },
   fabButton: {
     position: 'absolute',
@@ -3075,7 +3086,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#2563EB',
+    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
