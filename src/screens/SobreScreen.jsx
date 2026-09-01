@@ -70,13 +70,29 @@ const SobreScreen = ({ navigation }) => {
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48 }}>
           <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start', marginRight: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-              <Image
-                source={require('../../assets/logo.png')}
-                style={{ width: 28, height: 28, marginRight: 7 }}
-                resizeMode="contain"
-              />
-              <Text style={{ fontWeight: '900', fontSize: 23, letterSpacing: 0.5 }}>
-                <Text style={{ color: '#E4AB87' }}>We</Text>
+              <View style={{
+                width: 34,
+                height: 34,
+                borderRadius: 17,
+                backgroundColor: '#FFFFFF',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 8,
+                padding: 4,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1.5 },
+                shadowOpacity: 0.18,
+                shadowRadius: 2.5,
+                elevation: 3,
+              }}>
+                <Image
+                  source={require('../../assets/logo.png')}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="contain"
+                />
+              </View>
+              <Text style={{ fontWeight: '900', fontSize: 22, letterSpacing: 0.5 }}>
+                <Text style={{ color: '#F3D2BE' }}>We</Text>
                 <Text style={{ color: '#FFFFFF' }}>FIND</Text>
               </Text>
             </View>
