@@ -145,7 +145,7 @@ const PublicAppTabs = ({ navigation }) => {
                 backgroundColor: focused ? colors.primaryLight : 'transparent',
               }}
             >
-              <MaterialIcons name="map" size={23} color={focused ? colors.primary : colors.textSecondary} />
+              <MaterialIcons name="location-on" size={24} color={focused ? colors.primary : colors.textSecondary} />
             </View>
           ),
         }}
@@ -446,7 +446,7 @@ const MainAppTabs = ({ navigation }) => {
           tabBarLabel: 'Mapa',
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="map" size={size} color={color} />
+            <MaterialIcons name="location-on" size={size + 2} color={color} />
           ),
         }}
       />

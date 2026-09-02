@@ -33,10 +33,15 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 
 ## 📱 Funcionalidades
 
-✅ **Identidade e Apresentação Humana**
+✅ **Identidade, Apresentação e Landing Page Minimalista**
 - Nova identidade visual completa **WeFIND** com foco universal em **Animais** (cães, gatos, equinos, bovinos, aves e outros).
-- Tela de apresentação institucional (**"Sobre o WeFIND"** - `SobreScreen.jsx`) com abordagem humanizada, espaçamento generoso e seção **"Como Funciona o WeFIND"** com mockups visuais interativos (Cadastro Inteligente, Radar GPS e Chat de Conexão).
+- Tela de apresentação institucional (**"Sobre o WeFIND"** - `SobreScreen.jsx`) reformulada no estilo *landing page* minimalista com seções em zigue-zague intercaladas:
+  - Seção de Divulgação com ilustração vetorial moderna do celular exibindo cartaz com QR Code inteligente.
+  - Seção de Comunidade e Alertas com ilustração do pin WeFIND conectando tutores e protetores.
+  - Sistema de fallback para o **Mural de Reencontros**: injeção automática de histórias inspiradoras de exemplo (*Mock Data*) caso o banco de dados ainda não possua relatos enviados.
 - **Mural de Reencontros (`MuralReencontrosScreen.jsx`):** Tela dedicada e de carregamento instantâneo com placar comunitário em tempo real dos reencontros do dia atual (`startOfToday`), total acumulado desde o início e histórias/depoimentos enviados por tutores.
+- **Ícone de Navegação do Mapa:** Marcador de localização (`location-on`) na barra inferior alinhado com o símbolo oficial do WeFIND.
+- **Ícone do Aplicativo Android (Adaptive Icon):** Configuração refinada no `app.json` apontando para `adaptive-icon.png` com margens de respiro exatas, garantindo centralização impecável e evitando cortes na compilação do APK.
 - **Paleta de Cores Padronizada:** 100% alinhada à identidade visual WeFIND (Azul Real `#2563EB`, Verde Sucesso `#10B981`/`#16A34A`, Dourado `#FEA937` e Neutros/Ardósia), sem cores roxas.
 - Atalhos diretos para acessar **"Mural de Reencontros"** e **"Sobre o WeFIND"** no menu do perfil e configurações.
 - Telas de Login e Cadastro acolhedoras ("Bem-vindo de volta" e "Criar sua conta").
@@ -309,10 +314,14 @@ O **WeFIND** implementa uma arquitetura completa de notificações móveis push 
 
 ---
 
-✅ **Segurança — Senhas Fortes e Mensagens Amigáveis**
+✅ **Segurança — Validação Estrita de Senhas e Mensagens Amigáveis**
+- **Validação Rigorosa de Senhas Fortes (`RegisterScreen.jsx` & `EsqueciSenhaScreen.jsx`):**
+  - Exigência simultânea e estrita de no mínimo 8 caracteres, letras maiúsculas (`A-Z`), minúsculas (`a-z`) e números (`0-9`) tanto no cadastro quanto na redefinição via WhatsApp.
 - **Medidor Visual de Força de Senha (`PasswordStrengthIndicator.jsx`):**
   - Barra de progresso colorida em tempo real com nível: Fraca / Média / Forte / Excelente.
   - Checklist de requisitos com ícones: mínimo 8 caracteres, maiúscula, minúscula e número.
+- **Termo e Declaração de Guarda Provisória Responsável:**
+  - Validação obrigatória de responsabilidade e guarda provisória no cadastro de pets acolhidos (`RegisterItemScreen.jsx`) e exibição de selo oficial nos detalhes do pet (`ItemDetailScreen.jsx`).
 - **Tradução Amigável de Erros de Autenticação (`src/utils/authErrors.js`):**
   - Credenciais incorretas, usuário não encontrado, e-mail não confirmado, conta já existente, senha fraca, rate limit e erros de rede — todos com mensagens claras e humanizadas em português.
 

@@ -142,8 +142,8 @@ export default function EsqueciSenhaScreen({ navigation, route }) {
       Alert.alert('Senha Fraca', 'A nova senha deve conter pelo menos 8 caracteres.');
       return;
     }
-    if (!/[0-9]/.test(newPassword) || !/[A-Za-z]/.test(newPassword)) {
-      Alert.alert('Senha Fraca', 'A nova senha deve conter pelo menos uma letra e um número.');
+    if (!/[0-9]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[A-Z]/.test(newPassword)) {
+      Alert.alert('Senha Fraca', 'A nova senha deve conter letras maiúsculas, minúsculas e pelo menos um número.');
       return;
     }
 

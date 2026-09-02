@@ -11,7 +11,7 @@ import {
   Image,
   TextInput,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Calendar } from 'react-native-calendars';
@@ -369,6 +369,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
   );
   const [adoptionIntent, setAdoptionIntent] = useState(
     Boolean(editItem?.extra_fields?.adoption_intent)
+  );
+  const [legalCustodyAgreed, setLegalCustodyAgreed] = useState(
+    Boolean(editItem?.extra_fields?.legal_custody_agreed)
   );
 
   const [photos, setPhotos] = useState([]);
@@ -1241,6 +1244,13 @@ const RegisterItemScreen = ({ navigation, route }) => {
       return false;
     }
 
+    if (status === 'found' && foundCustody === 'with_me' && !legalCustodyAgreed) {
+      const msg = 'Você precisa aceitar os termos de Guarda Provisória para prosseguir.';
+      setError(msg);
+      Alert.alert('Termo Obrigatório', msg);
+      return false;
+    }
+
     if (isThirdPartyOwner) {
       if (!thirdPartyName || !thirdPartyName.trim()) {
         const msg = 'Informe o nome do tutor/responsável';
@@ -1489,6 +1499,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           is_direct_adoption: isDirectAdoption,
           found_custody: status === 'found' ? foundCustody : (isDirectAdoption ? 'with_me' : null),
           adoption_intent: status === 'found' && foundCustody === 'with_me' ? Boolean(adoptionIntent) : false,
+          legal_custody_agreed: status === 'found' && foundCustody === 'with_me' ? Boolean(legalCustodyAgreed) : false,
           available_for_adoption: isDirectAdoption ? true : (editItem?.extra_fields?.available_for_adoption || false),
           location_details: exactLocationDetails,
           third_party_owner: isThirdPartyOwner && (thirdPartyName.trim() || thirdPartyPhone.trim()) ? {
@@ -2054,6 +2065,34 @@ const RegisterItemScreen = ({ navigation, route }) => {
                         O número da sua residência e sua rua exata NÃO serão exibidos publicamente. Apenas seu bairro aproximado será visível para o tutor entrar em contato pelo chat.
                       </Text>
                     </View>
+                  )}
+
+                  {/* Termo de Guarda Provisória Obrigatório */}
+                  {foundCustody === 'with_me' && (
+                    <TouchableOpacity
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginTop: 4,
+                        marginBottom: 12,
+                        padding: 12,
+                        backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: legalCustodyAgreed ? colors.primary : (isDark ? '#334155' : '#CBD5E1'),
+                      }}
+                      onPress={() => setLegalCustodyAgreed(!legalCustodyAgreed)}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialIcons
+                        name={legalCustodyAgreed ? "check-box" : "check-box-outline-blank"}
+                        size={22}
+                        color={legalCustodyAgreed ? colors.primary : colors.textSecondary}
+                      />
+                      <Text style={{ flex: 1, marginLeft: 10, fontSize: 13, color: colors.text, lineHeight: 18 }}>
+                        Declaro que assumo a <Text style={{ fontWeight: 'bold' }}>Guarda Provisória</Text> (fiel depositário) deste animal, mantendo-o em segurança por até 15 dias para localização do tutor.
+                      </Text>
+                    </TouchableOpacity>
                   )}
 
                   {/* Opção de Intenção de Adoção (após período mínimo de 7 dias de busca pelo tutor) */}

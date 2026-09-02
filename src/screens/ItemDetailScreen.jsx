@@ -1096,6 +1096,24 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   ? 'Quem publicou apenas avistou o animal no local informado. Se você estiver na região, compartilhe novas pistas nos comentários.'
                   : 'O animal foi acolhido com segurança enquanto a comunidade busca pelo seu tutor original.'}
               </Text>
+
+              {item.extra_fields?.legal_custody_agreed && item.extra_fields?.found_custody === 'with_me' && (
+                <View style={{
+                  flexDirection: 'row',
+                  marginTop: 12,
+                  padding: 10,
+                  backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : '#ECFDF5',
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0',
+                  alignItems: 'center'
+                }}>
+                  <MaterialIcons name="gavel" size={20} color={isDark ? '#34D399' : '#059669'} style={{ marginRight: 8 }} />
+                  <Text style={{ flex: 1, fontSize: 12, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 16 }}>
+                    O autor declarou atuar legalmente como <Text style={{ fontWeight: 'bold' }}>Fiel Depositário (Guarda Provisória)</Text> deste animal, garantindo sua segurança pelo prazo de 15 dias para localização do tutor oficial.
+                  </Text>
+                </View>
+              )}
             </View>
           )}
         </TouchableOpacity>

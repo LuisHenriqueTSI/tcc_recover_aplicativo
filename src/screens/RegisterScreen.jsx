@@ -66,7 +66,7 @@ export const calculatePasswordStrength = (pwd = '') => {
     level = 4;
   }
 
-  const isValid = hasMinLength && (hasUpperCase || hasLowerCase) && hasNumber;
+  const isValid = hasMinLength && hasUpperCase && hasLowerCase && hasNumber;
 
   return {
     score,

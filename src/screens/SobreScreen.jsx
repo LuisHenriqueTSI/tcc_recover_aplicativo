@@ -62,7 +62,28 @@ const SobreScreen = ({ navigation }) => {
     navigation.navigate('MuralReencontros', { openSendModal: true });
   };
 
-  const displayedStories = stories.slice(0, 4);
+  const mockStories = [
+    {
+      id: 'mock1',
+      petName: 'Bolinha [Exemplo]',
+      author: 'Carlos S.',
+      location: 'Centro, São Paulo',
+      rating: 5,
+      testimonial: 'Graças ao cartaz digital gerado no WeFIND, um vizinho reconheceu o Bolinha na praça em menos de 2 horas! Muito obrigado.',
+      photoUrl: null,
+    },
+    {
+      id: 'mock2',
+      petName: 'Nina [Exemplo]',
+      author: 'Mariana T.',
+      location: 'Vila Mariana, SP',
+      rating: 5,
+      testimonial: 'O radar no mapa foi fundamental. Recebi um alerta de alguém que viu a Nina duas ruas abaixo da minha casa.',
+      photoUrl: null,
+    }
+  ];
+
+  const displayedStories = stories.length > 0 ? stories.slice(0, 4) : mockStories;
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
@@ -149,21 +170,38 @@ const SobreScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 1. HERO CARD COMPACTO & LIMPO */}
-        <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-          <WeFindLogo size={72} style={{ alignSelf: 'center', marginBottom: 12 }} />
-          <View style={[styles.heroBadge, { backgroundColor: colors.primaryLight, alignSelf: 'center' }]}>
-            <MaterialIcons name="pets" size={14} color={colors.primary} style={{ marginRight: 5 }} />
-            <Text style={[styles.heroBadgeText, { color: colors.primary }]}>REDE DE PROTEÇÃO E REENCONTRO</Text>
+        {/* 1. SECTION: DIVULGAÇÃO (ZIGZAG 1) */}
+        <View style={[styles.zigzagSection, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+          <View style={styles.zigzagTextContainer}>
+            <Text style={[styles.zigzagTitle, { color: colors.text }]}>Utilize poderosas ferramentas de divulgação</Text>
+            <Text style={[styles.zigzagDesc, { color: colors.textSecondary }]}>
+              Tudo foi projetado para aumentar significativamente suas chances de trazer seu pet de volta para casa. Crie seu anúncio agora e gere cartazes com QR code inteligentes!
+            </Text>
           </View>
+          <View style={styles.zigzagImageContainer}>
+            <Image 
+              source={require('../../assets/wefind_poster_feature.jpg')}
+              style={styles.zigzagImage}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
 
-          <Text style={[styles.heroHeadline, { color: colors.text, textAlign: 'center' }]}>
-            Reunindo animais e famílias com rapidez, tecnologia e empatia.
-          </Text>
-
-          <Text style={[styles.heroDescription, { color: colors.textSecondary, textAlign: 'center' }]}>
-            O <WeFindText size={15} /> conecta tutores, protetores e a vizinhança através de alertas geolocalizados, radar de busca em tempo real e divulgação facilitada.
-          </Text>
+        {/* 2. SECTION: COMUNIDADE (ZIGZAG 2) */}
+        <View style={[styles.zigzagSection, { backgroundColor: colors.surface, borderColor: colors.cardBorder, flexDirection: 'row-reverse' }]}>
+          <View style={[styles.zigzagTextContainer, { paddingRight: 0, paddingLeft: 16 }]}>
+            <Text style={[styles.zigzagTitle, { color: colors.text }]}>Alerta rápido para a vizinhança</Text>
+            <Text style={[styles.zigzagDesc, { color: colors.textSecondary }]}>
+              Ative uma campanha de busca inteligente. Seu alerta aparece no mapa da região, conectando você à comunidade de protetores.
+            </Text>
+          </View>
+          <View style={styles.zigzagImageContainer}>
+            <Image 
+              source={require('../../assets/wefind_how_it_works_minimalist.jpg')}
+              style={styles.zigzagImage}
+              resizeMode="contain"
+            />
+          </View>
         </View>
 
         {/* 2. MURAL DE REENCONTROS (DESTAQUE PRINCIPAL) */}
@@ -274,53 +312,7 @@ const SobreScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* 3. COMO FUNCIONA EM 3 PASSOS DIRETOS */}
-        <View style={styles.sectionWrapper}>
-          <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>
-            Como o WeFIND Funciona
-          </Text>
-
-          <View style={styles.stepsColumn}>
-            {/* Passo 1 */}
-            <View style={[styles.stepItemCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-              <View style={[styles.stepNumberBadge, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : COLORS.primaryLight, borderColor: isDark ? colors.primary : COLORS.primaryBorder }]}>
-                <Text style={[styles.stepNumberText, { color: colors.primary }]}>1</Text>
-              </View>
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={[styles.stepItemTitle, { color: colors.text }]}>Cadastre com Foto & Local</Text>
-                <Text style={[styles.stepItemDesc, { color: colors.textSecondary }]}>
-                  Publique em segundos um pet perdido, encontrado ou para adoção. O app gera cartaz digital com QR code pronto para compartilhar.
-                </Text>
-              </View>
-            </View>
-
-            {/* Passo 2 */}
-            <View style={[styles.stepItemCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-              <View style={[styles.stepNumberBadge, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
-                <Text style={[styles.stepNumberText, { color: '#D97706' }]}>2</Text>
-              </View>
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={[styles.stepItemTitle, { color: colors.text }]}>Radar no Mapa & Pistas com GPS</Text>
-                <Text style={[styles.stepItemDesc, { color: colors.textSecondary }]}>
-                  Pessoas da região podem avistar o animal, registrar novas coordenadas no mapa interativo e anexar fotos recentes.
-                </Text>
-              </View>
-            </View>
-
-            {/* Passo 3 */}
-            <View style={[styles.stepItemCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-              <View style={[styles.stepNumberBadge, { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5', borderColor: '#A7F3D0' }]}>
-                <Text style={[styles.stepNumberText, { color: '#2E5634' }]}>3</Text>
-              </View>
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={[styles.stepItemTitle, { color: colors.text }]}>Chat Seguro & Avaliações</Text>
-                <Text style={[styles.stepItemDesc, { color: colors.textSecondary }]}>
-                  Converse diretamente pelo app ou WhatsApp, combine o reencontro e avalie sua experiência com outros membros.
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
+        {/* REMOVIDO: Antiga seção 'Como funciona' */}
 
         {/* 4. ATALHOS RÁPIDOS */}
         <View style={styles.quickGrid}>
@@ -420,6 +412,47 @@ const styles = StyleSheet.create({
   heroDescription: {
     fontSize: 13,
     lineHeight: 19,
+  },
+  zigzagSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 22,
+    padding: 18,
+    borderWidth: 1,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  zigzagTextContainer: {
+    flex: 1,
+    paddingRight: 16,
+  },
+  zigzagTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    marginBottom: 8,
+    lineHeight: 22,
+    letterSpacing: -0.3,
+  },
+  zigzagDesc: {
+    fontSize: 12.5,
+    lineHeight: 18,
+  },
+  zigzagImageContainer: {
+    width: 110,
+    height: 110,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#fff', 
+  },
+  zigzagImage: {
+    width: '100%',
+    height: '100%',
   },
   sectionWrapper: {
     marginBottom: 20,
