@@ -297,6 +297,33 @@ const MapScreen = ({ route, navigation }) => {
   const [sightingModalVisible, setSightingModalVisible] = useState(false);
   const [submittingSighting, setSubmittingSighting] = useState(false);
   const [targetSightingItem, setTargetSightingItem] = useState(null);
+  const [selectedItemTrail, setSelectedItemTrail] = useState([]);
+  const [cardHeight, setCardHeight] = useState(0);
+
+  // Carrega o rastro de deslocamento do animal selecionado
+  useEffect(() => {
+    let isMounted = true;
+    if (!selectedItem?.id) {
+      setSelectedItemTrail([]);
+      return;
+    }
+
+    sightingsService.getItemSightingTrail(selectedItem)
+      .then((steps) => {
+        if (isMounted) {
+          setSelectedItemTrail(steps || []);
+          if (route?.params?.showTrail && steps && steps.length > 1 && mapRef.current) {
+            mapRef.current.fitToCoordinates(
+              steps.map(s => ({ latitude: s.latitude, longitude: s.longitude })),
+              { edgePadding: { top: 120, right: 60, bottom: 320, left: 60 }, animated: true }
+            );
+          }
+        }
+      })
+      .catch(() => {});
+
+    return () => { isMounted = false; };
+  }, [selectedItem?.id, selectedItem?.latitude, selectedItem?.longitude, selectedItem?.extra_fields?.sighting_count, route?.params?.showTrail]);
 
   // Auto-resolução do endereço completo do animal visto na rua
   useEffect(() => {
@@ -351,10 +378,10 @@ const MapScreen = ({ route, navigation }) => {
         }
       }
 
-      await sightingsService.recordSightingAndUpdateItemLocation({
+      const res = await sightingsService.recordSightingAndUpdateItemLocation({
         itemId: targetSightingItem.id,
         userId: user.id,
-        location: form.coordinate || { address: form.location },
+        location: form.coordinate || form.location_details || { address: form.location },
         description: form.description,
         contactInfo: form.contact_info,
         photoUrl,
@@ -364,19 +391,28 @@ const MapScreen = ({ route, navigation }) => {
       Alert.alert('Avistamento Registrado! 🎯', 'A nova localização do pet foi atualizada no mapa e os voluntários e tutores foram avisados.');
 
       await loadItems();
-      if (form.coordinate?.latitude && form.coordinate?.longitude) {
+      const newLat = res?.updatedLocation?.latitude ?? form.coordinate?.latitude;
+      const newLng = res?.updatedLocation?.longitude ?? form.coordinate?.longitude;
+      if (newLat && newLng) {
         const updatedItem = {
           ...targetSightingItem,
-          latitude: Number(form.coordinate.latitude),
-          longitude: Number(form.coordinate.longitude),
+          latitude: Number(newLat),
+          longitude: Number(newLng),
+          address: res?.updatedLocation?.address || targetSightingItem.address,
         };
         setSelectedItem(updatedItem);
-        mapRef.current?.animateToRegion({
-          latitude: Number(form.coordinate.latitude),
-          longitude: Number(form.coordinate.longitude),
-          latitudeDelta: 0.02,
-          longitudeDelta: 0.02,
-        }, 600);
+        if (mapRef.current) {
+          mapRef.current.animateCamera({
+            center: { latitude: Number(newLat), longitude: Number(newLng) },
+            zoom: 16.5,
+          }, { duration: 600 });
+          mapRef.current.animateToRegion({
+            latitude: Number(newLat),
+            longitude: Number(newLng),
+            latitudeDelta: 0.008,
+            longitudeDelta: 0.008,
+          }, 600);
+        }
       }
     } catch (e) {
       Alert.alert('Erro', 'Não foi possível registrar o avistamento. Tente novamente.');
@@ -816,13 +852,19 @@ const MapScreen = ({ route, navigation }) => {
   const handleCenterOnUser = async () => {
     setCenteringLoading(true);
     try {
-      // 1. Se já temos coordenadas em memória, anima IMEDIATAMENTE (0ms de espera)
+      // 1. Se já temos coordenadas em memória, aproxima IMEDIATAMENTE com zoom de rua (0ms)
       if (userCoords?.latitude && userCoords?.longitude && mapRef.current) {
+        const lat = Number(userCoords.latitude);
+        const lng = Number(userCoords.longitude);
+        mapRef.current.animateCamera({
+          center: { latitude: lat, longitude: lng },
+          zoom: 16.5,
+        }, { duration: 500 });
         mapRef.current.animateToRegion({
-          latitude: Number(userCoords.latitude),
-          longitude: Number(userCoords.longitude),
-          latitudeDelta: 0.015,
-          longitudeDelta: 0.015,
+          latitude: lat,
+          longitude: lng,
+          latitudeDelta: 0.006,
+          longitudeDelta: 0.006,
         }, 500);
       }
 
@@ -838,6 +880,23 @@ const MapScreen = ({ route, navigation }) => {
       if (!hasPermission) {
         setLocationStatus('denied');
         locationStatusRef.current = 'denied';
+
+        // Tenta fallback para localização salva no app
+        const stored = await AsyncStorage.getItem('@wefind/saved_location');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed?.latitude && parsed?.longitude && mapRef.current) {
+              const lat = Number(parsed.latitude);
+              const lng = Number(parsed.longitude);
+              setUserCoords({ latitude: lat, longitude: lng });
+              mapRef.current.animateCamera({ center: { latitude: lat, longitude: lng }, zoom: 16.5 }, { duration: 500 });
+              mapRef.current.animateToRegion({ latitude: lat, longitude: lng, latitudeDelta: 0.006, longitudeDelta: 0.006 }, 500);
+              return;
+            }
+          } catch {}
+        }
+
         Alert.alert(
           'Permissão de Localização',
           'Ative a permissão de localização nas configurações do seu celular para centralizar o mapa na sua posição atual.'
@@ -849,37 +908,42 @@ const MapScreen = ({ route, navigation }) => {
       const lastKnown = await Location.getLastKnownPositionAsync();
       if (lastKnown?.coords) {
         const lastCoords = {
-          latitude: lastKnown.coords.latitude,
-          longitude: lastKnown.coords.longitude,
+          latitude: Number(lastKnown.coords.latitude),
+          longitude: Number(lastKnown.coords.longitude),
         };
         setUserCoords(lastCoords);
         if (mapRef.current) {
+          mapRef.current.animateCamera({ center: lastCoords, zoom: 16.5 }, { duration: 500 });
           mapRef.current.animateToRegion({
             ...lastCoords,
-            latitudeDelta: 0.015,
-            longitudeDelta: 0.015,
+            latitudeDelta: 0.006,
+            longitudeDelta: 0.006,
           }, 500);
         }
       }
 
-      // 4. Busca a posição em tempo real com alta precisão
-      const current = await Location.getCurrentPositionAsync({
+      // 4. Busca a posição em tempo real com alta precisão com timeout de segurança
+      const currentPromise = Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000));
+
+      const current = await Promise.race([currentPromise, timeoutPromise]).catch(() => null);
 
       if (current?.coords) {
         const liveCoords = {
-          latitude: current.coords.latitude,
-          longitude: current.coords.longitude,
+          latitude: Number(current.coords.latitude),
+          longitude: Number(current.coords.longitude),
         };
         setUserCoords(liveCoords);
         setLocationStatus('granted');
         locationStatusRef.current = 'granted';
         if (mapRef.current) {
+          mapRef.current.animateCamera({ center: liveCoords, zoom: 16.5 }, { duration: 500 });
           mapRef.current.animateToRegion({
             ...liveCoords,
-            latitudeDelta: 0.015,
-            longitudeDelta: 0.015,
+            latitudeDelta: 0.006,
+            longitudeDelta: 0.006,
           }, 500);
         }
       }
@@ -887,11 +951,14 @@ const MapScreen = ({ route, navigation }) => {
       console.warn('[MapScreen] Não foi possível recentralizar no usuário:', error?.message || error);
       // Se não conseguiu nova coordenada mas tem a anterior, centraliza na anterior
       if (userCoords?.latitude && userCoords?.longitude && mapRef.current) {
+        const lat = Number(userCoords.latitude);
+        const lng = Number(userCoords.longitude);
+        mapRef.current.animateCamera({ center: { latitude: lat, longitude: lng }, zoom: 16.5 }, { duration: 500 });
         mapRef.current.animateToRegion({
-          latitude: Number(userCoords.latitude),
-          longitude: Number(userCoords.longitude),
-          latitudeDelta: 0.015,
-          longitudeDelta: 0.015,
+          latitude: lat,
+          longitude: lng,
+          latitudeDelta: 0.006,
+          longitudeDelta: 0.006,
         }, 500);
       } else {
         Alert.alert(
@@ -1022,6 +1089,8 @@ const MapScreen = ({ route, navigation }) => {
           </>
         )}
 
+
+
         {filteredItems
           .filter(item => {
             const lat = Number(item.latitude);
@@ -1084,7 +1153,13 @@ const MapScreen = ({ route, navigation }) => {
       )}
 
       {selectedItem && !isNavigating && (
-        <View style={styles.infoCard}>
+        <View
+          style={styles.infoCard}
+          onLayout={(e) => {
+            const h = e?.nativeEvent?.layout?.height;
+            if (h) setCardHeight(h);
+          }}
+        >
           <TouchableOpacity style={styles.infoClose} onPress={() => setSelectedItem(null)} activeOpacity={0.7}>
             <MaterialIcons name="close" size={18} color="#64748B" />
           </TouchableOpacity>
@@ -1395,13 +1470,13 @@ const MapScreen = ({ route, navigation }) => {
           </View>
 
           {/* 7. Ações: Ver Detalhes, Informar Avistamento e Iniciar Rota com Aproximação Automática */}
-          <View style={{ flexDirection: 'row', gap: 6, marginTop: 2 }}>
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
             <TouchableOpacity
-              style={[styles.detailsButton, { flex: 1, marginTop: 0, paddingHorizontal: 8 }]}
+              style={[styles.detailsButton, { flex: 1, marginTop: 0, paddingVertical: 10 }]}
               onPress={() => navigation.navigate('ItemDetail', { itemId: selectedItem.id })}
               activeOpacity={0.85}
             >
-              <Text style={[styles.detailsButtonText, { fontSize: 11.5 }]}>Detalhes</Text>
+              <Text style={[styles.detailsButtonText, { fontSize: 12.5 }]}>Detalhes</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -1413,14 +1488,14 @@ const MapScreen = ({ route, navigation }) => {
                 borderColor: '#FDE68A',
                 borderWidth: 1,
                 borderRadius: 12,
-                paddingHorizontal: 9,
+                paddingHorizontal: 12,
                 paddingVertical: 10,
               }}
               onPress={() => handleOpenSightingModal(selectedItem)}
               activeOpacity={0.85}
             >
-              <MaterialIcons name="add-location-alt" size={16} color="#D97706" style={{ marginRight: 3 }} />
-              <Text style={{ fontSize: 11.5, fontWeight: '800', color: '#B45309' }}>
+              <MaterialIcons name="add-location-alt" size={16} color="#D97706" style={{ marginRight: 4 }} />
+              <Text style={{ fontSize: 12, fontWeight: '800', color: '#B45309' }}>
                 Vi o Pet
               </Text>
             </TouchableOpacity>
@@ -1432,7 +1507,7 @@ const MapScreen = ({ route, navigation }) => {
                 justifyContent: 'center',
                 backgroundColor: routeCoordinates.length > 0 ? '#16A34A' : COLORS.primary,
                 borderRadius: 12,
-                paddingHorizontal: 12,
+                paddingHorizontal: 14,
                 paddingVertical: 10,
                 shadowColor: routeCoordinates.length > 0 ? '#16A34A' : COLORS.primary,
                 shadowOffset: { width: 0, height: 2 },
@@ -1562,7 +1637,13 @@ const MapScreen = ({ route, navigation }) => {
       <TouchableOpacity
         style={[
           styles.centerLocationButton,
-          isNavigating ? { bottom: 155 } : (selectedItem ? styles.centerLocationButtonRaised : null),
+          {
+            bottom: isNavigating
+              ? 165
+              : selectedItem
+              ? (cardHeight ? cardHeight + 36 : 420)
+              : Math.max(insets.bottom + 20, 28),
+          },
         ]}
         onPress={handleCenterOnUser}
         disabled={centeringLoading}
@@ -1828,13 +1909,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.22,
     shadowRadius: 6,
-    elevation: 6,
+    elevation: 10,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    zIndex: 50,
+    zIndex: 999,
   },
   centerLocationButtonRaised: {
-    bottom: 370,
+    bottom: 420,
   },
   permissionState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28, backgroundColor: '#F9FAFB' },
   permissionTitle: { color: '#111827', fontSize: 18, fontWeight: '700', marginTop: 14 },

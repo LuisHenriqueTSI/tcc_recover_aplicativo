@@ -584,16 +584,27 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const handleSubmitSighting = async (form) => {
     setSightingLoading(true);
     try {
-      await sightingsService.createSighting({
-        item_id: itemId,
-        user_id: user.id,
-        location: form.location,
+      let photoUrl = form.photo_url;
+      if (photoUrl && (photoUrl.startsWith('file://') || photoUrl.startsWith('content://'))) {
+        try {
+          photoUrl = await sightingsService.uploadSightingPhoto(itemId, photoUrl);
+        } catch (uploadErr) {
+          console.warn('[ItemDetailScreen] Erro upload foto avistamento:', uploadErr);
+        }
+      }
+
+      await sightingsService.recordSightingAndUpdateItemLocation({
+        itemId: itemId,
+        userId: user.id,
+        location: form.coordinate || form.location_details || { address: form.location },
         description: form.description,
-        contact_info: form.contact_info,
-        photo_url: form.photo_url,
+        contactInfo: form.contact_info,
+        photoUrl,
       });
+
       setSightingModalVisible(false);
       loadSightings();
+      loadItem(); // Recarrega os dados completos do animal atualizados no banco
 
       if (item?.owner_id) {
         try {
@@ -607,7 +618,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
             mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(form.location)}`;
           }
 
-          let notificationMessage = `${commenterName} compartilhou uma nova informação sobre o pet em: ${form.location || 'Local informado'}.\n\nDetalhes: "${form.description || ''}"`;
+          let notificationMessage = `${commenterName} compartilhou uma nova localização/avistamento sobre o pet em: ${form.location || 'Local informado'}.\n\nDetalhes: "${form.description || ''}"`;
           if (mapsLink) {
             notificationMessage += `\n\n📍 *Ver localização no Google Maps:*\n${mapsLink}`;
           }
@@ -624,9 +635,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
         }
       }
 
-      Alert.alert('Sucesso', 'Informações compartilhadas com sucesso!');
+      Alert.alert('Avistamento Registrado! 🎯', 'A nova localização do pet foi atualizada e o tutor foi notificado com sucesso.');
     } catch (e) {
-      Alert.alert('Erro', 'Não foi possível enviar as informações.');
+      Alert.alert('Erro', 'Não foi possível enviar as informações. Tente novamente.');
     } finally {
       setSightingLoading(false);
     }
@@ -1823,11 +1834,69 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
                   if (!displayLoc) return null;
 
+                  let sLat = s.contact_info?.coordinate?.latitude ?? s.contact_info?.location_details?.latitude;
+                  let sLng = s.contact_info?.coordinate?.longitude ?? s.contact_info?.location_details?.longitude;
+
+                  const handlePressSightingLocation = async () => {
+                    let targetLat = sLat;
+                    let targetLng = sLng;
+
+                    if ((targetLat == null || targetLng == null) && displayLoc) {
+                      try {
+                        const Location = await import('expo-location');
+                        const results = await Location.geocodeAsync(displayLoc);
+                        if (results && results.length > 0) {
+                          targetLat = results[0].latitude;
+                          targetLng = results[0].longitude;
+                        }
+                      } catch {}
+                    }
+
+                    if (targetLat != null && targetLng != null) {
+                      navigation.navigate('Map', {
+                        targetCoords: { latitude: Number(targetLat), longitude: Number(targetLng) },
+                        focusItemId: item.id,
+                        showRoute: true,
+                      });
+                    } else {
+                      navigation.navigate('Map', {
+                        targetCoords: { latitude: Number(item.latitude), longitude: Number(item.longitude) },
+                        focusItemId: item.id,
+                        showRoute: true,
+                      });
+                    }
+                  };
+
                   return (
-                    <View style={[styles.commentLocationChip, { backgroundColor: isDark ? '#0F172A' : colors.primaryLight }]}>
-                      <MaterialIcons name="location-on" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-                      <Text style={[styles.commentLocationText, { color: colors.primary }]}>{displayLoc}</Text>
-                    </View>
+                    <TouchableOpacity
+                      style={[
+                        styles.commentLocationChip,
+                        {
+                          backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : '#F0FDF4',
+                          borderColor: isDark ? 'rgba(16, 185, 129, 0.3)' : '#BBF7D0',
+                          borderWidth: 1,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          paddingVertical: 8,
+                          paddingHorizontal: 10,
+                          borderRadius: 10,
+                          marginTop: 6,
+                        },
+                      ]}
+                      onPress={handlePressSightingLocation}
+                      activeOpacity={0.8}
+                    >
+                      <MaterialIcons name="navigation" size={15} color="#16A34A" style={{ marginRight: 6 }} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 10, fontWeight: '800', color: '#16A34A', textTransform: 'uppercase', letterSpacing: 0.3 }}>
+                          Local Informado • Toque para ver a rota
+                        </Text>
+                        <Text style={[styles.commentLocationText, { color: isDark ? '#34D399' : '#15803D', fontWeight: '700', fontSize: 12 }]} numberOfLines={2}>
+                          {displayLoc}
+                        </Text>
+                      </View>
+                      <MaterialIcons name="chevron-right" size={18} color="#16A34A" />
+                    </TouchableOpacity>
                   );
                 })()}
 

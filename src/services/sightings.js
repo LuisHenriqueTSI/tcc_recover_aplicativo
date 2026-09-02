@@ -470,59 +470,244 @@ export const findNearbyPotentialMatches = async ({ latitude, longitude, species,
  */
 export const recordSightingAndUpdateItemLocation = async ({ itemId, userId, location, description, photoUrl, contactInfo }) => {
   try {
-    // 1. Resolve o endereço completo humanizado
-    const resolvedAddress = await resolveReadableAddress(location);
+    console.log('[recordSightingAndUpdateItemLocation] Processando avistamento para o item:', itemId);
 
-    // 2. Cria o avistamento no histórico
+    // 1. Extração robusta de coordenadas (latitude e longitude)
+    let lat = location?.latitude ?? location?.coords?.latitude ?? location?.lat ?? location?.coordinate?.latitude ?? contactInfo?.coordinate?.latitude ?? contactInfo?.location_details?.latitude;
+    let lng = location?.longitude ?? location?.coords?.longitude ?? location?.lng ?? location?.coordinate?.longitude ?? contactInfo?.coordinate?.longitude ?? contactInfo?.location_details?.longitude;
+
+    // Se as coordenadas não vierem diretamente como número, tenta buscar no endereço em texto
+    let rawAddressText = typeof location === 'string' ? location : (location?.address || location?.text || contactInfo?.location_details?.text || '');
+
+    if ((lat == null || lng == null || isNaN(Number(lat)) || isNaN(Number(lng))) && rawAddressText) {
+      try {
+        const Location = await import('expo-location');
+        const geoResults = await Location.geocodeAsync(rawAddressText);
+        if (geoResults && geoResults.length > 0) {
+          lat = geoResults[0].latitude;
+          lng = geoResults[0].longitude;
+        }
+      } catch (geoErr) {
+        console.warn('[recordSightingAndUpdateItemLocation] Erro no geocoding do texto:', geoErr?.message);
+      }
+    }
+
+    // 2. Resolve o endereço completo humanizado e partes estruturadas
+    let resolvedAddress = rawAddressText;
+    let street = contactInfo?.location_details?.street || location?.street || '';
+    let number = contactInfo?.location_details?.number || location?.number || location?.house_number || '';
+    let district = contactInfo?.location_details?.district || location?.district || location?.neighborhood || '';
+    let city = contactInfo?.location_details?.city || location?.city || '';
+    let state = contactInfo?.location_details?.state || location?.state || '';
+
+    if (lat != null && lng != null && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
+      try {
+        const Location = await import('expo-location');
+        const addresses = await Location.reverseGeocodeAsync({ latitude: Number(lat), longitude: Number(lng) });
+        const addr = addresses?.[0];
+        if (addr) {
+          if (!street) street = addr.street || addr.name || '';
+          if (!number) number = (addr.name && /^\d+$/.test(String(addr.name))) ? addr.name : (addr.streetNumber || '');
+          if (!district) district = addr.district || addr.subregion || '';
+          if (!city) city = addr.city || addr.subregion || '';
+          if (!state) state = addr.region || '';
+
+          const parts = [];
+          if (street) parts.push(number ? `${street}, ${number}` : street);
+          if (district && district !== street) parts.push(district);
+          if (city && state) parts.push(`${city} - ${state}`);
+          else if (city) parts.push(city);
+          else if (state) parts.push(state);
+
+          const humanized = parts.join(' - ');
+          if (humanized.trim()) resolvedAddress = humanized.trim();
+        }
+      } catch (revErr) {
+        console.warn('[recordSightingAndUpdateItemLocation] Erro no reverse geocoding:', revErr?.message);
+      }
+    }
+
+    if (!resolvedAddress) {
+      resolvedAddress = 'Localização marcada no mapa';
+    }
+
+    // 3. Cria o avistamento no histórico (tabela 'sightings')
     const sighting = await createSighting({
       item_id: itemId,
       user_id: userId,
-      location: resolvedAddress || 'Localização marcada no mapa',
+      location: resolvedAddress,
       description,
       photo_url: photoUrl,
-      contact_info: contactInfo,
+      contact_info: {
+        ...(typeof contactInfo === 'object' ? contactInfo : {}),
+        coordinate: (lat != null && lng != null) ? { latitude: Number(lat), longitude: Number(lng) } : null,
+        location_details: {
+          street,
+          number,
+          district,
+          city,
+          state,
+          text: resolvedAddress,
+        },
+      },
     });
 
-    // 3. Atualiza a localização atual do item e o timestamp de último avistamento
-    const lat = location?.latitude ?? location?.coords?.latitude;
-    const lng = location?.longitude ?? location?.coords?.longitude;
+    // 4. Atualiza os dados completos de localização do animal na tabela 'items'
+    const { data: currentItem } = await supabase
+      .from('items')
+      .select('extra_fields, city, state, neighborhood, street, latitude, longitude, owner_id, title')
+      .eq('id', itemId)
+      .maybeSingle();
+
+    const currentExtra = currentItem?.extra_fields || {};
+    const newCount = (currentExtra.sighting_count || 0) + 1;
 
     const updatePayload = {
       updated_at: new Date().toISOString(),
+      extra_fields: {
+        ...currentExtra,
+        sighting_count: newCount,
+        last_sighting_at: new Date().toISOString(),
+        last_sighting_by: userId,
+        last_sighting_address: resolvedAddress,
+        last_sighting_lat: lat != null ? Number(lat) : currentItem?.latitude,
+        last_sighting_lng: lng != null ? Number(lng) : currentItem?.longitude,
+        location_details: {
+          ...(currentExtra.location_details || {}),
+          latitude: lat != null ? Number(lat) : (currentExtra.location_details?.latitude || currentItem?.latitude),
+          longitude: lng != null ? Number(lng) : (currentExtra.location_details?.longitude || currentItem?.longitude),
+          street: street || currentItem?.street || currentExtra.location_details?.street || '',
+          number: number || currentExtra.location_details?.number || '',
+          district: district || currentItem?.neighborhood || currentExtra.location_details?.district || '',
+          city: city || currentItem?.city || currentExtra.location_details?.city || '',
+          state: state || currentItem?.state || currentExtra.location_details?.state || '',
+          text: resolvedAddress,
+        },
+      },
     };
-    if (lat && lng) {
+
+    if (lat != null && lng != null && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
       updatePayload.latitude = Number(lat);
       updatePayload.longitude = Number(lng);
     }
     if (resolvedAddress && resolvedAddress !== 'Localização marcada no mapa') {
       updatePayload.address = resolvedAddress;
     }
+    if (street) updatePayload.street = street;
+    if (number) updatePayload.house_number = number;
+    if (district) updatePayload.neighborhood = district;
+    if (city) updatePayload.city = city;
+    if (state) updatePayload.state = state;
 
-    const { data: currentItem } = await supabase
-      .from('items')
-      .select('extra_fields')
-      .eq('id', itemId)
-      .single();
-
-    const currentExtra = currentItem?.extra_fields || {};
-    const newCount = (currentExtra.sighting_count || 0) + 1;
-
-    updatePayload.extra_fields = {
-      ...currentExtra,
-      sighting_count: newCount,
-      last_sighting_at: new Date().toISOString(),
-      last_sighting_by: userId,
-      last_sighting_address: resolvedAddress || updatePayload.address || '',
-    };
-
-    await supabase
+    const { error: updateError } = await supabase
       .from('items')
       .update(updatePayload)
       .eq('id', itemId);
 
-    return sighting;
+    if (updateError) {
+      console.warn('[recordSightingAndUpdateItemLocation] Erro ao atualizar item:', updateError.message);
+    } else {
+      console.log('[recordSightingAndUpdateItemLocation] Localização do item atualizada com sucesso no banco!');
+    }
+
+    // 5. Credita pontos de gamificação ao usuário que registrou o avistamento
+    try {
+      const { awardGamificationXp } = await import('./gamification');
+      await awardGamificationXp(userId, 'sighting_report', 40);
+    } catch (gamiErr) {}
+
+    return {
+      sighting,
+      updatedLocation: {
+        latitude: updatePayload.latitude,
+        longitude: updatePayload.longitude,
+        address: resolvedAddress,
+        street,
+        neighborhood: district,
+        city,
+        state,
+      },
+    };
   } catch (err) {
     console.error('[recordSightingAndUpdateItemLocation] Erro:', err);
     throw err;
+  }
+};
+
+/**
+ * Calcula o rastro cronológico completo de deslocamento do animal (ponto inicial + todos os avistamentos)
+ */
+export const getItemSightingTrail = async (item) => {
+  try {
+    if (!item?.id) return [];
+
+    const sightings = await getSightings(item.id);
+    // Ordena do mais antigo para o mais recente para construir a linha do tempo cronológica
+    const sortedSightings = (sightings || []).slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    const trailSteps = [];
+
+    // 1. Ponto Inicial (Origem do Desaparecimento ou Ponto Original de Cadastro)
+    const initialLat = Number(item.extra_fields?.initial_latitude ?? item.latitude);
+    const initialLng = Number(item.extra_fields?.initial_longitude ?? item.longitude);
+    const initialAddress = item.extra_fields?.initial_address || item.address || [item.street, item.neighborhood, item.city, item.state].filter(Boolean).join(' - ') || 'Local de desaparecimento';
+
+    if (Number.isFinite(initialLat) && Number.isFinite(initialLng) && initialLat !== 0 && initialLng !== 0) {
+      trailSteps.push({
+        step: 1,
+        type: 'initial',
+        label: item.status === 'lost' ? '1. Local do Desaparecimento' : '1. Ponto Inicial do Registro',
+        address: initialAddress,
+        latitude: initialLat,
+        longitude: initialLng,
+        date: item.date || item.created_at,
+        description: item.description || 'Ponto original cadastrado.',
+        user_name: item.profiles?.name || item.owner_name || 'Tutor',
+        isInitial: true,
+        isLatest: sortedSightings.length === 0,
+      });
+    }
+
+    // 2. Pontos de Avistamento Subsequentes
+    for (let i = 0; i < sortedSightings.length; i++) {
+      const s = sortedSightings[i];
+      let sLat = s.contact_info?.coordinate?.latitude ?? s.contact_info?.location_details?.latitude;
+      let sLng = s.contact_info?.coordinate?.longitude ?? s.contact_info?.location_details?.longitude;
+
+      if ((sLat == null || sLng == null) && s.location) {
+        try {
+          const Location = await import('expo-location');
+          const results = await Location.geocodeAsync(s.location);
+          if (results && results.length > 0) {
+            sLat = results[0].latitude;
+            sLng = results[0].longitude;
+          }
+        } catch {}
+      }
+
+      if (sLat != null && sLng != null && Number.isFinite(Number(sLat)) && Number.isFinite(Number(sLng))) {
+        const isLatest = i === sortedSightings.length - 1;
+        const stepNum = trailSteps.length + 1;
+        trailSteps.push({
+          step: stepNum,
+          type: 'sighting',
+          id: s.id,
+          label: isLatest ? `${stepNum}. Último Avistamento (Mais Recente)` : `${stepNum}. Avistado na Rua`,
+          address: s.location || 'Local informado no mapa',
+          latitude: Number(sLat),
+          longitude: Number(sLng),
+          date: s.created_at,
+          description: s.description || 'Visto nesta região.',
+          photo_url: s.photo_url,
+          user_name: s.profiles?.name || 'Membro da Comunidade',
+          isLatest,
+        });
+      }
+    }
+
+    return trailSteps;
+  } catch (err) {
+    console.warn('[getItemSightingTrail] Erro ao carregar rastro:', err.message);
+    return [];
   }
 };

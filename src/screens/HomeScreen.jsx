@@ -1631,12 +1631,18 @@ const HomeScreen = ({ navigation, route }) => {
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
               <Image
                 source={require('../../assets/logo_outlined.png')}
-                style={{ width: 28, height: 28, marginRight: 7 }}
+                style={{ width: 34, height: 34, marginRight: 8 }}
                 resizeMode="contain"
               />
-              <Text style={{ fontWeight: '900', fontSize: 22, letterSpacing: 0.5 }}>
-                <Text style={{ color: COLORS.weColor || '#B1734A' }}>We</Text>
-                <Text style={{ color: '#FFFFFF' }}>FIND</Text>
+              <Text
+                style={{
+                  fontSize: 20,
+                  letterSpacing: 1.4,
+                  fontFamily: Platform.select({ ios: 'System', android: 'sans-serif-light' }),
+                }}
+              >
+                <Text style={{ color: COLORS.weColor || '#B1734A', fontWeight: '600' }}>We</Text>
+                <Text style={{ color: '#FFFFFF', fontWeight: '300' }}>FIND</Text>
               </Text>
             </View>
             <TouchableOpacity

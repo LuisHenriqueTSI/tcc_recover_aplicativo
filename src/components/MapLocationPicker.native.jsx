@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -56,6 +56,7 @@ const MapLocationPicker = ({
   onRadiusChange,
 }) => {
   const insets = useSafeAreaInsets();
+  const mapRef = useRef(null);
   const [coordinate, setCoordinate] = useState(initialLocation || null);
   const [currentRadiusKm, setCurrentRadiusKm] = useState(radiusKm || 25);
   const [loadingLocation, setLoadingLocation] = useState(false);
@@ -155,12 +156,34 @@ const MapLocationPicker = ({
   const loadCurrentLocation = async () => {
     setLoadingLocation(true);
     try {
+      // 1. Tenta obter última localização conhecida instantaneamente para animação 0ms
+      const lastKnown = await Location.getLastKnownPositionAsync();
+      if (lastKnown?.coords) {
+        const lastCoords = { latitude: Number(lastKnown.coords.latitude), longitude: Number(lastKnown.coords.longitude) };
+        setCoordinate(lastCoords);
+        reverseGeocodeCoordinate(lastCoords);
+        if (mapRef.current) {
+          mapRef.current.animateCamera({ center: lastCoords, zoom: 16.5 }, { duration: 400 });
+          mapRef.current.animateToRegion({ ...lastCoords, latitudeDelta: 0.006, longitudeDelta: 0.006 }, 400);
+        }
+      }
+
+      // 2. Solicita permissão e busca GPS em tempo real com timeout de segurança
       const permission = await Location.requestForegroundPermissionsAsync();
       if (permission.granted) {
-        const result = await Location.getCurrentPositionAsync({});
-        const currentCoord = { latitude: result.coords.latitude, longitude: result.coords.longitude };
-        setCoordinate(currentCoord);
-        reverseGeocodeCoordinate(currentCoord);
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000));
+        const currentPromise = Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        const result = await Promise.race([currentPromise, timeoutPromise]).catch(() => null);
+
+        if (result?.coords) {
+          const currentCoord = { latitude: Number(result.coords.latitude), longitude: Number(result.coords.longitude) };
+          setCoordinate(currentCoord);
+          reverseGeocodeCoordinate(currentCoord);
+          if (mapRef.current) {
+            mapRef.current.animateCamera({ center: currentCoord, zoom: 16.5 }, { duration: 500 });
+            mapRef.current.animateToRegion({ ...currentCoord, latitudeDelta: 0.006, longitudeDelta: 0.006 }, 500);
+          }
+        }
       }
     } catch (error) {
       console.warn('[MapLocationPicker] Não foi possível obter a localização atual:', error.message);
@@ -173,8 +196,14 @@ const MapLocationPicker = ({
     if (!visible) return;
     setCoordinate(initialLocation || null);
 
-    if (initialLocation) {
+    if (initialLocation?.latitude && initialLocation?.longitude) {
       reverseGeocodeCoordinate(initialLocation);
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.animateCamera({ center: initialLocation, zoom: 16.5 }, { duration: 400 });
+          mapRef.current.animateToRegion({ ...initialLocation, latitudeDelta: 0.006, longitudeDelta: 0.006 }, 400);
+        }
+      }, 200);
       return;
     }
 
@@ -185,6 +214,9 @@ const MapLocationPicker = ({
     const newCoord = event.nativeEvent.coordinate;
     setCoordinate(newCoord);
     reverseGeocodeCoordinate(newCoord);
+    if (mapRef.current) {
+      mapRef.current.animateCamera({ center: newCoord, zoom: 16.5 }, { duration: 300 });
+    }
   };
 
   const handleConfirm = () => {
@@ -254,8 +286,9 @@ const MapLocationPicker = ({
         {/* Mapa com Marcador e Círculo de Raio */}
         <View style={styles.mapContainer}>
           <MapView
+            ref={mapRef}
             style={styles.map}
-            initialRegion={coordinate ? { ...coordinate, latitudeDelta: 0.15, longitudeDelta: 0.15 } : BRAZIL_REGION}
+            initialRegion={coordinate ? { ...coordinate, latitudeDelta: 0.008, longitudeDelta: 0.008 } : BRAZIL_REGION}
             onPress={handleMapPress}
             showsUserLocation
             showsMyLocationButton={false}
@@ -278,10 +311,15 @@ const MapLocationPicker = ({
           <TouchableOpacity
             style={styles.gpsFabButton}
             onPress={loadCurrentLocation}
+            disabled={loadingLocation}
             activeOpacity={0.8}
-            accessibilityLabel="Minha Localização"
+            accessibilityLabel="Minha Localização / Marco Zero"
           >
-            <MaterialIcons name="my-location" size={22} color={COLORS.primary} />
+            {loadingLocation ? (
+              <ActivityIndicator size="small" color={COLORS.primary} />
+            ) : (
+              <MaterialIcons name="my-location" size={22} color={COLORS.primary} />
+            )}
           </TouchableOpacity>
 
           {(loadingLocation || geocoding) && (

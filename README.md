@@ -143,6 +143,12 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
   - Ao trocar de aba ou navegar para outra tela, a localização volta automaticamente para "Todo o Brasil".
   - Para usuários autenticados, a localização é persistida permanentemente no perfil e no dispositivo.
 
+✅ **Avistamentos Vivos & Traçado de Rota GPS nos Comentários (`ItemDetailScreen.jsx` & `sightings.js`)**
+- **Atualização Atômica de Localização:** Quando um membro da comunidade relata ter visto o animal via modal *"Vi esse pet"*, o sistema atualiza em tempo real a latitude, longitude e endereço completo na tabela `items` e credita +40 XP de gamificação.
+- **Endereço Clicável com Traçado de Rota Direto:** Cada comentário e pista deixada pela comunidade que possuir localização torna-se um botão interativo (`🧭 LOCAL INFORMADO • TOQUE PARA VER A ROTA ➔`). Ao ser clicado, abre instantaneamente o mapa do app calculando e desenhando o trajeto GPS em tempo real entre o usuário e o local do avistamento.
+- **Marco Zero com Zoom de Rua:** O botão de aproximação no seletor de mapa (`MapLocationPicker.native.jsx`) e no mapa principal (`MapScreen.native.jsx`) utiliza zoom focado (`zoom: 16.5` e `delta: 0.006`), com posicionamento dinâmico responsivo (`cardHeight + 36px`) prevenindo qualquer sobreposição com o card do animal.
+- **Tipografia Moderna e Proporção do Cabeçalho (`HomeScreen.jsx`):** Símbolo oficial ampliado para 34x34 e tipografia WeFIND ajustada para visual leve, arejado e elegante (fontSize 20, pesos 300/600 e tracking 1.4).
+
 ---
 
 ✅ **Feed Inteligente — Performance, Ordenação e Consistência**
