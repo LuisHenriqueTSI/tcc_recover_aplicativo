@@ -1635,7 +1635,7 @@ const HomeScreen = ({ navigation, route }) => {
                 resizeMode="contain"
               />
               <Text style={{ fontWeight: '900', fontSize: 22, letterSpacing: 0.5 }}>
-                <Text style={{ color: '#F3D2BE' }}>We</Text>
+                <Text style={{ color: COLORS.weColor || '#B1734A' }}>We</Text>
                 <Text style={{ color: '#FFFFFF' }}>FIND</Text>
               </Text>
             </View>
@@ -1689,7 +1689,7 @@ const HomeScreen = ({ navigation, route }) => {
                 {userProfile?.avatar_url ? (
                   <Image source={{ uri: userProfile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E7EB' }} />
                 ) : (
-                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#F28213', alignItems: 'center', justifyContent: 'center' }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.secondary || '#B1734A', alignItems: 'center', justifyContent: 'center' }}>
                     <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>{userProfile?.name ? userProfile.name[0].toUpperCase() : 'U'}</Text>
                   </View>
                 )}
@@ -2433,7 +2433,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.secondary || '#B1734A',
     overflow: 'hidden',
   },
   profileMenuAvatarImage: { width: 36, height: 36 },

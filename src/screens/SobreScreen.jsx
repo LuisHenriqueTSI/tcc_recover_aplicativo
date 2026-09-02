@@ -98,7 +98,7 @@ const SobreScreen = ({ navigation }) => {
                 resizeMode="contain"
               />
               <Text style={{ fontWeight: '900', fontSize: 22, letterSpacing: 0.5 }}>
-                <Text style={{ color: '#F3D2BE' }}>We</Text>
+                <Text style={{ color: COLORS.weColor || '#B1734A' }}>We</Text>
                 <Text style={{ color: '#FFFFFF' }}>FIND</Text>
               </Text>
             </View>
@@ -175,7 +175,7 @@ const SobreScreen = ({ navigation }) => {
           <View style={styles.zigzagTextContainer}>
             <Text style={[styles.zigzagTitle, { color: colors.text }]}>Utilize poderosas ferramentas de divulgação</Text>
             <Text style={[styles.zigzagDesc, { color: colors.textSecondary }]}>
-              Tudo foi projetado para aumentar significativamente suas chances de trazer seu pet de volta para casa. Crie seu anúncio agora e gere cartazes com QR code inteligentes!
+              Tudo foi projetado para aumentar significativamente suas chances de trazer seu pet de volta para casa. Crie sua publicação agora e gere cartazes com QR code inteligentes!
             </Text>
           </View>
           <View style={styles.zigzagImageContainer}>

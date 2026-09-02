@@ -17,7 +17,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import * as itemsService from '../services/items';
 import FosterVolunteerModal from '../components/FosterVolunteerModal';
+import GamificationCard from '../components/GamificationCard';
 import { getFosterProfile } from '../services/foster';
+import { getUserGamificationData } from '../services/gamification';
 
 const ProfileScreen = ({ navigation }) => {
   const { userProfile, user, signOut, refreshProfile, isAdmin } = useAuth();
@@ -29,47 +31,39 @@ const ProfileScreen = ({ navigation }) => {
   const [localSavedLocation, setLocalSavedLocation] = useState(null);
   const [fosterModalVisible, setFosterModalVisible] = useState(false);
   const [fosterProfile, setFosterProfile] = useState(null);
+  const [gamificationData, setGamificationData] = useState(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    const loadProfileData = async () => {
+  const loadProfileData = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem('@wefind/saved_location');
+      if (stored) setLocalSavedLocation(JSON.parse(stored));
+    } catch (e) {}
+
+    if (user?.id) {
       try {
-        const stored = await AsyncStorage.getItem('@wefind/saved_location');
-        if (stored && isMounted) setLocalSavedLocation(JSON.parse(stored));
-      } catch (e) {}
-
-      if (user?.id) {
-        const [itemsRes, fosterRes] = await Promise.allSettled([
+        const [itemsRes, fosterRes, gamiRes] = await Promise.allSettled([
           itemsService.getUserItems(user.id),
           getFosterProfile(user.id),
+          getUserGamificationData(user.id, userProfile),
         ]);
-        if (isMounted) {
-          if (itemsRes.status === 'fulfilled') setUserItems(itemsRes.value || []);
-          if (fosterRes.status === 'fulfilled') setFosterProfile(fosterRes.value);
-        }
+        if (itemsRes.status === 'fulfilled') setUserItems(itemsRes.value || []);
+        if (fosterRes.status === 'fulfilled') setFosterProfile(fosterRes.value);
+        if (gamiRes.status === 'fulfilled') setGamificationData(gamiRes.value);
+      } catch (err) {
+        console.warn('[ProfileScreen] Erro ao carregar dados:', err);
       }
-      if (isMounted) {
-        setLoading(false);
-      }
-    };
+    }
+    setLoading(false);
+  }, [user?.id, userProfile]);
+
+  useEffect(() => {
     loadProfileData();
-    return () => { isMounted = false; };
-  }, [user?.id]);
+  }, [loadProfileData]);
 
   useFocusEffect(
     useCallback(() => {
-      AsyncStorage.getItem('@wefind/saved_location').then((data) => {
-        if (data) {
-          try {
-            setLocalSavedLocation(JSON.parse(data));
-          } catch (e) {}
-        }
-      });
-      if (user?.id) {
-        itemsService.getUserItems(user.id).then((items) => setUserItems(items || []));
-        getFosterProfile(user.id).then((fp) => setFosterProfile(fp));
-      }
-    }, [user?.id])
+      loadProfileData();
+    }, [loadProfileData])
   );
 
   useEffect(() => {
@@ -257,6 +251,14 @@ const ProfileScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
+      {/* 1.5 CARD DE GAMIFICAÇÃO & NÍVEL DE GUARDIÃO */}
+      {gamificationData && (
+        <GamificationCard
+          gamificationData={gamificationData}
+          onRefresh={loadProfileData}
+        />
+      )}
+
       {/* 2. STATS QUICK CARDS */}
       <View style={styles.statsGrid}>
         <TouchableOpacity
@@ -295,6 +297,29 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Reencontros</Text>
         </TouchableOpacity>
       </View>
+
+      {/* 2.5 ACESSO DIRETO: MEUS PETS & RG DIGITAL */}
+      <TouchableOpacity
+        style={[styles.postsCard, { backgroundColor: colors.card, borderColor: isDark ? '#334155' : '#BBF7D0', marginBottom: 10 }]}
+        onPress={() => navigation.navigate('MyPets')}
+        activeOpacity={0.85}
+      >
+        <View style={[styles.postsIconBox, { backgroundColor: isDark ? 'rgba(46, 86, 52, 0.3)' : '#DCFCE7' }]}>
+          <MaterialIcons name="badge" size={24} color="#15803D" />
+        </View>
+        <View style={styles.postsTextBox}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={[styles.postsTitle, { color: colors.text }]}>Meus Pets & RG Digital</Text>
+            <View style={{ backgroundColor: '#16A34A', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 4 }}>
+              <Text style={{ fontSize: 9, fontWeight: '900', color: '#FFFFFF' }}>NOVO</Text>
+            </View>
+          </View>
+          <Text style={[styles.postsSubtitle, { color: colors.textSecondary }]}>
+            Carteirinha oficial, dados de saúde e botão de emergência
+          </Text>
+        </View>
+        <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ marginLeft: 4 }} />
+      </TouchableOpacity>
 
       {/* 3. ACESSO DIRETO: MINHAS PUBLICAÇÕES */}
       <TouchableOpacity

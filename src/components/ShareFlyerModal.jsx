@@ -10,7 +10,7 @@ import {
   StyleSheet,
   Share,
 } from 'react-native';
-import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { MaterialIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
@@ -19,13 +19,24 @@ import ShareCardFlyer from './ShareCardFlyer';
 import { useTheme } from '../contexts/ThemeContext';
 import COLORS from '../constants/theme';
 
+/**
+ * Modal Completo de Divulgação:
+ * Permite selecionar entre Cartaz A4 para impressão com QR Code, Stories 9:16 e Feed 1:1
+ */
 const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const flyerRef = useRef(null);
   const [capturing, setCapturing] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState('a4'); // 'a4' | 'stories' | 'feed'
 
   if (!item) return null;
+
+  const FORMATS = [
+    { id: 'a4', label: 'Cartaz com QR', icon: 'description', desc: 'Impressão e Postes' },
+    { id: 'stories', label: 'Stories / Status', icon: 'smartphone', desc: '9:16 Vertical' },
+    { id: 'feed', label: 'Feed Quadrado', icon: 'crop-square', desc: '1:1 Instagram' },
+  ];
 
   const getShareTextMessage = () => {
     const isAdoption = Boolean(
@@ -36,7 +47,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
 
     const status = isAdoption
       ? '🤍 PARA ADOÇÃO'
-      : (item.status === 'found' ? '🔍 ENCONTRADO' : '❗ PERDIDO');
+      : (item.status === 'found' ? '🔍 ENCONTRADO' : '🚨 PROCURA-SE / PERDIDO');
 
     const locationLabel = isAdoption ? '📍 Onde está' : '📍 Local';
     const location = [item.street, item.neighborhood, item.city, item.state].filter(Boolean).join(' - ') || 'Não especificado';
@@ -44,24 +55,20 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
     const date = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? new Date(`${rawDate}T12:00:00`) : new Date(rawDate);
     const formattedDate = item.date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString('pt-BR') : 'Não informada';
     const phone = item.profiles?.whatsapp || item.profiles?.phone || item.contact_phone || '';
-    const phoneInfo = phone ? `\n📞 Contato: ${phone}` : '';
+    const phoneInfo = phone ? `\n📞 Contato direto: ${phone}` : '';
     
     const details = [
       item.species || item.extra_fields?.species ? `🐾 ${item.species || item.extra_fields?.species}` : '',
       item.breed || item.extra_fields?.breed ? `🏷️ ${item.breed || item.extra_fields?.breed}` : '',
       item.gender || item.extra_fields?.gender ? `⚧ ${item.gender || item.extra_fields?.gender}` : '',
-      item.age || item.extra_fields?.age ? `🎂 ${item.age || item.extra_fields?.age}` : '',
-      item.size || item.extra_fields?.size ? `📏 ${item.size || item.extra_fields?.size}` : '',
       item.color || item.extra_fields?.color ? `🎨 ${item.color || item.extra_fields?.color}` : '',
     ].filter(Boolean).join(' | ');
 
     const detailsLine = details ? `\n${details}\n` : '';
     const headerTitle = isAdoption ? 'ADOÇÃO RESPONSÁVEL' : 'AJUDE A ENCONTRAR';
-    const callToAction = isAdoption
-      ? 'Interessado em adotar? Entre em contato e compartilhe!'
-      : 'Por favor, compartilhe!';
+    const linkInfo = `\n🔗 Link no WeFIND: https://wefind.app/pet/${item.id}`;
 
-    return `🐾 *WeFIND - ${headerTitle}*\n\n${status}: *${item.title || 'Animal'}*${detailsLine}\n${locationLabel}: ${location}\n📅 Data: ${formattedDate}${phoneInfo}\n\n"${item.description || ''}"\n\n${callToAction}`;
+    return `🐾 *WeFIND - ${headerTitle}*\n\n${status}: *${item.title || 'Animal'}*${detailsLine}\n${locationLabel}: ${location}\n📅 Data: ${formattedDate}${phoneInfo}${linkInfo}\n\n"${item.description || ''}"\n\n📢 *Por favor, ajude compartilhando com seus contatos!*`;
   };
 
   const handleShareImage = async () => {
@@ -92,7 +99,7 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
       // Abre a folha nativa de compartilhamento
       await Sharing.shareAsync(uri, {
         mimeType: 'image/png',
-        dialogTitle: `Compartilhar Cartaz - ${item.title || 'Animal'}`,
+        dialogTitle: `Divulgar - ${item.title || 'Animal'}`,
         UTI: 'public.png',
       });
     } catch (error) {
@@ -119,29 +126,75 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
           {/* Cabeçalho do Modal */}
           <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <MaterialIcons name="share" size={22} color={colors.primary} />
-              <Text style={[styles.modalHeaderTitle, { color: colors.text }]}>Compartilhar Cartaz</Text>
+              <MaterialIcons name="qr-code-2" size={24} color={colors.primary} />
+              <View>
+                <Text style={[styles.modalHeaderTitle, { color: colors.text }]}>Gerador de Cartazes & Posts</Text>
+                <Text style={[styles.modalHeaderSub, { color: colors.textSecondary }]}>Com QR Code dinâmico e formatos sociais</Text>
+              </View>
             </View>
             <TouchableOpacity onPress={onClose} style={[styles.closeButton, { backgroundColor: isDark ? '#1E293B' : '#F3F4F6' }]}>
-              <MaterialIcons name="close" size={22} color={colors.textSecondary} />
+              <MaterialIcons name="close" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
-          {/* Pré-visualização com rolagem do cartaz */}
+          {/* Seletor de Formatos (A4 / Stories / Feed) */}
+          <View style={[styles.formatSelectorContainer, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC' }]}>
+            {FORMATS.map((fmt) => {
+              const isSelected = selectedFormat === fmt.id;
+              return (
+                <TouchableOpacity
+                  key={fmt.id}
+                  style={[
+                    styles.formatTabBtn,
+                    {
+                      backgroundColor: isSelected
+                        ? (isDark ? '#1E293B' : '#FFFFFF')
+                        : 'transparent',
+                      borderColor: isSelected ? colors.primary : 'transparent',
+                      shadowOpacity: isSelected ? 0.08 : 0,
+                    },
+                  ]}
+                  onPress={() => setSelectedFormat(fmt.id)}
+                  activeOpacity={0.8}
+                >
+                  <MaterialIcons
+                    name={fmt.icon}
+                    size={18}
+                    color={isSelected ? colors.primary : colors.textMuted}
+                  />
+                  <Text
+                    style={[
+                      styles.formatTabLabel,
+                      {
+                        color: isSelected ? colors.primary : colors.textSecondary,
+                        fontWeight: isSelected ? '800' : '600',
+                      },
+                    ]}
+                  >
+                    {fmt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Área de Pré-Visualização com Rolagem */}
           <ScrollView
             style={styles.previewScrollView}
             contentContainerStyle={styles.previewScrollContent}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={[styles.previewNotice, { color: colors.textSecondary }]}>
-              Prévia do cartaz que será gerado e enviado:
-            </Text>
             <View style={styles.flyerWrapper}>
-              <ShareCardFlyer ref={flyerRef} item={item} imageUrl={imageUrl} />
+              <ShareCardFlyer
+                ref={flyerRef}
+                item={item}
+                imageUrl={imageUrl}
+                format={selectedFormat}
+              />
             </View>
           </ScrollView>
 
-          {/* Botão de Ação Inferior */}
+          {/* Barra de Ações Inferior */}
           <View style={[styles.actionsContainer, { borderTopColor: colors.border, paddingBottom: Math.max(insets.bottom, 16) }]}>
             <TouchableOpacity
               style={[styles.primaryShareBtn, { backgroundColor: colors.primary }, capturing && styles.btnDisabled]}
@@ -152,14 +205,31 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
               {capturing ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <ActivityIndicator color="#FFFFFF" size="small" />
-                  <Text style={styles.primaryShareBtnText}>Gerando imagem...</Text>
+                  <Text style={styles.primaryShareBtnText}>Gerando arte em alta resolução...</Text>
                 </View>
               ) : (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <MaterialIcons name="share" size={20} color="#FFFFFF" />
-                  <Text style={styles.primaryShareBtnText}>Compartilhar Cartaz</Text>
+                  <Text style={styles.primaryShareBtnText}>
+                    {selectedFormat === 'stories'
+                      ? 'Compartilhar nos Stories / Status'
+                      : selectedFormat === 'feed'
+                      ? 'Compartilhar Post de Feed'
+                      : 'Compartilhar Cartaz com QR Code'}
+                  </Text>
                 </View>
               )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.secondaryShareBtn, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}
+              onPress={handleShareText}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="copy-outline" size={16} color={colors.textSecondary} />
+              <Text style={[styles.secondaryShareBtnText, { color: colors.textSecondary }]}>
+                Copiar Texto Completo com Link
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -178,7 +248,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '92%',
+    maxHeight: '94%',
     paddingBottom: 0,
   },
   modalHeader: {
@@ -186,34 +256,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
   },
   modalHeaderTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#0F172A',
+    fontSize: 17,
+    fontWeight: '900',
+  },
+  modalHeaderSub: {
+    fontSize: 11.5,
+    marginTop: 1,
   },
   closeButton: {
-    padding: 6,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+
+  // Seletor de Formatos
+  formatSelectorContainer: {
+    flexDirection: 'row',
+    padding: 6,
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 6,
+    borderRadius: 14,
+    gap: 4,
+  },
+  formatTabBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    gap: 5,
+  },
+  formatTabLabel: {
+    fontSize: 11.5,
+  },
+
   previewScrollView: {
     paddingHorizontal: 16,
-    maxHeight: 460,
+    maxHeight: 440,
   },
   previewScrollContent: {
     alignItems: 'center',
-    paddingVertical: 14,
-  },
-  previewNotice: {
-    fontSize: 13,
-    color: '#64748B',
-    marginBottom: 12,
-    fontWeight: '500',
-    textAlign: 'center',
+    paddingVertical: 10,
   },
   flyerWrapper: {
     alignItems: 'center',
@@ -221,41 +315,39 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4,
   },
   actionsContainer: {
     paddingHorizontal: 20,
-    paddingTop: 14,
-    gap: 10,
+    paddingTop: 12,
+    gap: 8,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
   },
   primaryShareBtn: {
     backgroundColor: COLORS.primary,
     borderRadius: 14,
-    paddingVertical: 14,
+    paddingVertical: 13,
     alignItems: 'center',
     justifyContent: 'center',
   },
   primaryShareBtnText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
   },
   secondaryShareBtn: {
-    backgroundColor: '#F3F4F6',
     borderRadius: 12,
-    paddingVertical: 11,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
   },
   secondaryShareBtnText: {
-    color: '#4B5563',
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '700',
   },
   btnDisabled: {

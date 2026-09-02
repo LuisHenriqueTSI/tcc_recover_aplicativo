@@ -16,6 +16,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { listItemsWithPhotosAndOwner, renewItem } from '../services/items';
 import { getRenewalInfo } from '../services/itemExpiration';
 import PetFallbackImage from '../components/PetFallbackImage';
+import ShareFlyerModal from '../components/ShareFlyerModal';
 import COLORS from '../constants/theme';
 
 const getStatusConfig = (isDark) => ({
@@ -47,6 +48,7 @@ const MeusAnunciosScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [renewingId, setRenewingId] = useState(null);
+  const [flyerItem, setFlyerItem] = useState(null);
 
   const loadItems = useCallback(async (isRefresh = false) => {
     if (!user?.id) return;
@@ -152,25 +154,35 @@ const MeusAnunciosScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {item.renewalInfo.inactive && item.renewalInfo.canRenew ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <TouchableOpacity
-            style={[styles.renewButton, { backgroundColor: colors.primary }]}
-            onPress={() => handleRenew(item.id)}
-            disabled={renewingId === item.id}
-            activeOpacity={0.85}
+            style={[styles.flyerActionBtn, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}
+            onPress={() => setFlyerItem(item)}
+            accessibilityLabel="Gerar Cartaz e Posts"
           >
-            {renewingId === item.id ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <>
-                <Feather name="rotate-cw" size={13} color="#fff" />
-                <Text style={styles.renewText}>Renovar</Text>
-              </>
-            )}
+            <MaterialIcons name="qr-code-2" size={20} color={colors.primary} />
           </TouchableOpacity>
-        ) : (
-          <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ marginLeft: 6 }} />
-        )}
+
+          {item.renewalInfo.inactive && item.renewalInfo.canRenew ? (
+            <TouchableOpacity
+              style={[styles.renewButton, { backgroundColor: colors.primary }]}
+              onPress={() => handleRenew(item.id)}
+              disabled={renewingId === item.id}
+              activeOpacity={0.85}
+            >
+              {renewingId === item.id ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Feather name="rotate-cw" size={13} color="#fff" />
+                  <Text style={styles.renewText}>Renovar</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          ) : (
+            <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} />
+          )}
+        </View>
       </TouchableOpacity>
     );
   };
@@ -248,6 +260,13 @@ const MeusAnunciosScreen = ({ navigation }) => {
       {!loading && renderSection('ativos')}
       {!loading && renderSection('renovar')}
       {!loading && renderSection('inativos')}
+
+      {/* Modal de Cartazes e Posts com QR Code */}
+      <ShareFlyerModal
+        visible={!!flyerItem}
+        onClose={() => setFlyerItem(null)}
+        item={flyerItem}
+      />
     </ScrollView>
   );
 };
@@ -340,7 +359,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
-    shadowColor: COLORS.primary,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 5,

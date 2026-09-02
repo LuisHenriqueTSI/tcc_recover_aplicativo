@@ -21,6 +21,8 @@ import * as itemsService from '../services/items';
 import * as sightingsService from '../services/sightings';
 import * as rewardsService from '../services/rewards';
 import { broadcastLostPetAlertToNearbyUsers } from '../services/pushNotifications';
+import { processAndNotifyPetMatches } from '../services/petMatching';
+import PetMatchModal from '../components/PetMatchModal';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import MapLocationPicker from '../components/MapLocationPicker';
@@ -377,6 +379,12 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Match Inteligente de Pets
+  const [petMatchModalVisible, setPetMatchModalVisible] = useState(false);
+  const [createdItemForMatch, setCreatedItemForMatch] = useState(null);
+  const [matchedPetItem, setMatchedPetItem] = useState(null);
+  const [matchedPetItems, setMatchedPetItems] = useState([]);
 
   // Reward
   const [offerReward, setOfferReward] = useState(false);
@@ -1616,6 +1624,22 @@ const RegisterItemScreen = ({ navigation, route }) => {
             .catch((e) => console.warn('[RegisterItem] Erro ao disparar alerta de proximidade:', e.message));
         }
 
+        // Executa o motor de Match Inteligente para cruzar Perdidos e Encontrados
+        let potentialMatches = [];
+        try {
+          potentialMatches = await processAndNotifyPetMatches(resultItem);
+        } catch (matchErr) {
+          console.warn('[RegisterItem] Erro ao processar matches inteligentes:', matchErr.message);
+        }
+
+        if (potentialMatches && potentialMatches.length > 0 && potentialMatches[0].match?.percentage >= 55) {
+          setCreatedItemForMatch(resultItem);
+          setMatchedPetItem(potentialMatches[0]);
+          setMatchedPetItems(potentialMatches);
+          setPetMatchModalVisible(true);
+          return;
+        }
+
         const successTitle = status === 'lost' ? '🚨 Publicado com Sucesso!' : '🐾 Publicação Criada com Sucesso!';
         const successMessage = status === 'lost'
           ? 'Seu alerta foi publicado no mapa e voluntários da região foram notificados. Você pode conferir os detalhes agora ou gerenciar em "Minhas Publicações".'
@@ -1696,6 +1720,31 @@ const RegisterItemScreen = ({ navigation, route }) => {
   );
 
   // Modal de Detecção Inteligente de Animais Semelhantes Já Registrados na Região
+  const renderPetMatchModal = () => (
+    <PetMatchModal
+      visible={petMatchModalVisible}
+      newItem={createdItemForMatch}
+      matchedItem={matchedPetItem}
+      matchedItems={matchedPetItems}
+      onClose={() => {
+        setPetMatchModalVisible(false);
+        if (createdItemForMatch?.id) {
+          navigateToItemDetailAfterPublish(createdItemForMatch.id);
+        } else {
+          navigateToMyItemsAfterPublish();
+        }
+      }}
+      onViewDetails={(targetItemId) => {
+        setPetMatchModalVisible(false);
+        navigation.navigate('ItemDetail', { itemId: targetItemId });
+      }}
+      onStartChat={(otherId, itemId, itemTitle) => {
+        setPetMatchModalVisible(false);
+        navigation.navigate('ChatScreen', { otherId, itemId, itemTitle });
+      }}
+    />
+  );
+
   const renderNearbyMatchingModal = () => (
     <Modal
       visible={showMatchingModal}
@@ -2346,6 +2395,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           {renderMapLocationPicker()}
           {renderFoundModal()}
           {renderNearbyMatchingModal()}
+          {renderPetMatchModal()}
           <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: colors.border, zIndex: 100, elevation: 10 }}>
             <Button
               title={loading ? 'Publicando...' : 'Publicar'}
@@ -2563,6 +2613,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         {renderMapLocationPicker()}
         {renderFoundModal()}
         {renderNearbyMatchingModal()}
+        {renderPetMatchModal()}
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: colors.border }}>
           <Button
             title={loading ? 'Publicando...' : 'Publicar'}
@@ -2680,6 +2731,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
         {renderMapLocationPicker()}
         {renderFoundModal()}
         {renderNearbyMatchingModal()}
+        {renderPetMatchModal()}
         <View style={[styles.navigation, { position: 'absolute', left: 0, right: 0, bottom: 44, backgroundColor: colors.surface, borderTopWidth: 1, borderColor: colors.border, padding: 16, zIndex: 10 }]}> 
           <Button
             title="Voltar"

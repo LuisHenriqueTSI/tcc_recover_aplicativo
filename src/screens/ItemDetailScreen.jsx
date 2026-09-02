@@ -37,6 +37,9 @@ import { getRenewalInfo } from '../services/itemExpiration';
 import { createRenewalReminderNotification } from '../services/notifications';
 import * as reportsService from '../services/reports';
 import { getVerificationStatus } from '../services/proofVerification';
+import { findMatchesForPet } from '../services/petMatching';
+import PetMatchModal from '../components/PetMatchModal';
+import OptimizedImage from '../components/OptimizedImage';
 import * as Location from 'expo-location';
 
 const formatItemDate = (value) => {
@@ -135,6 +138,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [shareFlyerVisible, setShareFlyerVisible] = useState(false);
   const [expandedAdoptionInfo, setExpandedAdoptionInfo] = useState(false);
   const [expandedCustodyInfo, setExpandedCustodyInfo] = useState(false);
+  const [potentialMatches, setPotentialMatches] = useState([]);
+  const [matchModalVisible, setMatchModalVisible] = useState(false);
+  const [selectedMatchIndex, setSelectedMatchIndex] = useState(0);
   const screenWidth = Dimensions.get('window').width;
 
   const handleSafeGoBack = useCallback(() => {
@@ -212,6 +218,12 @@ const ItemDetailScreen = ({ route, navigation }) => {
         setPhotos(itemData.item_photos || []);
         setOwner(itemData.profiles);
         setRewards(itemData.rewards || []);
+
+        if (itemData && (itemData.status === 'lost' || itemData.status === 'found')) {
+          findMatchesForPet(itemData, { minScore: 55 })
+            .then((matches) => setPotentialMatches(matches || []))
+            .catch((e) => console.log('[ItemDetailScreen] Erro ao buscar matches:', e.message));
+        }
       } else {
         Alert.alert('Erro', 'Pet não encontrado');
         handleSafeGoBack();
@@ -1352,6 +1364,34 @@ const ItemDetailScreen = ({ route, navigation }) => {
         </View>
       </View>
 
+      {/* BANNER DE DIVULGAÇÃO: GERADOR DE CARTAZ COM QR CODE & STORIES */}
+      <View style={styles.flyerBannerWrap}>
+        <TouchableOpacity
+          style={[
+            styles.flyerBannerBtn,
+            {
+              backgroundColor: isDark ? '#1E293B' : '#F0FDF4',
+              borderColor: isDark ? 'rgba(16, 185, 129, 0.3)' : '#86EFAC',
+            },
+          ]}
+          onPress={() => setShareFlyerVisible(true)}
+          activeOpacity={0.85}
+        >
+          <View style={[styles.flyerIconCircle, { backgroundColor: '#10B981' }]}>
+            <MaterialIcons name="qr-code-2" size={24} color="#FFFFFF" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.flyerBtnTitle, { color: isDark ? '#34D399' : '#166534' }]}>
+              Gerar Cartaz & Posts para Redes
+            </Text>
+            <Text style={[styles.flyerBtnSub, { color: isDark ? '#94A3B8' : '#15803D' }]}>
+              Cartaz com QR Code para postes, Instagram Stories (9:16) e Feed
+            </Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color={isDark ? '#34D399' : '#166534'} />
+        </TouchableOpacity>
+      </View>
+
       {/* 5. CARD DO TUTOR / QUEM PUBLICOU */}
       {owner && (
         <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -1420,6 +1460,88 @@ const ItemDetailScreen = ({ route, navigation }) => {
               ) : null}
             </View>
           ) : null}
+
+          {/* 6. CORRESPONDÊNCIAS E MATCHES INTELIGENTES */}
+          {potentialMatches.length > 0 && (
+            <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.matchesHeader}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                    <MaterialIcons name="auto-awesome" size={20} color="#10B981" style={{ marginRight: 6 }} />
+                    <Text style={[styles.matchesTitle, { color: colors.text }]}>
+                      Matches Inteligentes ({potentialMatches.length})
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity
+                    style={[styles.openCompareBtn, { backgroundColor: colors.primaryLight }]}
+                    onPress={() => {
+                      setSelectedMatchIndex(0);
+                      setMatchModalVisible(true);
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <MaterialIcons name="compare" size={15} color={colors.primary} style={{ marginRight: 4 }} />
+                    <Text style={[styles.openCompareBtnText, { color: colors.primary }]}>Ver Lista & Comparar</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={[styles.matchesSubtitle, { color: colors.textSecondary }]}>
+                  {item.status === 'lost'
+                    ? 'Animais encontrados na região com alta probabilidade de serem o seu pet:'
+                    : 'Animais perdidos registrados na região compatíveis com este relato:'}
+                </Text>
+              </View>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.matchesScrollContent}
+              >
+                {potentialMatches.map((m, idx) => {
+                  const matchBadgeColor = m.match?.badgeColor || '#10B981';
+                  const matchScore = m.match?.percentage || 70;
+
+                  return (
+                    <TouchableOpacity
+                      key={m.id || idx}
+                      style={[styles.matchCard, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: matchBadgeColor }]}
+                      onPress={() => {
+                        setSelectedMatchIndex(idx);
+                        setMatchModalVisible(true);
+                      }}
+                      activeOpacity={0.85}
+                    >
+                      <View style={styles.matchCardImageWrapper}>
+                        {m.photoUrl ? (
+                          <OptimizedImage uri={m.photoUrl} style={styles.matchCardImage} resizeMode="cover" />
+                        ) : (
+                          <View style={[styles.matchCardPlaceholder, { backgroundColor: isDark ? '#334155' : '#E2E8F0' }]}>
+                            <MaterialIcons name="pets" size={26} color={colors.primary} />
+                          </View>
+                        )}
+                        <View style={[styles.matchScoreBadge, { backgroundColor: matchBadgeColor }]}>
+                          <Text style={styles.matchScoreBadgeText}>{matchScore}% MATCH</Text>
+                        </View>
+                      </View>
+
+                      <Text style={[styles.matchCardTitle, { color: colors.text }]} numberOfLines={1}>
+                        {m.animal_name || m.title || 'Animal'}
+                      </Text>
+                      <Text style={[styles.matchCardSub, { color: colors.textSecondary }]} numberOfLines={1}>
+                        {m.species || 'Pet'} • {m.neighborhood || m.city || ''}
+                      </Text>
+                      {m.match?.distanceKm != null && (
+                        <Text style={[styles.matchCardDistance, { color: colors.primary }]}>
+                          📍 {m.match.distanceKm} km de você
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
 
           {/* AÇÕES PARA VISITANTES (ENVIAR MENSAGEM CTA) */}
           {!isOwner && !isAdmin && (
@@ -1930,6 +2052,23 @@ const ItemDetailScreen = ({ route, navigation }) => {
         item={item}
         imageUrl={photos?.[0]?.url}
       />
+
+      {/* MODAL COMPARADOR E LISTA COMPLETA DE MATCHES */}
+      <PetMatchModal
+        visible={matchModalVisible}
+        onClose={() => setMatchModalVisible(false)}
+        newItem={item}
+        matchedItems={potentialMatches}
+        initialIndex={selectedMatchIndex}
+        onViewDetails={(targetId) => {
+          setMatchModalVisible(false);
+          navigation.push('ItemDetail', { itemId: targetId });
+        }}
+        onStartChat={(otherId, itemId, itemTitle) => {
+          setMatchModalVisible(false);
+          navigation.navigate('ChatScreen', { otherId, itemId, itemTitle });
+        }}
+      />
     </ScrollView>
   );
 };
@@ -2096,6 +2235,32 @@ const styles = StyleSheet.create({
   modalCancelText: { fontSize: 14, fontWeight: '700' },
   modalSubmitBtn: { borderRadius: 10, paddingVertical: 9, paddingHorizontal: 16 },
   modalSubmitText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+
+  // Matches Section
+  matchesHeader: { marginBottom: 10 },
+  matchesTitle: { fontSize: 15, fontWeight: '800' },
+  matchesSubtitle: { fontSize: 12, marginTop: 2, lineHeight: 16 },
+  openCompareBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  openCompareBtnText: {
+    fontSize: 11.5,
+    fontWeight: '800',
+  },
+  matchesScrollContent: { paddingVertical: 4, gap: 10 },
+  matchCard: { width: 140, borderRadius: 14, borderWidth: 1.5, padding: 8, alignItems: 'center' },
+  matchCardImageWrapper: { width: '100%', height: 95, borderRadius: 10, overflow: 'hidden', position: 'relative', marginBottom: 6 },
+  matchCardImage: { width: '100%', height: '100%' },
+  matchCardPlaceholder: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
+  matchScoreBadge: { position: 'absolute', bottom: 4, left: 4, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 6 },
+  matchScoreBadgeText: { color: '#FFFFFF', fontSize: 8.5, fontWeight: '900', letterSpacing: 0.3 },
+  matchCardTitle: { fontSize: 12.5, fontWeight: '800', textAlign: 'center', width: '100%' },
+  matchCardSub: { fontSize: 10.5, textAlign: 'center', marginTop: 1, width: '100%' },
+  matchCardDistance: { fontSize: 10, fontWeight: '700', marginTop: 3 },
 
   // Full Screen Photo Modal
   fullScreenModalBg: { flex: 1, backgroundColor: '#000000', justifyContent: 'center', alignItems: 'center' },

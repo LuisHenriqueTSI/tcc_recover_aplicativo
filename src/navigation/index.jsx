@@ -39,6 +39,8 @@ import MuralReencontrosScreen from '../screens/MuralReencontrosScreen';
 import RecoveredPetsScreen from '../screens/RecoveredPetsScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
 import FosterVolunteersScreen from '../screens/FosterVolunteersScreen';
+import MyPetsScreen from '../screens/MyPetsScreen';
+import AddEditPetScreen from '../screens/AddEditPetScreen';
 import { listItems } from '../services/items';
 import { buildRenewalAlerts } from '../services/notifications';
 import { WeFindText } from '../components/WeFindBrand';
@@ -263,6 +265,16 @@ const PublicStack = () => {
       <Stack.Screen
         name="FosterVolunteers"
         component={FosterVolunteersScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ChatScreen"
+        component={ChatScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Chat"
+        component={ChatScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
@@ -585,6 +597,11 @@ const MainStack = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="Chat"
+        component={ChatScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="RegisterItem"
         component={RegisterItemScreen}
         options={{ title: 'Registrar' }}
@@ -653,6 +670,16 @@ const MainStack = () => {
         name="FosterVolunteers"
         component={FosterVolunteersScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="MyPets"
+        component={MyPetsScreen}
+        options={{ title: 'Meus Pets & RG Digital' }}
+      />
+      <Stack.Screen
+        name="AddEditPet"
+        component={AddEditPetScreen}
+        options={{ title: 'Cadastrar Pet' }}
       />
       <Stack.Screen
         name="Notifications"

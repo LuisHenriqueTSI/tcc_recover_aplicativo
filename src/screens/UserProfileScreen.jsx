@@ -21,6 +21,7 @@ import * as userService from '../services/user';
 import * as itemsService from '../services/items';
 import * as ratingsService from '../services/ratings';
 import { getFosterProfile } from '../services/foster';
+import { getUserGamificationData } from '../services/gamification';
 import OptimizedImage from '../components/OptimizedImage';
 import COLORS from '../constants/theme';
 
@@ -39,6 +40,7 @@ const UserProfileScreen = ({ route, navigation }) => {
   const [activeMainSection, setActiveMainSection] = useState('posts'); // 'posts' | 'ratings'
   const [activePostTab, setActivePostTab] = useState('all'); // 'all' | 'lost' | 'found' | 'adoption' | 'resolved'
   const [refreshing, setRefreshing] = useState(false);
+  const [gamificationData, setGamificationData] = useState(null);
 
   // Estados do Modal de Avaliação
   const [ratingModalVisible, setRatingModalVisible] = useState(false);
@@ -56,22 +58,25 @@ const UserProfileScreen = ({ route, navigation }) => {
       return;
     }
     try {
-      const [profileRes, itemsRes, ratingsRes, fosterRes] = await Promise.allSettled([
+      const [profileRes, itemsRes, ratingsRes, fosterRes, gamiRes] = await Promise.allSettled([
         userService.getUserById(userId),
         itemsService.getUserItems(userId),
         ratingsService.getUserRatings(userId),
         getFosterProfile(userId),
+        getUserGamificationData(userId, profileData),
       ]);
 
       const profileData = profileRes.status === 'fulfilled' ? profileRes.value : null;
       const itemsData = itemsRes.status === 'fulfilled' ? itemsRes.value : [];
       const userRatings = ratingsRes.status === 'fulfilled' ? ratingsRes.value : null;
       const fosterData = fosterRes.status === 'fulfilled' ? fosterRes.value : null;
+      const gamiData = gamiRes.status === 'fulfilled' ? gamiRes.value : null;
 
       setProfile(profileData || { id: userId, name: initialName || 'Membro WeFIND', avatar_url: initialAvatar });
       setFosterProfile(fosterData);
       setUserItems(Array.isArray(itemsData) ? itemsData : []);
       setRatingsData(userRatings || { ratings: [], average: 5.0, total: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
+      setGamificationData(gamiData);
 
       // Se o usuário logado já tiver avaliação existente, pré-carrega
       if (currentUser && userRatings?.ratings && Array.isArray(userRatings.ratings)) {
@@ -438,6 +443,33 @@ const UserProfileScreen = ({ route, navigation }) => {
         {/* Informações do Membro */}
         <View style={styles.profileInfoContainer}>
           <Text style={[styles.profileName, { color: colors.text }]}>{displayName}</Text>
+
+          {/* Badge de Nível de Guardião Comunitário WeFIND */}
+          {gamificationData?.rank && (
+            <View
+              style={[
+                styles.guardianBadge,
+                {
+                  backgroundColor: isDark ? 'rgba(46, 86, 52, 0.3)' : (gamificationData.rank.currentRank.badgeBg || '#DCFCE7'),
+                  borderColor: gamificationData.rank.currentRank.color || '#166534',
+                },
+              ]}
+            >
+              <MaterialIcons
+                name={gamificationData.rank.currentRank.icon || 'shield'}
+                size={15}
+                color={gamificationData.rank.currentRank.color || '#166534'}
+              />
+              <Text
+                style={[
+                  styles.guardianBadgeText,
+                  { color: gamificationData.rank.currentRank.color || '#166534' },
+                ]}
+              >
+                {gamificationData.rank.title} • {gamificationData.xp} XP
+              </Text>
+            </View>
+          )}
 
           {/* Badge de Reputação / Estrelas */}
           <TouchableOpacity
@@ -1639,6 +1671,20 @@ const styles = StyleSheet.create({
   modalSubmitText: {
     color: '#FFFFFF',
     fontSize: 13.5,
+    fontWeight: '800',
+  },
+  guardianBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 4,
+    gap: 5,
+  },
+  guardianBadgeText: {
+    fontSize: 11.5,
     fontWeight: '800',
   },
 });

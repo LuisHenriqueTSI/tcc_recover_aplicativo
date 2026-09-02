@@ -1,9 +1,19 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
+import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import * as itemsService from '../services/items';
+import COLORS from '../constants/theme';
 
-const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+/**
+ * Componente de Cartaz e Gerador de Post Visual do WeFIND
+ * Suporta formatos:
+ * - 'a4': Cartaz Tradicional de Impressão com QR Code grande
+ * - 'stories': Formato 9:16 Vertical para Instagram Stories e WhatsApp Status
+ * - 'feed': Formato 1:1 Quadrado para Feed do Instagram/Facebook e Grupos
+ */
+const ShareCardFlyer = React.forwardRef(({ item, imageUrl, format = 'a4' }, ref) => {
   if (!item) return null;
 
   const isAdoption = Boolean(
@@ -14,9 +24,9 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
   const isLost = !isAdoption && item.status === 'lost';
   const isFound = !isAdoption && item.status === 'found';
 
-  const statusColor = isAdoption ? '#DB2777' : (isLost ? '#D64545' : '#2E9B63');
+  const statusColor = isAdoption ? '#DB2777' : (isLost ? '#D64545' : '#15803D');
 
-  // Cabeçalho dinâmico por espécie (ex: GATO ENCONTRADO, CACHORRO PERDIDO, CÃO PARA ADOÇÃO)
+  // Cabeçalho dinâmico por espécie
   const speciesRaw = String(item.species || item.extra_fields?.species || '').trim();
   const getHeaderTitle = () => {
     if (isAdoption) {
@@ -33,13 +43,13 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
       }
       return isLost ? `${upper} PERDIDO` : `${upper} ENCONTRADO`;
     }
-    return isLost ? 'ANIMAL PERDIDO' : 'ANIMAL ENCONTRADO';
+    return isLost ? 'PROCURA-SE ANIMAL' : 'ANIMAL ENCONTRADO';
   };
 
   const statusHeaderTitle = getHeaderTitle();
-  const locationLabel = isAdoption ? 'ONDE O ANIMAL ESTÁ:' : (isLost ? 'ÚLTIMA VEZ VISTO EM:' : 'LOCAL ONDE FOI ENCONTRADO:');
+  const locationLabel = isAdoption ? 'ONDE O ANIMAL ESTÁ:' : (isLost ? 'LOCAL DO DESAPARECIMENTO:' : 'LOCAL ONDE FOI ENCONTRADO:');
 
-  // Informações de localização
+  // Localização
   const city = item.city || item.extra_fields?.location_details?.city || '';
   const state = item.state || item.extra_fields?.location_details?.state || '';
   const cityState = [city, state].filter(Boolean).join(' - ');
@@ -58,15 +68,11 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
       if (!Number.isNaN(date.getTime())) {
         return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
       }
-    } catch (e) {
-      // fallback
-    }
+    } catch (e) {}
     return String(rawDate);
   };
 
   const formattedDate = formatDate(item.date);
-
-  // Foto principal
   const photoUrl = imageUrl || (item.item_photos && item.item_photos[0]?.url) || null;
 
   // Recompensa ativa
@@ -74,36 +80,22 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
     ? item.rewards.find((r) => r?.status === 'active')
     : null;
 
-  // Formatação de telefone com o 9 a mais (padrão brasileiro)
+  // Formatação de telefone
   const formatPhoneWithNine = (phone) => {
     if (!phone) return null;
     let cleaned = String(phone).replace(/\D/g, '');
-    
-    // Se tiver 10 dígitos (DDD + 8 dígitos), insere o 9 no celular
     if (cleaned.length === 10) {
       cleaned = cleaned.slice(0, 2) + '9' + cleaned.slice(2);
     }
-    
-    // Formata padrão nacional com 11 dígitos: (XX) 9XXXX-XXXX
     if (cleaned.length === 11) {
       return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
     }
-    
-    if (cleaned.length === 8) {
-      cleaned = '9' + cleaned;
-    }
-    if (cleaned.length === 9) {
-      return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
-    }
-
     return phone;
   };
 
-  // Verifica se a publicação foi feita em nome de terceiro
   const thirdParty = item.extra_fields?.third_party_owner;
   const isThirdParty = Boolean(thirdParty && thirdParty.active && (thirdParty.name || thirdParty.phone));
 
-  // Contato do responsável (prioriza o tutor caso seja terceiro)
   const rawPhone = (isThirdParty && thirdParty.phone)
     ? thirdParty.phone
     : (
@@ -118,16 +110,168 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
   const formattedPhone = formatPhoneWithNine(rawPhone);
   const ownerName = (isThirdParty && thirdParty.name)
     ? thirdParty.name
-    : (item.profiles?.name || item.owner_name || 'Usuário do WeFIND');
+    : (item.profiles?.name || item.owner_name || 'Tutor do Pet');
   const ownerLabel = isAdoption ? 'Responsável' : (isLost ? 'Tutor' : 'Encontrado por');
 
+  // URL do QR Code Dinâmico
+  const petLink = `https://wefind.app/pet/${item.id}`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(petLink)}&color=2E5634&bgcolor=FFFFFF&margin=1`;
+
+  // ==========================================
+  // FORMATO 2: STORIES / STATUS (9:16)
+  // ==========================================
+  if (format === 'stories') {
+    return (
+      <View ref={ref} collapsable={false} style={styles.storiesCanvasWrapper}>
+        <View style={styles.storiesContainer}>
+          {/* Header Superior dos Stories */}
+          <View style={[styles.storiesHeaderBanner, { backgroundColor: statusColor }]}>
+            <Text style={styles.storiesAppBadge}>🐾 WeFIND ALERTA</Text>
+            <Text style={styles.storiesStatusTitle}>{statusHeaderTitle}</Text>
+          </View>
+
+          {/* Imagem Central Otimizada */}
+          <View style={styles.storiesImageContainer}>
+            {photoUrl ? (
+              <Image source={{ uri: photoUrl }} style={styles.storiesPetImage} resizeMode="cover" />
+            ) : (
+              <View style={styles.noPhotoBox}>
+                <MaterialIcons name="pets" size={54} color="#9CA3AF" />
+                <Text style={styles.noPhotoText}>Sem foto</Text>
+              </View>
+            )}
+            {activeReward && (
+              <View style={styles.storiesRewardFloatingBadge}>
+                <Text style={styles.storiesRewardFloatingText}>
+                  💰 RECOMPENSA: R$ {parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Card Flutuante de Informações Rápidas */}
+          <View style={styles.storiesContentBox}>
+            <Text style={styles.storiesPetTitle} numberOfLines={1}>
+              {item.title || 'Animal'}
+            </Text>
+
+            <View style={styles.storiesAttributesRow}>
+              {(item.breed || item.extra_fields?.breed) && (
+                <Text style={styles.storiesAttributeChip}>🏷️ {item.breed || item.extra_fields?.breed}</Text>
+              )}
+              {(item.color || item.extra_fields?.color) && (
+                <Text style={styles.storiesAttributeChip}>🎨 {item.color || item.extra_fields?.color}</Text>
+              )}
+              {(item.gender || item.extra_fields?.gender) && (
+                <Text style={styles.storiesAttributeChip}>⚧ {item.gender || item.extra_fields?.gender}</Text>
+              )}
+            </View>
+
+            <View style={styles.storiesLocationBox}>
+              <MaterialIcons name="place" size={16} color={statusColor} />
+              <Text style={styles.storiesLocationText} numberOfLines={2}>
+                {streetNeighborhood ? `${streetNeighborhood} - ` : ''}{cityState || 'Local informado no app'}
+              </Text>
+            </View>
+
+            {formattedPhone && (
+              <View style={styles.storiesPhoneBox}>
+                <MaterialIcons name="phone" size={18} color="#FFFFFF" />
+                <Text style={styles.storiesPhoneText}>{formattedPhone}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Rodapé com QR Code dos Stories */}
+          <View style={styles.storiesFooter}>
+            <Image source={{ uri: qrCodeUrl }} style={styles.storiesQrCodeImage} resizeMode="contain" />
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.storiesQrTitle}>ESCANEE PARA AJUDAR</Text>
+              <Text style={styles.storiesQrSub}>Aponte a câmera para abrir localização no mapa e chat no WeFIND</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // ==========================================
+  // FORMATO 3: FEED QUADRADO (1:1)
+  // ==========================================
+  if (format === 'feed') {
+    return (
+      <View ref={ref} collapsable={false} style={styles.feedCanvasWrapper}>
+        <View style={styles.feedContainer}>
+          {/* Topo Feed */}
+          <View style={[styles.feedHeader, { backgroundColor: statusColor }]}>
+            <Text style={styles.feedHeaderTitle}>{statusHeaderTitle}</Text>
+            {activeReward && (
+              <Text style={styles.feedRewardBadge}>
+                💰 RECOMPENSA: R$ {parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </Text>
+            )}
+          </View>
+
+          {/* Linha Principal Feed: Imagem + Detalhes */}
+          <View style={styles.feedMainRow}>
+            <View style={styles.feedImageWrapper}>
+              {photoUrl ? (
+                <Image source={{ uri: photoUrl }} style={styles.feedPetImage} resizeMode="cover" />
+              ) : (
+                <View style={styles.noPhotoBox}>
+                  <MaterialIcons name="pets" size={40} color="#9CA3AF" />
+                </View>
+              )}
+            </View>
+
+            <View style={styles.feedDetailsWrapper}>
+              <Text style={styles.feedPetTitle} numberOfLines={2}>{item.title || 'Animal'}</Text>
+              
+              <Text style={styles.feedInfoLine}>
+                🐾 {item.species || 'Animal'} • {item.breed || 'SRD'}
+              </Text>
+              <Text style={styles.feedInfoLine}>
+                📍 {streetNeighborhood || cityState || 'Local informado'}
+              </Text>
+              {formattedDate ? (
+                <Text style={styles.feedInfoLine}>📅 {formattedDate}</Text>
+              ) : null}
+
+              {formattedPhone ? (
+                <View style={styles.feedPhoneBadge}>
+                  <MaterialIcons name="phone" size={14} color="#FFFFFF" />
+                  <Text style={styles.feedPhoneBadgeText}>{formattedPhone}</Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
+
+          {/* Rodapé Feed com QR Code */}
+          <View style={styles.feedFooter}>
+            <Image source={{ uri: qrCodeUrl }} style={styles.feedQrImage} resizeMode="contain" />
+            <View style={{ flex: 1, marginLeft: 8 }}>
+              <Text style={styles.feedFooterQrText}>Escaneie para ver mais fotos e mapa</Text>
+              <Text style={styles.feedBrandText}>
+                <Text style={{ color: COLORS.weColor || '#B1734A' }}>We</Text>
+                <Text style={{ color: COLORS.primary || '#2E5634' }}>FIND</Text> • Compartilhe!
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // ==========================================
+  // FORMATO 1 (PADRÃO): CARTAZ A4 COM QR CODE
+  // ==========================================
   return (
     <View ref={ref} collapsable={false} style={styles.canvasWrapper}>
       <View style={styles.cardContainer}>
         {/* Faixa Superior de Alerta */}
         <View style={[styles.headerBanner, { backgroundColor: statusColor }]}>
           <View style={styles.headerTopRow}>
-            <Text style={styles.headerAppBadge}>{isAdoption ? '💖 WeFIND ADOÇÃO' : '🐾 WeFIND'}</Text>
+            <Text style={styles.headerAppBadge}>{isAdoption ? '💖 WeFIND ADOÇÃO' : '🐾 WeFIND ALERTA'}</Text>
             {formattedDate ? <Text style={styles.headerDate}>{formattedDate}</Text> : null}
           </View>
           <Text style={styles.headerStatusText}>{statusHeaderTitle}</Text>
@@ -192,7 +336,7 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
             )}
           </View>
 
-          {/* Bloco de Localização Centralizado */}
+          {/* Bloco de Localização */}
           <View style={styles.locationContainer}>
             <View style={styles.locationHeaderRow}>
               <MaterialIcons name="place" size={14} color={statusColor} />
@@ -204,46 +348,54 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
             ) : null}
           </View>
 
-          {/* Descrição limpa em itálico e cinza */}
+          {/* Descrição */}
           {item.description ? (
-            <Text style={styles.descriptionText} numberOfLines={3}>
+            <Text style={styles.descriptionText} numberOfLines={2}>
               "{item.description}"
             </Text>
           ) : null}
 
-          {/* Contato Minimalista */}
+          {/* Recompensa Destacada */}
+          {activeReward && (
+            <View style={styles.rewardContainer}>
+              <Text style={styles.rewardText}>
+                {activeReward.amount
+                  ? `💰 RECOMPENSA OFERECIDA: R$ ${parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                  : '💰 RECOMPENSA OFERECIDA'}
+              </Text>
+            </View>
+          )}
+
+          {/* Contato com Telefone Gigante */}
           <View style={styles.minimalContactContainer}>
             <Text style={styles.contactOwnerText}>
               {ownerLabel}: <Text style={styles.contactOwnerName}>{ownerName}</Text>
             </Text>
             {formattedPhone ? (
               <View style={styles.phoneRow}>
-                <MaterialIcons name="phone" size={15} color="#2E5634" />
+                <MaterialIcons name="phone" size={18} color="#2E5634" />
                 <Text style={styles.contactPhoneText}>{formattedPhone}</Text>
               </View>
             ) : null}
           </View>
 
-          {/* Bloco de Recompensa no final */}
-          {activeReward && (
-            <View style={styles.rewardContainer}>
-              <Text style={styles.rewardText}>
-                {activeReward.amount
-                  ? `RECOMPENSA OFERECIDA: R$ ${parseFloat(activeReward.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                  : 'RECOMPENSA OFERECIDA'}
+          {/* SEÇÃO DO QR CODE DINÂMICO PARA IMPRESSÃO */}
+          <View style={styles.qrSectionContainer}>
+            <Image source={{ uri: qrCodeUrl }} style={styles.qrImage} resizeMode="contain" />
+            <View style={styles.qrTextWrapper}>
+              <Text style={styles.qrTitle}>ESCANEIE COM O CELULAR</Text>
+              <Text style={styles.qrSubtitle}>
+                Aponte a câmera para abrir fotos, mapa e falar no chat direto do app WeFIND.
               </Text>
             </View>
-          )}
+          </View>
         </View>
 
-        {/* Rodapé / Chamada para Compartilhar */}
+        {/* Rodapé Oficial WeFIND */}
         <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>
-            {isAdoption
-              ? '💖 Compartilhe para ajudar este animalzinho a encontrar um lar!'
-              : isLost
-              ? '📢 Compartilhe para ajudar a trazer este animal de volta!'
-              : '📢 Compartilhe para ajudar a encontrar a família deste animal!'}
+          <Text style={styles.footerBrandText}>
+            <Text style={{ color: COLORS.weColor || '#B1734A' }}>We</Text>
+            <Text style={{ color: '#FFFFFF' }}>FIND</Text> • Juntos trazemos quem amamos de volta
           </Text>
         </View>
       </View>
@@ -252,238 +404,485 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl }, ref) => {
 });
 
 const styles = StyleSheet.create({
+  // ==========================================
+  // ESTILOS CARTAZ A4 (PADRÃO)
+  // ==========================================
   canvasWrapper: {
+    width: 340,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 20,
+    overflow: 'hidden',
   },
   cardContainer: {
-    width: 300,
+    width: '100%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
   },
   headerBanner: {
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTopRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    alignItems: 'center',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   headerAppBadge: {
     color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '800',
+    fontSize: 10,
+    fontWeight: '900',
     letterSpacing: 0.8,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 5,
   },
   headerDate: {
     color: '#FFFFFF',
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '600',
     opacity: 0.9,
   },
   headerStatusText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 20,
     fontWeight: '900',
     letterSpacing: 0.5,
-    marginTop: 1,
     textAlign: 'center',
   },
   contentBody: {
-    padding: 10,
+    padding: 14,
     alignItems: 'center',
   },
   imageContainer: {
     width: '100%',
-    height: 160,
-    borderRadius: 10,
+    height: 190,
+    borderRadius: 14,
     overflow: 'hidden',
     backgroundColor: '#F1F5F9',
-    marginBottom: 6,
+    marginBottom: 10,
   },
   petImage: {
     width: '100%',
     height: '100%',
   },
   noPhotoBox: {
-    flex: 1,
-    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   noPhotoText: {
-    color: '#94A3B8',
     fontSize: 12,
+    color: '#94A3B8',
     marginTop: 4,
-    fontWeight: '500',
   },
   petTitle: {
-    fontSize: 16,
-    fontWeight: '800',
+    fontSize: 17,
+    fontWeight: '900',
     color: '#0F172A',
-    marginBottom: 4,
     textAlign: 'center',
+    marginBottom: 8,
   },
   attributesRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 6,
-    paddingHorizontal: 4,
+    gap: 5,
+    marginBottom: 10,
   },
   attributeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F5F9',
-    borderRadius: 6,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    gap: 3,
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    gap: 4,
   },
   attributeEmoji: {
-    fontSize: 10,
+    fontSize: 11,
   },
   attributeText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     color: '#334155',
-  },
-  rewardContainer: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFBEB',
-    borderWidth: 1,
-    borderColor: '#FCD34D',
-    borderRadius: 8,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    marginTop: 5,
-  },
-  rewardText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#B45309',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-    textAlign: 'center',
   },
   locationContainer: {
     width: '100%',
     backgroundColor: '#F8FAFC',
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: 4,
+    borderRadius: 10,
+    padding: 8,
     alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: 8,
   },
   locationHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: 4,
-    marginBottom: 1,
+    marginBottom: 2,
   },
   locationLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-    textAlign: 'center',
+    fontSize: 9.5,
+    fontWeight: '900',
+    letterSpacing: 0.4,
   },
   cityStateText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '800',
     color: '#1E293B',
-    lineHeight: 18,
-    textAlign: 'center',
   },
   streetText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748B',
-    marginTop: 1,
     textAlign: 'center',
   },
   descriptionText: {
-    fontSize: 12,
-    color: '#64748B',
+    fontSize: 11,
     fontStyle: 'italic',
+    color: '#64748B',
     textAlign: 'center',
-    lineHeight: 16,
-    marginVertical: 3,
-    paddingHorizontal: 6,
+    marginBottom: 8,
+  },
+  rewardContainer: {
+    width: '100%',
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#F59E0B',
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  rewardText: {
+    color: '#B45309',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 0.3,
   },
   minimalContactContainer: {
     width: '100%',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 4,
+    marginBottom: 10,
   },
   contactOwnerText: {
-    fontSize: 12,
-    color: '#475569',
-    fontWeight: '500',
-    textAlign: 'center',
+    fontSize: 11,
+    color: '#64748B',
   },
   contactOwnerName: {
+    fontWeight: '800',
     color: '#0F172A',
-    fontWeight: '700',
   },
   phoneRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
+    gap: 6,
     marginTop: 2,
   },
   contactPhoneText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '900',
     color: '#2E5634',
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
+  },
+  qrSectionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    borderRadius: 12,
+    padding: 8,
+    gap: 10,
+  },
+  qrImage: {
+    width: 58,
+    height: 58,
+    borderRadius: 6,
+  },
+  qrTextWrapper: {
+    flex: 1,
+  },
+  qrTitle: {
+    fontSize: 10.5,
+    fontWeight: '900',
+    color: '#166534',
+    letterSpacing: 0.4,
+  },
+  qrSubtitle: {
+    fontSize: 9.5,
+    color: '#15803D',
+    marginTop: 2,
+    lineHeight: 12,
   },
   footerContainer: {
-    backgroundColor: '#F8FAFC',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
+    backgroundColor: '#2E5634',
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  footerBrandText: {
+    color: '#FFFFFF',
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+
+  // ==========================================
+  // ESTILOS STORIES / STATUS (9:16)
+  // ==========================================
+  storiesCanvasWrapper: {
+    width: 320,
+    height: 568, // Proporção exata 9:16
+    backgroundColor: '#0F172A',
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  storiesContainer: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#0F172A',
+    justifyContent: 'space-between',
+  },
+  storiesHeaderBanner: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     alignItems: 'center',
   },
-  footerText: {
+  storiesAppBadge: {
+    color: '#FFFFFF',
     fontSize: 10,
-    color: '#64748B',
+    fontWeight: '900',
+    letterSpacing: 1,
+    opacity: 0.9,
+  },
+  storiesStatusTitle: {
+    color: '#FFFFFF',
+    fontSize: 19,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
+  storiesImageContainer: {
+    width: '100%',
+    height: 230,
+    position: 'relative',
+    backgroundColor: '#1E293B',
+  },
+  storiesPetImage: {
+    width: '100%',
+    height: '100%',
+  },
+  storiesRewardFloatingBadge: {
+    position: 'absolute',
+    bottom: 10,
+    left: 12,
+    right: 12,
+    backgroundColor: '#F59E0B',
+    paddingVertical: 5,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  storiesRewardFloatingText: {
+    color: '#FFFFFF',
+    fontSize: 11.5,
+    fontWeight: '900',
+  },
+  storiesContentBox: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  storiesPetTitle: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '900',
     textAlign: 'center',
+  },
+  storiesAttributesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 6,
+  },
+  storiesAttributeChip: {
+    color: '#CBD5E1',
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  storiesLocationBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 8,
+  },
+  storiesLocationText: {
+    color: '#94A3B8',
+    fontSize: 11,
+    textAlign: 'center',
+    flex: 1,
+  },
+  storiesPhoneBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#15803D',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+    marginTop: 8,
+  },
+  storiesPhoneText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  storiesFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#334155',
+  },
+  storiesQrCodeImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
+  },
+  storiesQrTitle: {
+    color: '#10B981',
+    fontSize: 10.5,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  storiesQrSub: {
+    color: '#94A3B8',
+    fontSize: 9,
+    marginTop: 1,
+  },
+
+  // ==========================================
+  // ESTILOS FEED QUADRADO (1:1)
+  // ==========================================
+  feedCanvasWrapper: {
+    width: 320,
+    height: 320, // Proporção exata 1:1
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    overflow: 'hidden',
+  },
+  feedContainer: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  feedHeader: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+  feedHeaderTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 0.4,
+  },
+  feedRewardBadge: {
+    color: '#FEF3C7',
+    fontSize: 9.5,
+    fontWeight: '900',
+    marginTop: 1,
+  },
+  feedMainRow: {
+    flexDirection: 'row',
+    padding: 10,
+    gap: 10,
+    flex: 1,
+    alignItems: 'center',
+  },
+  feedImageWrapper: {
+    width: 120,
+    height: 130,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#F1F5F9',
+  },
+  feedPetImage: {
+    width: '100%',
+    height: '100%',
+  },
+  feedDetailsWrapper: {
+    flex: 1,
+    gap: 3,
+  },
+  feedPetTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  feedInfoLine: {
+    fontSize: 10.5,
+    color: '#475569',
     fontWeight: '600',
+  },
+  feedPhoneBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2E5634',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    gap: 4,
+    marginTop: 4,
+  },
+  feedPhoneBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  feedFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  feedQrImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 4,
+  },
+  feedFooterQrText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#1E293B',
+  },
+  feedBrandText: {
+    fontSize: 9,
+    fontWeight: '800',
+    marginTop: 1,
   },
 });
 

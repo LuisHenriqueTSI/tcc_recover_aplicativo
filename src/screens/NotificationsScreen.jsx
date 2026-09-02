@@ -106,11 +106,11 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
     const renewalAlerts = buildRenewalAlerts(items);
 
     const mappedSystemAlerts = [...renewalAlerts, ...(systemAlertsData || [])]
-      .filter((alert) => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed' || alert.type === 'nearby_lost_pet' || alert.type === 'match' || alert.type === 'sighting'))
+      .filter((alert) => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed' || alert.type === 'nearby_lost_pet' || alert.type === 'match' || alert.type === 'pet_match' || alert.type === 'sighting'))
       .map((alert) => {
         const isRenewal = alert.type === 'renewal_reminder';
         const isNearby = alert.type === 'nearby_lost_pet';
-        const isMatch = alert.type === 'match';
+        const isMatch = alert.type === 'match' || alert.type === 'pet_match';
         const isSighting = alert.type === 'sighting';
 
         let iconName = 'notifications';
@@ -123,7 +123,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
           prefix = '🚨 Alerta de Proximidade:';
         } else if (isMatch) {
           iconName = 'auto-awesome';
-          prefix = '✨ Sugestão Inteligente:';
+          prefix = '🎯 Match Inteligente:';
         } else if (isSighting) {
           iconName = 'visibility';
           prefix = '👁️ Novo Avistamento:';
@@ -135,7 +135,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
           icon: iconName,
           time: getTikTokRelativeTime(alert.created_at),
           timestamp: new Date(alert.created_at || Date.now()).getTime(),
-          isCritical: isNearby || isRenewal || !alert.read,
+          isCritical: isNearby || isRenewal || isMatch || !alert.read,
         };
       });
 
@@ -155,6 +155,8 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
       filtered = rawList.filter((n) => !n.read);
     } else if (selectedFilter === 'alerts') {
       filtered = rawList.filter((n) => n.type === 'nearby_lost_pet');
+    } else if (selectedFilter === 'matches') {
+      filtered = rawList.filter((n) => n.type === 'match' || n.type === 'pet_match');
     } else if (selectedFilter === 'sightings') {
       filtered = rawList.filter((n) => n.type === 'sighting');
     } else if (selectedFilter === 'renewals') {
@@ -628,6 +630,19 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
                     🚨 Alertas de Proximidade
                   </Text>
                   {selectedFilter === 'alerts' && <MaterialIcons name="check" size={20} color={COLORS.primary} />}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modalOptionRow, selectedFilter === 'matches' && styles.modalOptionActive]}
+                  onPress={() => {
+                    setSelectedFilter('matches');
+                    setFilterModalVisible(false);
+                  }}
+                >
+                  <Text style={[styles.modalOptionText, { color: colors.text }, selectedFilter === 'matches' && { color: COLORS.primary, fontWeight: '800' }]}>
+                    🎯 Matches Inteligentes
+                  </Text>
+                  {selectedFilter === 'matches' && <MaterialIcons name="check" size={20} color={COLORS.primary} />}
                 </TouchableOpacity>
 
                 <TouchableOpacity

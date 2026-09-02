@@ -46,6 +46,29 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - Atalhos diretos para acessar **"Mural de Reencontros"** e **"Sobre o WeFIND"** no menu do perfil e configurações.
 - Telas de Login e Cadastro acolhedoras ("Bem-vindo de volta" e "Criar sua conta").
 
+✅ **Motor de Match Inteligente de Pets (`petMatching.js`)**
+- Cruzamento automatizado de publicações de animais Perdidos e Encontrados.
+- Algoritmo de similaridade calibrado (0 a 100%) com critérios de eliminação estrita (*deal-breakers*: sexo oposto = 0%, portes incompatíveis = 0%, espécies distintas = 0%) e penalidades para cores e idades divergentes.
+- Disparo automático de **Push Notifications** e notificações internas no app para matches a partir de 55%.
+- Modal de Comparação lado a lado multi-match com carrossel de fotos mini, badges de probabilidade e lista detalhada de correspondências (`PetMatchModal.jsx`).
+
+✅ **Gerador de Cartazes com QR Code & Posts para Redes Sociais (`ShareCardFlyer.jsx` & `ShareFlyerModal.jsx`)**
+- **3 Formatos de Divulgação Profissionais:**
+  - **Cartaz A4 para Impressão:** Layout de alta resolução para postes, clínicas veterinárias e pet shops com telefone gigante e **QR Code dinâmico** integrado (`https://wefind.app/pet/{id}`).
+  - **Instagram Stories & WhatsApp Status (9:16 Vertical):** Arte vertical estilizada para tela cheia com dados para leitura rápida em 3 segundos.
+  - **Feed Quadrado (1:1):** Arte compacta otimizada para feed do Instagram/Facebook e encaminhamento em grupos de WhatsApp.
+- Seletor de formatos com pré-visualização ao vivo, exportação nativa em imagem PNG e botão para copiar texto com link.
+
+✅ **RG Pet Digital / Carteirinha de Identificação (`PetRgCard.jsx`, `MyPetsScreen.jsx` & `AddEditPetScreen.jsx`)**
+- Cadastro de pets domésticos no perfil do tutor com foto, cuidados médicos, vacinas e castração.
+- Emissão do **Registro Geral Animal (RGA)** com visual oficial (*República Federativa dos Pets / WeFIND*), carimbo de autenticação, dados do tutor e **QR Code de autenticidade**.
+- **Botão de Pânico "🚨 MEU PET FUGIU!":** Converte instantaneamente os dados do RG em uma publicação de animal perdido no mapa, notifica os voluntários da região e executa o motor de match inteligente.
+
+✅ **Gamificação & Selos de Guardião da Comunidade (`gamification.js` & `GamificationCard.jsx`)**
+- **5 Níveis de Guardião:** *Amigo dos Animais 🐾*, *Protetor Local 🛡️*, *Olhos Atentos 👁️*, *Anjo da Guarda 👼* e *Guardião Lendário WeFIND 👑*.
+- Pontuação dinâmica de Impacto (XP) por Reencontros (+250 XP), Lares Temporários (+120 XP), Publicações (+40 XP), RG Pet (+35 XP) e Divulgações (+20 XP).
+- 7 Medalhas e Conquistas (*Badges*) desbloqueáveis exibidas com barra de progresso no perfil do usuário e no perfil público de outros membros.
+
 ✅ **Central de Notificações no Estilo TikTok (`NotificationsScreen.jsx`)**
 - **Abas Segmentadas:** Organização em abas `Comunidade` (mensagens e conversas de pets com badge contador) e `Sistema (X)` (alertas de proximidade, avistamentos e renovações).
 - **Banner Informativo Retrátil:** Aviso discreto *"Notificações e alertas ficam salvos por 30 dias"* com fechamento `×`.

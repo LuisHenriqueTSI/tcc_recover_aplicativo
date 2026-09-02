@@ -166,6 +166,42 @@ export async function sendExpoPushNotification({ to, title, body, data = {} }) {
 }
 
 /**
+ * Envia uma push notification para um usuário específico pelo ID
+ */
+export async function sendPushNotification(targetUserId, title, body, data = {}) {
+  try {
+    if (!targetUserId) return false;
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('expo_push_token, extra_fields')
+      .eq('id', targetUserId)
+      .maybeSingle();
+
+    const pushToken = profile?.expo_push_token || profile?.extra_fields?.expo_push_token;
+    if (pushToken) {
+      await sendExpoPushNotification({
+        to: pushToken,
+        title,
+        body,
+        data,
+      });
+    }
+
+    // Dispara notificação local para testes e feedback visual
+    triggerLocalNotification({
+      title,
+      body,
+      data,
+    }).catch(() => {});
+
+    return true;
+  } catch (err) {
+    console.warn('[sendPushNotification] Erro ao enviar push:', err.message);
+    return false;
+  }
+}
+
+/**
  * Dispara uma notificação local instantânea no aparelho (ótimo para testes e feedback em tempo real)
  */
 export async function triggerLocalNotification({ title, body, data = {}, delaySeconds = 0 }) {
