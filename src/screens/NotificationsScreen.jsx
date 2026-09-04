@@ -89,7 +89,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
       type: 'message',
       title: msg.otherName || 'Membro da Comunidade',
       prefix: '💬 Mensagem sobre o pet:',
-      message: `Enviou uma nova mensagem sobre "${msg.itemTitle || 'Pet sem nome'}".`,
+      message: `${msg.otherName || 'Membro da Comunidade'} enviou uma nova mensagem sobre "${msg.itemTitle || 'Pet sem nome'}".`,
       time: getTikTokRelativeTime(msg.lastMessageAt),
       timestamp: new Date(msg.lastMessageAt || Date.now()).getTime(),
       read: false,
@@ -216,7 +216,14 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
       if (notification.otherId) {
         await markMessagesAsRead(user.id, notification.otherId);
       }
-      navigation.navigate('Chat', { otherId: notification.otherId, itemId: notification.itemId });
+      navigation.navigate('Chat', {
+        conversation: {
+          otherId: notification.otherId,
+          itemId: notification.itemId,
+          itemTitle: notification.itemTitle,
+          otherName: notification.title,
+        },
+      });
       return;
     }
 

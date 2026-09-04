@@ -59,6 +59,14 @@ const getNextMessageId = async () => {
 export const sendMessage = async (messageData) => {
   try {
     console.log('[sendMessage] Enviando mensagem...');
+    const conversation = await getOrCreateConversation(
+      messageData.sender_id,
+      messageData.receiver_id,
+      messageData.item_id
+    );
+    if (conversation.status === 'encerrada') {
+      throw new Error('Esta conversa foi encerrada e não aceita novas mensagens.');
+    }
     await showConversationAgain(messageData.sender_id, messageData.receiver_id);
 
     const nextMessageId = await getNextMessageId();
@@ -73,6 +81,7 @@ export const sendMessage = async (messageData) => {
         item_id: messageData.item_id,
         content: messageData.content,
         photo_url: messageData.photo_url,
+        conversation_id: conversation.id,
         sent_at: sentAt,
         read: false,
       })
@@ -90,6 +99,48 @@ export const sendMessage = async (messageData) => {
     console.log('[sendMessage] Exceção:', error.message);
     throw error;
   }
+};
+
+export const getOrCreateConversation = async (userId, otherUserId, itemId = null) => {
+  if (!userId || !otherUserId) throw new Error('Participantes inválidos.');
+  const participantA = userId < otherUserId ? userId : otherUserId;
+  const participantB = userId < otherUserId ? otherUserId : userId;
+  const query = supabase
+    .from('conversations')
+    .select('id, status')
+    .eq('participant_a', participantA)
+    .eq('participant_b', participantB);
+  const { data: existing, error: findError } = itemId
+    ? await query.eq('item_id', itemId).maybeSingle()
+    : await query.is('item_id', null).maybeSingle();
+  if (findError) throw findError;
+  if (existing) return existing;
+
+  const { data, error } = await supabase
+    .from('conversations')
+    .insert({
+      participant_a: participantA,
+      participant_b: participantB,
+      item_id: itemId,
+      status: 'ativa',
+    })
+    .select('id, status')
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+export const closeConversation = async (conversationId) => {
+  if (!conversationId) throw new Error('Conversa inválida.');
+  const { data, error } = await supabase
+    .from('conversations')
+    .update({ status: 'encerrada', closed_at: new Date().toISOString() })
+    .eq('id', conversationId)
+    .eq('status', 'ativa')
+    .select('id, status')
+    .single();
+  if (error) throw error;
+  return data;
 };
 
 export const getCachedConversations = async (userId) => {
@@ -177,6 +228,7 @@ export const getConversations = async (userId) => {
         itemTitle,
         itemStatus: itemInfo?.status || (isItemDeleted ? 'deleted' : null),
         isItemDeleted,
+        status: 'ativa',
       });
     }
 

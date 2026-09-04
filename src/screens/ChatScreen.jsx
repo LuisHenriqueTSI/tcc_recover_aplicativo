@@ -18,7 +18,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getMessages, sendMessage, markMessagesAsRead, uploadMessagePhoto } from '../services/messages';
+import { getMessages, sendMessage, markMessagesAsRead, uploadMessagePhoto, getOrCreateConversation, closeConversation } from '../services/messages';
 import { submitOwnershipProof } from '../services/proofVerification';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -48,6 +48,10 @@ const ChatScreen = (props) => {
   const [avatarUrl, setAvatarUrl] = useState(conversation?.avatarUrl || null);
   const [itemData, setItemData] = useState(null);
   const [isItemDeleted, setIsItemDeleted] = useState(Boolean(conversation?.isItemDeleted));
+  const [conversationState, setConversationState] = useState({
+    id: conversation?.conversationId || null,
+    status: conversation?.status || 'ativa',
+  });
 
   const [sending, setSending] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -122,6 +126,13 @@ const ChatScreen = (props) => {
     const cacheKey = `@wefind_chat_cache_${user.id}_${otherId}_${itemId || 'all'}`;
 
     const load = async () => {
+      try {
+        const persistedConversation = await getOrCreateConversation(user.id, otherId, itemId);
+        setConversationState(persistedConversation);
+      } catch (conversationError) {
+        console.error('[ChatScreen] Erro ao carregar conversa:', conversationError);
+      }
+
       // 1. Tenta carregar do cache local imediatamente para abrir em 0ms
       try {
         const cachedRaw = await AsyncStorage.getItem(cacheKey);
@@ -461,6 +472,10 @@ const ChatScreen = (props) => {
   };
 
   const handleSend = async () => {
+    if (conversationState.status === 'encerrada') {
+      setError('Esta conversa foi encerrada e não aceita novas mensagens.');
+      return;
+    }
     if ((!input.trim() && !selectedPhoto) || sending) return;
     setSending(true);
     try {
@@ -489,6 +504,24 @@ const ChatScreen = (props) => {
     } finally {
       setSending(false);
     }
+  };
+
+  const handleCloseConversation = () => {
+    Alert.alert('Encerrar conversa', 'O histórico será mantido, mas vocês não poderão enviar novas mensagens.', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Encerrar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const closed = await closeConversation(conversationState.id);
+            setConversationState(closed);
+          } catch (closeError) {
+            Alert.alert('Erro', closeError.message || 'Não foi possível encerrar a conversa.');
+          }
+        },
+      },
+    ]);
   };
 
   const renderItem = ({ item }) => {
@@ -655,8 +688,26 @@ const ChatScreen = (props) => {
 
             <MaterialIcons name="chevron-right" size={20} color="rgba(255,255,255,0.7)" style={{ marginRight: 4 }} />
           </TouchableOpacity>
+          {conversationState.status === 'ativa' && conversationState.id ? (
+            <TouchableOpacity
+              onPress={handleCloseConversation}
+              style={styles.headerBackBtn}
+              accessibilityLabel="Encerrar conversa"
+              activeOpacity={0.75}
+            >
+              <MaterialIcons name="close" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+          ) : null}
         </View>
       </SafeAreaView>
+
+      {conversationState.status === 'encerrada' && (
+        <View style={{ padding: 10, margin: 12, borderRadius: 8, backgroundColor: isDark ? '#3F1D1D' : '#FEF2F2' }}>
+          <Text style={{ color: isDark ? '#FCA5A5' : '#991B1B', textAlign: 'center' }}>
+            Esta conversa foi encerrada. O histórico continua disponível para consulta.
+          </Text>
+        </View>
+      )}
 
       {/* Banner Informativo de Publicação Excluída/Encerrada */}
       {isItemDeleted && (

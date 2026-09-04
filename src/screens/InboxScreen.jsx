@@ -137,7 +137,13 @@ const InboxScreen = () => {
         isSelected && { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight },
       ]}>
         <TouchableOpacity
-          onPress={() => navigation.navigate('ChatScreen', { conversation: item })}
+          onPress={() => {
+            if (isSelected) {
+              setSelectedConversationKey(null);
+              return;
+            }
+            navigation.navigate('ChatScreen', { conversation: item });
+          }}
           onLongPress={() => setSelectedConversationKey(`${item.otherId}_${item.itemId || ''}`)}
           style={styles.convMainButton}
           activeOpacity={0.85}

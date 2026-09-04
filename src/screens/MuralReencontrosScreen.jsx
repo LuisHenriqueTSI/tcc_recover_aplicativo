@@ -77,9 +77,16 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
 
   // Estado do Modal de Envio de História
   const [showStoryModal, setShowStoryModal] = useState(false);
+  const [storyItemId, setStoryItemId] = useState(null);
 
   useEffect(() => {
     if (route?.params?.openSendModal && user) {
+      if (route?.params?.prefillPetName) {
+        setPetNameInput(route.params.prefillPetName);
+      }
+      if (route?.params?.prefillItemId) {
+        setStoryItemId(route.params.prefillItemId);
+      }
       setShowStoryModal(true);
     } else if (route?.params?.openSendModal && !user) {
       Alert.alert('Login necessário', 'Entre ou crie uma conta para enviar uma História Feliz.', [
@@ -87,7 +94,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
         { text: 'Entrar', onPress: () => navigation.navigate('Login') },
       ]);
     }
-  }, [route?.params?.openSendModal, user, navigation]);
+  }, [route?.params?.openSendModal, route?.params?.prefillPetName, route?.params?.prefillItemId, user, navigation]);
   const [petNameInput, setPetNameInput] = useState('');
   const [authorInput, setAuthorInput] = useState(userProfile?.name || '');
   const [locationInput, setLocationInput] = useState(
@@ -207,6 +214,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
         photoUrl: photoUriInput,
         rating: ratingInput,
         userId: user?.id || null,
+        itemId: storyItemId || null,
       });
 
       Alert.alert('História Publicada! 🎉', 'Seu relato de reencontro foi publicado e já está visível para toda a comunidade.');
@@ -214,6 +222,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
       setPetNameInput('');
       setTestimonialInput('');
       setPhotoUriInput(null);
+      setStoryItemId(null);
       loadData();
     } catch (error) {
       Alert.alert('Erro ao enviar', 'Não foi possível salvar seu relato. Tente novamente.');

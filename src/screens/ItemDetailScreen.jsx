@@ -278,6 +278,28 @@ const ItemDetailScreen = ({ route, navigation }) => {
     );
   };
 
+  const promptHappyStory = (petName) => {
+    setTimeout(() => {
+      Alert.alert(
+        '🎉 Que notícia incrível!',
+        `Que bom que ${petName || 'seu pet'} foi reencontrado! Gostaria de compartilhar essa história feliz com toda a comunidade WeFIND?`,
+        [
+          { text: 'Agora não', style: 'cancel' },
+          {
+            text: '💚 Compartilhar história',
+            onPress: () => {
+              navigation.navigate('MuralReencontros', {
+                openSendModal: true,
+                prefillPetName: petName || '',
+                prefillItemId: item?.id || null,
+              });
+            },
+          },
+        ]
+      );
+    }, 400);
+  };
+
   const handleAdminChangeStatus = (newStatus, isAdoption = false) => {
     const statusTitles = {
       lost: 'Perdido',
@@ -285,6 +307,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
       resolved: 'Reencontrado / Resolvido',
     };
     const targetLabel = isAdoption ? 'Disponível para Adoção' : (statusTitles[newStatus] || newStatus);
+    const petName = item?.animal_name || item?.title || '';
 
     Alert.alert(
       'Alterar Status (Moderação Admin)',
@@ -309,9 +332,41 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 status: newStatus,
                 extra_fields: updatedFields,
               }));
-              Alert.alert('Sucesso', `Status alterado para "${targetLabel}" com sucesso!`);
+              Alert.alert(
+                'Sucesso',
+                `Status alterado para "${targetLabel}" com sucesso!`,
+                [{
+                  text: 'OK',
+                  onPress: () => {
+                    if (newStatus === 'resolved') promptHappyStory(petName);
+                  },
+                }]
+              );
             } catch (err) {
               Alert.alert('Erro', 'Falha ao alterar status: ' + (err.message || 'Erro desconhecido'));
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleMarkResolved = () => {
+    const petName = item?.animal_name || item?.title || 'seu pet';
+    Alert.alert(
+      '🎉 Pet Reencontrado!',
+      `Confirma que você reencontrou ${petName} e deseja encerrar esta publicação como resolvida?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Confirmar reencontro',
+          onPress: async () => {
+            try {
+              await itemsService.updateItem(item.id, { status: 'resolved' });
+              setItem((prev) => ({ ...prev, status: 'resolved' }));
+              promptHappyStory(petName);
+            } catch (err) {
+              Alert.alert('Erro', 'Falha ao atualizar o status: ' + (err.message || 'Erro desconhecido'));
             }
           },
         },
@@ -1618,6 +1673,16 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   {isAdmin && !isOwner ? 'Editar (Admin)' : 'Editar'}
                 </Text>
               </TouchableOpacity>
+
+              {isOwner && !isAdmin && (item.status === 'lost' || item.status === 'found') && (
+                <TouchableOpacity
+                  style={[styles.ownerActionBtn, { backgroundColor: isDark ? 'rgba(22, 163, 74, 0.15)' : '#DCFCE7', borderColor: '#A7F3D0' }]}
+                  onPress={handleMarkResolved}
+                >
+                  <MaterialIcons name="celebration" size={17} color="#16A34A" />
+                  <Text style={[styles.ownerActionText, { color: '#16A34A' }]}>Reencontrado!</Text>
+                </TouchableOpacity>
+              )}
 
               {isAdmin && (
                 <TouchableOpacity

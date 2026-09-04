@@ -466,3 +466,7 @@ Os diagramas de classes conceituais do WeFIND estão disponíveis em
 [`docs/DIAGRAMA_CLASSES_CONCEITUAL.md`](docs/DIAGRAMA_CLASSES_CONCEITUAL.md).
 A versão resumida mantém apenas os conceitos, atributos essenciais,
 relacionamentos e cardinalidades do domínio, sem detalhes de implementação.
+
+Para habilitar o controle persistente de conversas (`ativa`/`encerrada`),
+execute o script [`supabase/conversations.sql`](supabase/conversations.sql) no
+projeto Supabase.
