@@ -727,22 +727,26 @@ const ItemDetailScreen = ({ route, navigation }) => {
       return;
     }
 
+    const mapParams = {
+      focusItemId: item.id,
+      showRoute: true,
+      targetCoords: { latitude: Number(lat), longitude: Number(lng) },
+    };
+
+    // Usuários não autenticados estão no PublicStack, que não possui a rota MainApp.
+    if (!user) {
+      navigation.navigate('Map', mapParams);
+      return;
+    }
+
     // Abre diretamente o Mapa do WeFIND traçando a rota até o animal
     try {
       navigation.navigate('MainApp', {
         screen: 'MapTab',
-        params: {
-          focusItemId: item.id,
-          showRoute: true,
-          targetCoords: { latitude: Number(lat), longitude: Number(lng) },
-        },
+        params: mapParams,
       });
     } catch (e) {
-      navigation.navigate('Map', {
-        focusItemId: item.id,
-        showRoute: true,
-        targetCoords: { latitude: Number(lat), longitude: Number(lng) },
-      });
+      navigation.navigate('Map', mapParams);
     }
   };
 

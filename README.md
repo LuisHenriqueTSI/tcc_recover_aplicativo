@@ -2,6 +2,10 @@
 
 Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitária e Inteligente de Animais Perdidos e Encontrados.
 
+## 🛠️ Correções recentes
+
+* **Rota no mapa para visitantes:** o botão "Ver Rota no Mapa" agora direciona usuários não autenticados diretamente para a tela pública do mapa, evitando o erro de navegação causado pela tentativa de acessar a rota protegida `MainApp`.
+
 ## 🎨 Identidade Visual e Design System Oficial (WeFind)
 
 * **Verde Floresta (Pin Central & Confiança):** `#2E5634` (Cor primária do sistema, cabeçalhos, botões principais, marcadores e destaques).
