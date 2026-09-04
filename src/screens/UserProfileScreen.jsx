@@ -9,7 +9,6 @@ import {
   Image,
   Linking,
   Alert,
-  Share,
   Modal,
   TextInput,
   Dimensions,
@@ -321,17 +320,6 @@ const UserProfileScreen = ({ route, navigation }) => {
       });
   };
 
-  const handleShareProfile = async () => {
-    try {
-      const displayName = profile?.name || initialName || 'Membro';
-      await Share.share({
-        message: `Confira o perfil de ${displayName} no WeFIND - Plataforma para localização e adoção de animais!`,
-      });
-    } catch (e) {
-      console.log('Erro ao compartilhar:', e.message);
-    }
-  };
-
   const formatDisplayPhone = (value) => {
     let digits = String(value || '').replace(/\D/g, '');
     if (!digits.startsWith('55')) digits = digits.slice(2);
@@ -510,7 +498,7 @@ const UserProfileScreen = ({ route, navigation }) => {
             </Text>
           ) : null}
 
-          {/* Ações Rápidas (Chat, WhatsApp, Avaliar, Compartilhar) */}
+          {/* Ações rápidas */}
           <View style={styles.actionButtonsRow}>
             {!isOwnProfile && (
               <TouchableOpacity
@@ -536,7 +524,7 @@ const UserProfileScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             )}
 
-            {phoneNumber && !isOwnProfile && (
+            {phoneNumber && currentUser && !isOwnProfile && (
               <TouchableOpacity
                 onPress={handleOpenWhatsApp}
                 style={[styles.whatsappActionBtn, { backgroundColor: '#25D366' }]}
@@ -546,13 +534,6 @@ const UserProfileScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity
-              onPress={handleShareProfile}
-              style={[styles.iconActionBtn, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: colors.cardBorder }]}
-              activeOpacity={0.8}
-            >
-              <MaterialIcons name="share" size={18} color={colors.textSecondary} />
-            </TouchableOpacity>
           </View>
 
           {/* INSÍGNIA DE LAR TEMPORÁRIO SOLIDÁRIO */}
@@ -1348,17 +1329,70 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   petCard: {
-    borderRadius: 18,
-    borderWidth: 1,
-    marginBottom: 10,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    flexDirection: 'row',
     borderRadius: 16,
     borderWidth: 1,
     marginBottom: 10,
     overflow: 'hidden',
+    shadowColor: '#163A22',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  petCardContent: {
+    flexDirection: 'row',
     alignItems: 'center',
+    padding: 10,
+  },
+  petImageContainer: {
+    width: 92,
+    height: 92,
+    borderRadius: 14,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  petInfoContainer: {
+    flex: 1,
+    paddingHorizontal: 12,
+    gap: 4,
+  },
+  petStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
+  petStatusBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+  },
+  petStatusBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  petSpeciesText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+  },
+  petTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: -0.2,
+  },
+  petBreed: {
+    fontSize: 11.5,
+    fontWeight: '600',
+  },
+  iconActionBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   petImage: {
     width: 86,
@@ -1411,8 +1445,75 @@ const styles = StyleSheet.create({
     fontSize: 11,
     flex: 1,
   },
-  reviewsSection: {
+  ratingsSection: {
     paddingHorizontal: 14,
+    paddingTop: 4,
+  },
+  ratingSummaryCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#163A22',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  ratingSummaryLeft: {
+    width: 108,
+    alignItems: 'center',
+    paddingRight: 14,
+    borderRightWidth: 1,
+  },
+  ratingBigScore: {
+    fontSize: 38,
+    fontWeight: '900',
+    letterSpacing: -1.5,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    gap: 1,
+    marginTop: 2,
+  },
+  ratingTotalText: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 5,
+    textAlign: 'center',
+  },
+  ratingBreakdownContainer: {
+    flex: 1,
+    paddingLeft: 16,
+    gap: 6,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  breakdownStarLabel: {
+    width: 24,
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  breakdownBarTrack: {
+    flex: 1,
+    height: 7,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  breakdownBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  breakdownCountText: {
+    width: 18,
+    fontSize: 10.5,
+    fontWeight: '700',
+    textAlign: 'right',
   },
   reviewsHeader: {
     marginBottom: 12,
@@ -1497,10 +1598,51 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   reviewCard: {
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
-    padding: 14,
-    marginBottom: 10,
+    padding: 15,
+    marginBottom: 12,
+    shadowColor: '#163A22',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  reviewerAvatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  reviewerAvatarImg: {
+    width: '100%',
+    height: '100%',
+  },
+  reviewerName: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  reviewTagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 12,
+  },
+  reviewTagBadge: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+  },
+  reviewTagText: {
+    fontSize: 10.5,
+    fontWeight: '700',
   },
   reviewAuthorRow: {
     flexDirection: 'row',

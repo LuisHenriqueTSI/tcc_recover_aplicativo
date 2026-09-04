@@ -79,10 +79,15 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
   const [showStoryModal, setShowStoryModal] = useState(false);
 
   useEffect(() => {
-    if (route?.params?.openSendModal) {
+    if (route?.params?.openSendModal && user) {
       setShowStoryModal(true);
+    } else if (route?.params?.openSendModal && !user) {
+      Alert.alert('Login necessário', 'Entre ou crie uma conta para enviar uma História Feliz.', [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+      ]);
     }
-  }, [route?.params?.openSendModal]);
+  }, [route?.params?.openSendModal, user, navigation]);
   const [petNameInput, setPetNameInput] = useState('');
   const [authorInput, setAuthorInput] = useState(userProfile?.name || '');
   const [locationInput, setLocationInput] = useState(
@@ -174,6 +179,11 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
   };
 
   const handleSubmitStory = async () => {
+    if (!user) {
+      Alert.alert('Login necessário', 'Entre ou crie uma conta para enviar uma História Feliz.');
+      setShowStoryModal(false);
+      return;
+    }
     if (!petNameInput.trim()) {
       Alert.alert('Atenção', 'Informe o nome do animalzinho reencontrado.');
       return;
@@ -328,14 +338,16 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
               >
                 <Text style={[styles.seeMoreText, { color: colors.primary }]}>Ver mais</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.sendStoryButton, { backgroundColor: '#2E5634' }]}
-                onPress={() => setShowStoryModal(true)}
-                activeOpacity={0.8}
-              >
-                <MaterialIcons name="add-comment" size={15} color="#FFFFFF" style={{ marginRight: 3 }} />
-                <Text style={styles.sendStoryButtonText}>Enviar</Text>
-              </TouchableOpacity>
+              {user && (
+                <TouchableOpacity
+                  style={[styles.sendStoryButton, { backgroundColor: '#2E5634' }]}
+                  onPress={() => setShowStoryModal(true)}
+                  activeOpacity={0.8}
+                >
+                  <MaterialIcons name="add-comment" size={15} color="#FFFFFF" style={{ marginRight: 3 }} />
+                  <Text style={styles.sendStoryButtonText}>Enviar</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 

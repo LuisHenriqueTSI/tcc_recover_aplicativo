@@ -1,0 +1,181 @@
+classDiagram
+    direction TB
+
+    namespace "Identidade e participação" {
+        class Usuario {
+            -id: String
+            -nome: String
+            -email: String
+            -telefone: String
+            -perfil: String
+            -status: String
+            -pontos: Integer
+            -nivel: Integer
+            +atualizarPerfil()
+            +consultarPontuacao() Integer
+        }
+
+        class PerfilVoluntario {
+            -ativo: Boolean
+            -especiesAceitas: List~String~
+            -portesAceitos: List~String~
+            -tipoMoradia: String
+            -localizacao: String
+            +ativar()
+            +desativar()
+        }
+
+        class Avaliacao {
+            -nota: Integer
+            -comentario: String
+            -data: Date
+            +registrar()
+        }
+    }
+
+    namespace "Localização e recuperação" {
+        class PetCadastrado {
+            -id: String
+            -nome: String
+            -especie: String
+            -raca: String
+            -cuidados: String
+            -vacinas: String
+            +atualizarDados()
+        }
+
+        class Publicacao {
+            -id: Integer
+            -titulo: String
+            -descricao: String
+            -tipo: String
+            -situacao: String
+            -finalidade: String
+            -localizacao: String
+            -dataOcorrencia: Date
+            -resolvida: Boolean
+            -expiraEm: Date
+            +criar()
+            +atualizar()
+            +marcarComoResolvida()
+        }
+
+        class Foto {
+            -id: String
+            -url: String
+            -principal: Boolean
+            +adicionar()
+            +remover()
+        }
+
+        class Avistamento {
+            -id: String
+            -descricao: String
+            -localizacao: String
+            -data: Date
+            -status: String
+            +registrar()
+        }
+
+        class Reivindicacao {
+            -id: String
+            -mensagem: String
+            -comprovante: String
+            -status: String
+            -data: Date
+            +enviar()
+            +avaliar()
+        }
+
+        class Recompensa {
+            -valor: Decimal
+            -descricao: String
+            -status: String
+            +oferecer()
+            +cancelar()
+        }
+
+        class ReivindicacaoRecompensa {
+            -id: String
+            -mensagem: String
+            -status: String
+            -solicitadaEm: Date
+            +solicitar()
+            +avaliar()
+        }
+    }
+
+    namespace "Comunicação e comunidade" {
+        class Mensagem {
+            -id: Integer
+            -conteudo: String
+            -lida: Boolean
+            -enviadaEm: Date
+            +enviar()
+            +marcarComoLida()
+        }
+
+        class Conversa {
+            -id: String
+            -iniciadaEm: Date
+            -arquivada: Boolean
+            +iniciar()
+            +arquivar()
+        }
+
+        class Notificacao {
+            -id: String
+            -titulo: String
+            -mensagem: String
+            -tipo: String
+            -lida: Boolean
+            -criadaEm: Date
+            +enviar()
+            +marcarComoLida()
+        }
+
+        class HistoriaFeliz {
+            -id: String
+            -titulo: String
+            -relato: String
+            -foto: String
+            -publicadaEm: Date
+            +publicar()
+        }
+
+        class Denuncia {
+            -id: String
+            -motivo: String
+            -detalhes: String
+            -status: String
+            -resolucao: String
+            +registrar()
+            +moderar()
+        }
+    }
+
+    Usuario "1" *-- "0..1" PerfilVoluntario : configura
+    Usuario "1" *-- "0..*" PetCadastrado : cadastra
+    Usuario "1" --> "0..*" Publicacao : cria
+    PetCadastrado "0..1" --> "0..*" Publicacao : pode originar
+    Publicacao "1" *-- "0..*" Foto : possui
+    Publicacao "1" *-- "0..*" Avistamento : recebe
+    Usuario "1" --> "0..*" Avistamento : registra
+    Publicacao "1" *-- "0..1" Recompensa : oferece
+    Publicacao "1" --> "0..*" Reivindicacao : recebe
+    Usuario "1" --> "0..*" Reivindicacao : envia
+    Recompensa "1" --> "0..*" ReivindicacaoRecompensa : recebe
+    Usuario "1" --> "0..*" ReivindicacaoRecompensa : solicita
+    Conversa "1" *-- "1..*" Mensagem : contem
+    Usuario "1" --> "0..*" Conversa : participa
+    Usuario "1" --> "0..*" Mensagem : envia
+    Usuario "1" --> "0..*" Mensagem : recebe
+    Publicacao "0..1" --> "0..*" Conversa : contextualiza
+    Usuario "1" --> "0..*" Notificacao : recebe
+    Publicacao "0..1" --> "0..*" HistoriaFeliz : origina
+    Usuario "0..1" --> "0..*" HistoriaFeliz : publica
+    Publicacao "0..1" --> "0..*" Denuncia : e alvo de
+    Usuario "1" --> "0..*" Denuncia : registra
+    Usuario "0..1" --> "0..*" Denuncia : analisa
+    Usuario "1" --> "0..*" Avaliacao : realiza
+    Usuario "1" --> "0..*" Avaliacao : recebe

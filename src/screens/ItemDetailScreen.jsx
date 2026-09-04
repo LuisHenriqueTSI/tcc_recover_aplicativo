@@ -26,7 +26,6 @@ import * as itemsService from '../services/items';
 import { formatarDataMembro } from './_dateUtils';
 
 import ShareButton from '../components/ShareButton';
-import ShareFlyerModal from '../components/ShareFlyerModal';
 import COLORS from '../constants/theme';
 
 import SightingModal from '../components/SightingModal';
@@ -135,9 +134,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [fullScreenPhotoModal, setFullScreenPhotoModal] = useState(false);
   const [fullScreenIndex, setFullScreenIndex] = useState(0);
-  const [shareFlyerVisible, setShareFlyerVisible] = useState(false);
   const [expandedAdoptionInfo, setExpandedAdoptionInfo] = useState(false);
   const [expandedCustodyInfo, setExpandedCustodyInfo] = useState(false);
+  const [showMoreInfo, setShowMoreInfo] = useState(false);
+  const [showActionMenu, setShowActionMenu] = useState(false);
   const [potentialMatches, setPotentialMatches] = useState([]);
   const [matchModalVisible, setMatchModalVisible] = useState(false);
   const [selectedMatchIndex, setSelectedMatchIndex] = useState(0);
@@ -219,10 +219,13 @@ const ItemDetailScreen = ({ route, navigation }) => {
         setOwner(itemData.profiles);
         setRewards(itemData.rewards || []);
 
-        if (itemData && (itemData.status === 'lost' || itemData.status === 'found')) {
+        // Matches são dados privados do autor da publicação.
+        if (user?.id === itemData.owner_id && (itemData.status === 'lost' || itemData.status === 'found')) {
           findMatchesForPet(itemData, { minScore: 55 })
             .then((matches) => setPotentialMatches(matches || []))
             .catch((e) => console.log('[ItemDetailScreen] Erro ao buscar matches:', e.message));
+        } else {
+          setPotentialMatches([]);
         }
       } else {
         Alert.alert('Erro', 'Pet não encontrado');
@@ -673,6 +676,13 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const isOwner = user && item && item.owner_id === user.id;
 
+  const handleLoginRequired = (message = 'Entre ou crie uma conta para continuar.') => {
+    Alert.alert('Login necessário', message, [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+    ]);
+  };
+
   if (loading) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
@@ -891,15 +901,19 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
           {(() => {
             const rawBreed = item.breed || item.extra_fields?.breed || '';
-            const isBreedUnknown = !rawBreed ||
-              /^(não informado|não informada|nao informado|nao informada|sem raça definida|sem raca definida|sem raça|sem raca|srd|desconhecido|desconhecida|outra|outro)$/i.test(rawBreed.trim());
+            const displayBreed = rawBreed
+              .replace(/\s*\(\s*SRD\s*\)\s*/gi, ' ')
+              .replace(/\s+/g, ' ')
+              .trim();
+            const isBreedUnknown = !displayBreed ||
+              /^(não informado|não informada|nao informado|nao informada|sem raça definida|sem raca definida|sem raça|sem raca|srd|desconhecido|desconhecida|outra|outro)$/i.test(displayBreed);
             if (isBreedUnknown) return null;
             return (
               <View style={[styles.attrChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
                 <Text style={styles.attrChipEmoji}>🏷️</Text>
                 <View style={styles.attrChipTextWrap}>
                   <Text style={[styles.attrChipLabel, { color: colors.textMuted }]}>Raça</Text>
-                  <Text style={[styles.attrChipValue, { color: colors.text }]} numberOfLines={1}>{rawBreed}</Text>
+                  <Text style={[styles.attrChipValue, { color: colors.text }]} numberOfLines={1}>{displayBreed}</Text>
                 </View>
               </View>
             );
@@ -948,8 +962,26 @@ const ItemDetailScreen = ({ route, navigation }) => {
           )}
         </View>
 
-        {/* Descrição Detalhada */}
-        {item.description ? (
+        {(item.description || (Array.isArray(item.extra_fields?.temperament) && item.extra_fields.temperament.length > 0) || (Array.isArray(rewards) && rewards.some(r => r?.status === 'active'))) && (
+          <TouchableOpacity
+            style={[styles.moreInfoButton, { borderColor: colors.border, backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }]}
+            onPress={() => setShowMoreInfo(!showMoreInfo)}
+            activeOpacity={0.75}
+            accessibilityLabel={showMoreInfo ? 'Ocultar mais informações' : 'Mostrar mais informações'}
+          >
+            <MaterialIcons name="info-outline" size={17} color={colors.primary} />
+            <Text style={[styles.moreInfoButtonText, { color: colors.primary }]}>
+              {showMoreInfo ? 'Ocultar informações' : 'Mais informações'}
+            </Text>
+            <MaterialIcons
+              name={showMoreInfo ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+              size={19}
+              color={colors.primary}
+            />
+          </TouchableOpacity>
+        )}
+
+        {showMoreInfo && item.description ? (
           <View style={[styles.descriptionBlock, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
             <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>Descrição & Características</Text>
             <Text style={[styles.descriptionText, { color: colors.text }]}>{item.description}</Text>
@@ -957,7 +989,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
         ) : null}
 
         {/* Personalidade & Cuidados do Pet */}
-        {Array.isArray(item.extra_fields?.temperament) && item.extra_fields.temperament.length > 0 && (
+        {showMoreInfo && Array.isArray(item.extra_fields?.temperament) && item.extra_fields.temperament.length > 0 && (
           <View style={{ marginTop: 14 }}>
             <Text style={[styles.sectionSubtitle, { color: colors.textMuted, marginBottom: 8 }]}>
               Personalidade & Cuidados
@@ -987,7 +1019,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
         )}
 
         {/* Bloco de Recompensa (Se ativa) */}
-        {Array.isArray(rewards) && rewards.some(r => r?.status === 'active') && (
+        {showMoreInfo && Array.isArray(rewards) && rewards.some(r => r?.status === 'active') && (
           <View style={styles.rewardBanner}>
             <View style={styles.rewardIconBadge}>
               <MaterialIcons name="emoji-events" size={24} color="#D97706" />
@@ -1379,36 +1411,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
         </View>
       </View>
 
-      {/* BANNER DE DIVULGAÇÃO: GERADOR DE CARTAZ COM QR CODE & STORIES */}
-      <View style={styles.flyerBannerWrap}>
-        <TouchableOpacity
-          style={[
-            styles.flyerBannerBtn,
-            {
-              backgroundColor: isDark ? '#1E293B' : '#F0FDF4',
-              borderColor: isDark ? 'rgba(16, 185, 129, 0.3)' : '#86EFAC',
-            },
-          ]}
-          onPress={() => setShareFlyerVisible(true)}
-          activeOpacity={0.85}
-        >
-          <View style={[styles.flyerIconCircle, { backgroundColor: '#10B981' }]}>
-            <MaterialIcons name="qr-code-2" size={24} color="#FFFFFF" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.flyerBtnTitle, { color: isDark ? '#34D399' : '#166534' }]}>
-              Gerar Cartaz & Posts para Redes
-            </Text>
-            <Text style={[styles.flyerBtnSub, { color: isDark ? '#94A3B8' : '#15803D' }]}>
-              Cartaz com QR Code para postes, Instagram Stories (9:16) e Feed
-            </Text>
-          </View>
-          <MaterialIcons name="chevron-right" size={24} color={isDark ? '#34D399' : '#166534'} />
-        </TouchableOpacity>
-      </View>
-
       {/* 5. CARD DO TUTOR / QUEM PUBLICOU */}
       {owner && (
+        <>
         <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <TouchableOpacity
             style={styles.ownerHeader}
@@ -1464,7 +1469,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 {item.status === 'lost' ? 'Tutor Oficial do Pet:' : 'Responsável pelo Pet:'}
               </Text>
               <Text style={styles.thirdPartyOwnerName}>{item.extra_fields.third_party_owner.name}</Text>
-              {item.extra_fields.third_party_owner.phone ? (
+              {user && item.extra_fields.third_party_owner.phone ? (
                 <TouchableOpacity
                   onPress={() => Linking.openURL(`tel:${item.extra_fields.third_party_owner.phone}`)}
                   style={styles.thirdPartyPhoneRow}
@@ -1475,9 +1480,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
               ) : null}
             </View>
           ) : null}
+          </View>
 
           {/* 6. CORRESPONDÊNCIAS E MATCHES INTELIGENTES */}
-          {potentialMatches.length > 0 && (
+          {isOwner && potentialMatches.length > 0 && (
             <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.matchesHeader}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
@@ -1491,6 +1497,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   <TouchableOpacity
                     style={[styles.openCompareBtn, { backgroundColor: colors.primaryLight }]}
                     onPress={() => {
+                      if (!user) {
+                        handleLoginRequired('Entre ou crie uma conta para ver e comparar os matches inteligentes.');
+                        return;
+                      }
                       setSelectedMatchIndex(0);
                       setMatchModalVisible(true);
                     }}
@@ -1522,6 +1532,10 @@ const ItemDetailScreen = ({ route, navigation }) => {
                       key={m.id || idx}
                       style={[styles.matchCard, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: matchBadgeColor }]}
                       onPress={() => {
+                        if (!user) {
+                          handleLoginRequired('Entre ou crie uma conta para ver e comparar os matches inteligentes.');
+                          return;
+                        }
                         setSelectedMatchIndex(idx);
                         setMatchModalVisible(true);
                       }}
@@ -1560,69 +1574,26 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
           {/* AÇÕES PARA VISITANTES (ENVIAR MENSAGEM CTA) */}
           {!isOwner && !isAdmin && (
-            <View style={styles.visitorActionsBlock}>
+            <View
+              style={[
+                styles.visitorActionsBlock,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
               <TouchableOpacity
-                style={[styles.primaryChatCta, { backgroundColor: colors.primary }]}
-                onPress={handleSendMessage}
+                style={[styles.actionMenuToggle, { borderColor: colors.border, backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }]}
+                onPress={() => setShowActionMenu(!showActionMenu)}
                 activeOpacity={0.85}
+                accessibilityLabel={showActionMenu ? 'Fechar menu de ações' : 'Abrir menu de ações'}
               >
-                <Ionicons name="chatbubble-ellipses" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-                <Text style={styles.primaryChatCtaText}>Enviar Mensagem ao Tutor</Text>
+                <MaterialIcons name="menu" size={20} color={colors.primary} />
+                <Text style={[styles.actionMenuToggleText, { color: colors.text }]}>Ações</Text>
+                <MaterialIcons name={showActionMenu ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={20} color={colors.textMuted} />
               </TouchableOpacity>
 
-              {/* Ação Especial: Oferecer Lar Temporário Solidário */}
-              {(item.status === 'lost' || (item.status === 'found' && !isAdoption)) && (
-                <View style={{ gap: 8, marginTop: 10 }}>
-                  <TouchableOpacity
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight,
-                      borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : COLORS.primaryBorder,
-                      borderWidth: 1.5,
-                      borderRadius: 14,
-                      paddingVertical: 12,
-                    }}
-                    onPress={() => navigation.navigate('FosterVolunteers', { city: item.city || item.address || '', species: item.species || 'all' })}
-                    activeOpacity={0.85}
-                  >
-                    <MaterialIcons name="groups" size={19} color={colors.primary} style={{ marginRight: 6 }} />
-                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: colors.primary }}>
-                      🤝 Buscar Lar Temporário na Região
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: isDark ? 'rgba(22, 163, 74, 0.15)' : '#F0FDF4',
-                      borderColor: isDark ? 'rgba(22, 163, 74, 0.3)' : '#BBF7D0',
-                      borderWidth: 1.5,
-                      borderRadius: 14,
-                      paddingVertical: 12,
-                    }}
-                    onPress={handleOfferFoster}
-                    activeOpacity={0.85}
-                  >
-                    <MaterialIcons name="home-work" size={19} color="#16A34A" style={{ marginRight: 6 }} />
-                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#15803D' }}>
-                      🏡 Oferecer Lar Temporário
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              <TouchableOpacity
-                style={styles.reportBtn}
-                onPress={handleOpenReport}
-                activeOpacity={0.7}
-              >
-                <MaterialIcons name="flag" size={16} color="#DC2626" style={{ marginRight: 4 }} />
-                <Text style={styles.reportBtnText}>Denunciar publicação</Text>
-              </TouchableOpacity>
             </View>
           )}
 
@@ -1714,7 +1685,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             </View>
           )}
-        </View>
+        </>
       )}
 
       {/* 6. COMENTÁRIOS E PISTAS DA COMUNIDADE */}
@@ -1910,7 +1881,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
                 {(instagram || whatsapp || facebook || contatoExtra) ? (
                   <View style={styles.commentContactsContainer}>
-                    {whatsapp ? (
+                    {user && whatsapp ? (
                       <TouchableOpacity
                         onPress={() => Linking.openURL(`https://wa.me/55${whatsapp.replace(/\D/g, '')}`)}
                         style={[styles.contactTag, { backgroundColor: '#DCFCE7' }]}
@@ -2118,13 +2089,86 @@ const ItemDetailScreen = ({ route, navigation }) => {
         }}
       />
 
-      {/* MODAL DE CARTAZ */}
-      <ShareFlyerModal
-        visible={shareFlyerVisible}
-        onClose={() => setShareFlyerVisible(false)}
-        item={item}
-        imageUrl={photos?.[0]?.url}
-      />
+      <Modal
+        visible={showActionMenu}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowActionMenu(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowActionMenu(false)}>
+          <View style={styles.actionSheetOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={[styles.actionSheet, { backgroundColor: colors.surface }]}>
+                <View style={[styles.actionSheetHandle, { backgroundColor: colors.border }]} />
+                <View style={styles.actionSheetHeader}>
+                  <View>
+                    <Text style={[styles.actionSheetTitle, { color: colors.text }]}>Ações da publicação</Text>
+                    <Text style={[styles.actionSheetSubtitle, { color: colors.textMuted }]}>Escolha uma opção</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => setShowActionMenu(false)}
+                    style={[styles.actionSheetClose, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}
+                    accessibilityLabel="Fechar ações"
+                  >
+                    <MaterialIcons name="close" size={18} color={colors.textMuted} />
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.sheetAction, { borderBottomColor: colors.border }]}
+                  onPress={() => { setShowActionMenu(false); handleSendMessage(); }}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.sheetActionIcon, { backgroundColor: colors.primaryLight }]}>
+                    <Ionicons name="chatbubble-ellipses-outline" size={19} color={colors.primary} />
+                  </View>
+                  <Text style={[styles.sheetActionText, { color: colors.text }]}>Mensagem ao tutor</Text>
+                  <MaterialIcons name="chevron-right" size={21} color={colors.textMuted} />
+                </TouchableOpacity>
+
+                {user && (item.status === 'lost' || (item.status === 'found' && !isAdoption)) && (
+                  <>
+                    <TouchableOpacity
+                      style={[styles.sheetAction, { borderBottomColor: colors.border }]}
+                      onPress={() => { setShowActionMenu(false); navigation.navigate('FosterVolunteers', { city: item.city || item.address || '', species: item.species || 'all' }); }}
+                      activeOpacity={0.8}
+                    >
+                      <View style={[styles.sheetActionIcon, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.18)' : '#ECFDF5' }]}>
+                        <MaterialIcons name="groups" size={19} color={colors.primary} />
+                      </View>
+                      <Text style={[styles.sheetActionText, { color: colors.text }]}>Buscar lar temporário</Text>
+                      <MaterialIcons name="chevron-right" size={21} color={colors.textMuted} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.sheetAction, { borderBottomColor: colors.border }]}
+                      onPress={() => { setShowActionMenu(false); handleOfferFoster(); }}
+                      activeOpacity={0.8}
+                    >
+                      <View style={[styles.sheetActionIcon, { backgroundColor: isDark ? 'rgba(22, 163, 74, 0.18)' : '#F0FDF4' }]}>
+                        <MaterialIcons name="home-work" size={19} color="#16A34A" />
+                      </View>
+                      <Text style={[styles.sheetActionText, { color: colors.text }]}>Oferecer lar temporário</Text>
+                      <MaterialIcons name="chevron-right" size={21} color={colors.textMuted} />
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                <TouchableOpacity
+                  style={styles.sheetAction}
+                  onPress={() => { setShowActionMenu(false); handleOpenReport(); }}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.sheetActionIcon, { backgroundColor: isDark ? 'rgba(220, 38, 38, 0.16)' : '#FEF2F2' }]}>
+                    <MaterialIcons name="flag" size={19} color="#DC2626" />
+                  </View>
+                  <Text style={[styles.sheetActionText, { color: '#DC2626' }]}>Denunciar publicação</Text>
+                  <MaterialIcons name="chevron-right" size={21} color="#DC2626" />
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
       {/* MODAL COMPARADOR E LISTA COMPLETA DE MATCHES */}
       <PetMatchModal
@@ -2138,6 +2182,11 @@ const ItemDetailScreen = ({ route, navigation }) => {
           navigation.push('ItemDetail', { itemId: targetId });
         }}
         onStartChat={(otherId, itemId, itemTitle) => {
+          if (!user) {
+            setMatchModalVisible(false);
+            handleLoginRequired('Entre ou crie uma conta para conversar com o responsável.');
+            return;
+          }
           setMatchModalVisible(false);
           navigation.navigate('ChatScreen', { otherId, itemId, itemTitle });
         }}
@@ -2167,27 +2216,27 @@ const styles = StyleSheet.create({
   floatingShareBtn: { position: 'absolute', top: 16, right: 16, zIndex: 12 },
 
   // Card Section Container
-  cardSection: { marginHorizontal: 16, marginTop: 14, borderRadius: 18, padding: 18, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  cardSection: { marginHorizontal: 14, marginTop: 12, borderRadius: 16, padding: 14, borderWidth: 1, shadowColor: '#163A22', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
 
   // Status and Title
-  statusRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  statusPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
+  statusRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  statusPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
   lostPill: { backgroundColor: '#FFEDD5' },
   foundPill: { backgroundColor: '#DCFCE7' },
   adoptionPill: { backgroundColor: '#FCE7F3' },
   statusPillText: { fontSize: 12.5, fontWeight: '800' },
-  petMainTitle: { fontSize: 24, fontWeight: '800', lineHeight: 30, marginBottom: 14 },
+  petMainTitle: { fontSize: 23, fontWeight: '900', lineHeight: 28, marginBottom: 12, letterSpacing: -0.3 },
 
   // Attribute Chips Grid
-  attributeGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 8, marginBottom: 14 },
-  attrChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, width: '48.5%' },
+  attributeGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 7, marginBottom: 12 },
+  attrChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 7, borderRadius: 11, borderWidth: 1, width: '48.5%' },
   attrChipEmoji: { fontSize: 18, width: 24, textAlign: 'center', marginRight: 8 },
   attrChipTextWrap: { flex: 1 },
   attrChipLabel: { fontSize: 10.5, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.3 },
   attrChipValue: { fontSize: 13.5, fontWeight: '700' },
 
   // Description Block
-  descriptionBlock: { borderRadius: 12, padding: 12, borderWidth: 1, marginTop: 4 },
+  descriptionBlock: { borderRadius: 11, padding: 11, borderWidth: 1, marginTop: 3 },
   sectionSubtitle: { fontSize: 11.5, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 6 },
   descriptionText: { fontSize: 14.5, lineHeight: 21 },
 
@@ -2250,22 +2299,25 @@ const styles = StyleSheet.create({
   thirdPartyPhoneText: { fontSize: 14, fontWeight: '700', color: '#15803D' },
 
   // Action CTAs
-  visitorActionsBlock: { marginTop: 14 },
-  primaryChatCta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 14, paddingVertical: 14, shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 4 },
-  primaryChatCtaText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
-  reportBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 12, paddingVertical: 6 },
-  reportBtnText: { color: '#DC2626', fontSize: 12.5, fontWeight: '700' },
+  visitorActionsBlock: { marginHorizontal: 14, marginTop: 12, padding: 10, borderRadius: 14, borderWidth: 1, alignItems: 'flex-start' },
+  moreInfoButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', minHeight: 36, borderRadius: 10, borderWidth: 1, paddingHorizontal: 10, marginTop: 12 },
+  moreInfoButtonText: { flex: 1, marginLeft: 6, fontSize: 12.5, fontWeight: '800' },
+  actionMenuToggle: { flexDirection: 'row', alignItems: 'center', minHeight: 36, borderRadius: 10, paddingHorizontal: 10, borderWidth: 1 },
+  actionMenuToggleText: { marginHorizontal: 7, fontSize: 12.5, fontWeight: '800' },
+  actionSheetOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(15, 23, 42, 0.45)' },
+  actionSheet: { width: '100%', borderTopLeftRadius: 22, borderTopRightRadius: 22, paddingHorizontal: 18, paddingTop: 9, paddingBottom: 28 },
+  actionSheetHandle: { alignSelf: 'center', width: 38, height: 4, borderRadius: 2, marginBottom: 16 },
+  actionSheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  actionSheetTitle: { fontSize: 16, fontWeight: '800' },
+  actionSheetSubtitle: { fontSize: 12, marginTop: 2 },
+  actionSheetClose: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  sheetAction: { flexDirection: 'row', alignItems: 'center', minHeight: 54, borderBottomWidth: 1 },
+  sheetActionIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 11 },
+  sheetActionText: { flex: 1, fontSize: 13.5, fontWeight: '700' },
 
-  ownerActionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14, paddingTop: 14, borderTopWidth: 1 },
-  ownerActionBtn: { flex: 1, minWidth: '45%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 10, paddingVertical: 10, borderWidth: 1, gap: 6 },
-  ownerActionText: { fontSize: 13, fontWeight: '800' },
-
-  // Flyer Banner
-  flyerBannerWrap: { marginHorizontal: 16, marginTop: 14 },
-  flyerBannerBtn: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: 14, borderWidth: 1.5, gap: 12 },
-  flyerIconCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  flyerBtnTitle: { fontSize: 14.5, fontWeight: '800' },
-  flyerBtnSub: { fontSize: 11.5, marginTop: 2, lineHeight: 16 },
+  ownerActionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 12, paddingTop: 12, borderTopWidth: 1 },
+  ownerActionBtn: { flex: 1, minWidth: '45%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 10, paddingVertical: 9, borderWidth: 1, gap: 5 },
+  ownerActionText: { fontSize: 12.5, fontWeight: '800' },
 
   // Comments Section
   commentsHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },

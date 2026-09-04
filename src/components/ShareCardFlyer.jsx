@@ -182,13 +182,10 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl, format = 'a4' }, ref)
             )}
           </View>
 
-          {/* Rodapé com QR Code dos Stories */}
+          {/* Rodapé social, sem QR Code */}
           <View style={styles.storiesFooter}>
-            <Image source={{ uri: qrCodeUrl }} style={styles.storiesQrCodeImage} resizeMode="contain" />
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={styles.storiesQrTitle}>ESCANEE PARA AJUDAR</Text>
-              <Text style={styles.storiesQrSub}>Aponte a câmera para abrir localização no mapa e chat no WeFIND</Text>
-            </View>
+            <MaterialIcons name="share" size={18} color={statusColor} />
+            <Text style={styles.storiesFooterText}>Ajude compartilhando • wefind.app</Text>
           </View>
         </View>
       </View>
@@ -246,16 +243,10 @@ const ShareCardFlyer = React.forwardRef(({ item, imageUrl, format = 'a4' }, ref)
             </View>
           </View>
 
-          {/* Rodapé Feed com QR Code */}
+          {/* Rodapé Feed sem QR Code */}
           <View style={styles.feedFooter}>
-            <Image source={{ uri: qrCodeUrl }} style={styles.feedQrImage} resizeMode="contain" />
-            <View style={{ flex: 1, marginLeft: 8 }}>
-              <Text style={styles.feedFooterQrText}>Escaneie para ver mais fotos e mapa</Text>
-              <Text style={styles.feedBrandText}>
-                <Text style={{ color: COLORS.weColor || '#B1734A' }}>We</Text>
-                <Text style={{ color: COLORS.primary || '#2E5634' }}>FIND</Text> • Compartilhe!
-              </Text>
-            </View>
+            <MaterialIcons name="share" size={16} color="#2E5634" />
+            <Text style={styles.feedFooterQrText}>Ajude compartilhando • wefind.app</Text>
           </View>
         </View>
       </View>
@@ -641,14 +632,14 @@ const styles = StyleSheet.create({
   storiesCanvasWrapper: {
     width: 320,
     height: 568, // Proporção exata 9:16
-    backgroundColor: '#0F172A',
+    backgroundColor: '#F7FBF7',
     borderRadius: 24,
     overflow: 'hidden',
   },
   storiesContainer: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#0F172A',
+    backgroundColor: '#F7FBF7',
     justifyContent: 'space-between',
   },
   storiesHeaderBanner: {
@@ -674,7 +665,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 230,
     position: 'relative',
-    backgroundColor: '#1E293B',
+    backgroundColor: '#E8F1E8',
+    marginHorizontal: 12,
+    borderRadius: 18,
+    overflow: 'hidden',
   },
   storiesPetImage: {
     width: '100%',
@@ -696,12 +690,12 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   storiesContentBox: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   storiesPetTitle: {
-    color: '#FFFFFF',
+    color: '#17351F',
     fontSize: 17,
     fontWeight: '900',
     textAlign: 'center',
@@ -714,8 +708,8 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   storiesAttributeChip: {
-    color: '#CBD5E1',
-    backgroundColor: '#1E293B',
+    color: '#2E5634',
+    backgroundColor: '#E2F0E3',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
@@ -729,7 +723,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   storiesLocationText: {
-    color: '#94A3B8',
+    color: '#52665A',
     fontSize: 11,
     textAlign: 'center',
     flex: 1,
@@ -737,7 +731,7 @@ const styles = StyleSheet.create({
   storiesPhoneBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#15803D',
+    backgroundColor: '#2E5634',
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
@@ -753,28 +747,18 @@ const styles = StyleSheet.create({
   storiesFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E293B',
+    justifyContent: 'center',
+    backgroundColor: '#E2F0E3',
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#334155',
+    borderTopColor: '#C5DEC8',
   },
-  storiesQrCodeImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 6,
-    backgroundColor: '#FFFFFF',
-  },
-  storiesQrTitle: {
-    color: '#10B981',
+  storiesFooterText: {
+    color: '#2E5634',
     fontSize: 10.5,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-  storiesQrSub: {
-    color: '#94A3B8',
-    fontSize: 9,
-    marginTop: 1,
+    fontWeight: '800',
+    marginLeft: 6,
   },
 
   // ==========================================
@@ -868,11 +852,6 @@ const styles = StyleSheet.create({
     borderTopColor: '#E2E8F0',
     paddingHorizontal: 10,
     paddingVertical: 6,
-  },
-  feedQrImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 4,
   },
   feedFooterQrText: {
     fontSize: 9.5,

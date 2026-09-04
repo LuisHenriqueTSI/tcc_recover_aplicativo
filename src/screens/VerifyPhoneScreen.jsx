@@ -39,6 +39,8 @@ const VerifyPhoneScreen = ({ navigation, route }) => {
     name = '',
     whatsapp = '',
     whatsappConsent = true,
+    termsAccepted = false,
+    privacyAccepted = false,
     devCode = null,
   } = route.params || {};
 
@@ -69,7 +71,7 @@ const VerifyPhoneScreen = ({ navigation, route }) => {
 
   const handleEditData = () => {
     navigation.navigate('Register', {
-      prefill: { name, email, password, whatsapp, whatsappConsent },
+      prefill: { name, email, password, whatsapp, whatsappConsent, termsAccepted, privacyAccepted },
     });
   };
 
@@ -81,7 +83,7 @@ const VerifyPhoneScreen = ({ navigation, route }) => {
       };
       const sub = BackHandler.addEventListener('hardwareBackPress', onBack);
       return () => sub.remove();
-    }, [name, email, password, whatsapp, whatsappConsent])
+    }, [name, email, password, whatsapp, whatsappConsent, termsAccepted, privacyAccepted])
   );
 
   const handleConfirm = async () => {

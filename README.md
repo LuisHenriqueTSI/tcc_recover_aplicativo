@@ -459,3 +459,10 @@ mobile/
 │   ├── screens/              # Telas do aplicativo
 │   └── services/             # Serviços e APIs (Supabase, Auth, Items, IA)
 ```
+
+## 📐 Documentação do domínio
+
+Os diagramas de classes conceituais do WeFIND estão disponíveis em
+[`docs/DIAGRAMA_CLASSES_CONCEITUAL.md`](docs/DIAGRAMA_CLASSES_CONCEITUAL.md).
+A versão resumida mantém apenas os conceitos, atributos essenciais,
+relacionamentos e cardinalidades do domínio, sem detalhes de implementação.

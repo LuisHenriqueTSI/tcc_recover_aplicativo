@@ -9,6 +9,7 @@ import {
   Keyboard,
   Platform,
   BackHandler,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -118,6 +119,8 @@ const RegisterScreen = ({ navigation, route }) => {
   const [whatsappConsent, setWhatsappConsent] = useState(
     prefill.whatsappConsent !== undefined ? prefill.whatsappConsent : true
   );
+  const [termsAccepted, setTermsAccepted] = useState(prefill.termsAccepted === true);
+  const [privacyAccepted, setPrivacyAccepted] = useState(prefill.privacyAccepted === true);
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -158,6 +161,12 @@ const RegisterScreen = ({ navigation, route }) => {
     if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Senhas não conferem';
     }
+    if (!termsAccepted) {
+      newErrors.termsAccepted = 'Aceite os Termos de Uso para continuar';
+    }
+    if (!privacyAccepted) {
+      newErrors.privacyAccepted = 'Aceite a Política de Privacidade para continuar';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -185,6 +194,8 @@ const RegisterScreen = ({ navigation, route }) => {
           name: name.trim(),
           whatsapp: whatsapp.replace(/\D/g, ''),
           whatsappConsent,
+          termsAccepted,
+          privacyAccepted,
           devCode: result.devCode || null,
         });
       }
@@ -378,6 +389,34 @@ const RegisterScreen = ({ navigation, route }) => {
             </TouchableOpacity>
 
           <TouchableOpacity
+            style={styles.consentRow}
+            onPress={() => setTermsAccepted((prev) => !prev)}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.checkbox, { borderColor: errors.termsAccepted ? '#EF4444' : colors.border, backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }, termsAccepted && [styles.checkboxChecked, { backgroundColor: colors.primary, borderColor: colors.primary }]]}>
+              {termsAccepted ? <MaterialIcons name="check" size={15} color="#FFFFFF" /> : null}
+            </View>
+            <Text style={[styles.consentText, { color: colors.textSecondary }]}>
+              Li e aceito os <Text style={{ color: colors.primary, fontWeight: '700' }} onPress={() => Linking.openURL('https://wefind.app/termos')}>Termos de Uso</Text> *
+            </Text>
+          </TouchableOpacity>
+          {errors.termsAccepted && <Text style={styles.consentError}>{errors.termsAccepted}</Text>}
+
+          <TouchableOpacity
+            style={styles.consentRow}
+            onPress={() => setPrivacyAccepted((prev) => !prev)}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.checkbox, { borderColor: errors.privacyAccepted ? '#EF4444' : colors.border, backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }, privacyAccepted && [styles.checkboxChecked, { backgroundColor: colors.primary, borderColor: colors.primary }]]}>
+              {privacyAccepted ? <MaterialIcons name="check" size={15} color="#FFFFFF" /> : null}
+            </View>
+            <Text style={[styles.consentText, { color: colors.textSecondary }]}>
+              Li e aceito a <Text style={{ color: colors.primary, fontWeight: '700' }} onPress={() => Linking.openURL('https://wefind.app/privacidade')}>Política de Privacidade</Text> *
+            </Text>
+          </TouchableOpacity>
+          {errors.privacyAccepted && <Text style={styles.consentError}>{errors.privacyAccepted}</Text>}
+
+          <TouchableOpacity
             onPress={handleRegister}
             disabled={isSubmitting}
             style={[styles.registerButton, { backgroundColor: colors.primary }]}
@@ -531,6 +570,13 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 11.5,
     lineHeight: 15,
+  },
+  consentError: {
+    color: '#EF4444',
+    fontSize: 11,
+    marginTop: -5,
+    marginBottom: 4,
+    marginLeft: 26,
   },
   verificationBox: {
     borderRadius: 14,

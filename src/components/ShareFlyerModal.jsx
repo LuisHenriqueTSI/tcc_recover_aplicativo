@@ -10,7 +10,7 @@ import {
   StyleSheet,
   Share,
 } from 'react-native';
-import { MaterialIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
@@ -221,16 +221,6 @@ const ShareFlyerModal = ({ visible, onClose, item, imageUrl }) => {
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.secondaryShareBtn, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}
-              onPress={handleShareText}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="copy-outline" size={16} color={colors.textSecondary} />
-              <Text style={[styles.secondaryShareBtnText, { color: colors.textSecondary }]}>
-                Copiar Texto Completo com Link
-              </Text>
-            </TouchableOpacity>
           </View>
         </View>
       </View>

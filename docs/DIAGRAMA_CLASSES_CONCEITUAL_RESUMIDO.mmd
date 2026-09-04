@@ -1,0 +1,87 @@
+classDiagram
+    direction TB
+
+    class Usuario {
+        nome
+        email
+        telefone
+        status
+    }
+
+    class Pet {
+        nome
+        especie
+        raca
+        cuidados
+    }
+
+    class Publicacao {
+        tipo
+        situacao
+        localizacao
+        data
+        resolvida
+    }
+
+    class Foto {
+        url
+    }
+
+    class Avistamento {
+        descricao
+        localizacao
+        data
+    }
+
+    class Reivindicacao {
+        mensagem
+        comprovante
+        status
+    }
+
+    class Recompensa {
+        valor
+        descricao
+        status
+    }
+
+    class Conversa {
+        status
+    }
+
+    class Mensagem {
+        conteudo
+        enviadaEm
+        lida
+    }
+
+    class HistoriaFeliz {
+        titulo
+        relato
+        publicadaEm
+    }
+
+    class Denuncia {
+        motivo
+        status
+        resolucao
+    }
+
+    Usuario "1" -- "0..*" Publicacao : realiza
+    Usuario "1" -- "0..*" Pet : cadastra
+    Pet "0..1" -- "0..*" Publicacao : relaciona-se
+    Publicacao "1" *-- "0..*" Foto : possui
+    Publicacao "1" *-- "0..*" Avistamento : recebe
+    Usuario "1" -- "0..*" Avistamento : registra
+    Publicacao "1" *-- "0..1" Recompensa : oferece
+    Publicacao "1" -- "0..*" Reivindicacao : recebe
+    Usuario "1" -- "0..*" Reivindicacao : solicita
+    Usuario "0..*" -- "0..*" Conversa : participa
+    Conversa "1" *-- "1..*" Mensagem : contém
+    Usuario "1" -- "0..*" Mensagem : envia
+    Usuario "1" -- "0..*" Mensagem : recebe
+    Publicacao "0..1" -- "0..*" Conversa : contextualiza
+    Usuario "1" -- "0..*" HistoriaFeliz : publica
+    Publicacao "0..1" -- "0..*" HistoriaFeliz : origina
+    Usuario "1" -- "0..*" Denuncia : registra
+    Publicacao "0..1" -- "0..*" Denuncia : é denunciada

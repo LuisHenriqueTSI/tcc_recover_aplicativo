@@ -1,0 +1,203 @@
+@startuml
+title WeFIND - Diagrama de Classes Conceitual
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam linetype ortho
+skinparam backgroundColor #FFFFFF
+skinparam class {
+  BackgroundColor #F8FAFC
+  BorderColor #2E5634
+  ArrowColor #334155
+  FontColor #0F172A
+}
+
+package "Identidade e participação" {
+  class Usuario {
+    -id: String
+    -nome: String
+    -email: String
+    -telefone: String
+    -perfil: String
+    -status: String
+    -pontos: Integer
+    -nivel: Integer
+    +atualizarPerfil(): void
+    +consultarPontuacao(): Integer
+  }
+
+  class PerfilVoluntario {
+    -ativo: Boolean
+    -especiesAceitas: List~String~
+    -portesAceitos: List~String~
+    -tipoMoradia: String
+    -localizacao: String
+    +ativar(): void
+    +desativar(): void
+  }
+
+  class Avaliacao {
+    -nota: Integer
+    -comentario: String
+    -data: Date
+    +registrar(): void
+  }
+}
+
+package "Localização e recuperação" {
+  class PetCadastrado {
+    -id: String
+    -nome: String
+    -especie: String
+    -raca: String
+    -cuidados: String
+    -vacinas: String
+    +atualizarDados(): void
+  }
+
+  class Publicacao {
+    -id: Integer
+    -titulo: String
+    -descricao: String
+    -tipo: String
+    -situacao: String
+    -finalidade: String
+    -localizacao: String
+    -dataOcorrencia: Date
+    -resolvida: Boolean
+    -expiraEm: Date
+    +criar(): void
+    +atualizar(): void
+    +marcarComoResolvida(): void
+  }
+
+  class Foto {
+    -id: String
+    -url: String
+    -principal: Boolean
+    +adicionar(): void
+    +remover(): void
+  }
+
+  class Avistamento {
+    -id: String
+    -descricao: String
+    -localizacao: String
+    -data: Date
+    -status: String
+    +registrar(): void
+  }
+
+  class Reivindicacao {
+    -id: String
+    -mensagem: String
+    -comprovante: String
+    -status: String
+    -data: Date
+    +enviar(): void
+    +avaliar(): void
+  }
+
+  class Recompensa {
+    -valor: Decimal
+    -descricao: String
+    -status: String
+    +oferecer(): void
+    +cancelar(): void
+  }
+
+  class ReivindicacaoRecompensa {
+    -id: String
+    -mensagem: String
+    -status: String
+    -solicitadaEm: Date
+    +solicitar(): void
+    +avaliar(): void
+  }
+}
+
+package "Comunicação e comunidade" {
+  class Mensagem {
+    -id: Integer
+    -conteudo: String
+    -lida: Boolean
+    -enviadaEm: Date
+    +enviar(): void
+    +marcarComoLida(): void
+  }
+
+  class Conversa {
+    -id: String
+    -iniciadaEm: Date
+    -arquivada: Boolean
+    +iniciar(): void
+    +arquivar(): void
+  }
+
+  class Notificacao {
+    -id: String
+    -titulo: String
+    -mensagem: String
+    -tipo: String
+    -lida: Boolean
+    -criadaEm: Date
+    +enviar(): void
+    +marcarComoLida(): void
+  }
+
+  class HistoriaFeliz {
+    -id: String
+    -titulo: String
+    -relato: String
+    -foto: String
+    -publicadaEm: Date
+    +publicar(): void
+  }
+
+  class Denuncia {
+    -id: String
+    -motivo: String
+    -detalhes: String
+    -status: String
+    -resolucao: String
+    +registrar(): void
+    +moderar(): void
+  }
+}
+
+Usuario "1" *-- "0..1" PerfilVoluntario : configura
+Usuario "1" *-- "0..*" PetCadastrado : cadastra
+Usuario "1" --> "0..*" Publicacao : cria
+PetCadastrado "0..1" --> "0..*" Publicacao : pode originar
+Publicacao "1" *-- "0..*" Foto : possui
+Publicacao "1" *-- "0..*" Avistamento : recebe
+Usuario "1" --> "0..*" Avistamento : registra
+Publicacao "1" *-- "0..1" Recompensa : oferece
+Publicacao "1" --> "0..*" Reivindicacao : recebe
+Usuario "1" --> "0..*" Reivindicacao : envia
+Recompensa "1" --> "0..*" ReivindicacaoRecompensa : recebe
+Usuario "1" --> "0..*" ReivindicacaoRecompensa : solicita
+Conversa "1" *-- "1..*" Mensagem : contem
+Usuario "1" --> "0..*" Conversa : participa
+Usuario "1" --> "0..*" Mensagem : envia
+Usuario "1" --> "0..*" Mensagem : recebe
+Publicacao "0..1" --> "0..*" Conversa : contextualiza
+Usuario "1" --> "0..*" Notificacao : recebe
+Publicacao "0..1" --> "0..*" HistoriaFeliz : origina
+Usuario "0..1" --> "0..*" HistoriaFeliz : publica
+Publicacao "0..1" --> "0..*" Denuncia : e alvo de
+Usuario "1" --> "0..*" Denuncia : registra
+Usuario "0..1" --> "0..*" Denuncia : analisa
+Usuario "1" --> "0..*" Avaliacao : realiza
+Usuario "1" --> "0..*" Avaliacao : recebe
+
+note "A Publicacao representa o registro central do sistema,\nabrangendo animais perdidos ou encontrados." as N1
+N1 .. Publicacao
+
+legend right
+  *--  Composição: a parte depende do todo
+  -->  Associação entre entidades
+  1, 0..1, 0..*  Cardinalidades
+endlegend
+@enduml
