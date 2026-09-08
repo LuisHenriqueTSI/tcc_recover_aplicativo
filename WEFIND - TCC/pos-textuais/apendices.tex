@@ -136,7 +136,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 4. O usuário adiciona fotografias (com recorte integrado) e seleciona os atributos físicos do pet (espécie, raça, porte, cor, idade).\par
 5. O sistema executa obrigatoriamente por inclusão (\textit{<<include>>}) o caso de uso \textbf{Selecionar Localização no Mapa}, capturando as coordenadas geográficas.\par
 6. O usuário confirma a publicação.\par
-7. O sistema envia as fotos ao Storage e grava os dados na tabela \texttt{items}.\par
+7. O sistema envia as fotos ao Storage e grava os dados na tabela \textit{items}.\par
 8. A publicação passa a ser exibida no feed e no mapa para a comunidade.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
@@ -170,7 +170,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 3. O usuário captura ou anexa uma fotografia do animal avistado.\par
 4. O sistema inclui obrigatoriamente (\textit{<<include>>}) o caso de uso \textbf{Selecionar Localização no Mapa}, capturando o ponto GPS do avistamento.\par
 5. O usuário confirma o envio do avistamento.\par
-6. O sistema atualiza atomicamente o marcador principal do animal para as novas coordenadas e grava o histórico em \texttt{item\_sightings}.\par
+6. O sistema atualiza atomicamente o marcador principal do animal para as novas coordenadas e grava o histórico em \textit{item\_sightings}.\par
 7. O sistema dispara notificação push imediata ao tutor do pet informando a nova localização.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
@@ -203,7 +203,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 3. O sistema abre a interface de chat em tempo real.\par
 4. O usuário digita a mensagem ou anexa uma foto e confirma o envio.\par
 5. O sistema transmite a mensagem via WebSockets e notifica o destinatário via notificação push.\par
-6. A mensagem é persistida na tabela \texttt{messages} e exibida na conversa.
+6. A mensagem é persistida na tabela \textit{messages} e exibida na conversa.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
