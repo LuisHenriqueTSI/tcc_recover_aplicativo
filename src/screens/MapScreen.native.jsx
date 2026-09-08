@@ -2361,7 +2361,7 @@ class MapErrorBoundary extends React.Component {
             <MaterialIcons name="map" size={34} color={COLORS.primary} />
           </View>
           <Text style={{ fontSize: 20, fontWeight: '800', color: '#0F172A', textAlign: 'center', marginBottom: 8 }}>
-            Mapa Interativo WeFind
+            Mapa Interativo WeFIND
           </Text>
           <Text style={{ fontSize: 13.5, color: '#64748B', textAlign: 'center', lineHeight: 20, marginBottom: 20, maxWidth: 300 }}>
             Para ativar o mapa no APK, certifique-se de configurar a chave da API do Google Maps ou consulte a lista no feed.

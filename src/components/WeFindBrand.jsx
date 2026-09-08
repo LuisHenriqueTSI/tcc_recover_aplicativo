@@ -4,7 +4,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import COLORS from '../constants/theme';
 
 /**
- * Logotipo oficial do WeFind (Pin Verde Floresta + Cão e Gato em Marrom Caramelo)
+ * Logotipo oficial do WeFIND (Pin Verde Floresta + Cão e Gato em Marrom Caramelo)
  */
 export const WeFindLogo = ({ size = 64, style }) => {
   return (
@@ -17,7 +17,7 @@ export const WeFindLogo = ({ size = 64, style }) => {
 };
 
 /**
- * Tipografia de Marca WeFind com 'We' em Marrom da Logo e 'Find' em Verde da Logo
+ * Tipografia oficial WeFIND com 'We' em Marrom da Logo e 'FIND' em Verde da Logo
  */
 export const WeFindText = ({
   size = 22,
@@ -32,7 +32,7 @@ export const WeFindText = ({
   const findColor = lightModeOnly ? COLORS.findColor : (isDark ? colors.findColor : colors.findColor || COLORS.findColor);
 
   const wePart = uppercase ? 'WE' : 'We';
-  const findPart = uppercase ? 'FIND' : 'Find';
+  const findPart = 'FIND';
 
   return (
     <Text style={[styles.brandText, { fontSize: size }, style]}>

@@ -1,4 +1,4 @@
-// WeFind — Sistema Oficial de Cores e Identidade Visual (Verde Floresta & Marrom Caramelo da Logo)
+// WeFIND — Sistema Oficial de Cores e Identidade Visual (Verde Floresta & Marrom Caramelo da Logo)
 
 export const COLORS = {
   // Brand Primary (Verde Floresta do Pin Central da Logo)
@@ -15,7 +15,7 @@ export const COLORS = {
   secondaryLight: '#F8EFE9',
   secondaryBorder: '#E8D2C2',
 
-  // Atalhos de Marca para o Texto WeFind
+  // Atalhos para o Texto WeFIND
   weColor: '#B1734A',
   findColor: '#2E5634',
 
