@@ -17,33 +17,7 @@ Para fundamentar as decisões de projeto e garantir rigor acadêmico, a pesquisa
 
 A coleta primária de dados foi realizada por meio de um questionário estruturado online elaborado na plataforma Google Forms (cujas questões encontram-se reproduzidas no Apêndice B, Seção B.1), submetido a 20 participantes voluntários, incluindo tutores de animais domésticos, protetores independentes e pessoas engajadas na causa animal.
 
-O formulário buscou identificar os hábitos cotidianos de busca da comunidade, os canais digitais e analógicos mais acionados durante a perda de um pet, as dificuldades vivenciadas nesses meios e o nível de interesse na utilização de um aplicativo móvel colaborativo com geolocalização e mapa em tempo real. A Figura~\ref{fig:pesquisa_meios} apresenta os canais habituais de divulgação apontados pelos voluntários.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{imagens/01_pesquisa/figura01_canais_divulgacao.png}
-    \caption{Meios habituais de divulgação utilizados em episódios de animais perdidos}
-    \label{fig:pesquisa_meios}
-    \fonte{Dados da pesquisa (Google Forms, 2026)}
-\end{figure}
-
-Os dados da Figura~\ref{fig:pesquisa_meios} indicam que a quase totalidade dos participantes concentra seus esforços nas redes sociais convencionais (11 respostas, equivalentes a 55\%) e nos grupos de troca de mensagens do WhatsApp (5 respostas, ou 25\%). Em contrapartida, as mídias impressas tradicionais, a exemplo de cartazes fixados em postes e comércios locais, somaram apenas 2 escolhas (10\%), ao passo que a busca presencial com vizinhos e avisos em clínicas veterinárias representaram 5\% cada.
-
-Apesar da ampla utilização das redes sociais genéricas, os participantes relataram obstáculos críticos: as postagens perdem alcance aceleradamente devido ao fluxo contínuo de novas publicações no feed, não há filtros espaciais que limitem o aviso ao bairro do desaparecimento e dados cruciais dispersam-se em comentários paralelos.
-
-Na sequência, avaliou-se o interesse dos voluntários em relação a uma aplicação móvel dedicada que integrasse mapa georreferenciado por GPS e filtros de proximidade. O resultado está ilustrado na Figura~\ref{fig:interesse_mapa}.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.82\textwidth]{imagens/01_pesquisa/figura02_interesse_mapa.png}
-    \caption{Nível de interesse e aceitação do mapa interativo e recursos de proximidade}
-    \label{fig:interesse_mapa}
-    \fonte{Dados da pesquisa (2026)}
-\end{figure}
-
-A aceitação verificada na Figura~\ref{fig:interesse_mapa} foi amplamente favorável: 17 participantes (85\%) atribuíram nota máxima 5 à utilidade do mapa interativo com filtro de proximidade, 2 participantes (10\%) indicaram nota 4 e apenas 1 participante (5\%) atribuiu nota 3, sem nenhum registro de notas 1 ou 2. Esse resultado demonstra que 95\% dos voluntários consideram a visualização em mapa de extrema utilidade, evidenciando a carência de uma solução tecnológica gratuita e dedicada à causa do reencontro.
-
-Adicionalmente, investigou-se a adesão prévia a métodos eletrônicos de identificação animal, consultando os voluntários a respeito do uso de microchips em seus animais de estimação, conforme ilustrado na Figura~\ref{fig:adocao_microchip}.
+O formulário iniciou investigando os hábitos preventivos de identificação animal adotados pelos tutores no cotidiano, consultando os voluntários a respeito do uso de microchips eletrônicos em seus animais de estimação, conforme ilustrado na Figura~\ref{fig:adocao_microchip}.
 
 \begin{figure}[H]
     \centering
@@ -54,8 +28,6 @@ Adicionalmente, investigou-se a adesão prévia a métodos eletrônicos de ident
 \end{figure}
 
 Os dados da Figura~\ref{fig:adocao_microchip} revelam que a expressiva maioria dos animais (70\%, totalizando 14 respostas) não utiliza microchip de identificação, somando-se a 5\% (1 resposta) de participantes que declararam não saber responder. Apenas 25\% dos respondentes (5 participantes) afirmaram que seus animais são microchipados. Esse diagnóstico expõe uma fragilidade crítica no cenário nacional: além do custo financeiro e da necessidade de procedimento clínico veterinário invasivo para implantação, os microchips operam por radiofrequência passiva (RFID), cuja leitura exige um escâner transponder específico, indisponível para o cidadão comum nas ruas e restrito a consultórios veterinários e órgãos de zoonoses. Consequentemente, ao encontrar um animal desorientado na via pública, a comunidade não dispõe de meios acessíveis para identificar o tutor imediatamente.
-
-Essa constatação fundamenta diretamente uma das inovações essenciais concebidas para o WeFIND: o Perfil Digital do Pet integrado a códigos QR. Ao contrário do microchip tradicional, o código QR é uma solução universal, visual e gratuita, passível de leitura instantânea pela câmera de qualquer telefone celular comum. A partir da fixação de medalhas na coleira ou de cartazes inteligentes com código QR, qualquer pessoa que avistar o animal pode escanear a etiqueta e acessar de imediato os dados de contato do tutor e as informações médicas de urgência, promovendo um resgate comunitário ágil e descentralizado.
 
 Em paralelo à identificação eletrônica interna, o questionário avaliou os métodos externos e visuais empregados pelos tutores no cotidiano, investigando a utilização de coleiras de identificação (Figura~\ref{fig:uso_coleira}).
 
@@ -71,7 +43,33 @@ Conforme ilustrado na Figura~\ref{fig:uso_coleira}, 70,0\% dos participantes (14
 
 A baixa utilização de coleiras de rastreamento via GPS decorre diretamente dos custos elevados de aquisição e manutenção desses aparelhos, além da exigência de recargas elétricas constantes que limitam sua praticidade no dia a dia. Já as plaquinhas tradicionais oferecem restrição severa quanto à quantidade de dados legíveis (normalmente apenas um número telefônico, que se torna inútil em caso de troca de linha) e sofrem desgaste por atrito e intempéries. O fato de 70\% dos animais não utilizarem qualquer identificação na coleira, somado aos 70\% desprovidos de microchip, confirma que a quase totalidade dos pets circula em condição de vulnerabilidade e anonimato.
 
-Essa constatação reforça a importância das ferramentas desenvolvidas na plataforma WeFIND. Por meio do Perfil Digital do Pet, o sistema possibilita que os tutores gerem gratuitamente uma identificação moderna vinculada a código QR para ser acoplada à coleira ou gravada em medalhas de baixo custo, além da emissão imediata de cartazes inteligentes de resgate. Dessa forma, qualquer cidadão que encontrar o animal na rua consegue ler o código pela câmera de um smartphone comum, visualizando instantaneamente os contatos atualizados e informações cruciais de saúde, preenchendo a lacuna deixada pela ausência de identificações convencionais.
+Essa dupla ausência de identificação prévia fundamenta uma das inovações essenciais concebidas para o WeFIND: o Perfil Digital do Pet integrado a códigos QR. Ao contrário do microchip tradicional ou das plaquinhas estáticas, o código QR é uma solução universal, visual e gratuita, passível de leitura instantânea pela câmera de qualquer telefone celular comum. A partir da fixação de medalhas na coleira ou de cartazes inteligentes com código QR, qualquer pessoa que avistar o animal pode escanear a etiqueta e acessar de imediato os dados atualizados do tutor e as informações médicas de urgência na nuvem, promovendo um resgate comunitário ágil e descentralizado.
+
+Na sequência, o questionário mapeou o comportamento prático dos participantes durante episódios reais de desaparecimento, identificando os canais digitais e analógicos mais acionados para a divulgação da ocorrência. A Figura~\ref{fig:pesquisa_meios} apresenta os meios habituais de busca apontados pelos voluntários.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{imagens/01_pesquisa/figura01_canais_divulgacao.png}
+    \caption{Meios habituais de divulgação utilizados em episódios de animais perdidos}
+    \label{fig:pesquisa_meios}
+    \fonte{Dados da pesquisa (Google Forms, 2026)}
+\end{figure}
+
+Os dados da Figura~\ref{fig:pesquisa_meios} indicam que a quase totalidade dos participantes concentra seus esforços nas redes sociais convencionais (11 respostas, equivalentes a 55\%) e nos grupos de troca de mensagens do WhatsApp (5 respostas, ou 25\%). Em contrapartida, as mídias impressas tradicionais, a exemplo de cartazes fixados em postes e comércios locais, somaram apenas 2 escolhas (10\%), ao passo que a busca presencial com vizinhos e avisos em clínicas veterinárias representaram 5\% cada.
+
+Apesar da ampla utilização das redes sociais genéricas, os participantes relataram obstáculos críticos: as postagens perdem alcance aceleradamente devido ao fluxo contínuo de novas publicações no feed, não há filtros espaciais que limitem o aviso ao bairro do desaparecimento e dados cruciais dispersam-se em comentários paralelos.
+
+Para solucionar esse problema de alcance e dispersão geográfica, avaliou-se o interesse dos voluntários em relação a uma aplicação móvel dedicada que integrasse mapa georreferenciado por GPS e filtros de proximidade. O resultado está ilustrado na Figura~\ref{fig:interesse_mapa}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.82\textwidth]{imagens/01_pesquisa/figura02_interesse_mapa.png}
+    \caption{Nível de interesse e aceitação do mapa interativo e recursos de proximidade}
+    \label{fig:interesse_mapa}
+    \fonte{Dados da pesquisa (Google Forms, 2026)}
+\end{figure}
+
+A aceitação verificada na Figura~\ref{fig:interesse_mapa} foi amplamente favorável: 17 participantes (85\%) atribuíram nota máxima 5 à utilidade do mapa interativo com filtro de proximidade, 2 participantes (10\%) indicaram nota 4 e apenas 1 participante (5\%) atribuiu nota 3, sem nenhum registro de notas 1 ou 2. Esse resultado demonstra que 95\% dos voluntários consideram a visualização em mapa de extrema utilidade, evidenciando a carência de uma solução tecnológica gratuita e dedicada à causa do reencontro.
 
 \subsubsection{Análise Comparativa de Sistemas Similares}
 
