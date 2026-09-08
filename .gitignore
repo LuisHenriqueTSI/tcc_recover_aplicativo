@@ -48,4 +48,13 @@ supabase/.temp/
 # generated native folders
 /ios
 /android
-
+# LaTeX auxiliary files
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.synctex*
+*.fls
+*.fdb_latexmk

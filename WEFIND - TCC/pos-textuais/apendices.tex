@@ -51,7 +51,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC01 \\ \hline
 \textbf{Nome do Caso de Uso} & Efetuar Login \\ \hline
@@ -60,7 +60,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Resumo} & Permite ao usuário autenticar-se na plataforma mediante e-mail e senha, gerando token JWT de sessão persistente. \\ \hline
 \textbf{Pré-Condições} & Possuir cadastro ativo no WeFIND. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 1. O usuário aciona a opção ``Entrar'' na tela inicial.\par
 2. O sistema exibe o formulário solicitando e-mail e senha.\par
 3. O usuário preenche as credenciais e toca em ``Entrar''.\par
@@ -70,7 +70,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 7. O sistema armazena a sessão localmente (\textit{AsyncStorage}) e redireciona ao feed principal autenticado.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 4a. Campos vazios: o sistema exibe mensagens de preenchimento obrigatório.\par
 6a. Credenciais incorretas: o sistema exibe alerta retendo o usuário no formulário.\par
 3a. Esquecimento de credenciais (\textit{<<extend>>}): o usuário aciona a extensão \textbf{Redefinir Senha}, recebendo código OTP de 6 dígitos no WhatsApp para cadastro de nova senha.
@@ -86,7 +86,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC02 \\ \hline
 \textbf{Nome do Caso de Uso} & Realizar Cadastro \\ \hline
@@ -95,7 +95,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Resumo} & Permite a novos membros criarem uma conta informando dados cadastrais e realizando a verificação por código de segurança no WhatsApp. \\ \hline
 \textbf{Pré-Condições} & Dispositivo conectado à internet. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 1. O usuário toca na opção ``Cadastre-se'' na tela de login.\par
 2. O sistema abre o formulário de registro solicitando nome completo, e-mail, telefone WhatsApp e senha.\par
 3. O usuário preenche as informações e confirma o cadastro.\par
@@ -105,7 +105,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 7. O sistema valida o código e ativa a conta de usuário permanentemente.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 4a. E-mail ou telefone já cadastrados: o sistema emite alerta indicando a duplicidade.\par
 6a. Código expirado ou incorreto: o sistema sinaliza o erro e oferece botão de reenvio de código com temporizador.
 } \\ \hline
@@ -120,7 +120,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC03 \\ \hline
 \textbf{Nome do Caso de Uso} & Manter Publicação \\ \hline
@@ -129,7 +129,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Resumo} & Permite cadastrar, editar, alterar status (localizado/adotado) ou excluir anúncios de animais perdidos, encontrados ou para adoção. \\ \hline
 \textbf{Pré-Condições} & Usuário autenticado e com permissão de localização ativa. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 1. O usuário aciona o botão de nova publicação (``+'') na barra de navegação.\par
 2. O sistema apresenta o formulário solicitando a categoria: ``Perdido'', ``Encontrado'' ou ``Adoção''.\par
 3. O usuário seleciona a categoria. No caso de animal encontrado, define se foi ``Visto na rua'' ou se ``Está em Lar Temporário''.\par
@@ -140,7 +140,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 8. A publicação passa a ser exibida no feed e no mapa para a comunidade.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 3a. Informar tutor de terceiros (\textit{<<extend>>}): o usuário aciona a extensão para indicar o contato de outro responsável pelo animal.\par
 5a. Identificação de duplicidade: o sistema detecta pet similar em raio de 5~km e questiona se trata-se do mesmo animal para vinculação de avistamento.
 } \\ \hline
@@ -155,7 +155,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC04 \\ \hline
 \textbf{Nome do Caso de Uso} & Registrar Avistamento \\ \hline
@@ -164,7 +164,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Resumo} & Permite a um membro da comunidade informar novas coordenadas e fotos do local onde viu um animal perdido na rua, atualizando o rastro de busca. \\ \hline
 \textbf{Pré-Condições} & O animal deve estar publicado com status ``Perdido''. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 1. Ao visualizar os detalhes de um animal perdido, o usuário aciona a opção ``Vi esse Pet''.\par
 2. O sistema abre o modal de avistamento solicitando foto do local e relato.\par
 3. O usuário captura ou anexa uma fotografia do animal avistado.\par
@@ -174,7 +174,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 7. O sistema dispara notificação push imediata ao tutor do pet informando a nova localização.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 4a. Sinal de GPS instável: o usuário ajusta manualmente o pino na rua em que o animal foi visto.
 } \\ \hline
 \textbf{Pós-Condições} & Marcador do animal reposicionado no mapa, tutor alertado e histórico de rastro atualizado. \\ \hline
@@ -188,7 +188,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC05 \\ \hline
 \textbf{Nome do Caso de Uso} & Iniciar Conversa via Chat \\ \hline
@@ -197,7 +197,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Resumo} & Viabiliza canal direto e privativo de troca de mensagens e imagens entre o tutor do animal e voluntários da comunidade sem expor contatos telefônicos. \\ \hline
 \textbf{Pré-Condições} & Ambos os usuários devem possuir cadastro ativo. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 1. Na tela de detalhes da publicação, o usuário aciona o botão ``Entrar em Contato''.\par
 2. O sistema cria ou recupera a sala de conversa existente entre os dois usuários para aquele animal.\par
 3. O sistema abre a interface de chat em tempo real.\par
@@ -206,7 +206,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 6. A mensagem é persistida na tabela \texttt{messages} e exibida na conversa.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 4a. Tentativa de contato consigo mesmo: o sistema omite o botão de chat quando o visualizador é o próprio autor do anúncio.\par
 5a. Destinatário offline: a mensagem é gravada no banco e entregue assim que o destinatário abrir o app.
 } \\ \hline
@@ -221,7 +221,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC06 \\ \hline
 \textbf{Nome do Caso de Uso} & Gerar Cartaz \\ \hline
@@ -230,7 +230,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Resumo} & Permite a qualquer usuário renderizar automaticamente artes gráficas diagramadas em múltiplos formatos (A4, Stories e Feed) contendo código QR para divulgação rápida. \\ \hline
 \textbf{Pré-Condições} & O animal deve possuir ao menos uma fotografia cadastrada. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 1. Na tela de detalhes da ocorrência, o usuário clica em ``Compartilhar Cartaz''.\par
 2. O sistema abre o modal com pré-visualização ao vivo da arte gerada.\par
 3. O sistema gera dinamicamente o código QR apontando para o link público do animal.\par
@@ -239,7 +239,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 6. O sistema exporta o arquivo de imagem em alta definição.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 5a. Copiar texto: o sistema oferece botão para copiar mensagem de texto pronta com link de resgate em um toque.
 } \\ \hline
 \textbf{Pós-Condições} & Peça gráfica diagramada e compartilhada nos canais comunitários. \\ \hline
@@ -253,7 +253,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC07 \\ \hline
 \textbf{Nome do Caso de Uso} & Manter Cadastro meu Pet \\ \hline
@@ -262,7 +262,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Resumo} & Permite cadastrar previamente os dados dos animais domésticos tutelados, emitindo a carteirinha digital oficial (RG Pet) com código QR de autenticidade. \\ \hline
 \textbf{Pré-Condições} & Usuário logado na sua conta. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 1. O usuário acessa a opção ``Meus Pets'' no menu do perfil.\par
 2. O sistema lista os animais previamente cadastrados ou oferece a opção de novo cadastro.\par
 3. O usuário insere a foto do animal, nome, espécie, raça, data de nascimento e dados veterinários (vacinas e castração).\par
@@ -271,7 +271,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 6. A carteirinha fica disponível para consulta, edição ou exportação em imagem.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 6a. O animal fugiu: o tutor aciona o botão de emergência na carteirinha, convertendo os dados do pet diretamente em uma publicação de animal perdido no mapa sem precisar redigitar nada.
 } \\ \hline
 \textbf{Pós-Condições} & Carteirinha digital do pet ativa e vinculada ao perfil do tutor. \\ \hline
@@ -285,7 +285,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC08 \\ \hline
 \textbf{Nome do Caso de Uso} & Manter Moderação e Denúncias \\ \hline
@@ -294,7 +294,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Resumo} & Permite ao administrador inspecionar relatórios de denúncia enviados pela comunidade sobre anúncios indevidos, aplicando sanções ou exclusão do conteúdo. \\ \hline
 \textbf{Pré-Condições} & Conta autenticada com perfil de administrador (\textit{isAdmin = true}). \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 1. O administrador acessa a tela de moderação do sistema.\par
 2. O sistema lista os anúncios que receberam denúncias dos usuários com o respectivo motivo.\par
 3. O administrador examina as fotos, o texto e os dados do anúncio reportado.\par
@@ -302,7 +302,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 5. O sistema atualiza o status do anúncio e registra a decisão no log de auditoria.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
-\multicolumn{2}{|p{15.4cm}|}{
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 4a. Violação grave/fraude: o administrador pode suspender preventivamente a conta do usuário infrator.
 } \\ \hline
 \textbf{Pós-Condições} & Publicação moderada e integridade comunitária da plataforma assegurada. \\ \hline
@@ -356,7 +356,7 @@ Instrumento de avaliação de usabilidade aplicado aos 8 usuários participantes
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|c|p{8.8cm}|c|c|c|c|c|}
+\begin{tabular}{|c|>{\raggedright\arraybackslash}p{8.8cm}|c|c|c|c|c|}
 \hline
 \textbf{Nº} & \textbf{Afirmação Avaliada} & \textbf{1 (DT)} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5 (CT)} \\ \hline
 1 & Eu acho que gostaria de utilizar o WeFIND com frequência em situações de busca. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
@@ -389,7 +389,7 @@ Este guia orienta tutores e voluntários na utilização prática do aplicativo 
 Ao abrir o aplicativo, o usuário visualiza a tela de login. Caso ainda não possua cadastro, basta tocar em \textbf{``Cadastre-se''} para registrar seu perfil com nome, e-mail e telefone WhatsApp. A Figura E1 apresenta as telas de acesso e cadastro.
 
 \vspace{0.2cm}
-\begin{minipage}{\textwidth}
+\noindent\begin{minipage}{\linewidth}
 \centering
     \textbf{Figura E1 -- Telas de Login e Cadastro de Usuário}\\[0.2cm]
     \includegraphics[height=7.8cm, keepaspectratio]{imagens/05_manual_usuario/figura15_tela_login.jpeg}
@@ -405,7 +405,7 @@ Ao abrir o aplicativo, o usuário visualiza a tela de login. Caso ainda não pos
 Após o acesso, o usuário explora as ocorrências no feed ordenado por proximidade e no mapa georreferenciado por GPS, podendo filtrar os animais por espécie, porte ou raio de distância. A Figura E2 ilustra as telas de exploração.
 
 \vspace{0.2cm}
-\begin{minipage}{\textwidth}
+\noindent\begin{minipage}{\linewidth}
 \centering
     \textbf{Figura E2 -- Telas de Feed Geral e Mapa Interativo de Ocorrências}\\[0.2cm]
     \includegraphics[height=8.0cm, keepaspectratio]{imagens/04_telas_aplicativo/figura17_tela_feed.jpeg}
@@ -421,7 +421,7 @@ Após o acesso, o usuário explora as ocorrências no feed ordenado por proximid
 Para registrar um animal, o usuário aciona o botão central \textbf{``+''}, escolhe a finalidade do anúncio, insere as fotos com recorte proporcional, preenche as características físicas e marca a localização no mapa. A Figura E3 apresenta a tela de cadastro.
 
 \vspace{0.2cm}
-\begin{minipage}{\textwidth}
+\noindent\begin{minipage}{\linewidth}
 \centering
     \textbf{Figura E3 -- Tela de Cadastro de Ocorrência de Animal}\\[0.2cm]
     \includegraphics[height=8.5cm, keepaspectratio]{imagens/04_telas_aplicativo/figura20_tela_cadastro.jpeg}\\[0.2cm]
@@ -435,7 +435,7 @@ Para registrar um animal, o usuário aciona o botão central \textbf{``+''}, esc
 Ao tocar em qualquer animal no feed ou no mapa, a tela de detalhes exibe fotos em alta definição, características morfológicas e localização aproximada. O tutor pode acionar o botão \textbf{``Compartilhar Cartaz''} para gerar automaticamente flyers em formato A4, Stories (9:16) ou Feed (1:1) com código QR integrado. A Figura E4 apresenta a tela de detalhes e o modal de cartazes.
 
 \vspace{0.2cm}
-\begin{minipage}{\textwidth}
+\noindent\begin{minipage}{\linewidth}
 \centering
     \textbf{Figura E4 -- Tela de Detalhes do Animal e Modal de Compartilhamento de Cartaz}\\[0.2cm]
     \includegraphics[height=7.8cm, keepaspectratio]{imagens/05_manual_usuario/tela-detalhes-animal-perdido.jpeg}
@@ -451,7 +451,7 @@ Ao tocar em qualquer animal no feed ou no mapa, a tela de detalhes exibe fotos e
 Para alinhar o resgate de um animal avistado sem expor números pessoais a fraudes, o aplicativo disponibiliza o chat privativo interno com troca de fotos e mensagens em tempo real. A Figura E5 ilustra a tela de conversa.
 
 \vspace{0.2cm}
-\begin{minipage}{\textwidth}
+\noindent\begin{minipage}{\linewidth}
 \centering
     \textbf{Figura E5 -- Tela de Chat Privativo em Tempo Real}\\[0.2cm]
     \includegraphics[height=8.5cm, keepaspectratio]{imagens/05_manual_usuario/tela-mensagens.jpeg}\\[0.2cm]
@@ -465,7 +465,7 @@ Para alinhar o resgate de um animal avistado sem expor números pessoais a fraud
 Como medida de identificação preventiva, o tutor acessa a área de seus pets no perfil para cadastrar previamente seu animal, incluindo vacinas, fotos e histórico médico. O sistema emite a carteirinha digital oficial com código QR para identificação rápida na rua. A Figura E6 ilustra a tela do RG Pet.
 
 \vspace{0.2cm}
-\begin{minipage}{\textwidth}
+\noindent\begin{minipage}{\linewidth}
 \centering
     \textbf{Figura E6 -- Carteirinha Digital de Identificação Animal (RG Pet)}\\[0.2cm]
     \includegraphics[height=8.5cm, keepaspectratio]{imagens/04_telas_aplicativo/figura25_tela_rg_pet.jpeg}\\[0.2cm]
