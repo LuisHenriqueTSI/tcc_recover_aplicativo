@@ -1,14 +1,14 @@
 \section{METODOLOGIA}
 
-A condução deste trabalho estrutura-se em duas vertentes metodológicas complementares e integradas. A primeira vertente compreende os procedimentos de pesquisa científica, responsáveis por investigar o problema real do desaparecimento de animais, diagnosticar as necessidades dos tutores e mapear as deficiências das soluções tecnológicas existentes no mercado. A segunda vertente estabelece a metodologia de engenharia de software aplicada ao desenvolvimento da aplicação móvel proposta, definindo o modelo de ciclo de vida do sistema, o método ágil de controle de tarefas e as etapas técnicas percorridas desde a concepção inicial até a validação com usuários finais.
+A condução deste trabalho divide-se em duas partes complementares e integradas. A primeira parte compreende os procedimentos de pesquisa científica, responsáveis por investigar o problema real do desaparecimento de animais, diagnosticar as necessidades dos tutores e mapear as deficiências das soluções tecnológicas existentes no mercado. A segunda parte estabelece a metodologia de engenharia de software aplicada ao desenvolvimento da aplicação móvel proposta, definindo o modelo de ciclo de vida do sistema, o método ágil de controle de tarefas e as etapas técnicas percorridas desde a concepção inicial até a validação com usuários finais.
 
 \subsection{Metodologia e Procedimentos da Pesquisa}
 
 Para fundamentar as decisões de projeto e garantir rigor acadêmico, a pesquisa foi estruturada segundo a taxonomia clássica proposta por Gil (2022) e Lakatos e Marconi (2021):
 
 \begin{itemize}
-    \item \textbf{Quanto à natureza:} classifica-se como \textbf{Pesquisa Aplicada}, uma vez que tem como meta principal gerar conhecimentos direcionados à resolução de um problema concreto e imediato da sociedade — a morosidade e a ineficiência no resgate e localização de animais de estimação —, culminando na produção de um artefato tecnológico funcional;
-    \item \textbf{Quanto à abordagem do problema:} adota uma abordagem \textbf{Quali-quantitativa} (mista). O viés quantitativo expressa-se na tabulação estatística das respostas obtidas no formulário de campo e no cálculo numérico padronizado da escala de usabilidade SUS. O viés qualitativo manifesta-se na análise compreensiva das queixas dos tutores, na avaliação ergonômica dos softwares similares e na interpretação das percepções colhidas nos testes práticos;
+    \item \textbf{Quanto à natureza:} classifica-se como \textbf{Pesquisa Aplicada}, pois tem como objetivo principal resolver um problema prático da sociedade, como a demora e a dificuldade no resgate e localização de animais de estimação, resultando na criação de um aplicativo útil e funcional;
+    \item \textbf{Quanto à abordagem do problema:} adota uma abordagem \textbf{Quali-quantitativa} (mista). A parte quantitativa envolve a contagem e organização das respostas do formulário e o cálculo das notas da escala de usabilidade SUS. A parte qualitativa envolve a análise das dificuldades relatadas pelos tutores, o estudo das telas dos aplicativos similares e a avaliação das opiniões dos participantes nos testes práticos;
     \item \textbf{Quanto aos objetivos:} caracteriza-se como \textbf{Exploratória e Descritiva}. Exploratória por promover maior familiaridade com o comportamento e os sentimentos de angústia enfrentados por quem perde um pet; descritiva por registrar, detalhar e correlacionar os canais de divulgação utilizados e as características das ferramentas concorrentes;
     \item \textbf{Quanto aos procedimentos técnicos:} combinou-se o levantamento bibliográfico em livros, artigos e normas técnicas, o levantamento de campo (\textit{survey}) mediante questionário estruturado online com o público-alvo, e a análise de similares (\textit{benchmarking}) sobre ferramentas existentes.
 \end{itemize}
@@ -45,7 +45,7 @@ A aceitação verificada na Figura~\ref{fig:interesse_mapa} foi amplamente favor
 
 \subsubsection{Análise de Sistemas Similares (Benchmarking)}
 
-Visando mapear o estado da arte e identificar deficiências a serem superadas no projeto da solução proposta, realizou-se uma análise comparativa orientada aos critérios de usabilidade e experiência do usuário preconizados por Amstel (2024). Foram analisadas as três principais plataformas de referência no segmento: \textit{Viu Meu Pet}, \textit{PawBoost} e \textit{AlertPet} (cujas interfaces de usuário encontram-se reunidas no Apêndice C deste trabalho).
+Para conhecer as soluções existentes e identificar pontos de melhoria para o projeto, realizou-se uma análise comparativa com base nos critérios de usabilidade e experiência do usuário propostos por Amstel (2024). Foram analisadas as três principais plataformas da área: \textit{Viu Meu Pet}, \textit{PawBoost} e \textit{AlertPet} (cujas telas estão reunidas no Apêndice C deste trabalho).
 
 \paragraph{Viu Meu Pet:} Trata-se de uma das plataformas brasileiras mais difundidas na área, oferecendo portal web e aplicativo para celular (Figura~\ref{fig:viumeupet}). 
 
@@ -91,7 +91,7 @@ A proposta central do \textit{AlertPet} consiste na criação profissional de ca
 \renewcommand{\arraystretch}{1.25}
 \begin{tabular}{|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{3.5cm}|>{\raggedright\arraybackslash}p{4.5cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
 \hline
-\multicolumn{4}{|c|}{\textbf{Quadro 1 – Análise Comparativa dos Sistemas Similares}} \\ \hline
+\multicolumn{4}{|c|}{\textbf{Quadro 1: Análise Comparativa dos Sistemas Similares}} \\ \hline
 \textbf{Nome} & \textbf{Definição} & \textbf{Funcionalidades} & \textbf{Pontos Positivos} \\ \hline
 \textbf{Viu Meu Pet} & Plataforma web e móvel nacional para cadastro, busca e divulgação de animais perdidos e encontrados. & Cadastro nos achados e perdidos e Facebook, gerador de imagens para redes, cartazes com QR Code para impressão e cruzamento por IA (\textit{match}), além de serviços pagos (anúncio em destaque, impulsionamento e carro de som). & Grande visibilidade no Brasil, variedade de ferramentas visuais gratuitas (cartazes e IA) e opções escaláveis para ampliar o alcance do resgate. \\ \hline
 \textbf{PawBoost} & Plataforma internacional (web e móvel) voltada a alertas rápidos e engajamento comunitário em resgates. & Postagem em páginas locais do Facebook, alertas por e-mail e push para voluntários (\textit{Rescue Squad}™), mural de busca e gerador de cartazes, com opção de anúncios patrocinados no Facebook. & Grande rede comunitária de voluntários, automação de alertas para grupos locais e notificações diretas no celular. \\ \hline
@@ -102,11 +102,11 @@ A proposta central do \textit{AlertPet} consiste na criação profissional de ca
 
 \subsection{Metodologia de Desenvolvimento de Software}
 
-A construção da aplicação proposta exigiu uma metodologia de desenvolvimento ágil capaz de transformar os achados da pesquisa em um produto funcional, estável e centrado no usuário. Conforme salientam Pressman e Maxim (2021) e Valente (2023), o desenvolvimento moderno de aplicações para dispositivos móveis demanda flexibilidade para acomodar mudanças e entregas graduais de valor, afastando-se de modelos lineares rígidos que postergam a validação para o final do projeto.
+A construção do aplicativo exigiu uma forma ágil de trabalho, capaz de transformar as ideias da pesquisa em um aplicativo funcional, estável e fácil de usar. Como explicam Pressman e Maxim (2021) e Valente (2023), o desenvolvimento moderno de aplicativos para celular precisa de flexibilidade para receber melhorias contínuas, evitando modelos rígidos que deixam os testes apenas para o final do projeto.
 
 \subsubsection{Abordagem Ágil e Ciclo de Vida Incremental}
 
-Adotou-se o modelo de ciclo de vida incremental e iterativo (VALENTE, 2023). Nesse paradigma, o software não é desenvolvido em um único bloco monolítico; ao invés disso, o sistema é concebido, projetado, codificado e validado em incrementos sucessivos de complexidade. 
+Adotou-se o modelo de desenvolvimento em partes (incremental e iterativo) (VALENTE, 2023). Nesse modelo, o aplicativo não é construído todo de uma vez; em vez disso, cada funcionalidade é planejada, programada e testada passo a passo. 
 
 O primeiro incremento concentrou-se na infraestrutura de segurança e persistência (telas de autenticação, cadastro e sessão no Supabase Auth). O segundo incremento estabeleceu o núcleo geográfico da aplicação (feed de publicações e mapa interativo com GPS via Expo Location). O terceiro incremento abrangeu a criação e edição de ocorrências de animais com upload otimizado de fotografias. O quarto incremento incorporou os recursos de comunicação privativa (chat em tempo real via WebSockets). Por fim, o quinto incremento integrou recursos complementares de utilidade pública: a geração de cartazes digitais com código QR para impressão e a emissão de carteirinha digital com código QR para identificação preventiva do animal.
 
@@ -117,8 +117,8 @@ Para assegurar o ritmo contínuo de produção e a rastreabilidade das atividade
 O Kanban apoia-se em três princípios fundamentais que guiaram a rotina de desenvolvimento do aplicativo:
 \begin{enumerate}
     \item \textbf{Visualização do fluxo de trabalho:} cada funcionalidade, bug ou melhoria visual foi documentado na forma de cartões descritivos contendo requisitos claros, critérios de aceitação e referências a componentes de interface;
-    \item \textbf{Limitação do trabalho em progresso (\textit{Work in Progress} -- WIP):} restringiu-se a quantidade de tarefas em andamento simultâneo, assegurando foco absoluto na conclusão e validação de cada módulo antes da abertura de novas demandas;
-    \item \textbf{Gestão e melhoria do fluxo contínuo:} monitoramento constante das passagens de estágio para mitigar retrabalhos técnicos e garantir a aderência ao cronograma acadêmico.
+    \item \textbf{Limitação do trabalho em andamento (\textit{Work in Progress}, ou WIP):} limitou-se o número de tarefas feitas ao mesmo tempo, mantendo foco na conclusão e teste de cada parte antes de iniciar novas atividades;
+    \item \textbf{Gestão e melhoria do fluxo contínuo:} monitoramento constante das tarefas para evitar retrabalhos técnicos e garantir o cumprimento do cronograma acadêmico.
 \end{enumerate}
 
 O quadro Kanban no Trello foi estruturado em cinco listas sequenciais:
@@ -135,11 +135,11 @@ O quadro Kanban no Trello foi estruturado em cinco listas sequenciais:
 O projeto percorreu quatro etapas sistemáticas ao longo do ciclo de desenvolvimento:
 
 \begin{enumerate}
-    \item \textbf{Etapa 1: Concepção e Elicitação de Requisitos:} consolidação dos dados da pesquisa de campo e análise de concorrentes, culminando na definição detalhada de 43 requisitos funcionais e 14 requisitos não funcionais formais (apresentados no Capítulo 4);
+    \item \textbf{Etapa 1: Concepção e Levantamento de Requisitos:} organização das respostas da pesquisa de campo e estudo das ferramentas concorrentes, resultando na definição de 43 requisitos funcionais e 14 requisitos não funcionais (apresentados no Capítulo 4);
     \item \textbf{Etapa 2: Modelagem Conceitual e Prototipação de Interface:} elaboração dos diagramas de Casos de Uso e Classes na ferramenta Astah UML (ASTAH, 2026), projeto do modelo relacional no PostgreSQL e desenho iterativo de todas as telas, componentes e paleta cromática de alta fidelidade no Figma (FIGMA, 2026);
     \item \textbf{Etapa 3: Implementação e Codificação Modular:} escrita modular do código-fonte no Visual Studio Code, adotando TypeScript, a biblioteca React Native (REACT NATIVE, 2026) e o ecossistema Expo (EXPO, 2026) para a camada móvel cliente, e Supabase (SUPABASE, 2026) para autenticação, banco de dados e armazenamento em nuvem, com versionamento colaborativo via Git e GitHub (apresentados no Capítulo 5);
     \item \textbf{Etapa 4: Testes, Validação e Avaliação de Usabilidade:} execução de testes funcionais de caixa-preta para conferência de regras de negócio e aplicação prática do protocolo internacional \textit{System Usability Scale} (SUS) com 20 voluntários (apresentados no Capítulo 6).
 \end{enumerate}
 
-Essa sólida articulação entre pesquisa empírica, governança ágil com Kanban e engenharia de software forneceu a base para o desenvolvimento da solução tecnológica proposta. O Capítulo 4 apresenta a análise técnica detalhada e a modelagem formal dos requisitos e diagramas do sistema.
+A união entre a pesquisa com os usuários, a organização com o quadro Kanban e as boas práticas de programação formou a base para construir o aplicativo. O Capítulo 4 apresenta em detalhes os requisitos e os diagramas do sistema.
 \clearpage
