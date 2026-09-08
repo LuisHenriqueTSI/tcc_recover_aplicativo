@@ -63,10 +63,10 @@ Segundo Valente (2023), os requisitos funcionais definem o que o sistema deve fa
 \textbf{RF27} & Atualizar Posição por Avistamento & Atualizar a posição do marcador principal do pet no mapa para o ponto do avistamento confirmado mais recente. \\ \hline
 \textbf{RF28} & Cadastrar Pet Preventivo (Meu Pet) & Registrar preventivamente os animais domésticos da família com nome, espécie, raça, vacinas e contatos do tutor. \\ \hline
 \textbf{RF29} & Listar Pets Cadastrados & Apresentar painel com todos os animais domésticos tutelados pelo usuário cadastrados preventivamente. \\ \hline
-\textbf{RF30} & Consultar Carteirinha RG Pet & Gerar e exibir a carteirinha digital de identidade do animal contendo foto, dados principais e código QR exclusivo. \\ \hline
+\textbf{RF30} & Consultar Perfil Digital do Pet & Apresentar o perfil digital preventivo do animal contendo foto, dados principais e código QR exclusivo. \\ \hline
 \textbf{RF31} & Editar Dados de Meu Pet & Permitir ao tutor atualizar fotos, registros veterinários, vacinas e características físicas dos animais tutelados. \\ \hline
 \textbf{RF32} & Excluir Cadastro de Meu Pet & Permitir ao tutor excluir definitivamente o registro preventivo de um animal do seu perfil. \\ \hline
-\textbf{RF33} & Publicar Pet a partir do RG Pet & Converter instantaneamente o cadastro preventivo do pet em publicação de animal perdido sem redigitar dados. \\ \hline
+\textbf{RF33} & Publicar a partir do Perfil Digital & Converter instantaneamente o perfil preventivo do pet em publicação de animal perdido sem redigitar dados. \\ \hline
 \textbf{RF34} & Gerar Cartaz de Busca & Criar automaticamente cartaz de divulgação contendo fotografia, dados essenciais da publicação e código QR escaneável. \\ \hline
 \textbf{RF35} & Escolher Formato do Cartaz & Permitir a geração da peça gráfica em múltiplos formatos (A4 para impressão em postes, 9:16 para Stories e 1:1 para Feed). \\ \hline
 \textbf{RF36} & Compartilhar Cartaz Digital & Integrar com o compartilhamento nativo do sistema operacional para envio direto da imagem em redes e mensageiros. \\ \hline
@@ -165,7 +165,7 @@ Conforme ilustrado na Figura~\ref{fig:caso_uso_geral}, o sistema divide suas aç
 
 Na navegação principal, o usuário visualiza as publicações tanto na listagem quanto no mapa interativo. Ao abrir a tela de detalhes de uma publicação, abrem-se várias ações possíveis: iniciar uma conversa pelo chat interno em tempo real com o autor do anúncio, gerar cartazes de divulgação com código QR, registrar um novo avistamento informando onde o pet foi visto, atualizar os dados de um avistamento já feito ou denunciar o anúncio caso note algo errado.
 
-O usuário também tem à disposição uma área de notificações para acompanhar alertas de mensagens e avistamentos por perto, a tela de perfil para atualizar seus dados pessoais e a área de cadastro de seu próprio pet, onde pode guardar as informações preventivas do animal e gerar a carteirinha digital (RG Pet). Para publicar um animal sumido ou encontrado, o usuário utiliza a função de cadastrar e gerenciar publicações, que inclui a opção de indicar os dados de um terceiro responsável e exige obrigatoriamente a seleção do ponto exato no mapa interativo. Essa mesma marcação no mapa é exigida no momento de registrar um avistamento. 
+O usuário também tem à disposição uma área de notificações para acompanhar alertas de mensagens e avistamentos por perto, a tela de perfil para atualizar seus dados pessoais e a área de cadastro de seus próprios animais, onde pode guardar as informações preventivas do animal e acessar o Perfil Digital do Pet. Para publicar um animal sumido ou encontrado, o usuário utiliza a função de cadastrar e gerenciar publicações, que inclui a opção de indicar os dados de um terceiro responsável e exige obrigatoriamente a seleção do ponto exato no mapa interativo. Essa mesma marcação no mapa é exigida no momento de registrar um avistamento. 
 
 Por sua vez, o ator \textit{Administrador} é responsável pelo gerenciamento de moderação e denúncias, tendo permissão para avaliar os anúncios reportados pela comunidade, remover conteúdos falsos e suspender contas que desrespeitem as regras de convivência. A documentação completa de cada caso de uso está apresentada no Apêndice B deste trabalho.
 

@@ -259,7 +259,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Nome do Caso de Uso} & Manter Cadastro meu Pet \\ \hline
 \textbf{Ator Principal} & Usuário (Autenticado) \\ \hline
 \textbf{Atores Secundários} & Banco de Dados (PostgreSQL) e Supabase Storage \\ \hline
-\textbf{Resumo} & Permite cadastrar previamente os dados dos animais domésticos tutelados, emitindo a carteirinha digital oficial (RG Pet) com código QR de autenticidade. \\ \hline
+\textbf{Resumo} & Permite cadastrar previamente os dados dos animais domésticos tutelados, gerando o Perfil Digital do Pet com código QR de autenticidade. \\ \hline
 \textbf{Pré-Condições} & Usuário logado na sua conta. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
@@ -267,14 +267,14 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 2. O sistema lista os animais previamente cadastrados ou oferece a opção de novo cadastro.\par
 3. O usuário insere a foto do animal, nome, espécie, raça, data de nascimento e dados veterinários (vacinas e castração).\par
 4. O usuário confirma o salvamento dos dados.\par
-5. O sistema grava os registros e gera o documento digital do RG Pet com código QR e número de registro único.\par
-6. A carteirinha fica disponível para consulta, edição ou exportação em imagem.
+5. O sistema grava os registros e gera o Perfil Digital do Pet com código QR e identificador único.\par
+6. O perfil do animal fica disponível para consulta, edição ou compartilhamento.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-6a. O animal fugiu: o tutor aciona o botão de emergência na carteirinha, convertendo os dados do pet diretamente em uma publicação de animal perdido no mapa sem precisar redigitar nada.
+6a. O animal fugiu: o tutor aciona o botão de emergência no perfil do pet, convertendo os dados cadastrados diretamente em uma publicação de animal perdido no mapa sem precisar redigitar nada.
 } \\ \hline
-\textbf{Pós-Condições} & Carteirinha digital do pet ativa e vinculada ao perfil do tutor. \\ \hline
+\textbf{Pós-Condições} & Perfil Digital do Pet ativo e vinculado à conta do tutor. \\ \hline
 \end{tabular}
 \end{table}
 
@@ -367,7 +367,7 @@ Q03 & Quais canais você mais costuma utilizar para divulgar um pet perdido? & [
 Q04 & Quais as maiores dificuldades encontradas na divulgação tradicional? & Resposta aberta (relatos sobre falta de mapa, demora, perda de alcance em feeds e exposição de telefone particular a trotes) \\ \hline
 Q05 & Você utilizaria um aplicativo com mapa interativo via GPS para localizar pets perdidos por proximidade? & Escala linear de 1 (Pouco Útil) a 5 (Extremamente Útil) \\ \hline
 Q06 & Considera importante a geração automática de cartazes com QR Code para impressão e compartilhamento? & [ ] Sim, essencial \newline [ ] Sim, útil \newline [ ] Indiferente \newline [ ] Pouco útil \\ \hline
-Q07 & Você utilizaria uma carteirinha digital preventiva (RG Pet) para guardar vacinas e identificação rápida do pet? & [ ] Com certeza \newline [ ] Provavelmente sim \newline [ ] Talvez \newline [ ] Não utilizaria \\ \hline
+Q07 & Você utilizaria um perfil digital preventivo do animal para guardar vacinas e identificação rápida do pet? & [ ] Com certeza \newline [ ] Provavelmente sim \newline [ ] Talvez \newline [ ] Não utilizaria \\ \hline
 \end{tabular}
 \end{table}
 
@@ -489,14 +489,14 @@ Para alinhar o resgate de um animal avistado sem expor números pessoais a fraud
 
 \clearpage
 
-\subsection*{Passo 6: Cadastro e Emissão do RG Pet Digital}
+\subsection*{Passo 6: Cadastro e Visualização do Perfil Digital do Pet}
 \noindent
-Como medida de identificação preventiva, o tutor acessa a área de seus pets no perfil para cadastrar previamente seu animal, incluindo vacinas, fotos e histórico médico. O sistema emite a carteirinha digital oficial com código QR para identificação rápida na rua. A Figura E6 ilustra a tela do RG Pet.
+Como medida de identificação preventiva, o tutor acessa a área de seus pets no perfil para cadastrar previamente seu animal, incluindo vacinas, fotos e histórico médico. O sistema gera o Perfil Digital do Pet com código QR para identificação rápida. A Figura E6 ilustra a tela do Perfil Digital do Pet.
 
 \vspace{0.2cm}
 \noindent\begin{minipage}{\linewidth}
 \centering
-    \textbf{Figura E6: Carteirinha Digital de Identificação Animal (RG Pet)}\\[0.2cm]
+    \textbf{Figura E6: Tela do Perfil Digital do Pet}\\[0.2cm]
     \includegraphics[height=8.5cm, keepaspectratio]{imagens/04_telas_aplicativo/figura25_tela_rg_pet.jpeg}\\[0.2cm]
     {\footnotesize Fonte: Autoria própria (2026)}
 \end{minipage}
