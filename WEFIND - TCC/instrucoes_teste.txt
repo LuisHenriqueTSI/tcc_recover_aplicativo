@@ -1,0 +1,68 @@
+======================================================================
+WeFIND - APLICATIVO PARA LOCALIZAÇÃO E DIVULGAÇÃO DE ANIMAIS PERDIDOS
+Instruções de Instalação e Roteiro de Testes (Android)
+======================================================================
+
+Projeto de Conclusão de Curso - CST em Sistemas para Internet (IFSul)
+Autor: Luis Henrique Fonseca Victoria
+Orientadora: Prof.ª Dra. Marla Cristina da Silva Sopeña
+Coorientadora: Prof.ª Dra. Adriane Pires Rodrigues Ramires
+
+----------------------------------------------------------------------
+1. COMO INSTALAR O APK NO CELULAR (ANDROID)
+----------------------------------------------------------------------
+Como o aplicativo ainda não está publicado na Google Play Store, o 
+Android exibe mensagens padrão de segurança para arquivos instalados 
+diretamente. Para instalar, siga os passos abaixo:
+
+Passo 1: Baixe o arquivo .apk no seu aparelho Android pelo Google Drive.
+Passo 2: Ao término do download, toque na notificação do arquivo baixado
+         ou acesse a pasta "Downloads" do aparelho e toque no arquivo.
+Passo 3: O sistema Android poderá exibir a mensagem:
+         "Para sua segurança, seu smartphone não tem permissão para 
+         instalar apps desconhecidos desta fonte".
+         -> Toque em "Configurações" e ative a opção "Permitir desta fonte".
+Passo 4: Em seguida, na janela de confirmação de segurança, toque em 
+         "Continuar instalação" (ou "Instalar assim mesmo").
+Passo 5: Aguarde a finalização e toque em "Abrir".
+Passo 6: Ao abrir pela primeira vez, conceda a permissão de "Localização" 
+         (para que o mapa identifique sua região) e "Notificações".
+
+----------------------------------------------------------------------
+2. DADOS DE ACESSO PARA TESTES
+----------------------------------------------------------------------
+Para facilitar a avaliação sem necessidade de criar uma nova conta, 
+você pode utilizar o usuário de testes abaixo:
+
+* Usuário / E-mail: usuario-teste
+  (Caso o formulário valide o formato de e-mail, informe: usuario-teste@gmail.com 
+   ou crie uma conta em poucos segundos no botão "Cadastre-se")
+* Senha: Teste123
+
+Observação: Caso prefira, a criação de uma conta própria com seu e-mail 
+pessoal é livre e pode ser feita diretamente na tela de cadastro.
+
+----------------------------------------------------------------------
+3. PRINCIPAIS RECURSOS DISPONÍVEIS PARA NAVEGAÇÃO
+----------------------------------------------------------------------
+* Mapa Interativo: Visualização de marcadores por raio de proximidade 
+  (Perdidos em Laranja, Encontrados em Verde e Adoção em Magenta).
+* Feed de Ocorrências: Listagem dos animais com busca rápida e filtros 
+  combinados de espécie, status, porte e proximidade.
+* Cadastro de Publicação: Cadastro de um pet com upload de foto e 
+  marcação do ponto do desaparecimento/encontro no mapa.
+* Perfil Digital do Pet: Identificação digital com dados de cuidados, 
+  contato do tutor e código QR exclusivo para coleiras.
+* Gerador de Cartaz: Botão "Compartilhar Cartaz" na tela do animal 
+  para gerar peça gráfica com foto e QR Code para impressão.
+* Registro de Avistamento: Recurso "Vi esse Pet" que permite relatar 
+  novas coordenadas onde o animal foi visto.
+* Chat em Tempo Real: Envio de mensagens privativas entre usuários 
+  sem exposição de número telefônico.
+
+----------------------------------------------------------------------
+4. CONTATO E SUPORTE
+----------------------------------------------------------------------
+Fico à disposição para qualquer auxílio durante a instalação ou para 
+esclarecer eventuais dúvidas.
+======================================================================
