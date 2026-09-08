@@ -731,6 +731,36 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const isOwner = user && item && item.owner_id === user.id;
 
+  // Botão de ações (⋮) no header — apenas para visitantes
+  useEffect(() => {
+    if (!isOwner && !isAdmin) {
+      navigation.setOptions({
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={() => setShowActionMenu(true)}
+            style={{
+              marginRight: 10,
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: 'rgba(255, 255, 255, 0.18)',
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.28)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            activeOpacity={0.75}
+            accessibilityLabel="Ações da publicação"
+          >
+            <MaterialIcons name="more-vert" size={22} color="#fff" />
+          </TouchableOpacity>
+        ),
+      });
+    } else {
+      navigation.setOptions({ headerRight: undefined });
+    }
+  }, [navigation, isOwner, isAdmin]);
+
   const handleLoginRequired = (message = 'Entre ou crie uma conta para continuar.') => {
     Alert.alert('Login necessário', message, [
       { text: 'Cancelar', style: 'cancel' },
@@ -1627,30 +1657,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
             </View>
           )}
 
-          {/* AÇÕES PARA VISITANTES (ENVIAR MENSAGEM CTA) */}
-          {!isOwner && !isAdmin && (
-            <View
-              style={[
-                styles.visitorActionsBlock,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                },
-              ]}
-            >
-              <TouchableOpacity
-                style={[styles.actionMenuToggle, { borderColor: colors.border, backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }]}
-                onPress={() => setShowActionMenu(!showActionMenu)}
-                activeOpacity={0.85}
-                accessibilityLabel={showActionMenu ? 'Fechar menu de ações' : 'Abrir menu de ações'}
-              >
-                <MaterialIcons name="menu" size={20} color={colors.primary} />
-                <Text style={[styles.actionMenuToggleText, { color: colors.text }]}>Ações</Text>
-                <MaterialIcons name={showActionMenu ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={20} color={colors.textMuted} />
-              </TouchableOpacity>
-
-            </View>
-          )}
 
           {/* PAINEL DE CONTROLE PARA AUTOR E SUPER ADMIN */}
           {(isOwner || isAdmin) && (
@@ -2166,9 +2172,15 @@ const ItemDetailScreen = ({ route, navigation }) => {
               <View style={[styles.actionSheet, { backgroundColor: colors.surface }]}>
                 <View style={[styles.actionSheetHandle, { backgroundColor: colors.border }]} />
                 <View style={styles.actionSheetHeader}>
-                  <View>
-                    <Text style={[styles.actionSheetTitle, { color: colors.text }]}>Ações da publicação</Text>
-                    <Text style={[styles.actionSheetSubtitle, { color: colors.textMuted }]}>Escolha uma opção</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.actionSheetTitle, { color: colors.text }]}>Mais opções</Text>
+                    {item?.title ? (
+                      <Text style={[styles.actionSheetSubtitle, { color: colors.textMuted }]} numberOfLines={1}>
+                        {item.title}
+                      </Text>
+                    ) : (
+                      <Text style={[styles.actionSheetSubtitle, { color: colors.textMuted }]}>Escolha uma opção</Text>
+                    )}
                   </View>
                   <TouchableOpacity
                     onPress={() => setShowActionMenu(false)}

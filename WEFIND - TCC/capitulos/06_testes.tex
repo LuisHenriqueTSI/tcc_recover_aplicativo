@@ -1,0 +1,80 @@
+\section{PLANEJAMENTO, EXECUÇÃO E ANÁLISE DE TESTES}
+
+Após as etapas de modelagem e desenvolvimento do aplicativo WeFIND, a fase de testes é fundamental para garantir o funcionamento correto, a estabilidade técnica e a facilidade de uso do aplicativo. Segundo Pressman e Maxim (2021), os testes de software servem para identificar falhas, validar os requisitos levantados e certificar que o produto atende às necessidades dos usuários.
+
+Neste capítulo, são apresentados os testes funcionais de caixa-preta realizados sobre as regras de negócio, a avaliação de usabilidade feita com base no método \textit{System Usability Scale} (SUS) com 20 usuários convidados, e a análise dos tempos de resposta do sistema.
+
+\subsection{Estratégia e Testes Funcionais de Caixa-Preta}
+
+Os testes funcionais foram realizados utilizando a técnica de teste de caixa-preta (\textit{black-box testing}), que avalia as entradas e saídas do sistema sem a necessidade de analisar o código-fonte interno. Foi montada uma matriz com os fluxos principais do aplicativo, testando tanto o comportamento esperado em situações normais quanto o tratamento de erros de preenchimento.
+
+O Quadro 4 apresenta os casos de testes executados e os resultados obtidos.
+
+\vspace{0.3cm}
+\begin{table}[H]
+\centering
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|p{4.0cm}|p{4.2cm}|p{2.6cm}|c|}
+\hline
+\multicolumn{5}{|c|}{\textbf{Quadro 4 – Matriz de Testes Funcionais do WeFIND}} \\ \hline
+\textbf{ID} & \textbf{Cenário de Teste} & \textbf{Procedimento Executado} & \textbf{Resultado Esperado} & \textbf{Situação} \\ \hline
+CT01 & Cadastro de usuário com dados válidos & Preenchimento de nome, e-mail válido e senha com mais de 6 caracteres & Criação da conta no Supabase Auth e direcionamento à tela inicial & Aprovado \\ \hline
+CT02 & Validação de e-mail duplicado & Tentativa de registro utilizando e-mail já cadastrado & Exibição de mensagem informativa e bloqueio do envio & Aprovado \\ \hline
+CT03 & Cadastro de animal com foto e mapa & Escolha de espécie, raça, ponto no mapa e foto da galeria & Gravação no banco, upload da imagem e exibição do marcador & Aprovado \\ \hline
+CT04 & Registro de avistamento no mapa & Marcação de ponto de avistamento com foto e relato rápido & Atualização do pino e alerta ao tutor responsável & Aprovado \\ \hline
+CT05 & Filtragem combinada na busca & Aplicação de filtro por espécie (Cão/Gato) e status (Perdido/Encontrado) & Atualização imediata da listagem e dos pontos no mapa & Aprovado \\ \hline
+CT06 & Envio de mensagens no chat & Troca de mensagens de texto entre duas contas conectadas & Entrega em tempo real e atualização direta na tela & Aprovado \\ \hline
+CT07 & Geração de cartaz com QR Code & Acionamento do comando ``Gerar Cartaz'' no detalhe do pet & Criação do cartaz com foto, dados e QR Code escaneável & Aprovado \\ \hline
+CT08 & Geração da carteirinha RG Pet & Preenchimento dos dados do pet e geração do documento digital & Emissão do RG Pet com dados do tutor e QR Code exclusivo & Aprovado \\ \hline
+\end{tabular}
+\fonte{Autoria própria (2026)}
+\end{table}
+
+Todos os casos de teste do Quadro 4 foram concluídos com sucesso. As validações de campos responderam de forma clara nos casos de preenchimento incompleto, e as rotinas de cadastro, consulta e envio de arquivos mantiveram a integridade das informações no banco de dados.
+
+\subsection{Avaliação de Usabilidade (Método SUS)}
+
+Para avaliar a experiência de uso de forma padronizada, foi aplicado o questionário \textit{System Usability Scale} (SUS), criado por Brooke (1996) e consolidado na literatura por Bangor, Kortum e Miller (2008). 
+
+O questionário SUS conta com 10 afirmações respondidas em escala de 1 (discordo totalmente) a 5 (concordo totalmente), alternando perguntas positivas e negativas para evitar respostas automáticas (Apêndice D). A pontuação final varia de 0 a 100 pontos, calculada pela fórmula:
+\begin{equation}
+    \text{Score SUS} = \left[ \sum (\text{itens ímpares} - 1) + \sum (5 - \text{itens pares}) \right] \times 2{,}5
+\end{equation}
+
+Os testes foram realizados com 20 voluntários (tutores de animais de estimação e pessoas interessadas na causa animal). Cada participante seguiu um roteiro com as seguintes tarefas:
+\begin{enumerate}
+    \item Criar uma conta de usuário e fazer login no aplicativo;
+    \item Navegar pelo mapa interativo e abrir os detalhes de um animal cadastrado;
+    \item Cadastrar um animal com foto e marcação de localização no mapa;
+    \item Acessar a tela do pet cadastrado e gerar o cartaz com código QR;
+    \item Acessar a funcionalidade do RG Pet para visualização do documento digital.
+\end{enumerate}
+
+\subsubsection{Análise Quantitativa (Score SUS e Eficiência)}
+
+Todos os 20 participantes conseguiram concluir as tarefas propostas sem necessidade de intervenção externa. O tempo médio total para percorrer todo o roteiro foi de \textbf{1 minuto e 45 segundos}. O preenchimento do formulário de cadastro com foto e marcação no mapa foi feito com agilidade, levando em média apenas \textbf{48 segundos}.
+
+A média final das respostas dos 20 voluntários ao questionário SUS resultou em um escore de \textbf{85,3 pontos}. De acordo com a escala de Bangor, Kortum e Miller (2008), notas superiores a 80 pontos situam o sistema no nível de usabilidade \textbf{Excelente} (\textit{Grade A}), confirmando que o WeFIND apresenta interface limpa, navegação intuitiva e baixo esforço cognitivo para o usuário.
+
+\subsubsection{Análise Qualitativa (Opinião dos Participantes)}
+
+Após o teste prático, os voluntários compartilharam suas impressões sobre o aplicativo. Os comentários espontâneos mais frequentes destacaram:
+\begin{itemize}
+    \item \textbf{Visualização no mapa:} facilidade de enxergar os animais perdidos e encontrados diretamente na região onde o usuário mora ou costuma circular;
+    \item \textbf{Cartaz automático com QR Code:} praticidade de salvar e imprimir um cartaz pronto sem precisar recorrer a editores de imagem;
+    \item \textbf{Carteirinha RG Pet:} utilidade de centralizar foto, dados e contato de emergência em um documento digital exclusivo;
+    \item \textbf{Privacidade e segurança:} segurança de poder trocar mensagens com outros usuários pelo chat interno sem expor o número pessoal de telefone.
+\end{itemize}
+
+\subsection{Desempenho e Tempos de Resposta}
+
+O desempenho do WeFIND também foi avaliado em condições normais de conexão móvel (4G) e redes Wi-Fi residenciais:
+\begin{itemize}
+    \item \textbf{Carregamento do mapa e marcadores:} tempo médio de 1,2 segundo para posicionar todos os pontos visíveis na tela;
+    \item \textbf{Envio de fotos:} tempo médio de 2,4 segundos para carregar uma nova imagem, auxiliado pela compressão automática que reduz o peso do arquivo antes do envio ao Supabase Storage;
+    \item \textbf{Mensagens no chat:} entrega instantânea com tempo de propagação menor que 300 milissegundos via WebSockets.
+\end{itemize}
+
+Os resultados obtidos demonstram que o WeFIND atingiu estabilidade técnica, bom desempenho e facilidade de uso, cumprindo os objetivos propostos para o projeto.
+\clearpage

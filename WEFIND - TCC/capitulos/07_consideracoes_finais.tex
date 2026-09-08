@@ -1,0 +1,36 @@
+\section{CONSIDERAÇÕES FINAIS}
+
+O desenvolvimento deste Trabalho de Conclusão de Curso resultou na criação e validação do sistema WeFIND, um aplicativo móvel colaborativo planejado para ajudar na localização de animais perdidos e no incentivo à adoção responsável. A pesquisa inicial comprovou que os meios habituais usados pelas pessoas, como cartazes em postes e mensagens espalhadas em redes sociais comuns, são desorganizados, não possuem mapa e dificultam o resgate rápido de animais de estimação.
+
+A avaliação do ciclo de desenvolvimento confirma o cumprimento dos objetivos propostos no início do trabalho:
+\begin{itemize}
+    \item A pesquisa com a comunidade identificou claramente as dores dos tutores e protetores, servindo de base sólida para os requisitos;
+    \item O estudo de sistemas similares mapeou as limitações dos sites e aplicativos existentes, orientando a criação de uma solução gratuita, com mapa por GPS e chat seguro;
+    \item Os 43 requisitos funcionais e 14 requisitos não funcionais foram formalizados e atendidos na implementação;
+    \item A modelagem visual com diagramas de casos de uso, classes e modelo relacional estruturou a lógica do sistema;
+    \item O design centrado no usuário garantiu uma navegação clara, confortável e com identidade visual acolhedora;
+    \item O aplicativo foi construído com sucesso utilizando React Native e Supabase, apresentando estabilidade e boas respostas;
+    \item Os testes práticos com 20 voluntários resultaram na nota de 85,3 pontos na escala SUS, confirmando excelente usabilidade e aprovação do público.
+\end{itemize}
+
+\subsection{Dificuldades Encontradas}
+
+Durante o desenvolvimento do projeto, foram enfrentados desafios técnicos importantes:
+\begin{itemize}
+    \item \textbf{Integração de mapas e desempenho:} renderizar múltiplos marcadores simultâneos com fotos em celulares mais modestos exigiu a otimização das consultas e o uso de agrupamentos visuais no mapa;
+    \item \textbf{Manipulação e envio de imagens:} garantir que fotos tiradas em alta resolução fossem reduzidas no próprio aparelho antes do upload, evitando alto consumo de internet móvel;
+    \item \textbf{Mensagens em tempo real:} sincronizar a entrega instantânea do chat privativo mantendo o isolamento de dados com regras de segurança no banco de dados.
+\end{itemize}
+
+\subsection{Trabalhos Futuros}
+
+Para dar continuidade à evolução da plataforma WeFIND, propõem-se as seguintes melhorias para versões futuras:
+\begin{itemize}
+    \item \textbf{Reconhecimento visual com Inteligência Artificial:} incorporar modelos de visão computacional para comparar fotos de animais perdidos e encontrados, sugerindo compatibilidade de forma automática;
+    \item \textbf{Integração com coleiras com chip ou QR Code físico:} permitir que o QR Code gerado pelo RG Pet seja impresso em plaquinhas metálicas para coleiras;
+    \item \textbf{Parcerias com clínicas veterinárias e pet shops:} criar painéis de aviso para estabelecimentos comerciais parceiros exibirem animais perdidos no bairro;
+    \item \textbf{Gamificação comunitária:} expandir o sistema de pontos e medalhas para incentivar a participação constante de voluntários em resgates e lares temporários.
+\end{itemize}
+
+Dessa forma, o WeFIND conclui este trabalho demonstrando a viabilidade de unir tecnologia móvel e colaboração comunitária em favor da causa animal, oferecendo uma ferramenta prática, gratuita e acessível para transformar a angústia da perda na alegria do reencontro.
+\clearpage

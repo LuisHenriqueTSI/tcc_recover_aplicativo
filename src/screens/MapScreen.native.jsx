@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Image, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import MapView, { Callout, Marker, Polyline } from 'react-native-maps';
@@ -255,6 +255,7 @@ const MapScreen = ({ route, navigation }) => {
   const [region, setRegion] = useState(BRAZIL_REGION);
   const [userCoords, setUserCoords] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
   const [searchTerm, setSearchTerm] = useState('');
   const [showMapInfoModal, setShowMapInfoModal] = useState(false);
   const [centeringLoading, setCenteringLoading] = useState(false);
@@ -301,6 +302,14 @@ const MapScreen = ({ route, navigation }) => {
   const [cardHeight, setCardHeight] = useState(0);
 
   // Carrega o rastro de deslocamento do animal selecionado
+  useEffect(() => {
+    Animated.timing(overlayOpacity, {
+      toValue: selectedItem ? 1 : 0,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  }, [selectedItem, overlayOpacity]);
+
   useEffect(() => {
     let isMounted = true;
     if (!selectedItem?.id) {
@@ -1152,6 +1161,18 @@ const MapScreen = ({ route, navigation }) => {
         </View>
       )}
 
+      {/* Overlay escurecido animado sobre o mapa quando um item está selecionado */}
+      <Animated.View
+        pointerEvents={selectedItem ? 'auto' : 'none'}
+        style={[styles.mapDimOverlay, { opacity: overlayOpacity }]}
+      >
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          activeOpacity={1}
+          onPress={() => setSelectedItem(null)}
+        />
+      </Animated.View>
+
       {selectedItem && !isNavigating && (
         <View
           style={styles.infoCard}
@@ -1790,6 +1811,15 @@ const MapScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#E5E7EB' },
   map: { flex: 1 },
+  mapDimOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    zIndex: 5,
+  },
   searchContainer: {
     position: 'absolute',
     left: 16,
@@ -1937,9 +1967,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.22,
     shadowRadius: 12,
-    elevation: 7,
+    elevation: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    zIndex: 10,
   },
   infoClose: {
     position: 'absolute',

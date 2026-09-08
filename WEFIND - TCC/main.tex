@@ -1,0 +1,217 @@
+\documentclass[a4paper,12pt]{article}
+
+% ============================================================
+% CONFIGURAÇÃO DA PÁGINA (PADRÃO ABNT)
+% ============================================================
+\usepackage[
+    a4paper,
+    top=3cm,
+    bottom=2cm,
+    left=3cm,
+    right=2cm
+]{geometry}
+
+% ============================================================
+% PACOTES MATEMÁTICOS E SÍMBOLOS
+% ============================================================
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+% ============================================================
+% IDIOMA E CODIFICAÇÃO (PDFLATEX VELOZ)
+% ============================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+
+% Fonte Arial (Helvetica - Padrão ABNT NBR 14724):
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+% Evita palavras ultrapassando a margem sem travar o compilador:
+\emergencystretch=2em
+
+% ============================================================
+% ESPAÇAMENTO E PARÁGRAFOS (ABNT)
+% ============================================================
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0pt}
+
+% ============================================================
+% TEXTO JUSTIFICADO
+% ============================================================
+\usepackage{ragged2e}
+\justifying
+
+% ============================================================
+% PACOTES BÁSICOS E CONTROLE DE IMAGENS
+% ============================================================
+\usepackage{graphicx}
+\graphicspath{
+    {.}{imagens/}{imagens/}
+    {imagens/00_institucional/}{imagens/00_institucional/}
+    {imagens/01_pesquisa/}{imagens/01_pesquisa/}
+    {imagens/02_modelagem/}{imagens/02_modelagem/}
+    {imagens/03_arquitetura_design/}{imagens/03_arquitetura_design/}
+    {imagens/04_telas_aplicativo/}{imagens/04_telas_aplicativo/}
+    {imagens/05_manual_usuario/}{imagens/05_manual_usuario/}
+}
+
+% INTERCEPTADOR SEGURO DE IMAGENS (BLINDADO CONTRA UNDERLINE E ARQUIVO FALTANTE):
+\let\origincludegraphics\includegraphics
+\makeatletter
+\renewcommand{\includegraphics}[2][]{%
+  \IfFileExists{#2}%
+    {\origincludegraphics[#1]{#2}}%
+    {\IfFileExists{imagens/#2}%
+      {\origincludegraphics[#1]{imagens/#2}}%
+      {\IfFileExists{imagens/#2}%
+        {\origincludegraphics[#1]{imagens/#2}}%
+        {\fbox{\parbox[c][3.5cm][c]{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{\centering\footnotesize\bfseries [Espaço reservado para a Imagem: \detokenize{#2}]}}}}}%
+}
+\makeatother
+
+% ============================================================
+% DEFINIÇÃO DO AMBIENTE QUADRO
+% ============================================================
+\usepackage{float}
+\newfloat{quadro}{htbp}{loq}[section]
+\floatname{quadro}{Quadro}
+
+% ============================================================
+% TABELAS
+% ============================================================
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+
+% ============================================================
+% LISTAS
+% ============================================================
+\usepackage{enumitem}
+
+% ============================================================
+% CITAÇÕES E AJUSTES DE TEXTO
+% ============================================================
+\usepackage{csquotes}
+\usepackage{changepage}
+
+% ============================================================
+% PAGINAÇÃO (SUPERIOR DIREITO PADRÃO ABNT)
+% ============================================================
+\usepackage{fancyhdr}
+\setlength{\headheight}{15pt}
+
+% Estilo padrão fancy:
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% Garante que as páginas de início de seção também fiquem no topo direito:
+\fancypagestyle{plain}{%
+    \fancyhf{}%
+    \fancyhead[R]{\thepage}%
+    \renewcommand{\headrulewidth}{0pt}%
+}
+
+% ============================================================
+% LINKS (SUMÁRIO E REFERÊNCIAS)
+% ============================================================
+\usepackage[hidelinks]{hyperref}
+
+% ============================================================
+% TÍTULOS (PADRÃO ABNT: NEGRITO E TAMANHO 12)
+% ============================================================
+\usepackage{titlesec}
+
+\titleformat{\section}
+    {\normalfont\fontsize{12}{14}\selectfont\bfseries}
+    {\thesection}
+    {1em}
+    {}
+
+\titleformat{\subsection}
+    {\normalfont\fontsize{12}{14}\selectfont\bfseries}
+    {\thesubsection}
+    {1em}
+    {}
+
+\titleformat{\subsubsection}
+    {\normalfont\fontsize{12}{14}\selectfont\bfseries}
+    {\thesubsubsection}
+    {1em}
+    {}
+
+% ============================================================
+% SUMÁRIO
+% ============================================================
+\setcounter{tocdepth}{3}
+
+% ============================================================
+% FONTE DE FIGURAS, TABELAS E QUADROS (TAMANHO 10)
+% ============================================================
+\newcommand{\fonte}[1]{%
+    \par
+    \begin{flushleft}
+        {\fontsize{10}{12}\selectfont Fonte: #1}
+    \end{flushleft}
+}
+
+% ============================================================
+% CITAÇÃO DIRETA LONGA (RECUO 4CM, FONTE 10, ESPAÇAMENTO SIMPLES)
+% ============================================================
+\newcommand{\citacaolonga}[1]{%
+    \begin{adjustwidth}{4cm}{0cm}
+        \begin{spacing}{1}
+            {\fontsize{10}{12}\selectfont #1}
+        \end{spacing}
+    \end{adjustwidth}
+}
+
+% ============================================================
+% INÍCIO DO DOCUMENTO
+% ============================================================
+\begin{document}
+
+% ============================================================
+% ELEMENTOS PRÉ-TEXTUAIS (SEM NUMERAÇÃO DE PÁGINA)
+% ============================================================
+\pagestyle{empty}
+
+\input{pre-textuais/01_capa} \clearpage
+\input{pre-textuais/02_folha_rosto} \clearpage
+\input{pre-textuais/03_folha_aprovacao} \clearpage
+\input{pre-textuais/04_agradecimentos} \clearpage
+\input{pre-textuais/05_resumo} \clearpage
+\input{pre-textuais/06_abstract} \clearpage
+\input{pre-textuais/07_lista_ilustracoes} \clearpage
+\input{pre-textuais/08_lista_tabelas} \clearpage
+\input{pre-textuais/09_lista_siglas} \clearpage
+\input{pre-textuais/10_sumario} \clearpage
+
+% ============================================================
+% ELEMENTOS TEXTUAIS (COMEÇA NA INTRODUÇÃO SENDO PÁGINA 1 NO TOPO DIREITO)
+% ============================================================
+\pagestyle{fancy}
+\setcounter{page}{1}
+
+\input{capitulos/01_introducao} \clearpage
+\input{capitulos/02_cenario} \clearpage
+\input{capitulos/03_metodologia} \clearpage
+\input{capitulos/04_analise_modelagem} \clearpage
+\input{capitulos/05_wefind} \clearpage
+\input{capitulos/06_testes} \clearpage
+\input{capitulos/07_consideracoes_finais} \clearpage
+
+% ============================================================
+% ELEMENTOS PÓS-TEXTUAIS (CONTINUA A NUMERAÇÃO NORMAL)
+% ============================================================
+\input{pos-textuais/referencias} \clearpage
+\input{pos-textuais/apendices} \clearpage
+\IfFileExists{pos-textuais/anexos.tex}{\input{pos-textuais/anexos}\clearpage}{}
+
+\end{document}

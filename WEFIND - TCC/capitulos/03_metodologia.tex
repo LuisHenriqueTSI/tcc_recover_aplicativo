@@ -1,0 +1,108 @@
+\section{METODOLOGIA}
+
+Para definir as funções e os requisitos do WeFIND, buscou-se compreender as reais necessidades e dificuldades enfrentadas por tutores e voluntários no momento de buscar ou resgatar um animal perdido. De acordo com Sommerville (2019), o levantamento de requisitos deve partir do contato direto com os usuários e da compreensão do problema prático que o software pretende resolver, evitando que o desenvolvimento seja guiado apenas por suposições da equipe.
+
+Com esse objetivo, o trabalho adotou duas etapas principais: primeiro, a realização de uma pesquisa de viabilidade com a comunidade por meio de um formulário online; segundo, a análise comparativa de outros aplicativos e sites semelhantes que já atuam nesse segmento.
+
+\subsection{Pesquisa de Viabilidade com a Comunidade}
+
+A coleta de dados foi feita por meio de um questionário estruturado online criado no Google Forms, aplicado a tutores de animais, protetores independentes e voluntários da causa animal.
+
+O questionário buscou identificar os hábitos de busca da comunidade, quais canais são mais utilizados para divulgar animais perdidos, os principais problemas desses métodos e o interesse na utilização de um aplicativo móvel com mapa em tempo real. A Figura~\ref{fig:pesquisa_meios} apresenta os meios habituais de divulgação apontados pelos 20 participantes da pesquisa.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{imagens/01_pesquisa/figura01_canais_divulgacao.png}
+    \caption{Meios habituais de divulgação utilizados em episódios de animais perdidos}
+    \label{fig:pesquisa_meios}
+    \fonte{Dados da pesquisa (Google Forms, 2026)}
+\end{figure}
+
+Os dados da Figura~\ref{fig:pesquisa_meios} mostram que a maioria das pessoas concentra suas buscas nas redes sociais convencionais (11 respostas, representando 55\%) e nos grupos de mensagens do WhatsApp (5 respostas, equivalente a 25\%). Em contrapartida, os métodos físicos tradicionais, como cartazes impressos em postes e comércios, somaram apenas 2 escolhas (10\%), enquanto a comunicação direta com vizinhos e o aviso em clínicas veterinárias e pet shops registraram apenas 1 resposta cada (5\% cada).
+
+Apesar de serem os meios mais populares pela facilidade de acesso, os participantes relataram grandes dificuldades no uso dessas redes comuns: as publicações se perdem muito rápido nas linhas do tempo com o excesso de novas mensagens, não existe separação ou busca por bairros no mapa e as informações importantes acabam dispersas em conversas paralelas, atrasando o resgate do animal.
+
+Em seguida, perguntou-se aos participantes se eles teriam interesse em utilizar um aplicativo voltado especificamente para essa finalidade, integrando mapa interativo e filtros por proximidade. A Figura~\ref{fig:interesse_mapa} apresenta a resposta do público.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{imagens/01_pesquisa/figura02_interesse_mapa.jpeg}
+    \caption{Nível de interesse e aceitação do mapa interativo e recursos de proximidade}
+    \label{fig:interesse_mapa}
+    \fonte{Dados da pesquisa (2026)}
+\end{figure}
+
+As respostas da Figura~\ref{fig:interesse_mapa} comprovam uma aceitação quase unânime: os participantes demonstraram forte interesse no uso de mapas no celular para localizar e divulgar animais. Esse resultado confirma que existe uma demanda real por uma ferramenta focada e que resolva os problemas dos canais comuns. A relação completa das perguntas do questionário consta no Apêndice D deste trabalho.
+
+\subsection{Sistemas Similares}
+
+Com o objetivo de mapear as soluções existentes e identificar oportunidades de melhoria no projeto, realizou-se uma análise de similares orientada às diretrizes de usabilidade e experiência do usuário propostas por Amstel (2024). Essa investigação avaliou como as principais ferramentas do segmento organizam a busca, a divulgação e o contato entre as pessoas durante a perda de animais de estimação.
+
+Foram selecionadas três soluções de destaque com propostas semelhantes: \textit{Viu Meu Pet} (VIU MEU PET, 2026), \textit{PawBoost} (PAWBOOST, 2026) e \textit{AlertPet} (ALERTPET, 2026).
+
+\subsubsection{Viu Meu Pet}
+
+O \textit{Viu Meu Pet} (VIU MEU PET, 2026) é uma das plataformas pioneiras no Brasil voltada à localização de animais perdidos, oferecendo tanto um portal web quanto um aplicativo para celular. A interface inicial do sistema é apresentada na Figura~\ref{fig:viumeupet}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/figura03_viumeupet.png}
+    \caption{Interface da plataforma Viu Meu Pet}
+    \label{fig:viumeupet}
+    \fonte{Viu Meu Pet (2026)}
+\end{figure}
+
+Como ponto positivo, o sistema possui boa visibilidade em buscas no Google e conta com grande volume de acessos. No entanto, sua navegação é feita em listas estáticas separadas por estado e cidade, sem integração fluida com mapa em tempo real por GPS. Outro problema significativo está na comunicação: a plataforma não oferece um canal de conversa privativo interno, obrigando os tutores a deixarem telefones particulares expostos abertamente nos anúncios públicos, o que aumenta o medo de golpes e trotes.
+
+\subsubsection{PawBoost}
+
+O \textit{PawBoost} (PAWBOOST, 2026) é uma plataforma amplamente conhecida no exterior, com forte atuação nos Estados Unidos e em países de língua inglesa, disponibilizando acesso via site e aplicativo para celular. A interface da ferramenta pode ser visualizada na Figura~\ref{fig:pawboost}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/figura04_pawboost.png}
+    \caption{Interface da plataforma PawBoost}
+    \label{fig:pawboost}
+    \fonte{PawBoost (2026)}
+\end{figure}
+
+Entre os pontos fortes da plataforma, destacam-se a geração automática de cartazes digitais e o compartilhamento em redes sociais. Por outro lado, a ferramenta possui restrições para o uso no Brasil: a busca geográfica é baseada no código postal norte-americano (\textit{ZIP Code}) e os recursos de maior alcance exigem pagamento de taxas em dólar para impulsionar os anúncios, tornando a solução inacessível para a grande maioria dos tutores brasileiros.
+
+\subsubsection{AlertPet}
+
+O \textit{AlertPet} (ALERTPET, 2026) é uma iniciativa nacional estruturada como uma página na web voltada ao envio de alertas comunitários sobre animais perdidos e encontrados. A interface da página principal é ilustrada na Figura~\ref{fig:alertpet}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/figura05_alertpet.png}
+    \caption{Interface da plataforma AlertPet}
+    \label{fig:alertpet}
+    \fonte{AlertPet (2026)}
+\end{figure}
+
+O principal atrativo do \textit{AlertPet} é a proposta de alertar pessoas cadastradas na região onde o animal foi visto. Contudo, funcionando apenas como um site, a plataforma não aproveita o GPS do celular no momento do resgate na rua e não oferece um mapa interativo completo com filtros rápidos. Além disso, a ferramenta limita o raio de alcance nos cadastros gratuitos, exigindo pagamentos para ter maior visibilidade.
+
+Ao pesquisar outros aplicativos em lojas oficiais como a Google Play Store, encontram-se softwares genéricos com muitos downloads. A análise prática dessas ferramentas mostrou falhas graves de facilidade de uso: telas poluídas e desorganizadas, botões confusos e problemas de tradução, misturando textos em português e inglês. Isso demonstra que mesmo nos aplicativos existentes, a experiência de uso e o design ainda são pouco cuidados.
+
+\subsection{Análise Comparativa dos Sistemas Similares}
+
+A análise prática das ferramentas existentes mostrou que, embora existam alternativas no mercado, nenhuma reúne todas as funções essenciais para um resgate rápido, seguro e gratuito. O Quadro 1 sintetiza as características dos sistemas similares estudados.
+
+\vspace{0.3cm}
+\begin{table}[H]
+\centering
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|p{2.3cm}|p{3.8cm}|p{4.4cm}|p{4.2cm}|}
+\hline
+\multicolumn{4}{|c|}{\textbf{Quadro 1 – Análise Comparativa dos Sistemas Similares}} \\ \hline
+\textbf{Nome} & \textbf{Definição} & \textbf{Funcionalidades} & \textbf{Pontos Positivos} \\ \hline
+\textbf{Viu Meu Pet} & Plataforma web e aplicativo móvel nacional para localização de animais perdidos. & Cadastro de anúncios com fotos, descrição, filtros básicos e compartilhamento em redes sociais. & Boa visibilidade comunitária no Brasil e facilidade para divulgar ocorrências nas redes. \\ \hline
+\textbf{PawBoost} & Plataforma internacional (web e aplicativo móvel) voltada a alertas de animais perdidos. & Mapa de ocorrências, rede de notificações locais e gerador automático de cartazes para impressão. & Excelente dinâmica de geração rápida de cartazes e notificações eficientes na vizinhança. \\ \hline
+\textbf{AlertPet} & Portal web brasileiro focado no cadastramento de animais desaparecidos e encontrados. & Listagem de ocorrências por cidades/estados, mural de fotos e envio de mensagens para o tutor. & Plataforma gratuita, simples de navegar e totalmente orientada ao contexto brasileiro. \\ \hline
+\end{tabular}
+\fonte{Autoria própria (2026)}
+\end{table}
+
+A comparação do Quadro 1, somada aos dados obtidos na pesquisa com a comunidade, comprovou que existe uma necessidade real de uma ferramenta móvel gratuita que una mapa com GPS em tempo real, proteção da privacidade dos tutores com chat interno e geração prática de cartazes de busca. Com base nessas descobertas, o Capítulo 4 apresenta a análise detalhada e a modelagem do sistema WeFIND, especificando seus requisitos e diagramas de funcionamento.
+\clearpage

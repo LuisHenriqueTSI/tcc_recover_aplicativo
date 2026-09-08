@@ -1,0 +1,475 @@
+\section*{APÊNDICE A -- DIAGRAMAS DE MODELAGEM UML EM ALTA RESOLUÇÃO}
+\addcontentsline{toc}{section}{APÊNDICE A -- DIAGRAMAS DE MODELAGEM UML EM ALTA RESOLUÇÃO}
+
+Este apêndice reúne os diagramas de modelagem concebidos para o sistema WeFIND em escala ampliada, viabilizando a análise minuciosa de seus fluxos, classes e estruturas de dados.
+
+\vspace{0.6cm}
+\begin{center}
+    \textbf{Figura A1 -- Diagrama de Casos de Uso: Módulo Pré-Login (Modo Visitante)}\\[0.3cm]
+    \includegraphics[width=0.92\textwidth]{imagens/02_modelagem/figura06_caso_uso_login.png}\\[0.2cm]
+    {\footnotesize Fonte: Autoria própria (2026)}
+\end{center}
+
+\clearpage
+
+\begin{center}
+    \textbf{Figura A2 -- Diagrama de Casos de Uso Geral (Pós-Login e Administração)}\\[0.3cm]
+    \includegraphics[width=0.92\textwidth]{imagens/02_modelagem/figura07_caso_uso_geral.png}\\[0.2cm]
+    {\footnotesize Fonte: Autoria própria (2026)}
+\end{center}
+
+\clearpage
+
+\begin{center}
+    \textbf{Figura A3 -- Diagrama de Classes Conceituais}\\[0.3cm]
+    \includegraphics[width=0.92\textwidth]{imagens/02_modelagem/figura08_diagrama_classes.pdf}\\[0.2cm]
+    {\footnotesize Fonte: Autoria própria (2026)}
+\end{center}
+
+\clearpage
+
+\begin{center}
+    \textbf{Figura A4 -- Modelo Lógico Relacional do Banco de Dados PostgreSQL}\\[0.3cm]
+    \includegraphics[width=0.88\textwidth]{imagens/02_modelagem/figura09_modelo_logico_banco.png}\\[0.2cm]
+    {\footnotesize Fonte: Autoria própria (2026)}
+\end{center}
+
+\clearpage
+
+% ============================================================
+% APÊNDICE B: ESPECIFICAÇÃO DOS CASOS DE USO
+% ============================================================
+\section*{APÊNDICE B -- ESPECIFICAÇÃO DOS CASOS DE USO}
+\addcontentsline{toc}{section}{APÊNDICE B -- ESPECIFICAÇÃO DOS CASOS DE USO}
+
+Esta seção apresenta a especificação textual detalhada dos oito casos de uso fundamentais que compõem o escopo operacional da plataforma WeFIND, descrevendo atores, pré-condições, fluxos principais, alternativas e exceções.
+
+\vspace{0.5cm}
+
+\subsection*{Caso de Uso: UC01 -- Efetuar Login}
+\noindent
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\hline
+\textbf{Identificador} & UC01 \\ \hline
+\textbf{Nome do Caso de Uso} & Efetuar Login \\ \hline
+\textbf{Ator Principal} & Usuário Visitante \\ \hline
+\textbf{Atores Secundários} & Serviço de Autenticação (Supabase Auth) e API do WhatsApp \\ \hline
+\textbf{Resumo} & Permite ao usuário autenticar-se na plataforma mediante e-mail e senha, gerando token JWT de sessão persistente. \\ \hline
+\textbf{Pré-Condições} & Possuir cadastro ativo no WeFIND. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+1. O usuário aciona a opção ``Entrar'' na tela inicial.\par
+2. O sistema exibe o formulário solicitando e-mail e senha.\par
+3. O usuário preenche as credenciais e toca em ``Entrar''.\par
+4. O sistema valida o formato sintático do e-mail e o comprimento da senha.\par
+5. O sistema submete a requisição ao Supabase Auth.\par
+6. O serviço valida as credenciais e confirma a validação da conta via WhatsApp.\par
+7. O sistema armazena a sessão localmente (\textit{AsyncStorage}) e redireciona ao feed principal autenticado.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+4a. Campos vazios: o sistema exibe mensagens de preenchimento obrigatório.\par
+6a. Credenciais incorretas: o sistema exibe alerta retendo o usuário no formulário.\par
+3a. Esquecimento de credenciais (\textit{<<extend>>}): o usuário aciona a extensão \textbf{Redefinir Senha}, recebendo código OTP de 6 dígitos no WhatsApp para cadastro de nova senha.
+} \\ \hline
+\textbf{Pós-Condições} & Sessão iniciada com permissões de publicação, chat e gestão de pets ativas. \\ \hline
+\end{tabular}
+\end{table}
+
+\vspace{0.8cm}
+
+\subsection*{Caso de Uso: UC02 -- Realizar Cadastro}
+\noindent
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\hline
+\textbf{Identificador} & UC02 \\ \hline
+\textbf{Nome do Caso de Uso} & Realizar Cadastro \\ \hline
+\textbf{Ator Principal} & Usuário Visitante \\ \hline
+\textbf{Atores Secundários} & Supabase Auth e Serviço de Mensageria (WhatsApp) \\ \hline
+\textbf{Resumo} & Permite a novos membros criarem uma conta informando dados cadastrais e realizando a verificação por código de segurança no WhatsApp. \\ \hline
+\textbf{Pré-Condições} & Dispositivo conectado à internet. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+1. O usuário toca na opção ``Cadastre-se'' na tela de login.\par
+2. O sistema abre o formulário de registro solicitando nome completo, e-mail, telefone WhatsApp e senha.\par
+3. O usuário preenche as informações e confirma o cadastro.\par
+4. O sistema valida os campos, cria o registro no Supabase Auth e dispara um código OTP de 6 dígitos para o WhatsApp informado.\par
+5. O sistema exibe a tela de confirmação de telefone com 6 campos numéricos.\par
+6. O usuário digita o código recebido no WhatsApp.\par
+7. O sistema valida o código e ativa a conta de usuário permanentemente.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+4a. E-mail ou telefone já cadastrados: o sistema emite alerta indicando a duplicidade.\par
+6a. Código expirado ou incorreto: o sistema sinaliza o erro e oferece botão de reenvio de código com temporizador.
+} \\ \hline
+\textbf{Pós-Condições} & Conta criada, validada em duas etapas e pronta para autenticação. \\ \hline
+\end{tabular}
+\end{table}
+
+\clearpage
+
+\subsection*{Caso de Uso: UC03 -- Manter Publicação}
+\noindent
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\hline
+\textbf{Identificador} & UC03 \\ \hline
+\textbf{Nome do Caso de Uso} & Manter Publicação \\ \hline
+\textbf{Ator Principal} & Usuário (Autenticado) \\ \hline
+\textbf{Atores Secundários} & Banco de Dados (PostgreSQL) e Supabase Storage \\ \hline
+\textbf{Resumo} & Permite cadastrar, editar, alterar status (localizado/adotado) ou excluir anúncios de animais perdidos, encontrados ou para adoção. \\ \hline
+\textbf{Pré-Condições} & Usuário autenticado e com permissão de localização ativa. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+1. O usuário aciona o botão de nova publicação (``+'') na barra de navegação.\par
+2. O sistema apresenta o formulário solicitando a categoria: ``Perdido'', ``Encontrado'' ou ``Adoção''.\par
+3. O usuário seleciona a categoria. No caso de animal encontrado, define se foi ``Visto na rua'' ou se ``Está em Lar Temporário''.\par
+4. O usuário adiciona fotografias (com recorte integrado) e seleciona os atributos físicos do pet (espécie, raça, porte, cor, idade).\par
+5. O sistema executa obrigatoriamente por inclusão (\textit{<<include>>}) o caso de uso \textbf{Selecionar Localização no Mapa}, capturando as coordenadas geográficas.\par
+6. O usuário confirma a publicação.\par
+7. O sistema envia as fotos ao Storage e grava os dados na tabela \texttt{items}.\par
+8. A publicação passa a ser exibida no feed e no mapa para a comunidade.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+3a. Informar tutor de terceiros (\textit{<<extend>>}): o usuário aciona a extensão para indicar o contato de outro responsável pelo animal.\par
+5a. Identificação de duplicidade: o sistema detecta pet similar em raio de 5~km e questiona se trata-se do mesmo animal para vinculação de avistamento.
+} \\ \hline
+\textbf{Pós-Condições} & Ocorrência persistida, visível no mapa e disponível para o motor de match inteligente. \\ \hline
+\end{tabular}
+\end{table}
+
+\vspace{0.8cm}
+
+\subsection*{Caso de Uso: UC04 -- Registrar Avistamento}
+\noindent
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\hline
+\textbf{Identificador} & UC04 \\ \hline
+\textbf{Nome do Caso de Uso} & Registrar Avistamento \\ \hline
+\textbf{Ator Principal} & Usuário (Autenticado) \\ \hline
+\textbf{Atores Secundários} & Banco de Dados (PostgreSQL) e Serviço de Notificações \\ \hline
+\textbf{Resumo} & Permite a um membro da comunidade informar novas coordenadas e fotos do local onde viu um animal perdido na rua, atualizando o rastro de busca. \\ \hline
+\textbf{Pré-Condições} & O animal deve estar publicado com status ``Perdido''. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+1. Ao visualizar os detalhes de um animal perdido, o usuário aciona a opção ``Vi esse Pet''.\par
+2. O sistema abre o modal de avistamento solicitando foto do local e relato.\par
+3. O usuário captura ou anexa uma fotografia do animal avistado.\par
+4. O sistema inclui obrigatoriamente (\textit{<<include>>}) o caso de uso \textbf{Selecionar Localização no Mapa}, capturando o ponto GPS do avistamento.\par
+5. O usuário confirma o envio do avistamento.\par
+6. O sistema atualiza atomicamente o marcador principal do animal para as novas coordenadas e grava o histórico em \texttt{item\_sightings}.\par
+7. O sistema dispara notificação push imediata ao tutor do pet informando a nova localização.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+4a. Sinal de GPS instável: o usuário ajusta manualmente o pino na rua em que o animal foi visto.
+} \\ \hline
+\textbf{Pós-Condições} & Marcador do animal reposicionado no mapa, tutor alertado e histórico de rastro atualizado. \\ \hline
+\end{tabular}
+\end{table}
+
+\clearpage
+
+\subsection*{Caso de Uso: UC05 -- Iniciar Conversa via Chat}
+\noindent
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\hline
+\textbf{Identificador} & UC05 \\ \hline
+\textbf{Nome do Caso de Uso} & Iniciar Conversa via Chat \\ \hline
+\textbf{Ator Principal} & Usuário (Autenticado) \\ \hline
+\textbf{Atores Secundários} & Serviço de Mensagens em Tempo Real (Supabase WebSockets) \\ \hline
+\textbf{Resumo} & Viabiliza canal direto e privativo de troca de mensagens e imagens entre o tutor do animal e voluntários da comunidade sem expor contatos telefônicos. \\ \hline
+\textbf{Pré-Condições} & Ambos os usuários devem possuir cadastro ativo. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+1. Na tela de detalhes da publicação, o usuário aciona o botão ``Entrar em Contato''.\par
+2. O sistema cria ou recupera a sala de conversa existente entre os dois usuários para aquele animal.\par
+3. O sistema abre a interface de chat em tempo real.\par
+4. O usuário digita a mensagem ou anexa uma foto e confirma o envio.\par
+5. O sistema transmite a mensagem via WebSockets e notifica o destinatário via notificação push.\par
+6. A mensagem é persistida na tabela \texttt{messages} e exibida na conversa.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+4a. Tentativa de contato consigo mesmo: o sistema omite o botão de chat quando o visualizador é o próprio autor do anúncio.\par
+5a. Destinatário offline: a mensagem é gravada no banco e entregue assim que o destinatário abrir o app.
+} \\ \hline
+\textbf{Pós-Condições} & Canal de comunicação estabelecido com histórico mantido na caixa de entrada. \\ \hline
+\end{tabular}
+\end{table}
+
+\vspace{0.8cm}
+
+\subsection*{Caso de Uso: UC06 -- Gerar Cartaz}
+\noindent
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\hline
+\textbf{Identificador} & UC06 \\ \hline
+\textbf{Nome do Caso de Uso} & Gerar Cartaz \\ \hline
+\textbf{Ator Principal} & Usuário / Usuário Visitante \\ \hline
+\textbf{Atores Secundários} & Módulo Gerador de Código QR e API Nativa de Compartilhamento \\ \hline
+\textbf{Resumo} & Permite a qualquer usuário renderizar automaticamente artes gráficas diagramadas em múltiplos formatos (A4, Stories e Feed) contendo código QR para divulgação rápida. \\ \hline
+\textbf{Pré-Condições} & O animal deve possuir ao menos uma fotografia cadastrada. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+1. Na tela de detalhes da ocorrência, o usuário clica em ``Compartilhar Cartaz''.\par
+2. O sistema abre o modal com pré-visualização ao vivo da arte gerada.\par
+3. O sistema gera dinamicamente o código QR apontando para o link público do animal.\par
+4. O usuário seleciona o formato desejado (A4 para impressão, Stories 9:16 ou Feed 1:1).\par
+5. O usuário escolhe entre salvar a imagem na galeria ou acionar o compartilhamento direto via WhatsApp ou redes sociais.\par
+6. O sistema exporta o arquivo de imagem em alta definição.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+5a. Copiar texto: o sistema oferece botão para copiar mensagem de texto pronta com link de resgate em um toque.
+} \\ \hline
+\textbf{Pós-Condições} & Peça gráfica diagramada e compartilhada nos canais comunitários. \\ \hline
+\end{tabular}
+\end{table}
+
+\clearpage
+
+\subsection*{Caso de Uso: UC07 -- Manter Cadastro meu Pet}
+\noindent
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\hline
+\textbf{Identificador} & UC07 \\ \hline
+\textbf{Nome do Caso de Uso} & Manter Cadastro meu Pet \\ \hline
+\textbf{Ator Principal} & Usuário (Autenticado) \\ \hline
+\textbf{Atores Secundários} & Banco de Dados (PostgreSQL) e Supabase Storage \\ \hline
+\textbf{Resumo} & Permite cadastrar previamente os dados dos animais domésticos tutelados, emitindo a carteirinha digital oficial (RG Pet) com código QR de autenticidade. \\ \hline
+\textbf{Pré-Condições} & Usuário logado na sua conta. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+1. O usuário acessa a opção ``Meus Pets'' no menu do perfil.\par
+2. O sistema lista os animais previamente cadastrados ou oferece a opção de novo cadastro.\par
+3. O usuário insere a foto do animal, nome, espécie, raça, data de nascimento e dados veterinários (vacinas e castração).\par
+4. O usuário confirma o salvamento dos dados.\par
+5. O sistema grava os registros e gera o documento digital do RG Pet com código QR e número de registro único.\par
+6. A carteirinha fica disponível para consulta, edição ou exportação em imagem.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+6a. O animal fugiu: o tutor aciona o botão de emergência na carteirinha, convertendo os dados do pet diretamente em uma publicação de animal perdido no mapa sem precisar redigitar nada.
+} \\ \hline
+\textbf{Pós-Condições} & Carteirinha digital do pet ativa e vinculada ao perfil do tutor. \\ \hline
+\end{tabular}
+\end{table}
+
+\vspace{0.8cm}
+
+\subsection*{Caso de Uso: UC08 -- Manter Moderação e Denúncias}
+\noindent
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3.2cm}|p{11.8cm}|}
+\hline
+\textbf{Identificador} & UC08 \\ \hline
+\textbf{Nome do Caso de Uso} & Manter Moderação e Denúncias \\ \hline
+\textbf{Ator Principal} & Administrador \\ \hline
+\textbf{Atores Secundários} & Banco de Dados (PostgreSQL) \\ \hline
+\textbf{Resumo} & Permite ao administrador inspecionar relatórios de denúncia enviados pela comunidade sobre anúncios indevidos, aplicando sanções ou exclusão do conteúdo. \\ \hline
+\textbf{Pré-Condições} & Conta autenticada com perfil de administrador (\textit{isAdmin = true}). \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+1. O administrador acessa a tela de moderação do sistema.\par
+2. O sistema lista os anúncios que receberam denúncias dos usuários com o respectivo motivo.\par
+3. O administrador examina as fotos, o texto e os dados do anúncio reportado.\par
+4. O administrador seleciona a ação cabível: desconsiderar denúncia, suspender anúncio ou excluir publicação.\par
+5. O sistema atualiza o status do anúncio e registra a decisão no log de auditoria.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|p{15.4cm}|}{
+4a. Violação grave/fraude: o administrador pode suspender preventivamente a conta do usuário infrator.
+} \\ \hline
+\textbf{Pós-Condições} & Publicação moderada e integridade comunitária da plataforma assegurada. \\ \hline
+\end{tabular}
+\end{table}
+
+\clearpage
+
+% ============================================================
+% APÊNDICE C: SISTEMAS SIMILARES
+% ============================================================
+\section*{APÊNDICE C -- INTERFACES DOS SISTEMAS SIMILARES ANALISADOS}
+\addcontentsline{toc}{section}{APÊNDICE C -- INTERFACES DOS SISTEMAS SIMILARES ANALISADOS}
+
+Registros visuais das interfaces das três plataformas similares investigadas no Capítulo 3.
+
+\vspace{0.6cm}
+\begin{center}
+    \textbf{Figura C1 -- Interface da Plataforma Viu Meu Pet}\\[0.2cm]
+    \includegraphics[width=0.78\textwidth]{imagens/01_pesquisa/figura03_viumeupet.png}\\[0.1cm]
+    {\footnotesize Fonte: Viu Meu Pet (2026)}
+
+    \vspace{0.6cm}
+
+    \textbf{Figura C2 -- Interface da Plataforma PawBoost}\\[0.2cm]
+    \includegraphics[width=0.78\textwidth]{imagens/01_pesquisa/figura04_pawboost.png}\\[0.1cm]
+    {\footnotesize Fonte: PawBoost (2026)}
+
+    \vspace{0.6cm}
+
+    \textbf{Figura C3 -- Interface da Plataforma AlertPet}\\[0.2cm]
+    \includegraphics[width=0.78\textwidth]{imagens/01_pesquisa/figura05_alertpet.png}\\[0.1cm]
+    {\footnotesize Fonte: AlertPet (2026)}
+\end{center}
+
+\clearpage
+
+% ============================================================
+% APÊNDICE D: ESCALA SUS
+% ============================================================
+\section*{APÊNDICE D -- QUESTIONÁRIO DE USABILIDADE (ESCALA SUS)}
+\addcontentsline{toc}{section}{APÊNDICE D -- QUESTIONÁRIO DE USABILIDADE (ESCALA SUS)}
+
+Instrumento de avaliação de usabilidade aplicado aos 8 usuários participantes dos testes práticos do WeFIND, elaborado segundo a metodologia padronizada \textit{System Usability Scale} (BROOKE, 1996). 
+
+\vspace{0.3cm}
+\noindent
+\textbf{Instruções ao participante:} Para cada uma das afirmações a seguir, assinale com um ``X'' o nível de concordância que melhor representa sua experiência prática com o aplicativo WeFIND, em uma escala de 1 (\textbf{Discordo Totalmente} -- DT) a 5 (\textbf{Concordo Totalmente} -- CT):
+
+\vspace{0.5cm}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|c|p{8.8cm}|c|c|c|c|c|}
+\hline
+\textbf{Nº} & \textbf{Afirmação Avaliada} & \textbf{1 (DT)} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5 (CT)} \\ \hline
+1 & Eu acho que gostaria de utilizar o WeFIND com frequência em situações de busca. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
+2 & Eu achei o aplicativo desnecessariamente complexo. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
+3 & Eu achei o sistema fácil e intuitivo de utilizar. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
+4 & Eu acho que precisaria do suporte de uma pessoa técnica para conseguir utilizar o aplicativo. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
+5 & Eu achei que as várias funções do sistema estavam muito bem integradas. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
+6 & Eu achei que havia muita inconsistência neste sistema. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
+7 & Eu imagino que a maioria das pessoas aprenderia a utilizar este aplicativo muito rapidamente. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
+8 & Eu achei o aplicativo muito incômodo ou complicado de utilizar. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
+9 & Eu me senti muito confiante e seguro utilizando o aplicativo. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
+10 & Eu precisei aprender muitas coisas novas antes de conseguir utilizar o sistema. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
+\end{tabular}
+\end{table}
+
+\clearpage
+
+% ============================================================
+% APÊNDICE E: GUIA DE UTILIZAÇÃO (MANUAL DO USUÁRIO)
+% ============================================================
+\section*{APÊNDICE E -- GUIA DE UTILIZAÇÃO DO SISTEMA WEFIND (MANUAL DO USUÁRIO)}
+\addcontentsline{toc}{section}{APÊNDICE E -- GUIA DE UTILIZAÇÃO DO SISTEMA WEFIND (MANUAL DO USUÁRIO)}
+
+Este guia orienta tutores e voluntários na utilização prática do aplicativo WeFIND, detalhando as operações centrais passo a passo através de capturas de tela do sistema.
+
+\vspace{0.4cm}
+
+\subsection*{Passo 1: Autenticação e Criação de Conta}
+\noindent
+Ao abrir o aplicativo, o usuário visualiza a tela de login. Caso ainda não possua cadastro, basta tocar em \textbf{``Cadastre-se''} para registrar seu perfil com nome, e-mail e telefone WhatsApp. A Figura E1 apresenta as telas de acesso e cadastro.
+
+\vspace{0.2cm}
+\begin{minipage}{\textwidth}
+\centering
+    \textbf{Figura E1 -- Telas de Login e Cadastro de Usuário}\\[0.2cm]
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/05_manual_usuario/figura15_tela_login.jpeg}
+    \hspace{0.5cm}
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/05_manual_usuario/figura31_tela_cadastro.jpeg}\\[0.2cm]
+    {\footnotesize Fonte: Autoria própria (2026)}
+\end{minipage}
+
+\clearpage
+
+\subsection*{Passo 2: Navegação no Mapa Interativo e Aplicação de Filtros}
+\noindent
+Após o acesso, o usuário explora as ocorrências no feed ordenado por proximidade e no mapa georreferenciado por GPS, podendo filtrar os animais por espécie, porte ou raio de distância. A Figura E2 ilustra as telas de exploração.
+
+\vspace{0.2cm}
+\begin{minipage}{\textwidth}
+\centering
+    \textbf{Figura E2 -- Telas de Feed Geral e Mapa Interativo de Ocorrências}\\[0.2cm]
+    \includegraphics[height=8.0cm, keepaspectratio]{imagens/04_telas_aplicativo/figura17_tela_feed.jpeg}
+    \hspace{0.5cm}
+    \includegraphics[height=8.0cm, keepaspectratio]{imagens/05_manual_usuario/tela-mapa.jpeg}\\[0.2cm]
+    {\footnotesize Fonte: Autoria própria (2026)}
+\end{minipage}
+
+\clearpage
+
+\subsection*{Passo 3: Publicação de Nova Ocorrência (Perdido, Encontrado ou Adoção)}
+\noindent
+Para registrar um animal, o usuário aciona o botão central \textbf{``+''}, escolhe a finalidade do anúncio, insere as fotos com recorte proporcional, preenche as características físicas e marca a localização no mapa. A Figura E3 apresenta a tela de cadastro.
+
+\vspace{0.2cm}
+\begin{minipage}{\textwidth}
+\centering
+    \textbf{Figura E3 -- Tela de Cadastro de Ocorrência de Animal}\\[0.2cm]
+    \includegraphics[height=8.5cm, keepaspectratio]{imagens/04_telas_aplicativo/figura20_tela_cadastro.jpeg}\\[0.2cm]
+    {\footnotesize Fonte: Autoria própria (2026)}
+\end{minipage}
+
+\clearpage
+
+\subsection*{Passo 4: Consulta de Detalhes e Geração de Cartazes com QR Code}
+\noindent
+Ao tocar em qualquer animal no feed ou no mapa, a tela de detalhes exibe fotos em alta definição, características morfológicas e localização aproximada. O tutor pode acionar o botão \textbf{``Compartilhar Cartaz''} para gerar automaticamente flyers em formato A4, Stories (9:16) ou Feed (1:1) com código QR integrado. A Figura E4 apresenta a tela de detalhes e o modal de cartazes.
+
+\vspace{0.2cm}
+\begin{minipage}{\textwidth}
+\centering
+    \textbf{Figura E4 -- Tela de Detalhes do Animal e Modal de Compartilhamento de Cartaz}\\[0.2cm]
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/05_manual_usuario/tela-detalhes-animal-perdido.jpeg}
+    \hspace{0.5cm}
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/05_manual_usuario/tela-compartilhar-animal-perdido.jpeg}\\[0.2cm]
+    {\footnotesize Fonte: Autoria própria (2026)}
+\end{minipage}
+
+\clearpage
+
+\subsection*{Passo 5: Comunicação Direta e Segura via Chat Interno}
+\noindent
+Para alinhar o resgate de um animal avistado sem expor números pessoais a fraudes, o aplicativo disponibiliza o chat privativo interno com troca de fotos e mensagens em tempo real. A Figura E5 ilustra a tela de conversa.
+
+\vspace{0.2cm}
+\begin{minipage}{\textwidth}
+\centering
+    \textbf{Figura E5 -- Tela de Chat Privativo em Tempo Real}\\[0.2cm]
+    \includegraphics[height=8.5cm, keepaspectratio]{imagens/05_manual_usuario/tela-mensagens.jpeg}\\[0.2cm]
+    {\footnotesize Fonte: Autoria própria (2026)}
+\end{minipage}
+
+\clearpage
+
+\subsection*{Passo 6: Cadastro e Emissão do RG Pet Digital}
+\noindent
+Como medida de identificação preventiva, o tutor acessa a área de seus pets no perfil para cadastrar previamente seu animal, incluindo vacinas, fotos e histórico médico. O sistema emite a carteirinha digital oficial com código QR para identificação rápida na rua. A Figura E6 ilustra a tela do RG Pet.
+
+\vspace{0.2cm}
+\begin{minipage}{\textwidth}
+\centering
+    \textbf{Figura E6 -- Carteirinha Digital de Identificação Animal (RG Pet)}\\[0.2cm]
+    \includegraphics[height=8.5cm, keepaspectratio]{imagens/04_telas_aplicativo/figura25_tela_rg_pet.jpeg}\\[0.2cm]
+    {\footnotesize Fonte: Autoria própria (2026)}
+\end{minipage}
+
+\clearpage

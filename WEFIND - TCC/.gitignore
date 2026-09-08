@@ -1,0 +1,10 @@
+# Arquivos auxiliares e temporarios de compilacao do LaTeX
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk

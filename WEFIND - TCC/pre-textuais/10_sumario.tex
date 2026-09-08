@@ -1,0 +1,46 @@
+% ============================================================
+% CONFIGURAÇÃO DO SUMÁRIO (ABNT NBR 6027 / IFSul)
+% ============================================================
+\cleardoublepage
+
+% Garante que todas as páginas do Sumário não exibam numeração
+\pagestyle{empty}
+\thispagestyle{empty}
+\addtocontents{toc}{\protect\thispagestyle{empty}}
+
+% Título do Sumário centralizado e em caixa alta
+\renewcommand{\contentsname}{%
+    \vspace{-1.5cm}
+    \begin{center}
+        \textbf{\large SUMÁRIO}
+    \end{center}
+    \vspace{0.8cm}
+}
+
+% Adiciona linhas pontilhadas (leaders) também nas seções primárias
+\makeatletter
+\renewcommand*\l@section[2]{%
+  \ifnum \c@tocdepth >\z@
+    \addpenalty\@secpenalty
+    \addvspace{0.8em \@plus\p@}%
+    \setlength\@tempdima{1.8em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode \bfseries
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\normalfont\leaders\hbox{$\m@th
+        \mkern \@dotsep mu\hbox{.}\mkern \@dotsep
+        mu$}\hfill\nobreak\hb@xt@\@pnumwidth{\hss \bfseries #2}\par
+    \endgroup
+  \fi}
+\makeatother
+
+% Bookmark clicável para o Sumário nos visualizadores de PDF
+\pdfbookmark[0]{Sumário}{toc}
+
+% Renderização do Sumário
+\tableofcontents
+
+\clearpage

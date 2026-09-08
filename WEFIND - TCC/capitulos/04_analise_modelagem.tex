@@ -1,0 +1,219 @@
+\section{ANÁLISE E MODELAGEM}
+
+A ideia de criar a plataforma WeFIND surgiu a partir de um caso real vivido no círculo pessoal do autor, quando o desaparecimento de um animal de estimação mostrou na prática as falhas das ferramentas usadas no dia a dia. Durante as buscas, ficou clara a sobrecarga enfrentada pela tutora: a obrigação de fazer postagens diárias em vários grupos de Facebook separados por bairro, a necessidade constante de corrigir informações esquecidas nos primeiros avisos e o cansaço de compartilhar os mesmos dados repetidamente. Infelizmente o animal não foi encontrado, comprovando que a demora na comunicação e a bagunça das redes sociais diminuem muito as chances de resgate nos momentos mais urgentes.
+
+Essa realidade não é isolada. O acompanhamento contínuo de canais comunitários em várias cidades brasileiras confirmou que as publicações não possuem localização exata no mapa, somem rápido com a chegada de novos posts, não têm padrão na descrição do animal e ainda obrigam as pessoas a expor telefones particulares na internet, gerando medo de trotes e golpes.
+
+Para resolver esses problemas, o WeFIND foi projetado como um aplicativo móvel gratuito e de abrangência nacional, que reúne o cadastro, a busca e a divulgação de animais em três situações: Perdidos, Encontrados e Adoção. O ponto central do aplicativo é o mapa interativo em tempo real, permitindo ver os pets por perto e traçar rotas até o local onde foram vistos pela última vez. Além do mapa, o sistema traz um feed de publicações com fotos, características do pet (espécie, porte e cor) e gera na hora cartazes de busca com código QR para imprimir ou compartilhar. Para proteger os dados pessoais conforme a Lei Geral de Proteção de Dados (LGPD), toda a conversa é feita por um chat interno no próprio aplicativo, sem expor o telefone de ninguém.
+
+\subsection{Justificativa da Abordagem Móvel em Relação à Web}
+
+A escolha de desenvolver o WeFIND como um aplicativo de celular, em vez de um site comum de internet, foi pensada para atender à urgência e à correria do resgate de animais na rua. Um site tem a vantagem de não precisar de instalação, mas tem uma fraqueza grave: ele só funciona se a pessoa lembrar de abrir a página todo dia. Na vida real, ninguém fica o dia todo olhando um site para ver se um pet sumiu no seu bairro.
+
+Além disso, estudos da Sociedade Brasileira de Computação (SBC), como o projeto \textit{FugaPet-Rotas} (SOUZA et al., 2022), mostram que cães e gatos assustados podem andar entre 14 e 26 quilômetros em um único dia (LORD et al., 2007; GERMAIN; POULLE, 2008). Por isso, a busca precisa ser rápida e feita nas ruas, onde as pessoas estão em movimento com o celular na mão.
+
+O aplicativo móvel se mostrou a melhor opção por três razões práticas. Primeiro, pelo envio de notificações imediatas: enquanto um site fechado não avisa nada, o aplicativo no celular toca um alerta sonoro mesmo com a tela desligada no bolso, avisando a pessoa na hora se um pet sumiu a poucas quadras de onde ela está. Segundo, pelo uso fácil do GPS e da câmera: na rua ou na praça, quem vê o animal consegue marcar o ponto exato no mapa com um toque e tirar uma foto na hora, sem precisar digitar nomes de ruas. Terceiro, pelo cadastro preventivo: o tutor pode cadastrar seu animal com calma antes de qualquer imprevisto, guardando foto, vacinas e a carteirinha digital (RG Pet). Se o pet escapar, o alerta é publicado em poucos segundos porque os dados já estão salvos no celular.
+
+Para quem ainda não tem o aplicativo instalado, o WeFIND gera automaticamente cartazes com código QR para imprimir e colar em postes ou mandar no WhatsApp. Assim, qualquer pessoa na rua que apontar a câmera para o cartaz consegue ver os dados do animal e ajudar no resgate sem complicação.
+
+\subsection{Levantamento de Requisitos}
+
+Segundo Valente (2020), os requisitos funcionais definem o que o sistema deve fazer, correspondendo às funcionalidades e aos serviços que o software deve disponibilizar aos seus usuários. A partir dessa definição, o Quadro 2 relaciona os 43 requisitos funcionais estabelecidos para a plataforma WeFIND, detalhando as operações de cadastro, consulta, atualização e exclusão para cada módulo do sistema.
+
+\subsubsection{Requisitos Funcionais}
+
+\vspace{0.3cm}
+{
+\small
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{|>{\centering\arraybackslash}p{1.3cm}|>{\raggedright\arraybackslash}p{4.2cm}|>{\raggedright\arraybackslash}p{8.8cm}|}
+\hline
+\multicolumn{3}{|c|}{\textbf{Quadro 2 -- Requisitos Funcionais}} \\ \hline
+\textbf{ID} & \textbf{Nome do Requisito} & \textbf{Descrição do Comportamento Esperado} \\ \hline
+\endfirsthead
+
+\hline
+\multicolumn{3}{|c|}{\textbf{Quadro 2 -- Requisitos Funcionais (Continuação)}} \\ \hline
+\textbf{ID} & \textbf{Nome do Requisito} & \textbf{Descrição do Comportamento Esperado} \\ \hline
+\endhead
+
+\hline
+\multicolumn{3}{|r|}{\textit{Continua na próxima página}} \\ \hline
+\endfoot
+
+\hline
+\multicolumn{3}{|l|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
+\endlastfoot
+
+\textbf{RF01} & Cadastrar Usuário & Permitir a criação de conta fornecendo nome completo, e-mail, telefone e senha de acesso. \\ \hline
+\textbf{RF02} & Autenticar Usuário (Login) & Validar credenciais de acesso e iniciar sessão persistente no aplicativo via Supabase Auth. \\ \hline
+\textbf{RF03} & Redefinir Senha de Acesso & Permitir a recuperação de conta esquecida por meio de envio de link ou código seguro de redefinição. \\ \hline
+\textbf{RF04} & Consultar Perfil de Usuário & Exibir informações de cadastro, foto de perfil, dados de contato e histórico de atividades do usuário. \\ \hline
+\textbf{RF05} & Editar Dados de Perfil & Permitir a atualização de nome, imagem de exibição, número de telefone e localidade de residência. \\ \hline
+\textbf{RF06} & Encerrar Sessão (Logout) & Finalizar a sessão ativa no dispositivo móvel de forma segura, limpando dados temporários e credenciais em cache. \\ \hline
+\textbf{RF07} & Consultar Notificações & Apresentar painel com avisos sobre novos avistamentos, mensagens recebidas e alertas de publicações próximas. \\ \hline
+\textbf{RF08} & Permitir Modo Visitante & Disponibilizar acesso público inicial para consulta de publicações e navegação no mapa sem exigir login imediato. \\ \hline
+\textbf{RF09} & Cadastrar Publicação & Registrar nova publicação de animal (Perdido, Encontrado ou Adoção) com fotos, atributos físicos e descrição. \\ \hline
+\textbf{RF10} & Selecionar Localização da Publicação & Abrir mapa interativo para o usuário fixar as coordenadas geográficas exatas onde o fato ocorreu. \\ \hline
+\textbf{RF11} & Informar Tutor Terceiro & Permitir ao usuário que encontrou um animal cadastrar dados de contato de uma terceira pessoa responsável pela guarda. \\ \hline
+\textbf{RF12} & Listar Publicações no Feed & Exibir anúncios ativos ordenados dinamicamente por menor distância física em relação ao usuário e data de publicação. \\ \hline
+\textbf{RF13} & Filtrar e Buscar Publicações & Permitir filtragem simultânea por espécie, status (Perdido/Encontrado/Adoção), porte, sexo e raio de distância. \\ \hline
+\textbf{RF14} & Consultar Detalhes da Publicação & Apresentar tela completa da publicação com fotos ampliadas, características físicas e botão de contato com o autor. \\ \hline
+\textbf{RF15} & Editar Dados da Publicação & Permitir ao autor do anúncio atualizar fotos, características físicas, descrições e telefones de contato informados. \\ \hline
+\textbf{RF16} & Atualizar Status da Publicação & Permitir ao autor alterar o status da publicação para ``Reencontrado'' ou ``Adotado'', encerrando as buscas ativas. \\ \hline
+\textbf{RF17} & Excluir Publicação & Permitir ao autor remover permanentemente o anúncio cadastrado da base de dados e do mapa. \\ \hline
+\textbf{RF18} & Visualizar Animais no Mapa & Apresentar mapa interativo com marcadores coloridos identificando animais perdidos, encontrados e disponíveis para adoção. \\ \hline
+\textbf{RF19} & Pesquisar Marcadores no Mapa & Filtrar em tempo real os marcadores exibidos no mapa de acordo com termos de busca e atributos do pet. \\ \hline
+\textbf{RF20} & Ajustar Raio de Proximidade & Permitir configurar a distância de abrangência da busca geográfica no mapa (de 15 km até todo o território nacional). \\ \hline
+\textbf{RF21} & Traçar Rota GPS até o Ponto & Calcular e desenhar no mapa o trajeto viário e estimativa de deslocamento até o local onde o animal foi visto. \\ \hline
+\textbf{RF22} & Cadastrar Avistamento & Permitir a qualquer usuário relatar que avistou um pet perdido, anexando nova foto, coordenadas e descrição do local. \\ \hline
+\textbf{RF23} & Selecionar Local do Avistamento & Abrir o mapa interativo para posicionar o marcador no local exato onde o animal foi avistado em via pública. \\ \hline
+\textbf{RF24} & Listar Histórico de Avistamentos & Exibir linha do tempo na publicação com todos os relatos de avistamentos registrados pela comunidade. \\ \hline
+\textbf{RF25} & Editar Dados do Avistamento & Permitir ao autor do avistamento atualizar detalhes, fotos ou referências do relato cadastrado. \\ \hline
+\textbf{RF26} & Excluir Registro de Avistamento & Permitir a remoção de um relato de avistamento incorreto ou duplicado da linha do tempo da publicação. \\ \hline
+\textbf{RF27} & Atualizar Posição por Avistamento & Atualizar a posição do marcador principal do pet no mapa para o ponto do avistamento confirmado mais recente. \\ \hline
+\textbf{RF28} & Cadastrar Pet Preventivo (Meu Pet) & Registrar preventivamente os animais domésticos da família com nome, espécie, raça, vacinas e contatos do tutor. \\ \hline
+\textbf{RF29} & Listar Pets Cadastrados & Apresentar painel com todos os animais domésticos tutelados pelo usuário cadastrados preventivamente. \\ \hline
+\textbf{RF30} & Consultar Carteirinha RG Pet & Gerar e exibir a carteirinha digital de identidade do animal contendo foto, dados principais e código QR exclusivo. \\ \hline
+\textbf{RF31} & Editar Dados de Meu Pet & Permitir ao tutor atualizar fotos, registros veterinários, vacinas e características físicas dos animais tutelados. \\ \hline
+\textbf{RF32} & Excluir Cadastro de Meu Pet & Permitir ao tutor excluir definitivamente o registro preventivo de um animal do seu perfil. \\ \hline
+\textbf{RF33} & Publicar Pet a partir do RG Pet & Converter instantaneamente o cadastro preventivo do pet em publicação de animal perdido sem redigitar dados. \\ \hline
+\textbf{RF34} & Gerar Cartaz de Busca (Flyer) & Criar automaticamente cartaz de divulgação contendo fotografia, dados essenciais da publicação e código QR escaneável. \\ \hline
+\textbf{RF35} & Escolher Formato do Cartaz & Permitir a geração da peça gráfica em múltiplos formatos (A4 para impressão em postes, 9:16 para Stories e 1:1 para Feed). \\ \hline
+\textbf{RF36} & Compartilhar Cartaz Digital & Integrar com o compartilhamento nativo do sistema operacional para envio direto da imagem em redes e mensageiros. \\ \hline
+\textbf{RF37} & Iniciar Conversa via Chat & Abrir canal de diálogo direto e privativo entre o interessado e o autor de uma publicação específica. \\ \hline
+\textbf{RF38} & Trocar Mensagens em Tempo Real & Viabilizar o envio e recebimento instantâneo de mensagens de texto entre usuários conectados via WebSockets. \\ \hline
+\textbf{RF39} & Enviar Imagens no Chat & Permitir o envio de fotos na conversa privativa para conferência de marcas e identificação segura do animal. \\ \hline
+\textbf{RF40} & Cadastrar História Feliz & Permitir ao tutor cujo pet foi localizado publicar um relato de agradecimento com fotos no mural comunitário. \\ \hline
+\textbf{RF41} & Listar Histórias Felizes no Mural & Exibir mural público comunitário com relatos e fotos de animais que foram resgatados ou reencontrados com sucesso. \\ \hline
+\textbf{RF42} & Denunciar Publicação Suspeita & Permitir que os usuários reportem anúncios falsos, suspeitos ou com conteúdo impróprio à equipe de moderação. \\ \hline
+\textbf{RF43} & Gerenciar Denúncias e Moderação & Permitir ao administrador listar denúncias, analisar publicações reportadas, remover conteúdos impróprios e suspender contas. \\ \hline
+\end{longtable}
+}
+
+\subsubsection{Requisitos Não Funcionais}
+
+Os requisitos não funcionais definem os padrões de qualidade, segurança e desempenho do aplicativo, com base na norma ISO/IEC 25010 e na literatura de Engenharia de Software (PRESSMAN; MAXIM, 2021; SOMMERVILLE, 2019). O Quadro 3 apresenta os 14 requisitos não funcionais estabelecidos para o WeFIND.
+
+\vspace{0.3cm}
+{
+\small
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{|>{\centering\arraybackslash}p{1.4cm}|>{\raggedright\arraybackslash}p{3.8cm}|>{\raggedright\arraybackslash}p{9.2cm}|}
+\hline
+\multicolumn{3}{|c|}{\textbf{Quadro 3 -- Requisitos Não Funcionais}} \\ \hline
+\textbf{ID} & \textbf{Critério de Qualidade} & \textbf{Métrica Mensurável / Restrição Arquitetural} \\ \hline
+\endfirsthead
+
+\hline
+\multicolumn{3}{|c|}{\textbf{Quadro 3 -- Requisitos Não Funcionais (Continuação)}} \\ \hline
+\textbf{ID} & \textbf{Critério de Qualidade} & \textbf{Métrica Mensurável / Restrição Arquitetural} \\ \hline
+\endhead
+
+\hline
+\multicolumn{3}{|r|}{\textit{Continua na próxima página}} \\ \hline
+\endfoot
+
+\hline
+\multicolumn{3}{|l|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
+\endlastfoot
+
+\textbf{RNF01} & Carregamento Rápido e Cache & O feed deve abrir a partir da memória local em menos de 1,0 segundo, atualizando os dados com o servidor em segundo plano. \\ \hline
+\textbf{RNF02} & Eficiência de Rede & As consultas com fotos e dados do autor devem ser feitas de uma só vez, evitando consumo desnecessário de internet móvel. \\ \hline
+\textbf{RNF03} & Compactação de Fotos & As fotos tiradas na câmera ou enviadas da galeria devem ser reduzidas no próprio celular antes do envio para a nuvem. \\ \hline
+\textbf{RNF04} & Cálculo de Distância no Mapa & O cálculo de proximidade das publicações deve rodar com rapidez no celular sem causar travamentos na navegação. \\ \hline
+\textbf{RNF05} & Proteção de Dados (LGPD) & O endereço exato de casa nunca deve ser mostrado publicamente no mapa, exibindo apenas o bairro e a cidade. \\ \hline
+\textbf{RNF06} & Proteção para Lares Temporários & Animais em acolhimento temporário não devem ter a localização exata do protetor exibida no mapa público. \\ \hline
+\textbf{RNF07} & Acesso Seguro à Conta & As operações críticas como cadastro e login devem utilizar envio de links seguros de verificação. \\ \hline
+\textbf{RNF08} & Segurança no Banco de Dados & O banco PostgreSQL deve utilizar regras de segurança (RLS) para garantir que cada usuário só edite suas próprias publicações. \\ \hline
+\textbf{RNF09} & Criptografia na Comunicação & Todo o tráfego de informações entre o celular e os servidores deve utilizar protocolo HTTPS com criptografia segura. \\ \hline
+\textbf{RNF10} & Visualização Agradável e Temas & A interface deve oferecer modo claro e escuro (\textit{Dark Mode}), com contraste visual confortável para leitura ao sol. \\ \hline
+\textbf{RNF11} & Compatibilidade Android e iOS & O aplicativo deve rodar em dispositivos Android (versão 7.0 ou superior) e iOS (versão 13 ou superior) via React Native. \\ \hline
+\textbf{RNF12} & Adaptação a Telas & O design deve se ajustar automaticamente a diferentes tamanhos de tela, sem cortar botões ou encobrir a câmera frontal. \\ \hline
+\textbf{RNF13} & Disponibilidade do Servidor & A infraestrutura em nuvem deve garantir disponibilidade mínima de 99,5\% com cópias de segurança diárias. \\ \hline
+\textbf{RNF14} & Prazo Seguro para Adoção & Animais resgatados devem ter uma janela mínima de 7 dias de busca pelo tutor original antes de serem liberados para adoção definitiva. \\ \hline
+\end{longtable}
+}
+
+\subsection{Modelagem}
+
+A modelagem de software é uma etapa muito importante no desenvolvimento de qualquer sistema, pois ajuda a organizar visualmente a lógica, as regras e o funcionamento do aplicativo antes e durante a escrita do código. Ao criar esquemas visuais padronizados, a equipe consegue entender claramente o que o sistema deve fazer, alinhando as expectativas com os requisitos e evitando erros que poderiam atrapalhar o uso do aplicativo (GUEDES, 2018).
+
+No desenvolvimento do WeFIND, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por dois lados: o lado do comportamento, mostrado nos diagramas de casos de uso que apresentam o que cada tipo de usuário pode fazer no aplicativo; e o lado da estrutura, representado pelo diagrama de classes conceituais e pelo modelo lógico do banco de dados, que mostram como as informações são guardadas e relacionadas.
+
+\subsubsection{Diagramas de Casos de Uso}
+
+O diagrama de casos de uso serve para mostrar as funções do sistema a partir do ponto de vista de quem usa o aplicativo, apontando o que cada pessoa consegue realizar (IBM, 2021). Na prática, os casos de uso agrupam os requisitos funcionais em tarefas completas e focadas nos objetivos dos usuários.
+
+Para facilitar o entendimento, os casos de uso do WeFIND foram organizados em dois diagramas: o primeiro voltado ao usuário visitante, que navega pelo aplicativo antes de fazer login; e o segundo apresentando todas as funções do usuário conectado e as ferramentas de moderação do administrador.
+
+A Figura~\ref{fig:caso_uso_login} apresenta o diagrama de casos de uso do módulo pré-login, voltado ao ator \textit{Usuário Visitante}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.98\textwidth]{imagens/02_modelagem/figura06_caso_uso_login.png}
+    \caption{Diagrama de Casos de Uso -- Módulo Pré-Login (Usuário Visitante)}
+    \label{fig:caso_uso_login}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+Conforme apresentado na Figura~\ref{fig:caso_uso_login}, o WeFIND foi desenhado para que qualquer pessoa possa começar a ajudar na busca de animais imediatamente, sem a obrigação de criar uma conta logo no primeiro acesso. O usuário visitante pode acessar diretamente a função de visualizar histórias felizes no mural comunitário e consultar a lista de publicações de animais perdidos, encontrados e para adoção. Essa listagem conta com a extensão opcional de filtrar publicações por espécie, porte, cor ou cidade, além de permitir abrir a tela com os detalhes completos do animal. 
+
+A partir da tela de detalhes, o visitante pode visualizar os animais no mapa por proximidade e gerar cartazes de divulgação (flyers) com código QR para imprimir ou compartilhar na internet. Por fim, caso queira interagir de forma ativa no aplicativo, o visitante encontra as opções de efetuar login e realizar cadastro, contando também com a opção de redefinir senha para recuperar o acesso quando necessário.
+
+A Figura~\ref{fig:caso_uso_geral} apresenta o diagrama de casos de uso geral, que reúne as funções disponíveis para os usuários conectados e para a moderação da plataforma.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.98\textwidth]{imagens/02_modelagem/figura07_caso_uso_geral.png}
+    \caption{Diagrama de Casos de Uso -- Visão Geral do Sistema}
+    \label{fig:caso_uso_geral}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+Conforme ilustrado na Figura~\ref{fig:caso_uso_geral}, o sistema divide suas ações entre dois atores principais: o \textit{Usuário} comum e o \textit{Administrador}. O usuário conectado tem acesso a todas as funções de busca, além de poder cadastrar e gerenciar informações. Ele pode visualizar as histórias felizes e também registrar uma nova história feliz com fotos após reencontrar seu pet. 
+
+Na navegação principal, o usuário visualiza as publicações tanto na listagem quanto no mapa interativo. Ao abrir a tela de detalhes de uma publicação, abrem-se várias ações possíveis: iniciar uma conversa pelo chat interno em tempo real com o autor do anúncio, gerar cartazes de divulgação com código QR, registrar um novo avistamento informando onde o pet foi visto, atualizar os dados de um avistamento já feito ou denunciar o anúncio caso note algo errado.
+
+O usuário também tem à disposição uma área de notificações para acompanhar alertas de mensagens e avistamentos por perto, a tela de perfil para atualizar seus dados pessoais e a área de cadastro de seu próprio pet, onde pode guardar as informações preventivas do animal e gerar a carteirinha digital (RG Pet). Para publicar um animal sumido ou encontrado, o usuário utiliza a função de cadastrar e gerenciar publicações, que inclui a opção de indicar os dados de um terceiro responsável e exige obrigatoriamente a seleção do ponto exato no mapa interativo. Essa mesma marcação no mapa é exigida no momento de registrar um avistamento. 
+
+Por sua vez, o ator \textit{Administrador} é responsável pelo gerenciamento de moderação e denúncias, tendo permissão para avaliar os anúncios reportados pela comunidade, remover conteúdos falsos e suspender contas que desrespeitem as regras de convivência. A documentação completa de cada caso de uso está apresentada no Apêndice B deste trabalho.
+
+\subsubsection{Diagrama de Classes Conceituais}
+
+O diagrama de classes conceituais organiza as informações do sistema com base na orientação a objetos, mostrando as entidades principais do aplicativo, seus atributos e a forma como se relacionam. A Figura~\ref{fig:diagrama_classes} apresenta o diagrama de classes conceituais do WeFIND.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{imagens/02_modelagem/figura08_diagrama_classes.pdf}
+    \caption{Diagrama de Classes Conceituais do WeFIND}
+    \label{fig:diagrama_classes}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+Na estrutura da Figura~\ref{fig:diagrama_classes}, os dados estão organizados a partir das classes \texttt{Usuario}, \texttt{Pet} e \texttt{Publicacao}. A classe \texttt{Usuario} guarda as informações de identificação e contato (nome, email, telefone e status), ligando-se diretamente com o cadastro de animais na classe \texttt{Pet} (nome, especie, raca e cuidados), com a criação de publicações, com o registro de avistamentos, com pedidos de devolução e com o envio de denúncias.
+
+A classe \texttt{Publicacao} representa os anúncios no sistema, guardando o tipo de ocorrência, a situação, o local, a data e se o caso já foi resolvido. Toda publicação pode se associar a um \texttt{Pet} previamente cadastrado e contém de zero a seis imagens pela classe \texttt{Foto}. O anúncio também pode oferecer opcionalmente um valor de \texttt{Recompensa}, receber mensagens e comprovantes pela classe \texttt{Devolucao} e, após a localização do animal, dar origem a um registro na classe \texttt{HistoriaFeliz}.
+
+A colaboração entre as pessoas é feita pela classe \texttt{Avistamento}, que guarda a descrição e as coordenadas do local onde um animal foi visto na rua. A conversa entre quem perdeu e quem encontrou o pet ocorre por meio da ligação entre as classes \texttt{Conversa} e \texttt{Mensagem}, que reúne o texto, o horário e a confirmação de leitura no contexto de uma publicação. Por fim, a classe \texttt{Denuncia} permite o controle da comunidade sobre anúncios indevidos, registrando o motivo, a situação e o parecer da moderação.
+
+\subsubsection{Modelo Lógico do Banco de Dados}
+
+Enquanto o diagrama de classes descreve os dados sob o ponto de vista da programação orientada a objetos, o modelo lógico do banco de dados organiza as informações em tabelas no banco relacional PostgreSQL, hospedado na plataforma Supabase. A Figura~\ref{fig:modelo_logico_banco} apresenta o modelo relacional do banco de dados do WeFIND.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{imagens/02_modelagem/figura09_modelo_logico_banco.png}
+    \caption{Modelo Lógico Relacional do Banco de Dados PostgreSQL}
+    \label{fig:modelo_logico_banco}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+A estrutura do banco de dados conta com cinco tabelas integradas. A tabela \texttt{usuarios} guarda os dados de conta e perfil com chave primária única ligada ao Supabase Auth, armazenando nome, e-mail, foto, telefone, cidade, estado e data de criação.
+
+A tabela \texttt{animais} centraliza as publicações e se liga ao usuário que criou o anúncio. Ela armazena o status, nome do pet, espécie, raça, porte, cor, sexo, idade aproximada e se o animal usava coleira. Para permitir as buscas no mapa, a tabela guarda as coordenadas de latitude e longitude, além de endereço, bairro, cidade, data do ocorrido, descrição e situação de resolução.
+
+As imagens são organizadas na tabela \texttt{fotos\_animais}, que relaciona o animal cadastrado à URL da foto salva no armazenamento em nuvem, permitindo que cada anúncio tenha mais de uma foto. A tabela \texttt{avistamentos} guarda os relatos de animais vistos na rua, ligando o pet ao usuário informante com latitude, longitude, ponto de referência, descrição do local, foto e data. Por fim, a tabela \texttt{mensagens} gerencia o chat privativo, guardando o identificador do animal em discussão, o remetente, o destinatário, o texto enviado, anexo de imagem, confirmação de leitura e horário de envio.
+
+Com os requisitos levantados e os modelos do sistema e do banco de dados definidos, o Capítulo 5 apresenta o sistema WeFIND em detalhes, descrevendo as tecnologias utilizadas, a identidade visual e o funcionamento de suas principais telas.
+\clearpage
