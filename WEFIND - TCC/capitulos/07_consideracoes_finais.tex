@@ -19,14 +19,16 @@ Durante o desenvolvimento do projeto, foram enfrentados desafios técnicos impor
 \begin{itemize}
     \item \textbf{Integração de mapas e desempenho:} renderizar múltiplos marcadores simultâneos com fotos em celulares mais modestos exigiu a otimização das consultas e o uso de agrupamentos visuais no mapa;
     \item \textbf{Manipulação e envio de imagens:} garantir que fotos tiradas em alta resolução fossem reduzidas no próprio aparelho antes do upload, evitando alto consumo de internet móvel;
-    \item \textbf{Mensagens em tempo real:} sincronizar a entrega instantânea do chat privativo mantendo o isolamento de dados com regras de segurança no banco de dados.
+    \item \textbf{Mensagens em tempo real:} sincronizar a entrega instantânea do chat privativo mantendo o isolamento de dados com regras de segurança no banco de dados;
+    \item \textbf{Moderação automática de imagens por inteligência artificial:} durante o desenvolvimento, tentou-se implementar uma validação automática para que o sistema aceitasse exclusivamente fotos de animais nas publicações. Porém, os modelos de IA testados não alcançaram a precisão ideal: ora eram rígidos demais, recusando fotos reais de animais por causa do enquadramento ou da iluminação, ora eram flexíveis demais e deixavam passar fotos sem animais. Para não prejudicar a agilidade do tutor em momentos de emergência, a restrição automática foi retirada da versão atual.
 \end{itemize}
 
 \subsection{Trabalhos Futuros}
 
 Para dar continuidade à evolução da plataforma WeFIND, propõem-se as seguintes melhorias para versões futuras:
 \begin{itemize}
-    \item \textbf{Reconhecimento visual com Inteligência Artificial:} incorporar modelos de visão computacional para comparar fotos de animais perdidos e encontrados, sugerindo compatibilidade de forma automática;
+    \item \textbf{Filtro inteligente para fotos de animais:} pesquisar e incorporar modelos mais precisos de visão computacional para garantir que o sistema permita apenas o envio de imagens de animais, evitando anúncios com fotos fora do contexto sem bloquear os tutores injustamente;
+    \item \textbf{Reconhecimento visual e comparação de pets:} comparar fotografias de animais perdidos e encontrados por meio de inteligência artificial, sugerindo possíveis coincidências automaticamente;
     \item \textbf{Integração com coleiras com chip ou QR Code físico:} permitir que o QR Code gerado pelo RG Pet seja impresso em plaquinhas metálicas para coleiras;
     \item \textbf{Parcerias com clínicas veterinárias e pet shops:} criar painéis de aviso para estabelecimentos comerciais parceiros exibirem animais perdidos no bairro;
     \item \textbf{Gamificação comunitária:} expandir o sistema de pontos e medalhas para incentivar a participação constante de voluntários em resgates e lares temporários.
