@@ -1,12 +1,12 @@
 \section{ANÁLISE E MODELAGEM DO SISTEMA}
 
-A partir do diagnóstico obtido na pesquisa com a comunidade e das lacunas operacionais identificadas na análise comparativa dos sistemas similares (Capítulo 3), este capítulo formaliza a etapa de engenharia de requisitos e modelagem conceitual da aplicação móvel proposta. Conforme preconiza Valente (2020), a análise e modelagem de sistemas constituem o alicerce da engenharia de software, transformando necessidades práticas e regras de negócio em especificações estruturadas, consistentes e passíveis de implementação e verificação técnica.
+A partir do diagnóstico obtido na pesquisa com a comunidade e das lacunas operacionais identificadas na análise comparativa dos sistemas similares (Capítulo 3), este capítulo formaliza a etapa de engenharia de requisitos e modelagem conceitual da aplicação móvel proposta. Conforme preconiza Valente (2023), a análise e modelagem de sistemas constituem o alicerce da engenharia de software, transformando necessidades práticas e regras de negócio em especificações estruturadas, consistentes e passíveis de implementação e verificação técnica.
 
 Neste capítulo, são apresentados os 43 requisitos funcionais e os 14 requisitos não funcionais definidos para a solução tecnológica, acompanhados da modelagem conceitual expressa por meio de diagramas da \textit{Unified Modeling Language} (UML) e do modelo lógico de dados relacional.
 
 \subsection{Engenharia e Levantamento de Requisitos}
 
-Segundo Valente (2020), os requisitos funcionais definem o que o sistema deve fazer, correspondendo às funcionalidades e aos serviços que o software deve disponibilizar aos seus usuários. A partir dessa definição, o Quadro 2 relaciona os 43 requisitos funcionais estabelecidos para o sistema proposto, detalhando as operações de cadastro, consulta, atualização e exclusão para cada módulo da aplicação.
+Segundo Valente (2023), os requisitos funcionais definem o que o sistema deve fazer, correspondendo às funcionalidades e aos serviços que o software deve disponibilizar aos seus usuários. A partir dessa definição, o Quadro 2 relaciona os 43 requisitos funcionais estabelecidos para o sistema proposto, detalhando as operações de cadastro, consulta, atualização e exclusão para cada módulo da aplicação.
 
 \subsubsection{Requisitos Funcionais}
 
@@ -82,7 +82,7 @@ Segundo Valente (2020), os requisitos funcionais definem o que o sistema deve fa
 
 \subsubsection{Requisitos Não Funcionais}
 
-Os requisitos não funcionais definem os padrões de qualidade, segurança e desempenho do aplicativo, com base na norma ISO/IEC 25010 (ISO, 2011) e na literatura de Engenharia de Software (PRESSMAN; MAXIM, 2021; SOMMERVILLE, 2019). O Quadro 3 apresenta os 14 requisitos não funcionais estabelecidos para o sistema proposto.
+Os requisitos não funcionais definem os padrões de qualidade, segurança e desempenho do aplicativo, com base na norma ISO/IEC 25010 (ISO, 2023) e na literatura de Engenharia de Software (PRESSMAN; MAXIM, 2021; VALENTE, 2023). O Quadro 3 apresenta os 14 requisitos não funcionais estabelecidos para o sistema proposto.
 
 \vspace{0.3cm}
 {
@@ -127,13 +127,13 @@ Os requisitos não funcionais definem os padrões de qualidade, segurança e des
 
 \subsection{Modelagem Conceitual e Estrutural do Sistema}
 
-A modelagem de software é uma etapa fundamental no desenvolvimento de qualquer sistema, pois organiza visualmente a lógica, as regras e o funcionamento da aplicação antes e durante a escrita do código. Ao criar esquemas visuais padronizados, a equipe alinha as expectativas com os requisitos e evita inconsistências que poderiam comprometer a arquitetura ou a experiência de uso (GUEDES, 2018).
+A modelagem de software é uma etapa fundamental no desenvolvimento de qualquer sistema, pois organiza visualmente a lógica, as regras e o funcionamento da aplicação antes e durante a escrita do código. Ao criar esquemas visuais padronizados, a equipe alinha as expectativas com os requisitos e evita inconsistências que poderiam comprometer a arquitetura ou a experiência de uso (BEZERRA, 2021).
 
 No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por duas perspectivas complementares: a comportamental, expressa nos diagramas de casos de uso que apresentam as ações disponibilizadas a cada perfil de usuário; e a estrutural, representada pelo diagrama de classes conceituais e pelo modelo lógico do banco de dados relacional.
 
 \subsubsection{Diagramas de Casos de Uso}
 
-O diagrama de casos de uso tem por finalidade descrever as funções do sistema sob o ponto de vista de seus atores externos, mapeando o que cada perfil é capaz de executar na aplicação (IBM, 2021). É oportuno salientar que, conforme preconizam Pressman e Maxim (2021) e Sommerville (2019), a quantidade de requisitos funcionais de um sistema é naturalmente superior ao número de elipses presentes em seus diagramas de casos de uso. Enquanto os requisitos funcionais detalham de forma atômica cada operação de criação, consulta, atualização e exclusão (CRUD) e suas validações associadas, cada elipse de caso de uso sintetiza um objetivo ou macro-funcionalidade completa (como cadastrar e gerenciar publicações, buscar no mapa ou trocar mensagens privativas).
+O diagrama de casos de uso tem por finalidade descrever as funções do sistema sob o ponto de vista de seus atores externos, mapeando o que cada perfil é capaz de executar na aplicação (IBM, 2021). É oportuno salientar que, conforme preconizam Pressman e Maxim (2021) e Valente (2023), a quantidade de requisitos funcionais de um sistema é naturalmente superior ao número de elipses presentes em seus diagramas de casos de uso. Enquanto os requisitos funcionais detalham de forma atômica cada operação de criação, consulta, atualização e exclusão (CRUD) e suas validações associadas, cada elipse de caso de uso sintetiza um objetivo ou macro-funcionalidade completa (como cadastrar e gerenciar publicações, buscar no mapa ou trocar mensagens privativas).
 
 Para assegurar clareza e legibilidade aos fluxos, os casos de uso do sistema proposto foram organizados em dois diagramas: o primeiro voltado ao usuário visitante, que navega pelo aplicativo antes de realizar a autenticação; e o segundo apresentando todas as funções do usuário autenticado e as ferramentas de moderação do administrador.
 
