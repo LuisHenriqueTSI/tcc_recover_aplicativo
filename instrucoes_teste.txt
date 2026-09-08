@@ -59,10 +59,3 @@ pessoal é livre e pode ser feita diretamente na tela de cadastro.
   novas coordenadas onde o animal foi visto.
 * Chat em Tempo Real: Envio de mensagens privativas entre usuários 
   sem exposição de número telefônico.
-
-----------------------------------------------------------------------
-4. CONTATO E SUPORTE
-----------------------------------------------------------------------
-Fico à disposição para qualquer auxílio durante a instalação ou para 
-esclarecer eventuais dúvidas.
-======================================================================
