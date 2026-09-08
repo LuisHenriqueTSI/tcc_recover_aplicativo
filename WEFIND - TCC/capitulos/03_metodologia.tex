@@ -1,14 +1,23 @@
 \section{METODOLOGIA}
 
-Para definir as funções e os requisitos do WeFIND, buscou-se compreender as reais necessidades e dificuldades enfrentadas por tutores e voluntários no momento de buscar ou resgatar um animal perdido. De acordo com Sommerville (2019), o levantamento de requisitos deve partir do contato direto com os usuários e da compreensão do problema prático que o software pretende resolver, evitando que o desenvolvimento seja guiado apenas por suposições da equipe.
+A condução deste trabalho estrutura-se em duas vertentes metodológicas complementares e integradas. A primeira vertente compreende os procedimentos de pesquisa científica, responsáveis por investigar o problema real do desaparecimento de animais, diagnosticar as necessidades dos tutores e mapear as deficiências das soluções tecnológicas existentes no mercado. A segunda vertente estabelece a metodologia de engenharia de software aplicada ao desenvolvimento do aplicativo WeFIND, definindo o modelo de ciclo de vida do sistema, o método ágil de controle de tarefas e as etapas técnicas percorridas desde a concepção inicial até a validação com usuários finais.
 
-Com esse objetivo, o trabalho adotou duas etapas principais: primeiro, a realização de uma pesquisa de viabilidade com a comunidade por meio de um formulário online; segundo, a análise comparativa de outros aplicativos e sites semelhantes que já atuam nesse segmento.
+\subsection{Metodologia e Procedimentos da Pesquisa}
 
-\subsection{Pesquisa de Viabilidade com a Comunidade}
+Para fundamentar as decisões de projeto e garantir rigor acadêmico, a pesquisa foi estruturada segundo a taxonomia clássica proposta por Gil (2019) e Lakatos e Marconi (2021):
 
-A coleta de dados foi feita por meio de um questionário estruturado online criado no Google Forms, aplicado a tutores de animais, protetores independentes e voluntários da causa animal.
+\begin{itemize}
+    \item \textbf{Quanto à natureza:} classifica-se como \textbf{Pesquisa Aplicada}, uma vez que tem como meta principal gerar conhecimentos direcionados à resolução de um problema concreto e imediato da sociedade — a morosidade e a ineficiência no resgate e localização de animais de estimação —, culminando na produção de um artefato tecnológico funcional;
+    \item \textbf{Quanto à abordagem do problema:} adota uma abordagem \textbf{Quali-quantitativa} (mista). O viés quantitativo expressa-se na tabulação estatística das respostas obtidas no formulário de campo e no cálculo numérico padronizado da escala de usabilidade SUS. O viés qualitativo manifesta-se na análise compreensiva das queixas dos tutores, na avaliação ergonômica dos softwares similares e na interpretação das percepções colhidas nos testes práticos;
+    \item \textbf{Quanto aos objetivos:} caracteriza-se como \textbf{Exploratória e Descritiva}. Exploratória por promover maior familiaridade com o comportamento e os sentimentos de angústia enfrentados por quem perde um pet; descritiva por registrar, detalhar e correlacionar os canais de divulgação utilizados e as características das ferramentas concorrentes;
+    \item \textbf{Quanto aos procedimentos técnicos:} combinou-se o levantamento bibliográfico em livros, artigos e normas técnicas, o levantamento de campo (\textit{survey}) mediante questionário estruturado online com o público-alvo, e a análise de similares (\textit{benchmarking}) sobre ferramentas existentes.
+\end{itemize}
 
-O questionário buscou identificar os hábitos de busca da comunidade, quais canais são mais utilizados para divulgar animais perdidos, os principais problemas desses métodos e o interesse na utilização de um aplicativo móvel com mapa em tempo real. A Figura~\ref{fig:pesquisa_meios} apresenta os meios habituais de divulgação apontados pelos 20 participantes da pesquisa.
+\subsubsection{Pesquisa de Viabilidade com a Comunidade (Levantamento de Campo)}
+
+A coleta primária de dados foi realizada por meio de um questionário estruturado online elaborado na plataforma Google Forms, submetido a 20 participantes voluntários, incluindo tutores de animais domésticos, protetores independentes e pessoas engajadas na causa animal.
+
+O formulário buscou identificar os hábitos cotidianos de busca da comunidade, os canais digitais e analógicos mais acionados durante a perda de um pet, as dificuldades vivenciadas nesses meios e o nível de interesse na utilização de um aplicativo móvel colaborativo com geolocalização e mapa em tempo real. A Figura~\ref{fig:pesquisa_meios} apresenta os canais habituais de divulgação apontados pelos voluntários.
 
 \begin{figure}[H]
     \centering
@@ -18,11 +27,11 @@ O questionário buscou identificar os hábitos de busca da comunidade, quais can
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
 
-Os dados da Figura~\ref{fig:pesquisa_meios} mostram que a maioria das pessoas concentra suas buscas nas redes sociais convencionais (11 respostas, representando 55\%) e nos grupos de mensagens do WhatsApp (5 respostas, equivalente a 25\%). Em contrapartida, os métodos físicos tradicionais, como cartazes impressos em postes e comércios, somaram apenas 2 escolhas (10\%), enquanto a comunicação direta com vizinhos e o aviso em clínicas veterinárias e pet shops registraram apenas 1 resposta cada (5\% cada).
+Os dados da Figura~\ref{fig:pesquisa_meios} indicam que a quase totalidade dos participantes concentra seus esforços nas redes sociais convencionais (11 respostas, equivalentes a 55\%) e nos grupos de troca de mensagens do WhatsApp (5 respostas, ou 25\%). Em contrapartida, as mídias impressas tradicionais, a exemplo de cartazes fixados em postes e comércios locais, somaram apenas 2 escolhas (10\%), ao passo que a busca presencial com vizinhos e avisos em clínicas veterinárias representaram 5\% cada.
 
-Apesar de serem os meios mais populares pela facilidade de acesso, os participantes relataram grandes dificuldades no uso dessas redes comuns: as publicações se perdem muito rápido nas linhas do tempo com o excesso de novas mensagens, não existe separação ou busca por bairros no mapa e as informações importantes acabam dispersas em conversas paralelas, atrasando o resgate do animal.
+Apesar da ampla utilização das redes sociais genéricas, os participantes relataram obstáculos críticos: as postagens perdem alcance aceleradamente devido ao fluxo contínuo de novas publicações no feed, não há filtros espaciais que limitem o aviso ao bairro do desaparecimento e dados cruciais dispersam-se em comentários paralelos.
 
-Em seguida, perguntou-se aos participantes se eles teriam interesse em utilizar um aplicativo voltado especificamente para essa finalidade, integrando mapa interativo e filtros por proximidade. A Figura~\ref{fig:interesse_mapa} apresenta a resposta do público.
+Na sequência, avaliou-se o interesse dos voluntários em relação a uma aplicação móvel dedicada que integrasse mapa georreferenciado por GPS e filtros de proximidade. O resultado está ilustrado na Figura~\ref{fig:interesse_mapa}.
 
 \begin{figure}[H]
     \centering
@@ -32,17 +41,13 @@ Em seguida, perguntou-se aos participantes se eles teriam interesse em utilizar 
     \fonte{Dados da pesquisa (2026)}
 \end{figure}
 
-As respostas da Figura~\ref{fig:interesse_mapa} comprovam uma aceitação quase unânime: os participantes demonstraram forte interesse no uso de mapas no celular para localizar e divulgar animais. Esse resultado confirma que existe uma demanda real por uma ferramenta focada e que resolva os problemas dos canais comuns. A relação completa das perguntas do questionário consta no Apêndice D deste trabalho.
+A aceitação verificada na Figura~\ref{fig:interesse_mapa} foi amplamente favorável, com a esmagadora maioria dos respondentes classificando como alta ou essencial a necessidade de uma ferramenta móvel com mapa interativo. O resultado evidenciou a carência de uma solução tecnológica gratuita focada exclusivamente na causa do reencontro.
 
-\subsection{Sistemas Similares}
+\subsubsection{Análise de Sistemas Similares (Benchmarking)}
 
-Com o objetivo de mapear as soluções existentes e identificar oportunidades de melhoria no projeto, realizou-se uma análise de similares orientada às diretrizes de usabilidade e experiência do usuário propostas por Amstel (2024). Essa investigação avaliou como as principais ferramentas do segmento organizam a busca, a divulgação e o contato entre as pessoas durante a perda de animais de estimação.
+Visando mapear o estado da arte e identificar deficiências a serem superadas no projeto do WeFIND, realizou-se uma análise comparativa orientada aos critérios de usabilidade e experiência do usuário preconizados por Amstel (2024). Foram analisadas as três principais plataformas de referência no segmento: \textit{Viu Meu Pet}, \textit{PawBoost} e \textit{AlertPet}.
 
-Foram selecionadas três soluções de destaque com propostas semelhantes: \textit{Viu Meu Pet} (VIU MEU PET, 2026), \textit{PawBoost} (PAWBOOST, 2026) e \textit{AlertPet} (ALERTPET, 2026).
-
-\subsubsection{Viu Meu Pet}
-
-O \textit{Viu Meu Pet} (VIU MEU PET, 2026) é uma das plataformas pioneiras no Brasil voltada à localização de animais perdidos, oferecendo tanto um portal web quanto um aplicativo para celular. A interface inicial do sistema é apresentada na Figura~\ref{fig:viumeupet}.
+\paragraph{Viu Meu Pet:} Trata-se de uma das plataformas brasileiras mais difundidas na área, oferecendo portal web e aplicativo para celular (Figura~\ref{fig:viumeupet}). 
 
 \begin{figure}[H]
     \centering
@@ -54,9 +59,7 @@ O \textit{Viu Meu Pet} (VIU MEU PET, 2026) é uma das plataformas pioneiras no B
 
 Como ponto positivo, o sistema possui grande visibilidade comunitária no Brasil e grande volume de acessos. A plataforma disponibiliza recursos gratuitos como painel de busca, gerador de imagens para redes sociais, gerador de cartazes com código QR para impressão e cruzamento automático de anúncios por inteligência artificial (\textit{match}). Além disso, oferece serviços pagos opcionais de destaque no portal, campanhas patrocinadas no Instagram e Facebook, e contratação de carro de som regional. No entanto, sua navegação é centrada em listagens estáticas separadas por estado e cidade, sem integração fluida com mapa georreferenciado em tempo real por GPS. Outro problema crítico reside na comunicação: a plataforma não oferece chat interno privativo, obrigando os tutores a deixarem seus telefones expostos em anúncios públicos, gerando vulnerabilidade a golpes e trotes.
 
-\subsubsection{PawBoost}
-
-O \textit{PawBoost} (PAWBOOST, 2026) é uma das maiores plataformas internacionais de busca de animais, com forte atuação nos Estados Unidos e em outros países de língua inglesa, disponibilizando acesso via portal web e aplicativo para dispositivos Android e iOS. A interface da ferramenta pode ser visualizada na Figura~\ref{fig:pawboost}.
+\paragraph{PawBoost:} Plataforma internacional com mais de sete milhões de membros cadastrados em sua rede de voluntários (\textit{Rescue Squad}™), acessível via web e aplicativos para Android e iOS (Figura~\ref{fig:pawboost}).
 
 \begin{figure}[H]
     \centering
@@ -68,9 +71,7 @@ O \textit{PawBoost} (PAWBOOST, 2026) é uma das maiores plataformas internaciona
 
 Entre os pontos fortes da plataforma, destacam-se a publicação automática em páginas locais do Facebook, o envio de alertas por e-mail e notificações push para sua ampla rede de voluntários cadastrados (\textit{Rescue Squad}™), além de gerador de cartazes de alta qualidade para impressão. No entanto, a ferramenta apresenta barreiras para uso no Brasil: sua segmentação territorial é desenhada para códigos postais norte-americanos (\textit{ZIP Code}), e os planos \textit{Premium} de impulsionamento em redes sociais demandam cobrança em dólar, inviabilizando o acesso financeiro para grande parcela dos tutores brasileiros.
 
-\subsubsection{AlertPet}
-
-O \textit{AlertPet} (ALERTPET, 2026) é uma iniciativa nacional estruturada como um portal web que opera sob o conceito de ``carro de som digital'', promovendo a divulgação regional patrocinada de animais desaparecidos. A interface da página principal é ilustrada na Figura~\ref{fig:alertpet}.
+\paragraph{AlertPet:} Iniciativa nacional estruturada como portal web que atua no modelo de ``carro de som digital'', intermediando campanhas patrocinadas de busca regional (Figura~\ref{fig:alertpet}).
 
 \begin{figure}[H]
     \centering
@@ -81,12 +82,6 @@ O \textit{AlertPet} (ALERTPET, 2026) é uma iniciativa nacional estruturada como
 \end{figure}
 
 A proposta central do \textit{AlertPet} consiste na criação profissional de cartazes digitais e na veiculação de campanhas pagas altamente geolocalizadas em redes sociais, alcançando moradores, pet shops e estabelecimentos no raio onde o animal desapareceu, com envio de relatórios de métricas e suporte humanizado. Contudo, operando prioritariamente como um serviço comercial de mídia paga, a ferramenta não disponibiliza um aplicativo móvel integrado, não conta com mapa interativo gratuito com GPS em tempo real e condiciona o alcance das buscas à contratação de pacotes pagos.
-
-Ao pesquisar outros aplicativos em lojas oficiais como a Google Play Store, encontram-se softwares genéricos com muitos downloads. A análise prática dessas ferramentas mostrou falhas graves de facilidade de uso: telas poluídas e desorganizadas, botões confusos e problemas de tradução, misturando textos em português e inglês. Isso demonstra que mesmo nos aplicativos existentes, a experiência de uso e o design ainda são pouco cuidados.
-
-\subsection{Análise Comparativa dos Sistemas Similares}
-
-A análise prática das ferramentas existentes mostrou que, embora existam alternativas no mercado, nenhuma reúne todas as funções essenciais para um resgate rápido, seguro e gratuito. O Quadro 1 sintetiza as características dos sistemas similares estudados.
 
 \vspace{0.3cm}
 \begin{table}[H]
@@ -105,5 +100,46 @@ A análise prática das ferramentas existentes mostrou que, embora existam alter
 \fonte{Autoria própria (2026)}
 \end{table}
 
-A comparação do Quadro 1, somada aos dados obtidos na pesquisa com a comunidade, comprovou que existe uma necessidade real de uma ferramenta móvel gratuita que una mapa com GPS em tempo real, proteção da privacidade dos tutores com chat interno e geração prática de cartazes de busca. Com base nessas descobertas, o Capítulo 4 apresenta a análise detalhada e a modelagem do sistema WeFIND, especificando seus requisitos e diagramas de funcionamento.
+\subsection{Metodologia de Desenvolvimento de Software}
+
+A construção do WeFIND exigiu uma metodologia de desenvolvimento ágil capaz de transformar os achados da pesquisa em um produto funcional, estável e centrado no usuário. Conforme salientam Pressman e Maxim (2021) e Sommerville (2019), o desenvolvimento moderno de aplicações para dispositivos móveis demanda flexibilidade para acomodar mudanças e entregas graduais de valor, afastando-se de modelos lineares rígidos que postergam a validação para o final do projeto.
+
+\subsubsection{Abordagem Ágil e Ciclo de Vida Incremental}
+
+Adotou-se o modelo de ciclo de vida incremental e iterativo (VALENTE, 2020). Nesse paradigma, o software não é desenvolvido em um único bloco monolítico; ao invés disso, o sistema é concebido, projetado, codificado e validado em incrementos sucessivos de complexidade. 
+
+O primeiro incremento concentrou-se na infraestrutura de segurança e persistência (telas de autenticação, cadastro e sessão no Supabase Auth). O segundo incremento estabeleceu o núcleo geográfico da aplicação (feed de publicações e mapa interativo com GPS via Expo Location). O terceiro incremento abrangeu a criação e edição de ocorrências de animais com upload otimizado de fotografias. O quarto incremento incorporou os recursos de comunicação privativa (chat em tempo real via WebSockets). Por fim, o quinto incremento integrou as ferramentas complementares de utilidade pública: a geração instantânea de cartazes em múltiplos formatos com QR Code e a carteirinha digital de identificação preventiva (RG Pet).
+
+\subsubsection{O Método Visual Kanban e a Gestão de Tarefas no Trello}
+
+Para assegurar o ritmo contínuo de produção e a rastreabilidade das atividades, adotou-se o método visual \textbf{Kanban}, operacionalizado através da plataforma de gestão de projetos \textbf{Trello} (TRELLO, 2026).
+
+O Kanban apoia-se em três princípios fundamentais que guiaram a rotina de desenvolvimento do WeFIND:
+\begin{enumerate}
+    \item \textbf{Visualização do fluxo de trabalho:} cada funcionalidade, bug ou melhoria visual foi documentado na forma de cartões descritivos contendo requisitos claros, critérios de aceitação e referências a componentes de interface;
+    \item \textbf{Limitação do trabalho em progresso (\textit{Work in Progress} -- WIP):} restringiu-se a quantidade de tarefas em andamento simultâneo, assegurando foco absoluto na conclusão e validação de cada módulo antes da abertura de novas demandas;
+    \item \textbf{Gestão e melhoria do fluxo contínuo:} monitoramento constante das passagens de estágio para mitigar retrabalhos técnicos e garantir a aderência ao cronograma acadêmico.
+\end{enumerate}
+
+O quadro Kanban no Trello foi estruturado em cinco listas sequenciais:
+\begin{itemize}
+    \item \textbf{Backlog Geral:} repositório inicial contendo o conjunto de requisitos funcionais e técnicos extraídos da pesquisa de campo e do estudo de similares;
+    \item \textbf{A Fazer (\textit{To Do}):} tarefas devidamente refinadas e priorizadas para execução no ciclo de trabalho imediato;
+    \item \textbf{Em Andamento (\textit{In Progress}):} tarefas sob desenvolvimento ativo de código-fonte no VS Code ou modelagem de artefatos;
+    \item \textbf{Em Testes e Revisão (\textit{Review / Testing}):} código finalizado submetido a testes funcionais de interface, validação em aparelhos reais e inspeção de regras de negócio;
+    \item \textbf{Concluído (\textit{Done}):} funcionalidades totalmente finalizadas, validadas, integradas ao ecossistema e com código devidamente versionado no GitHub.
+\end{itemize}
+
+\subsubsection{Etapas do Processo de Desenvolvimento}
+
+O projeto percorreu quatro etapas sistemáticas ao longo do ciclo de desenvolvimento:
+
+\begin{enumerate}
+    \item \textbf{Etapa 1: Concepção e Elicitação de Requisitos:} consolidação dos dados da pesquisa de campo e análise de concorrentes, culminando na definição detalhada de 43 requisitos funcionais e 14 requisitos não funcionais formais (apresentados no Capítulo 4);
+    \item \textbf{Etapa 2: Modelagem Conceitual e Prototipação de Interface:} elaboração dos diagramas de Casos de Uso e Classes na ferramenta Astah UML, projeto do modelo relacional no PostgreSQL e desenho iterativo de todas as telas, componentes e paleta cromática de alta fidelidade no Figma;
+    \item \textbf{Etapa 3: Implementação e Codificação Modular:} escrita modular do código-fonte no Visual Studio Code, adotando TypeScript, React Native e Expo para a camada móvel cliente, e Supabase (BaaS) para autenticação, banco de dados e armazenamento em nuvem, com versionamento colaborativo via Git e GitHub (apresentados no Capítulo 5);
+    \item \textbf{Etapa 4: Testes, Validação e Avaliação de Usabilidade:} execução de testes funcionais de caixa-preta para conferência de regras de negócio e aplicação prática do protocolo internacional \textit{System Usability Scale} (SUS) com 20 voluntários (apresentados no Capítulo 6).
+\end{enumerate}
+
+Essa sólida articulação entre pesquisa empírica, governança ágil com Kanban e engenharia de software forneceu a base para o desenvolvimento do WeFIND. O Capítulo 4 apresenta a análise técnica detalhada e a modelagem formal dos requisitos e diagramas do sistema.
 \clearpage
