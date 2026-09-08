@@ -1,6 +1,6 @@
 \section{METODOLOGIA}
 
-A condução deste trabalho estrutura-se em duas vertentes metodológicas complementares e integradas. A primeira vertente compreende os procedimentos de pesquisa científica, responsáveis por investigar o problema real do desaparecimento de animais, diagnosticar as necessidades dos tutores e mapear as deficiências das soluções tecnológicas existentes no mercado. A segunda vertente estabelece a metodologia de engenharia de software aplicada ao desenvolvimento do aplicativo WeFIND, definindo o modelo de ciclo de vida do sistema, o método ágil de controle de tarefas e as etapas técnicas percorridas desde a concepção inicial até a validação com usuários finais.
+A condução deste trabalho estrutura-se em duas vertentes metodológicas complementares e integradas. A primeira vertente compreende os procedimentos de pesquisa científica, responsáveis por investigar o problema real do desaparecimento de animais, diagnosticar as necessidades dos tutores e mapear as deficiências das soluções tecnológicas existentes no mercado. A segunda vertente estabelece a metodologia de engenharia de software aplicada ao desenvolvimento da aplicação móvel proposta, definindo o modelo de ciclo de vida do sistema, o método ágil de controle de tarefas e as etapas técnicas percorridas desde a concepção inicial até a validação com usuários finais.
 
 \subsection{Metodologia e Procedimentos da Pesquisa}
 
@@ -45,7 +45,7 @@ A aceitação verificada na Figura~\ref{fig:interesse_mapa} foi amplamente favor
 
 \subsubsection{Análise de Sistemas Similares (Benchmarking)}
 
-Visando mapear o estado da arte e identificar deficiências a serem superadas no projeto do WeFIND, realizou-se uma análise comparativa orientada aos critérios de usabilidade e experiência do usuário preconizados por Amstel (2024). Foram analisadas as três principais plataformas de referência no segmento: \textit{Viu Meu Pet}, \textit{PawBoost} e \textit{AlertPet}.
+Visando mapear o estado da arte e identificar deficiências a serem superadas no projeto da solução proposta, realizou-se uma análise comparativa orientada aos critérios de usabilidade e experiência do usuário preconizados por Amstel (2024). Foram analisadas as três principais plataformas de referência no segmento: \textit{Viu Meu Pet}, \textit{PawBoost} e \textit{AlertPet}.
 
 \paragraph{Viu Meu Pet:} Trata-se de uma das plataformas brasileiras mais difundidas na área, oferecendo portal web e aplicativo para celular (Figura~\ref{fig:viumeupet}). 
 
@@ -102,19 +102,19 @@ A proposta central do \textit{AlertPet} consiste na criação profissional de ca
 
 \subsection{Metodologia de Desenvolvimento de Software}
 
-A construção do WeFIND exigiu uma metodologia de desenvolvimento ágil capaz de transformar os achados da pesquisa em um produto funcional, estável e centrado no usuário. Conforme salientam Pressman e Maxim (2021) e Sommerville (2019), o desenvolvimento moderno de aplicações para dispositivos móveis demanda flexibilidade para acomodar mudanças e entregas graduais de valor, afastando-se de modelos lineares rígidos que postergam a validação para o final do projeto.
+A construção da aplicação proposta exigiu uma metodologia de desenvolvimento ágil capaz de transformar os achados da pesquisa em um produto funcional, estável e centrado no usuário. Conforme salientam Pressman e Maxim (2021) e Sommerville (2019), o desenvolvimento moderno de aplicações para dispositivos móveis demanda flexibilidade para acomodar mudanças e entregas graduais de valor, afastando-se de modelos lineares rígidos que postergam a validação para o final do projeto.
 
 \subsubsection{Abordagem Ágil e Ciclo de Vida Incremental}
 
 Adotou-se o modelo de ciclo de vida incremental e iterativo (VALENTE, 2020). Nesse paradigma, o software não é desenvolvido em um único bloco monolítico; ao invés disso, o sistema é concebido, projetado, codificado e validado em incrementos sucessivos de complexidade. 
 
-O primeiro incremento concentrou-se na infraestrutura de segurança e persistência (telas de autenticação, cadastro e sessão no Supabase Auth). O segundo incremento estabeleceu o núcleo geográfico da aplicação (feed de publicações e mapa interativo com GPS via Expo Location). O terceiro incremento abrangeu a criação e edição de ocorrências de animais com upload otimizado de fotografias. O quarto incremento incorporou os recursos de comunicação privativa (chat em tempo real via WebSockets). Por fim, o quinto incremento integrou as ferramentas complementares de utilidade pública: a geração instantânea de cartazes em múltiplos formatos com QR Code e a carteirinha digital de identificação preventiva (RG Pet).
+O primeiro incremento concentrou-se na infraestrutura de segurança e persistência (telas de autenticação, cadastro e sessão no Supabase Auth). O segundo incremento estabeleceu o núcleo geográfico da aplicação (feed de publicações e mapa interativo com GPS via Expo Location). O terceiro incremento abrangeu a criação e edição de ocorrências de animais com upload otimizado de fotografias. O quarto incremento incorporou os recursos de comunicação privativa (chat em tempo real via WebSockets). Por fim, o quinto incremento integrou recursos complementares de utilidade pública: a geração de cartazes digitais com código QR para impressão e a emissão de carteirinha digital com código QR para identificação preventiva do animal.
 
 \subsubsection{O Método Visual Kanban e a Gestão de Tarefas no Trello}
 
 Para assegurar o ritmo contínuo de produção e a rastreabilidade das atividades, adotou-se o método visual \textbf{Kanban}, operacionalizado através da plataforma de gestão de projetos \textbf{Trello} (TRELLO, 2026).
 
-O Kanban apoia-se em três princípios fundamentais que guiaram a rotina de desenvolvimento do WeFIND:
+O Kanban apoia-se em três princípios fundamentais que guiaram a rotina de desenvolvimento do aplicativo:
 \begin{enumerate}
     \item \textbf{Visualização do fluxo de trabalho:} cada funcionalidade, bug ou melhoria visual foi documentado na forma de cartões descritivos contendo requisitos claros, critérios de aceitação e referências a componentes de interface;
     \item \textbf{Limitação do trabalho em progresso (\textit{Work in Progress} -- WIP):} restringiu-se a quantidade de tarefas em andamento simultâneo, assegurando foco absoluto na conclusão e validação de cada módulo antes da abertura de novas demandas;
@@ -141,5 +141,5 @@ O projeto percorreu quatro etapas sistemáticas ao longo do ciclo de desenvolvim
     \item \textbf{Etapa 4: Testes, Validação e Avaliação de Usabilidade:} execução de testes funcionais de caixa-preta para conferência de regras de negócio e aplicação prática do protocolo internacional \textit{System Usability Scale} (SUS) com 20 voluntários (apresentados no Capítulo 6).
 \end{enumerate}
 
-Essa sólida articulação entre pesquisa empírica, governança ágil com Kanban e engenharia de software forneceu a base para o desenvolvimento do WeFIND. O Capítulo 4 apresenta a análise técnica detalhada e a modelagem formal dos requisitos e diagramas do sistema.
+Essa sólida articulação entre pesquisa empírica, governança ágil com Kanban e engenharia de software forneceu a base para o desenvolvimento da solução tecnológica proposta. O Capítulo 4 apresenta a análise técnica detalhada e a modelagem formal dos requisitos e diagramas do sistema.
 \clearpage

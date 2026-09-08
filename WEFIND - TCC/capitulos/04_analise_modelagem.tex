@@ -1,24 +1,12 @@
-\section{ANÁLISE E MODELAGEM}
+\section{ANÁLISE E MODELAGEM DO SISTEMA}
 
-A ideia de criar a plataforma WeFIND surgiu a partir de um caso real vivido no círculo pessoal do autor, quando o desaparecimento de um animal de estimação mostrou na prática as falhas das ferramentas usadas no dia a dia. Durante as buscas, ficou clara a sobrecarga enfrentada pela tutora: a obrigação de fazer postagens diárias em vários grupos de Facebook separados por bairro, a necessidade constante de corrigir informações esquecidas nos primeiros avisos e o cansaço de compartilhar os mesmos dados repetidamente. Infelizmente o animal não foi encontrado, comprovando que a demora na comunicação e a bagunça das redes sociais diminuem muito as chances de resgate nos momentos mais urgentes.
+A partir do diagnóstico obtido na pesquisa com a comunidade e das lacunas operacionais identificadas na análise comparativa dos sistemas similares (Capítulo 3), este capítulo formaliza a etapa de engenharia de requisitos e modelagem conceitual da aplicação móvel proposta. Conforme preconiza Valente (2020), a análise e modelagem de sistemas constituem o alicerce da engenharia de software, transformando necessidades práticas e regras de negócio em especificações estruturadas, consistentes e passíveis de implementação e verificação técnica.
 
-Essa realidade não é isolada. O acompanhamento contínuo de canais comunitários em várias cidades brasileiras confirmou que as publicações não possuem localização exata no mapa, somem rápido com a chegada de novos posts, não têm padrão na descrição do animal e ainda obrigam as pessoas a expor telefones particulares na internet, gerando medo de trotes e golpes.
+Neste capítulo, são apresentados os 43 requisitos funcionais e os 14 requisitos não funcionais definidos para a solução tecnológica, acompanhados da modelagem conceitual expressa por meio de diagramas da \textit{Unified Modeling Language} (UML) e do modelo lógico de dados relacional.
 
-Para resolver esses problemas, o WeFIND foi projetado como um aplicativo móvel gratuito e de abrangência nacional, que reúne o cadastro, a busca e a divulgação de animais em três situações: Perdidos, Encontrados e Adoção. O ponto central do aplicativo é o mapa interativo em tempo real, permitindo ver os pets por perto e traçar rotas até o local onde foram vistos pela última vez. Além do mapa, o sistema traz um feed de publicações com fotos, características do pet (espécie, porte e cor) e gera na hora cartazes de busca com código QR para imprimir ou compartilhar. Para proteger os dados pessoais conforme a Lei Geral de Proteção de Dados (LGPD), toda a conversa é feita por um chat interno no próprio aplicativo, sem expor o telefone de ninguém.
+\subsection{Engenharia e Levantamento de Requisitos}
 
-\subsection{Justificativa da Abordagem Móvel em Relação à Web}
-
-A escolha de desenvolver o WeFIND como um aplicativo de celular, em vez de um site comum de internet, foi pensada para atender à urgência e à correria do resgate de animais na rua. Um site tem a vantagem de não precisar de instalação, mas tem uma fraqueza grave: ele só funciona se a pessoa lembrar de abrir a página todo dia. Na vida real, ninguém fica o dia todo olhando um site para ver se um pet sumiu no seu bairro.
-
-Além disso, estudos da Sociedade Brasileira de Computação (SBC), como o projeto \textit{FugaPet-Rotas} (SOUZA et al., 2022), mostram que cães e gatos assustados podem andar entre 14 e 26 quilômetros em um único dia (LORD et al., 2007; GERMAIN; POULLE, 2008). Por isso, a busca precisa ser rápida e feita nas ruas, onde as pessoas estão em movimento com o celular na mão.
-
-O aplicativo móvel se mostrou a melhor opção por três razões práticas. Primeiro, pelo envio de notificações imediatas: enquanto um site fechado não avisa nada, o aplicativo no celular toca um alerta sonoro mesmo com a tela desligada no bolso, avisando a pessoa na hora se um pet sumiu a poucas quadras de onde ela está. Segundo, pelo uso fácil do GPS e da câmera: na rua ou na praça, quem vê o animal consegue marcar o ponto exato no mapa com um toque e tirar uma foto na hora, sem precisar digitar nomes de ruas. Terceiro, pelo cadastro preventivo: o tutor pode cadastrar seu animal com calma antes de qualquer imprevisto, guardando foto, vacinas e a carteirinha digital (RG Pet). Se o pet escapar, o alerta é publicado em poucos segundos porque os dados já estão salvos no celular.
-
-Para quem ainda não tem o aplicativo instalado, o WeFIND gera automaticamente cartazes com código QR para imprimir e colar em postes ou mandar no WhatsApp. Assim, qualquer pessoa na rua que apontar a câmera para o cartaz consegue ver os dados do animal e ajudar no resgate sem complicação.
-
-\subsection{Levantamento de Requisitos}
-
-Segundo Valente (2020), os requisitos funcionais definem o que o sistema deve fazer, correspondendo às funcionalidades e aos serviços que o software deve disponibilizar aos seus usuários. A partir dessa definição, o Quadro 2 relaciona os 43 requisitos funcionais estabelecidos para a plataforma WeFIND, detalhando as operações de cadastro, consulta, atualização e exclusão para cada módulo do sistema.
+Segundo Valente (2020), os requisitos funcionais definem o que o sistema deve fazer, correspondendo às funcionalidades e aos serviços que o software deve disponibilizar aos seus usuários. A partir dessa definição, o Quadro 2 relaciona os 43 requisitos funcionais estabelecidos para o sistema proposto, detalhando as operações de cadastro, consulta, atualização e exclusão para cada módulo da aplicação.
 
 \subsubsection{Requisitos Funcionais}
 
@@ -94,7 +82,7 @@ Segundo Valente (2020), os requisitos funcionais definem o que o sistema deve fa
 
 \subsubsection{Requisitos Não Funcionais}
 
-Os requisitos não funcionais definem os padrões de qualidade, segurança e desempenho do aplicativo, com base na norma ISO/IEC 25010 e na literatura de Engenharia de Software (PRESSMAN; MAXIM, 2021; SOMMERVILLE, 2019). O Quadro 3 apresenta os 14 requisitos não funcionais estabelecidos para o WeFIND.
+Os requisitos não funcionais definem os padrões de qualidade, segurança e desempenho do aplicativo, com base na norma ISO/IEC 25010 e na literatura de Engenharia de Software (PRESSMAN; MAXIM, 2021; SOMMERVILLE, 2019). O Quadro 3 apresenta os 14 requisitos não funcionais estabelecidos para o sistema proposto.
 
 \vspace{0.3cm}
 {
@@ -141,13 +129,13 @@ Os requisitos não funcionais definem os padrões de qualidade, segurança e des
 
 A modelagem de software é uma etapa muito importante no desenvolvimento de qualquer sistema, pois ajuda a organizar visualmente a lógica, as regras e o funcionamento do aplicativo antes e durante a escrita do código. Ao criar esquemas visuais padronizados, a equipe consegue entender claramente o que o sistema deve fazer, alinhando as expectativas com os requisitos e evitando erros que poderiam atrapalhar o uso do aplicativo (GUEDES, 2018).
 
-No desenvolvimento do WeFIND, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por dois lados: o lado do comportamento, mostrado nos diagramas de casos de uso que apresentam o que cada tipo de usuário pode fazer no aplicativo; e o lado da estrutura, representado pelo diagrama de classes conceituais e pelo modelo lógico do banco de dados, que mostram como as informações são guardadas e relacionadas.
+No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por dois lados: o lado do comportamento, mostrado nos diagramas de casos de uso que apresentam o que cada tipo de usuário pode fazer no aplicativo; e o lado da estrutura, representado pelo diagrama de classes conceituais e pelo modelo lógico do banco de dados, que mostram como as informações são guardadas e relacionadas.
 
 \subsubsection{Diagramas de Casos de Uso}
 
 O diagrama de casos de uso serve para mostrar as funções do sistema a partir do ponto de vista de quem usa o aplicativo, apontando o que cada pessoa consegue realizar (IBM, 2021). Na prática, os casos de uso agrupam os requisitos funcionais em tarefas completas e focadas nos objetivos dos usuários.
 
-Para facilitar o entendimento, os casos de uso do WeFIND foram organizados em dois diagramas: o primeiro voltado ao usuário visitante, que navega pelo aplicativo antes de fazer login; e o segundo apresentando todas as funções do usuário conectado e as ferramentas de moderação do administrador.
+Para facilitar o entendimento, os casos de uso do sistema proposto foram organizados em dois diagramas: o primeiro voltado ao usuário visitante, que navega pelo aplicativo antes de realizar a autenticação; e o segundo apresentando todas as funções do usuário autenticado e as ferramentas de moderação do administrador.
 
 A Figura~\ref{fig:caso_uso_login} apresenta o diagrama de casos de uso do módulo pré-login, voltado ao ator \textit{Usuário Visitante}.
 
@@ -159,7 +147,7 @@ A Figura~\ref{fig:caso_uso_login} apresenta o diagrama de casos de uso do módul
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-Conforme apresentado na Figura~\ref{fig:caso_uso_login}, o WeFIND foi desenhado para que qualquer pessoa possa começar a ajudar na busca de animais imediatamente, sem a obrigação de criar uma conta logo no primeiro acesso. O usuário visitante pode acessar diretamente a função de visualizar histórias felizes no mural comunitário e consultar a lista de publicações de animais perdidos, encontrados e para adoção. Essa listagem conta com a extensão opcional de filtrar publicações por espécie, porte, cor ou cidade, além de permitir abrir a tela com os detalhes completos do animal. 
+Conforme apresentado na Figura~\ref{fig:caso_uso_login}, o sistema proposto foi desenhado para que qualquer pessoa possa começar a ajudar na busca de animais imediatamente, sem a obrigação de criar uma conta logo no primeiro acesso. O usuário visitante pode acessar diretamente a função de visualizar histórias felizes no mural comunitário e consultar a lista de publicações de animais perdidos, encontrados e para adoção. Essa listagem conta com a extensão opcional de filtrar publicações por espécie, porte, cor ou cidade, além de permitir abrir a tela com os detalhes completos do animal. 
 
 A partir da tela de detalhes, o visitante pode visualizar os animais no mapa por proximidade e gerar cartazes de divulgação (flyers) com código QR para imprimir ou compartilhar na internet. Por fim, caso queira interagir de forma ativa no aplicativo, o visitante encontra as opções de efetuar login e realizar cadastro, contando também com a opção de redefinir senha para recuperar o acesso quando necessário.
 
@@ -183,12 +171,12 @@ Por sua vez, o ator \textit{Administrador} é responsável pelo gerenciamento de
 
 \subsubsection{Diagrama de Classes Conceituais}
 
-O diagrama de classes conceituais organiza as informações do sistema com base na orientação a objetos, mostrando as entidades principais do aplicativo, seus atributos e a forma como se relacionam. A Figura~\ref{fig:diagrama_classes} apresenta o diagrama de classes conceituais do WeFIND.
+O diagrama de classes conceituais organiza as informações do sistema com base na orientação a objetos, mostrando as entidades principais do aplicativo, seus atributos e a forma como se relacionam. A Figura~\ref{fig:diagrama_classes} apresenta o diagrama de classes conceituais da aplicação proposta.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\textwidth]{imagens/02_modelagem/figura08_diagrama_classes.pdf}
-    \caption{Diagrama de Classes Conceituais do WeFIND}
+    \caption{Diagrama de Classes Conceitual do Sistema Proposto}
     \label{fig:diagrama_classes}
     \fonte{Autoria própria (2026)}
 \end{figure}
@@ -201,7 +189,7 @@ A colaboração entre as pessoas é feita pela classe \texttt{Avistamento}, que 
 
 \subsubsection{Modelo Lógico do Banco de Dados}
 
-Enquanto o diagrama de classes descreve os dados sob o ponto de vista da programação orientada a objetos, o modelo lógico do banco de dados organiza as informações em tabelas no banco relacional PostgreSQL, hospedado na plataforma Supabase. A Figura~\ref{fig:modelo_logico_banco} apresenta o modelo relacional do banco de dados do WeFIND.
+Enquanto o diagrama de classes descreve os dados sob o ponto de vista da programação orientada a objetos, o modelo lógico do banco de dados organiza as informações em tabelas no banco relacional PostgreSQL, hospedado na plataforma Supabase. A Figura~\ref{fig:modelo_logico_banco} apresenta o modelo relacional do banco de dados do sistema proposto.
 
 \begin{figure}[H]
     \centering
@@ -217,5 +205,5 @@ A tabela \texttt{animais} centraliza as publicações e se liga ao usuário que 
 
 As imagens são organizadas na tabela \texttt{fotos\_animais}, que relaciona o animal cadastrado à URL da foto salva no armazenamento em nuvem, permitindo que cada anúncio tenha mais de uma foto. A tabela \texttt{avistamentos} guarda os relatos de animais vistos na rua, ligando o pet ao usuário informante com latitude, longitude, ponto de referência, descrição do local, foto e data. Por fim, a tabela \texttt{mensagens} gerencia o chat privativo, guardando o identificador do animal em discussão, o remetente, o destinatário, o texto enviado, anexo de imagem, confirmação de leitura e horário de envio.
 
-Com os requisitos levantados e os modelos do sistema e do banco de dados definidos, o Capítulo 5 apresenta o sistema WeFIND em detalhes, descrevendo as tecnologias utilizadas, a identidade visual e o funcionamento de suas principais telas.
+Com os requisitos levantados e os modelos estruturais e comportamentais do sistema devidamente formalizados, o Capítulo 5 apresenta em detalhes a plataforma desenvolvida, denominada \textbf{WeFIND}, abordando sua arquitetura em nuvem, tecnologias adotadas, identidade visual e implementação prática de suas telas operacionais.
 \clearpage
