@@ -125,17 +125,17 @@ Os requisitos não funcionais definem os padrões de qualidade, segurança e des
 \end{longtable}
 }
 
-\subsection{Modelagem}
+\subsection{Modelagem Conceitual e Estrutural do Sistema}
 
-A modelagem de software é uma etapa muito importante no desenvolvimento de qualquer sistema, pois ajuda a organizar visualmente a lógica, as regras e o funcionamento do aplicativo antes e durante a escrita do código. Ao criar esquemas visuais padronizados, a equipe consegue entender claramente o que o sistema deve fazer, alinhando as expectativas com os requisitos e evitando erros que poderiam atrapalhar o uso do aplicativo (GUEDES, 2018).
+A modelagem de software é uma etapa fundamental no desenvolvimento de qualquer sistema, pois organiza visualmente a lógica, as regras e o funcionamento da aplicação antes e durante a escrita do código. Ao criar esquemas visuais padronizados, a equipe alinha as expectativas com os requisitos e evita inconsistências que poderiam comprometer a arquitetura ou a experiência de uso (GUEDES, 2018).
 
-No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por dois lados: o lado do comportamento, mostrado nos diagramas de casos de uso que apresentam o que cada tipo de usuário pode fazer no aplicativo; e o lado da estrutura, representado pelo diagrama de classes conceituais e pelo modelo lógico do banco de dados, que mostram como as informações são guardadas e relacionadas.
+No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por duas perspectivas complementares: a comportamental, expressa nos diagramas de casos de uso que apresentam as ações disponibilizadas a cada perfil de usuário; e a estrutural, representada pelo diagrama de classes conceituais e pelo modelo lógico do banco de dados relacional.
 
 \subsubsection{Diagramas de Casos de Uso}
 
-O diagrama de casos de uso serve para mostrar as funções do sistema a partir do ponto de vista de quem usa o aplicativo, apontando o que cada pessoa consegue realizar (IBM, 2021). Na prática, os casos de uso agrupam os requisitos funcionais em tarefas completas e focadas nos objetivos dos usuários.
+O diagrama de casos de uso tem por finalidade descrever as funções do sistema sob o ponto de vista de seus atores externos, mapeando o que cada perfil é capaz de executar na aplicação (IBM, 2021). É oportuno salientar que, conforme preconizam Pressman e Maxim (2021) e Sommerville (2019), a quantidade de requisitos funcionais de um sistema é naturalmente superior ao número de elipses presentes em seus diagramas de casos de uso. Enquanto os requisitos funcionais detalham de forma atômica cada operação de criação, consulta, atualização e exclusão (CRUD) e suas validações associadas, cada elipse de caso de uso sintetiza um objetivo ou macro-funcionalidade completa (como cadastrar e gerenciar publicações, buscar no mapa ou trocar mensagens privativas).
 
-Para facilitar o entendimento, os casos de uso do sistema proposto foram organizados em dois diagramas: o primeiro voltado ao usuário visitante, que navega pelo aplicativo antes de realizar a autenticação; e o segundo apresentando todas as funções do usuário autenticado e as ferramentas de moderação do administrador.
+Para assegurar clareza e legibilidade aos fluxos, os casos de uso do sistema proposto foram organizados em dois diagramas: o primeiro voltado ao usuário visitante, que navega pelo aplicativo antes de realizar a autenticação; e o segundo apresentando todas as funções do usuário autenticado e as ferramentas de moderação do administrador.
 
 A Figura~\ref{fig:caso_uso_login} apresenta o diagrama de casos de uso do módulo pré-login, voltado ao ator \textit{Usuário Visitante}.
 
