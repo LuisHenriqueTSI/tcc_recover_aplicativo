@@ -52,15 +52,15 @@ A construção do aplicativo priorizou ferramentas que oferecessem agilidade na 
 
 \subsubsection{React Native e Expo}
 
-O React Native foi a biblioteca principal escolhida para a criação do aplicativo móvel. Sua grande vantagem está na possibilidade de gerar aplicativos nativos para Android e iOS utilizando uma única base de código em JavaScript. Isso reduziu bastante o tempo de desenvolvimento e facilitou as manutenções, evitando a necessidade de criar dois aplicativos separados.
+O React Native (REACT NATIVE, 2026) foi a biblioteca principal escolhida para a criação do aplicativo móvel. Sua grande vantagem está na possibilidade de gerar aplicativos nativos para Android e iOS utilizando uma única base de código em JavaScript. Isso reduziu bastante o tempo de desenvolvimento e facilitou as manutenções, evitando a necessidade de criar dois aplicativos separados.
 
-O Expo foi utilizado como plataforma de apoio ao React Native, eliminando configurações manuais complexas de emuladores e compiladores. No WeFIND, o Expo foi essencial para integrar o aplicativo aos recursos do próprio celular, fornecendo pacotes para captura precisa do ponto de GPS e seleção facilitada de fotos da galeria, além de apoiar a geração do arquivo instalável do aplicativo (APK).
+O Expo (EXPO, 2026) foi utilizado como plataforma de apoio ao React Native, eliminando configurações manuais complexas de emuladores e compiladores. No WeFIND, o Expo foi essencial para integrar o aplicativo aos recursos do próprio celular, fornecendo pacotes para captura precisa do ponto de GPS e seleção facilitada de fotos da galeria, além de apoiar a geração do arquivo instalável do aplicativo (APK).
 
 Para evitar o envio de informações incompletas ao servidor, foram criadas validações no próprio aplicativo. Os formulários contam com checagens em tempo real para exigir o preenchimento de dados essenciais (como espécie, data e coordenadas no mapa), conferência de formato de e-mail e redução automática do tamanho das fotos antes do envio, economizando o pacote de internet móvel do usuário.
 
 \subsubsection{Supabase e Banco de Dados PostgreSQL}
 
-No backend, o Supabase foi selecionado como solução integrada de serviços em nuvem. A escolha permitiu contar com autenticação, banco de dados e armazenamento de imagens prontos para uso, sem a necessidade de alugar e configurar servidores manuais.
+No backend, o Supabase (SUPABASE, 2026) foi selecionado como solução integrada de serviços em nuvem. A escolha permitiu contar com autenticação, banco de dados e armazenamento de imagens prontos para uso, sem a necessidade de alugar e configurar servidores manuais.
 
 O banco de dados utilizado é o PostgreSQL, um dos gerenciadores relacionais mais confiáveis do mundo. No WeFIND, o PostgreSQL guarda as informações dos usuários, os animais cadastrados, as coordenadas de avistamentos e as mensagens trocadas. A segurança dos dados é garantida pelas regras de segurança em nível de linha (RLS), que rodam direto no banco para garantir que apenas o criador de uma publicação possa alterar ou apagar os dados do seu pet, enquanto qualquer pessoa pode visualizar os animais perdidos.
 
@@ -78,17 +78,17 @@ Além das linguagens e bibliotecas principais, o desenvolvimento contou com ferr
     \fonte{Autoria própria}
 \end{figure}
 
-O código-fonte do aplicativo foi desenvolvido no editor Visual Studio Code (VS Code), utilizando recursos de auto-completar e extensões de depuração. O controle de versões foi realizado com o Git integrado ao repositório remoto no GitHub. Para a organização ágil das tarefas utilizou-se o Trello por meio do método Kanban, enquanto a prototipação das interfaces, testes de fluxo e estudo de cores foram conduzidos no Figma. A formalização dos diagramas da UML (casos de uso e classes) foi realizada no software Astah UML. Por fim, a plataforma de inteligência artificial generativa Flow Labs foi empregada como ferramenta de suporte na exploração criativa e geração do símbolo visual do logotipo oficial da aplicação, a partir de técnicas de engenharia de \textit{prompt}.
+O código-fonte do aplicativo foi desenvolvido no editor Visual Studio Code (VS Code), utilizando recursos de auto-completar e extensões de depuração. O controle de versões foi realizado com o Git integrado ao repositório remoto no GitHub. Para a organização ágil das tarefas utilizou-se o Trello (TRELLO, 2026) por meio do método Kanban, enquanto a prototipação das interfaces, testes de fluxo e estudo de cores foram conduzidos no Figma (FIGMA, 2026). A formalização dos diagramas da UML (casos de uso e classes) foi realizada no software Astah UML (ASTAH, 2026). Por fim, a plataforma de inteligência artificial generativa Flow Labs (FLOW LABS, 2026) foi empregada como ferramenta de suporte na exploração criativa e geração do símbolo visual do logotipo oficial da aplicação, a partir de técnicas de engenharia de \textit{prompt}.
 
 \subsection{Design da Interface e Identidade Visual}
 
-O design de interface de um aplicativo de utilidade pública desempenha um papel determinante em sua facilidade de uso, especialmente em momentos de emergência. Conforme explicam Preece, Rogers e Sharp (2013), o design de interação busca criar produtos fáceis de aprender, eficientes e agradáveis ao usuário. No desenvolvimento do WeFIND, o projeto visual foi orientado pelas diretrizes de usabilidade da norma ABNT NBR 9241-11 (ABNT, 2002), priorizando clareza nas informações, contraste adequado sob luz solar direta e botões confortáveis para o toque em telas de smartphones.
+O design de interface de um aplicativo de utilidade pública desempenha um papel determinante em sua facilidade de uso, especialmente em momentos de emergência. Conforme explicam Preece, Rogers e Sharp (2013), o design de interação busca criar produtos fáceis de aprender, eficientes e agradáveis ao usuário. No desenvolvimento do WeFIND, o projeto visual foi orientado pelas diretrizes de usabilidade da norma ABNT NBR 9241-11 (ABNT, 2002) e pelas recomendações de acessibilidade e contraste das \textit{Web Content Accessibility Guidelines} (W3C, 2018), priorizando clareza nas informações, contraste adequado sob luz solar direta e botões confortáveis para o toque em telas de smartphones.
 
 \subsubsection{Nomenclatura e Conceito da Marca}
 
 A identidade visual do WeFIND foi desenhada para transmitir sentimentos de solidariedade, esperança e segurança. O nome da plataforma une o pronome coletivo em inglês ``We'' (Nós) com o verbo ``Find'' (Encontrar), expressando a ideia de que a busca por um animal de estimação perdido é um esforço conjunto e solidário de toda a comunidade. 
 
-Para a concepção do ícone e símbolo visual da marca, utilizou-se a ferramenta de inteligência artificial generativa Flow Labs. A criação ocorreu por meio de um processo iterativo de engenharia de \textit{prompt}, no qual diversas instruções foram testadas e progressivamente refinadas para convergir na representação visual desejada. Dentre os critérios e restrições solicitados à ferramenta nas sucessivas rodadas, destacaram-se:
+Para a concepção do ícone e símbolo visual da marca, utilizou-se a ferramenta de inteligência artificial generativa Flow Labs (FLOW LABS, 2026). A criação ocorreu por meio de um processo iterativo de engenharia de \textit{prompt}, no qual diversas instruções foram testadas e progressivamente refinadas para convergir na representação visual desejada. Dentre os critérios e restrições solicitados à ferramenta nas sucessivas rodadas, destacaram-se:
 
 \begin{itemize}
     \item Estilo visual minimalista, plano (\textit{flat design}) e aplicável como ícone de aplicativo móvel;
