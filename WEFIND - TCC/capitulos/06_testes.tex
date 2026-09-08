@@ -6,33 +6,34 @@ Neste capítulo, são apresentados os testes funcionais de caixa-preta realizado
 
 \subsection{Estratégia e Testes Funcionais de Caixa-Preta}
 
-Os testes funcionais foram realizados utilizando a técnica de teste de caixa-preta, que avalia as entradas e saídas do sistema sem a necessidade de analisar o código-fonte interno. Foi montada uma matriz com os fluxos principais do aplicativo, testando tanto o comportamento esperado em situações normais quanto o tratamento de erros de preenchimento.
+Os testes funcionais foram realizados utilizando a técnica de teste de caixa-preta, que avalia as entradas e saídas do sistema sem a necessidade de analisar o código-fonte interno. Para garantir a conformidade da aplicação com o planejamento do projeto, cada cenário de teste foi diretamente vinculado aos Requisitos Funcionais (RF) estabelecidos no Capítulo 4, testando tanto o comportamento esperado em situações normais quanto o tratamento de erros de preenchimento.
 
-O Quadro 4 apresenta os casos de testes executados e os resultados obtidos.
+O Quadro 4 apresenta os casos de testes executados, os requisitos funcionais correspondentes e os resultados obtidos.
 
 \vspace{0.3cm}
 \begin{table}[!htb]
 \centering
 \phantomsection\label{quadro:testes}
 \small
+\setlength{\tabcolsep}{3.5pt}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{|c|>{\raggedright\arraybackslash}p{3.3cm}|>{\raggedright\arraybackslash}p{4.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|c|}
+\begin{tabular}{|c|>{\centering\arraybackslash}p{1.8cm}|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{3.8cm}|>{\raggedright\arraybackslash}p{3.6cm}|c|}
 \hline
-\multicolumn{5}{|c|}{\textbf{Quadro 4: Matriz de Testes Funcionais do WeFIND}} \\ \hline
-\textbf{ID} & \textbf{Cenário de Teste} & \textbf{Procedimento Executado} & \textbf{Resultado Esperado} & \textbf{Situação} \\ \hline
-CT01 & Cadastro de usuário com dados válidos & Preenchimento de nome, e-mail válido e senha com mais de 6 caracteres & Criação da conta no Supabase Auth e direcionamento à tela inicial & Aprovado \\ \hline
-CT02 & Validação de e-mail duplicado & Tentativa de registro utilizando e-mail já cadastrado & Exibição de mensagem informativa e bloqueio do envio & Aprovado \\ \hline
-CT03 & Cadastro de animal com foto e mapa & Escolha de espécie, raça, ponto no mapa e foto da galeria & Gravação no banco, upload da imagem e exibição do marcador & Aprovado \\ \hline
-CT04 & Registro de avistamento no mapa & Marcação de ponto de avistamento com foto e relato rápido & Atualização do pino e alerta ao tutor responsável & Aprovado \\ \hline
-CT05 & Filtragem combinada na busca & Aplicação de filtro por espécie (Cão/Gato) e status (Perdido/Encontrado) & Atualização imediata da listagem e dos pontos no mapa & Aprovado \\ \hline
-CT06 & Envio de mensagens no chat & Troca de mensagens de texto entre duas contas conectadas & Entrega em tempo real e atualização direta na tela & Aprovado \\ \hline
-CT07 & Geração de cartaz com QR Code & Acionamento do comando ``Gerar Cartaz'' no detalhe do pet & Criação do cartaz com foto, dados e QR Code escaneável & Aprovado \\ \hline
-CT08 & Geração da carteirinha RG Pet & Preenchimento dos dados do pet e geração do documento digital & Emissão do RG Pet com dados do tutor e QR Code exclusivo & Aprovado \\ \hline
+\multicolumn{6}{|c|}{\textbf{Quadro 4: Matriz de Testes Funcionais do WeFIND}} \\ \hline
+\textbf{ID} & \textbf{Requisito} & \textbf{Cenário de Teste} & \textbf{Procedimento Executado} & \textbf{Resultado Esperado} & \textbf{Situação} \\ \hline
+CT01 & RF01, RF02 & Cadastro de usuário com dados válidos & Preenchimento de nome, e-mail válido e senha com mais de 6 caracteres & Criação da conta no Supabase Auth e direcionamento à tela inicial & Aprovado \\ \hline
+CT02 & RF01 & Validação de e-mail duplicado & Tentativa de registro utilizando e-mail já cadastrado & Exibição de mensagem informativa e bloqueio do envio & Aprovado \\ \hline
+CT03 & RF09, RF10 & Cadastro de animal com foto e mapa & Escolha de espécie, raça, ponto no mapa e foto da galeria & Gravação no banco, upload da imagem e exibição do marcador & Aprovado \\ \hline
+CT04 & RF22, RF23 & Registro de avistamento no mapa & Marcação de ponto de avistamento com foto e relato rápido & Atualização do pino e alerta ao tutor responsável & Aprovado \\ \hline
+CT05 & RF13, RF19 & Filtragem combinada na busca & Aplicação de filtro por espécie (Cão/Gato) e status (Perdido/Encontrado) & Atualização imediata da listagem e dos pontos no mapa & Aprovado \\ \hline
+CT06 & RF37, RF38 & Envio de mensagens no chat & Troca de mensagens de texto entre duas contas conectadas & Entrega em tempo real e atualização direta na tela & Aprovado \\ \hline
+CT07 & RF34, RF36 & Geração de cartaz com QR Code & Acionamento do comando ``Compartilhar Cartaz'' no detalhe do pet & Criação do cartaz com foto, dados e QR Code escaneável & Aprovado \\ \hline
+CT08 & RF28, RF30 & Geração da carteirinha RG Pet & Preenchimento dos dados do pet e geração do documento digital & Emissão do RG Pet com dados do tutor e QR Code exclusivo & Aprovado \\ \hline
 \end{tabular}
 \fonte{Autoria própria (2026)}
 \end{table}
 
-Todos os casos de teste do Quadro 4 foram concluídos com sucesso. As validações de campos responderam de forma clara nos casos de preenchimento incompleto, e as rotinas de cadastro, consulta e envio de arquivos mantiveram a integridade das informações no banco de dados.
+Todos os casos de teste do Quadro 4 foram concluídos com sucesso, confirmando o pleno funcionamento das rotinas associadas aos requisitos funcionais analisados. As validações de campos responderam de forma clara nos casos de preenchimento incompleto, e as rotinas de cadastro, consulta e envio de arquivos mantiveram a integridade das informações no banco de dados.
 
 \subsection{Avaliação de Usabilidade (Método SUS)}
 
