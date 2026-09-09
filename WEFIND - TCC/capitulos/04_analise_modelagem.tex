@@ -80,6 +80,24 @@ Segundo Valente (2023), os requisitos funcionais definem o que o sistema deve fa
 \end{longtable}
 }
 
+Para estruturar o desenvolvimento de maneira modular e garantir a rastreabilidade de cada funcionalidade, os 43 requisitos funcionais apresentados no Quadro 2 organizam-se em oito módulos operacionais interconectados:
+
+O primeiro módulo concentra o gerenciamento de acesso e contas de usuário, englobando as rotinas essenciais de cadastro inicial (RF01), autenticação segura com persistência de sessão (RF02), recuperação de credenciais mediante redefinição de senha (RF03), consulta e edição dos dados de perfil (RF04 e RF05), encerramento protegido da sessão com limpeza de cache (RF06), acompanhamento de notificações do sistema (RF07) e a disponibilização do modo visitante (RF08), permitindo que qualquer pessoa consulte ocorrências sem barreira de login imediato.
+
+O segundo módulo estabelece o núcleo de publicações de animais, cobrindo o registro formal de anúncios nas categorias perdido, encontrado ou adoção com fotografias e dados morfológicos (RF09), marcação direta de coordenadas no mapa interativo (RF10), indicação opcional de tutor terceiro (RF11), ordenação espacial dinâmica no feed (RF12), filtragem combinada multicritério (RF13), exibição de detalhes completos da ocorrência (RF14), atualização de dados (RF15), encerramento com sucesso para casos resolvidos (RF16) e exclusão definitiva do anúncio (RF17).
+
+O terceiro módulo contempla a exploração cartográfica e navegação espacial, reunindo a plotagem de marcadores coloridos com as espécies canina e felina sobre o mapa (RF18), mecanismos de busca e filtragem em tempo real sobre os pontos renderizados (RF19), ajuste interativo do raio geográfico de proximidade entre 15 km e a totalidade do território nacional (RF20) e o cálculo automático de rotas viárias com estimativa de tempo e distância até o ponto do animal (RF21).
+
+O quarto módulo viabiliza o rastreamento colaborativo por avistamentos comunitários, assegurando que moradores e voluntários relatem a visualização de pets soltos na rua com foto e coordenadas (RF22 e RF23), mantenham a linha do tempo de avistamentos atualizada (RF24), gerenciem eventuais correções (RF25 e RF26) e atualizem automaticamente a posição geográfica principal do animal no mapa conforme novos relatos confirmados (RF27).
+
+O quinto módulo estimula a prevenção e guarda responsável por meio do Perfil Digital do Pet, viabilizando o cadastro preventivo dos animais da família com dados veterinários e vacinas (RF28 e RF29), emissão da carteirinha digital com código QR exclusivo para acoplamento em coleiras (RF30), manutenção cadastral contínua (RF31 e RF32) e a conversão instantânea da ficha do pet em alerta público no mapa em caso de fuga (RF33).
+
+O sexto módulo fornece suporte à divulgação externa por meio da geração automatizada de cartazes digitais de busca providos de código QR dinâmico (RF34), suporte aos formatos padronizados para impressão física A4, Stories e Feed (RF35) e integração direta com o compartilhamento nativo do smartphone para distribuição em mensageiros e redes sociais (RF36).
+
+O sétimo módulo estrutura o canal privativo de comunicação, permitindo o diálogo direto e em tempo real entre quem perdeu e quem encontrou o animal (RF37), troca instantânea de mensagens de texto via WebSockets (RF38) e anexo de fotografias comprobatórias (RF39), resguardando a privacidade ao dispensar a exposição de números telefônicos particulares em vias públicas.
+
+Por fim, o oitavo módulo integra as ferramentas comunitárias e administrativas, proporcionando o registro e a consulta pública de histórias felizes de reencontro no mural colaborativo (RF40 e RF41), ao passo que a integridade e a segurança do ecossistema são mantidas por meio de denúncias de anúncios indevidos pela própria comunidade (RF42) e pelas rotinas administrativas de moderação, auditoria e suspensão de contas fraudulentas (RF43).
+
 \subsubsection{Requisitos Não Funcionais}
 
 Os requisitos não funcionais definem os padrões de qualidade, segurança e desempenho do aplicativo, com base na norma ISO/IEC 25010 (ISO, 2023) e na literatura de Engenharia de Software (PRESSMAN; MAXIM, 2021; VALENTE, 2023). O Quadro 3 apresenta os 14 requisitos não funcionais estabelecidos para o sistema proposto.
@@ -124,6 +142,16 @@ Os requisitos não funcionais definem os padrões de qualidade, segurança e des
 \textbf{RNF14} & Prazo Seguro para Adoção & Animais resgatados devem ter uma janela mínima de 7 dias de busca pelo tutor original antes de serem liberados para adoção definitiva. \\ \hline
 \end{longtable}
 }
+
+A especificação dos requisitos não funcionais constantes no Quadro 3 orientou-se pelas dimensões de qualidade preconizadas pela norma internacional ISO/IEC 25010, estruturando-se em quatro categorias centrais:
+
+Na dimensão de desempenho e eficiência de recursos, o sistema estabelece tempo de carregamento inicial do feed inferior a 1,0 segundo com sincronização em segundo plano (RNF01), consultas otimizadas para economia de dados móveis (RNF02), compressão algorítmica local de fotografias antes do upload (RNF03) e cálculos matemáticos de distância geodésica executados de forma fluida no próprio aparelho (RNF04).
+
+Na categoria de segurança, criptografia e conformidade com a LGPD, o aplicativo garante a supressão de endereços residenciais exatos nos mapas públicos (RNF05), proteção de localização para lares temporários de acolhimento (RNF06), autenticação segura de contas (RNF07), isolamento e proteção de dados no PostgreSQL por regras de segurança em nível de linha (RNF08) e criptografia de ponta a ponta nas comunicações de rede via HTTPS e TLS (RNF09).
+
+No âmbito da usabilidade, acessibilidade e portabilidade, a aplicação disponibiliza alternância entre modo claro e modo escuro com contraste visual estrito para uso sob luz solar direta (RNF10), compatibilidade multiplataforma entre sistemas operacionais Android e iOS via React Native (RNF11) e design responsivo com adaptação dinâmica a telas de diversas resoluções (RNF12).
+
+Por fim, no grupo de confiabilidade e regras éticas de negócio, a infraestrutura em nuvem assegura disponibilidade contínua mínima de 99,5\% com rotinas automatizadas de backup (RNF13) e impõe a janela de segurança de busca mínima de 7 dias antes de permitir a alteração de status de um animal resgatado para adoção definitiva (RNF14).
 
 \subsection{Modelagem Conceitual e Estrutural do Sistema}
 

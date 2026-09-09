@@ -1,22 +1,12 @@
-\section{TECNOLOGIAS E BANCO DE DADOS DO SISTEMA WeFIND}
+\section{TECNOLOGIAS UTILIZADAS E BANCO DE DADOS}
 
-A construção do WeFIND foi orientada pelo objetivo de entregar uma aplicação comunitária estável, rápida e intuitiva, capaz de responder à urgência de situações reais de desaparecimento e resgate de animais domésticos. A concepção do sistema partiu da constatação prática de que a dispersão de informações em redes sociais e a lentidão dos canais analógicos diminuem sensivelmente as chances de reencontro de cães e gatos perdidos nas cidades.
+Para materializar os pilares conceituais e operacionais do WeFIND apresentados no Capítulo 5, a seleção tecnológica priorizou ferramentas de comprovada maturidade técnica, suporte comunitário ativo e alta produtividade na escrita do código-fonte. Como orientam Pressman e Maxim (2021) e Valente (2023), a definição criteriosa da pilha de software (tecnologias clientes, serviços de nuvem e persistência de dados) constitui a base para assegurar desempenho, escalabilidade e manutenibilidade a longo prazo.
 
-Para superar esses obstáculos, o projeto selecionou ferramentas modernas de desenvolvimento móvel e serviços de persistência em nuvem. Este capítulo apresenta a justificativa para a adoção de um aplicativo móvel em relação a plataformas web convencionais, detalha as bibliotecas que compõem o ecossistema de programação, descreve a modelagem lógica do banco de dados relacional PostgreSQL hospedado no Supabase e relaciona o conjunto de ferramentas auxiliares empregadas na construção do projeto.
-
-\subsection{Justificativa da Abordagem Móvel em Relação à Web}
-
-A decisão de projetar o WeFIND como um aplicativo para smartphones, em vez de um portal web tradicional, decorre da natureza dinâmica e urgente das buscas nas ruas. Uma página web apresenta a desvantagem de depender da iniciativa do usuário de abrir o navegador cotidianamente para consultar avisos, o que se mostra incompatível com a rotina da maioria das pessoas.
-
-Ademais, estudos da literatura de Computação demonstram que animais assustados tendem a se deslocar com rapidez, percorrendo distâncias expressivas entre 14 e 26 quilômetros em um único dia (SOUZA et al., 2022). Diante desse comportamento, as ações de busca precisam acontecer no ambiente urbano, exatamente onde os cidadãos transitam com seus celulares em mãos.
-
-A abordagem móvel se sobressai por três aspectos operacionais determinantes. Primeiro, pelo sistema de notificações imediatas: enquanto um site fechado permanece inerte, o aplicativo instalado no celular é capaz de emitir alertas visuais e sonoros informando que um animal sumiu a poucas quadras da posição atual do usuário. Segundo, pela facilidade de integração nativa com o receptor de GPS e a câmera fotográfica do aparelho: ao se deparar com um animal desorientado na via pública, o cidadão registra a foto e fixa a localização com um único toque, dispensando a digitação manual de nomes de ruas ou pontos de referência. Terceiro, pelo incentivo ao cadastro preventivo: o tutor pode registrar previamente as características físicas, vacinas e o Perfil Digital do Pet com tranquilidade; caso ocorra uma fuga inesperada, a publicação é gerada instantaneamente, aproveitando as informações já armazenadas no dispositivo.
-
-Para contemplar também os indivíduos que ainda não possuem o aplicativo instalado no smartphone, o WeFIND dispõe da ferramenta de geração automatizada de cartazes digitais contendo código QR. Dessa maneira, qualquer pessoa que aponte a câmera do celular para o cartaz impresso tem acesso imediato à página pública do animal e às instruções de contato, promovendo engajamento comunitário sem barreiras de instalação.
+Este capítulo detalha as bibliotecas que compõem o ecossistema de desenvolvimento móvel do WeFIND, descreve a infraestrutura de computação em nuvem provida pelo Supabase, apresenta a modelagem lógica relacional do banco de dados PostgreSQL estruturada com políticas de segurança em nível de linha (RLS) e relaciona as ferramentas auxiliares utilizadas na gestão e governança do projeto.
 
 \subsection{Tecnologias Utilizadas no Desenvolvimento Móvel}
 
-A definição das tecnologias priorizou soluções com ampla maturidade técnica, suporte comunitário ativo e alta produtividade na escrita do código. A Figura~\ref{fig:principais_tecnologias} destaca as principais tecnologias adotadas no projeto.
+A construção do aplicativo móvel exigiu a integração de ferramentas modernas voltadas à alta performance em smartphones. A Figura~\ref{fig:principais_tecnologias} destaca as principais tecnologias adotadas no projeto.
 
 \begin{figure}[H]
     \centering
@@ -78,5 +68,5 @@ A escrita, compilação e depuração do código-fonte foram conduzidas no edito
 
 A gestão ágil das atividades e o acompanhamento do cronograma foram operacionalizados na ferramenta Trello (TRELLO, 2026), por meio do método Kanban. A elaboração dos diagramas de modelagem conceitual foi realizada no software Astah UML (ASTAH, 2026). Por fim, o projeto das interfaces visuais, o fluxo de navegação entre componentes e os protótipos de alta fidelidade foram construídos na plataforma Figma (FIGMA, 2026).
 
-Com a infraestrutura de desenvolvimento estabelecida e o modelo de banco de dados relacional estruturado, o Capítulo 6 apresenta o projeto de interface e a implementação visual do aplicativo WeFIND, detalhando os princípios de usabilidade, a tipografia, a identidade visual e as telas desenvolvidas.
+Com a infraestrutura de desenvolvimento estabelecida e o modelo de banco de dados relacional estruturado, o Capítulo 7 apresenta o projeto de interface e a implementação visual do aplicativo WeFIND, detalhando os princípios de usabilidade, a tipografia, a identidade visual e as telas desenvolvidas.
 \clearpage
