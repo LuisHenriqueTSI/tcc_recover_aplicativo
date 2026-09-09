@@ -163,7 +163,7 @@ Por fim, no quarto pilar (confiabilidade e regras éticas de negócio), a infrae
 
 A modelagem de software é uma etapa fundamental no desenvolvimento de qualquer sistema, pois organiza visualmente a lógica, as regras e o funcionamento da aplicação antes e durante a escrita do código. Ao criar esquemas visuais padronizados, a equipe alinha as expectativas com os requisitos e evita inconsistências que poderiam comprometer a arquitetura ou a experiência de uso (BEZERRA, 2021).
 
-No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por duas perspectivas complementares: a comportamental, expressa nos diagramas de casos de uso que apresentam as ações disponibilizadas a cada perfil de usuário; e a estrutural, representada pelo diagrama de classes conceituais.
+No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por duas perspectivas complementares: a comportamental, expressa nos diagramas de casos de uso que apresentam as ações disponibilizadas a cada perfil de usuário; e a estrutural, representada pelo diagrama de classes de domínio.
 
 \clearpage
 
@@ -209,15 +209,17 @@ Por sua vez, o ator \textit{Administrador} é responsável pelo gerenciamento de
 
 \clearpage
 
-\subsubsection{Diagrama de Classes Conceituais}
+\subsubsection{Diagrama de Classes de Domínio}
 
-O diagrama de classes conceituais organiza as informações do sistema com base na orientação a objetos, mostrando as entidades principais do aplicativo, seus atributos e a forma como se relacionam. A Figura~\ref{fig:diagrama_classes} apresenta o diagrama de classes conceituais da aplicação proposta.
+O diagrama de classes de domínio organiza as informações do sistema com base no paradigma orientado a objetos, formalizando as entidades essenciais do ecossistema WeFIND, seus atributos tipados com visibilidade, métodos de negócio e as relações estruturais da aplicação. A Figura~\ref{fig:diagrama_classes} apresenta o diagrama de classes de domínio da plataforma.
 
 \begin{figure}[H]
     \centering
-    \caption{Diagrama de Classes Conceitual do Sistema Proposto}
+    \caption{Diagrama de Classes de Domínio do Sistema Proposto}
     \label{fig:diagrama_classes}
-    \includegraphics[trim=15mm 22mm 15mm 22mm, clip, width=\textwidth]{imagens/02_modelagem/figura08_diagrama_classes.pdf}
+    \vspace{0.3cm}
+    \includegraphics[trim=12mm 95mm 12mm 8mm, clip, width=0.98\textwidth]{imagens/02_modelagem/figura08_diagrama_classes.pdf}
+    \vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
@@ -232,6 +234,6 @@ A colaboração comunitária é viabilizada pela classe \textit{Avistamento}, qu
 
 A comunicação segura entre os cidadãos ocorre por meio da classe \textit{Conversa}, que congrega instâncias da classe \textit{Mensagem} para tráfego instantâneo de texto e fotografias em tempo real via WebSockets. Por fim, a integridade da plataforma é assegurada pela classe \textit{Denuncia}, que permite reportar anúncios suspeitos para moderação administrativa, enquanto a classe \textit{HistoriaFeliz} fomenta a celebração de reencontros no mural comunitário e a classe \textit{Notificacao} distribui alertas geolocalizados aos usuários.
 
-Com os requisitos funcionais formalizados e a modelagem conceitual da UML consolidada, o Capítulo 5 apresenta a plataforma WeFIND, detalhando sua proposta comunitária, a motivação do autor e a justificativa técnica para a abordagem móvel.
+Com os requisitos funcionais formalizados e a modelagem de classes de domínio consolidada, o Capítulo 5 apresenta a plataforma WeFIND, detalhando sua proposta comunitária, a motivação do autor e a justificativa técnica para a abordagem móvel.
 
 \clearpage
