@@ -1,9 +1,9 @@
 @startuml
-title WeFIND - Diagrama de Classes Conceitual
+title WeFIND - Diagrama de Classes de Domínio
 
 skinparam classAttributeIconSize 0
 skinparam shadowing false
-skinparam roundcorner 12
+skinparam roundcorner 10
 skinparam linetype ortho
 skinparam backgroundColor #FFFFFF
 skinparam class {
@@ -13,187 +13,270 @@ skinparam class {
   FontColor #0F172A
 }
 
-package "Identidade e participação" {
+package "Identidade e Comunidade" {
   class Usuario {
     -id: String
     -nome: String
     -email: String
-    -telefone: String
-    -perfil: String
-    -status: String
+    -whatsapp: String
+    -avatarUrl: String
+    -avatarPath: String
+    -latitude: Double
+    -longitude: Double
+    -logradouro: String
+    -bairro: String
+    -cidade: String
+    -estado: String
+    -raioBuscaKm: Integer
+    -instagram: String
+    -facebook: String
+    -isAdmin: Boolean
+    -isVoluntarioLar: Boolean
+    -isBanned: Boolean
     -pontos: Integer
     -nivel: Integer
-    +atualizarPerfil(): void
+    -criadoEm: Date
+    +cadastrar(): void
+    +autenticar(): void
+    +redefinirSenhaWhatsApp(codigo: String): Boolean
+    +atualizarPerfil(dados: DadosPerfil): void
+    +definirLocalizacao(coords: Coordenadas, end: Endereco): void
+    +alterarFotoPerfil(fotoUri: String): String
+    +alternarVoluntarioLar(ativo: Boolean): void
     +consultarPontuacao(): Integer
+    +encerrarSessao(): void
   }
 
-  class PerfilVoluntario {
-    -ativo: Boolean
-    -especiesAceitas: List~String~
-    -portesAceitos: List~String~
+  class PerfilVoluntarioLar {
+    -id: String
+    -usuarioId: String
+    -especiesAceitas: List<String>
+    -portesAceitos: List<String>
     -tipoMoradia: String
-    -localizacao: String
-    +ativar(): void
-    +desativar(): void
-  }
-
-  class Avaliacao {
-    -nota: Integer
-    -comentario: String
-    -data: Date
-    +registrar(): void
-  }
-}
-
-package "Localização e recuperação" {
-  class PetCadastrado {
-    -id: String
-    -nome: String
-    -especie: String
-    -raca: String
-    -cuidados: String
-    -vacinas: String
-    +atualizarDados(): void
-  }
-
-  class Publicacao {
-    -id: Integer
-    -titulo: String
-    -descricao: String
-    -tipo: String
-    -situacao: String
-    -finalidade: String
-    -localizacao: String
-    -dataOcorrencia: Date
-    -resolvida: Boolean
-    -expiraEm: Date
-    +criar(): void
-    +atualizar(): void
-    +marcarComoResolvida(): void
-  }
-
-  class Foto {
-    -id: String
-    -url: String
-    -principal: Boolean
-    +adicionar(): void
-    +remover(): void
-  }
-
-  class Avistamento {
-    -id: String
-    -descricao: String
-    -localizacao: String
-    -data: Date
-    -status: String
-    +registrar(): void
-  }
-
-  class Reivindicacao {
-    -id: String
-    -mensagem: String
-    -comprovante: String
-    -status: String
-    -data: Date
-    +enviar(): void
-    +avaliar(): void
-  }
-
-  class Recompensa {
-    -valor: Decimal
-    -descricao: String
-    -status: String
-    +oferecer(): void
-    +cancelar(): void
-  }
-
-  class ReivindicacaoRecompensa {
-    -id: String
-    -mensagem: String
-    -status: String
-    -solicitadaEm: Date
-    +solicitar(): void
-    +avaliar(): void
-  }
-}
-
-package "Comunicação e comunidade" {
-  class Mensagem {
-    -id: Integer
-    -conteudo: String
-    -lida: Boolean
-    -enviadaEm: Date
-    +enviar(): void
-    +marcarComoLida(): void
-  }
-
-  class Conversa {
-    -id: String
-    -iniciadaEm: Date
-    -arquivada: Boolean
-    +iniciar(): void
-    +arquivar(): void
+    -capacidadeVagas: Integer
+    -disponivel: Boolean
+    -cidade: String
+    -estado: String
+    -observacoes: String
+    +ativarPerfil(): void
+    +desativarPerfil(): void
+    +atualizarDisponibilidade(status: Boolean): void
   }
 
   class Notificacao {
     -id: String
+    -destinatarioId: String
     -titulo: String
     -mensagem: String
     -tipo: String
+    -referenciaId: String
     -lida: Boolean
     -criadaEm: Date
+    +emitirNotificacao(): void
+    +marcarComoLida(): void
+    +excluir(): void
+  }
+}
+
+package "Gestão de Pets e Prevenção" {
+  class Pet {
+    -id: String
+    -tutorId: String
+    -nome: String
+    -especie: String
+    -raca: String
+    -porte: String
+    -cor: String
+    -idade: String
+    -genero: String
+    -castrado: Boolean
+    -possuiMicrochip: Boolean
+    -codigoMicrochip: String
+    -codigoQR: String
+    -fotoUrl: String
+    -dadosMedicos: String
+    -vacinas: String
+    -criadoEm: Date
+    +cadastrar(): void
+    +atualizarDados(dados: DadosPet): void
+    +gerarCodigoQR(): String
+    +gerarFichaIdentidade(): DocumentoDigital
+    +converterEmPublicacaoPerda(): Publicacao
+    +excluir(): void
+  }
+}
+
+package "Ocorrências e Localização" {
+  class Publicacao {
+    -id: Integer
+    -autorId: String
+    -petId: String
+    -categoria: String
+    -especie: String
+    -titulo: String
+    -descricao: String
+    -latitude: Double
+    -longitude: Double
+    -logradouro: String
+    -bairro: String
+    -cidade: String
+    -estado: String
+    -dataOcorrencia: Date
+    -resolvido: Boolean
+    -expiraEm: Date
+    -terceiroNome: String
+    -terceiroContato: String
+    -criadoEm: Date
+    +publicar(): void
+    +atualizar(dados: DadosPublicacao): void
+    +marcarComoResolvido(): void
+    +renovarPublicacao(dias: Integer): void
+    +excluir(): void
+    +gerarCartazDivulgacao(formato: String): CartazDigital
+  }
+
+  class Foto {
+    -id: String
+    -publicacaoId: Integer
+    -url: String
+    -storagePath: String
+    -isCapa: Boolean
+    -ordem: Integer
+    -criadaEm: Date
+    +fazerUpload(uri: String): String
+    +definirComoCapa(): void
+    +excluir(): void
+  }
+
+  class Avistamento {
+    -id: String
+    -publicacaoId: Integer
+    -informanteId: String
+    -descricao: String
+    -latitude: Double
+    -longitude: Double
+    -enderecoAproximado: String
+    -fotoUrl: String
+    -status: String
+    -dataAvistamento: Date
+    -criadoEm: Date
+    +registrar(): void
+    +confirmarPeloTutor(): void
+    +descartar(): void
+    +atualizarPosicaoAnimal(): void
+  }
+
+  class Reivindicacao {
+    -id: String
+    -publicacaoId: Integer
+    -solicitanteId: String
+    -mensagem: String
+    -comprovanteUrl: String
+    -status: String
+    -respostaTutor: String
+    -criadaEm: Date
+    +submeterReivindicacao(): void
+    +aprovar(): void
+    +rejeitar(motivo: String): void
+  }
+
+  class Recompensa {
+    -id: String
+    -publicacaoId: Integer
+    -valor: Decimal
+    -descricao: String
+    -paga: Boolean
+    -ativa: Boolean
+    +oferecer(): void
+    +marcarComoPaga(): void
+    +cancelar(): void
+  }
+}
+
+package "Comunicação e Governança" {
+  class Conversa {
+    -id: String
+    -publicacaoId: Integer
+    -usuarioAId: String
+    -usuarioBId: String
+    -ultimaMensagem: String
+    -atualizadaEm: Date
+    -arquivada: Boolean
+    +iniciarConversa(): void
+    +obterMensagens(): List<Mensagem>
+    +arquivar(): void
+  }
+
+  class Mensagem {
+    -id: Integer
+    -conversaId: String
+    -remetenteId: String
+    -destinatarioId: String
+    -conteudo: String
+    -tipoMidia: String
+    -midiaUrl: String
+    -lida: Boolean
+    -enviadaEm: Date
     +enviar(): void
     +marcarComoLida(): void
+    +anexarFoto(uri: String): String
   }
 
   class HistoriaFeliz {
     -id: String
+    -publicacaoId: Integer
+    -autorId: String
     -titulo: String
     -relato: String
-    -foto: String
+    -fotoAntesUrl: String
+    -fotoDepoisUrl: String
+    -diasDesaparecido: Integer
+    -curtidas: Integer
     -publicadaEm: Date
     +publicar(): void
+    +curtir(): void
+    +compartilhar(): void
   }
 
   class Denuncia {
     -id: String
+    -denuncianteId: String
+    -publicacaoId: Integer
+    -usuarioDenunciadoId: String
     -motivo: String
-    -detalhes: String
+    -descricao: String
     -status: String
-    -resolucao: String
+    -decisaoAdmin: String
+    -analisadaPorId: String
+    -criadaEm: Date
     +registrar(): void
-    +moderar(): void
+    +avaliarAdmin(decisao: String): void
+    +removerPublicacao(): void
+    +suspenderConta(): void
   }
 }
 
-Usuario "1" *-- "0..1" PerfilVoluntario : configura
-Usuario "1" *-- "0..*" PetCadastrado : cadastra
-Usuario "1" --> "0..*" Publicacao : cria
-PetCadastrado "0..1" --> "0..*" Publicacao : pode originar
-Publicacao "1" *-- "0..*" Foto : possui
-Publicacao "1" *-- "0..*" Avistamento : recebe
-Usuario "1" --> "0..*" Avistamento : registra
+Usuario "1" *-- "0..*" Pet : cadastra e tutela
+Usuario "1" --> "0..*" Publicacao : cria e gerencia
+Pet "0..1" --> "0..*" Publicacao : origina alerta de perda
+Publicacao "1" *-- "0..6" Foto : possui galeria
+Publicacao "1" *-- "0..*" Avistamento : recebe relatos
+Usuario "1" --> "0..*" Avistamento : informa
 Publicacao "1" *-- "0..1" Recompensa : oferece
-Publicacao "1" --> "0..*" Reivindicacao : recebe
-Usuario "1" --> "0..*" Reivindicacao : envia
-Recompensa "1" --> "0..*" ReivindicacaoRecompensa : recebe
-Usuario "1" --> "0..*" ReivindicacaoRecompensa : solicita
-Conversa "1" *-- "1..*" Mensagem : contem
+Publicacao "1" --> "0..*" Reivindicacao : recebe pedidos
+Usuario "1" --> "0..*" Reivindicacao : solicita resgate
+Publicacao "0..1" --> "0..*" Conversa : contextualiza
 Usuario "1" --> "0..*" Conversa : participa
+Conversa "1" *-- "1..*" Mensagem : contém
 Usuario "1" --> "0..*" Mensagem : envia
 Usuario "1" --> "0..*" Mensagem : recebe
-Publicacao "0..1" --> "0..*" Conversa : contextualiza
-Usuario "1" --> "0..*" Notificacao : recebe
-Publicacao "0..1" --> "0..*" HistoriaFeliz : origina
-Usuario "0..1" --> "0..*" HistoriaFeliz : publica
-Publicacao "0..1" --> "0..*" Denuncia : e alvo de
-Usuario "1" --> "0..*" Denuncia : registra
-Usuario "0..1" --> "0..*" Denuncia : analisa
-Usuario "1" --> "0..*" Avaliacao : realiza
-Usuario "1" --> "0..*" Avaliacao : recebe
-
-note "A Publicacao representa o registro central do sistema,\nabrangendo animais perdidos ou encontrados." as N1
-N1 .. Publicacao
+Usuario "1" *-- "0..1" PerfilVoluntarioLar : mantém
+Publicacao "0..1" --> "0..1" HistoriaFeliz : origina reencontro
+Usuario "1" --> "0..*" HistoriaFeliz : publica relato
+Publicacao "0..1" --> "0..*" Denuncia : é alvo de
+Usuario "1" --> "0..*" Denuncia : reporta
+Usuario "0..1" --> "0..*" Denuncia : audita como admin
+Usuario "1" *-- "0..*" Notificacao : recebe
 
 legend right
   *--  Composição: a parte depende do todo
