@@ -31,11 +31,15 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 6. O serviço valida as credenciais e confirma a validação da conta via WhatsApp.\par
 7. O sistema armazena a sessão localmente (\textit{AsyncStorage}) e redireciona ao feed principal autenticado.
 } \\ \hline
-\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-4a. Campos vazios: o sistema exibe mensagens de preenchimento obrigatório.\par
-6a. Credenciais incorretas: o sistema exibe alerta retendo o usuário no formulário.\par
-3a. Esquecimento de credenciais (\textit{<<extend>>}): o usuário aciona a extensão \textbf{Redefinir Senha}, recebendo código OTP de 6 dígitos no WhatsApp para cadastro de nova senha.
+3a. Esquecimento de credenciais (\textit{<<extend>>}): o usuário aciona a opção \textbf{Redefinir Senha}, recebendo código OTP de 6 dígitos no WhatsApp para cadastro de nova senha.\par
+1a. Exploração sem login: o usuário opta por ``Continuar explorando sem login'', acessando a visualização de publicações e do mapa em modo somente leitura.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos de Exceção:}} \\
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
+4a. Campos obrigatórios vazios: o sistema impede o envio e exibe avisos de preenchimento obrigatório nos campos destacados.\par
+6a. Credenciais incorretas: o sistema emite alerta visual de erro e retém o usuário no formulário para nova tentativa.
 } \\ \hline
 \textbf{Pós-Condições} & Sessão iniciada com permissões de publicação, chat e gestão de pets ativas. \\ \hline
 \end{tabular}
@@ -66,10 +70,15 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 6. O usuário digita o código recebido no WhatsApp.\par
 7. O sistema valida o código e ativa a conta de usuário permanentemente.
 } \\ \hline
-\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-4a. E-mail ou telefone já cadastrados: o sistema emite alerta indicando a duplicidade.\par
-6a. Código expirado ou incorreto: o sistema sinaliza o erro e oferece botão de reenvio de código com temporizador.
+6a. Reenvio de código de segurança: caso não receba o código, o usuário aciona o botão de reenvio após o término da contagem regressiva do temporizador de segurança.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos de Exceção:}} \\
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
+4a. E-mail ou telefone já cadastrados: o sistema emite alerta indicando a duplicidade cadastral e impede o registro repetido.\par
+4b. Senha fora dos parâmetros: o sistema sinaliza que a senha deve possuir no mínimo 6 caracteres.\par
+6b. Código incorreto ou expirado: o sistema sinaliza a inconsistência e solicita nova inserção.
 } \\ \hline
 \textbf{Pós-Condições} & Conta criada, validada em duas etapas e pronta para autenticação. \\ \hline
 \end{tabular}
@@ -101,12 +110,18 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 7. O sistema envia as fotos ao Storage e grava os dados na tabela \textit{items}.\par
 8. A publicação passa a ser exibida no feed e no mapa para a comunidade.
 } \\ \hline
-\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 3a. Informar tutor de terceiros (\textit{<<extend>>}): o usuário aciona a extensão para indicar o contato de outro responsável pelo animal.\par
-5a. Identificação de duplicidade: o sistema detecta pet similar em raio de 5~km e questiona se trata-se do mesmo animal para vinculação de avistamento.
+4a. Edição de publicação existente: o autor atualiza fotos ou descrições do anúncio já publicado.\par
+4b. Encerramento com sucesso: o autor altera o status para ``Reencontrado'' ou ``Adotado'', arquivando a ocorrência.
 } \\ \hline
-\textbf{Pós-Condições} & Ocorrência persistida, visível no mapa e disponível para o motor de match inteligente. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos de Exceção:}} \\
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
+4c. Imagem inválida ou tamanho excessivo: o sistema impede o upload e solicita a seleção de uma foto válida.\par
+5a. Ponto no mapa não demarcado: o sistema bloqueia a submissão e exige a marcação das coordenadas geográficas.
+} \\ \hline
+\textbf{Pós-Condições} & Ocorrência persistida, visível no mapa e disponível para a comunidade. \\ \hline
 \end{tabular}
 \end{table}
 
@@ -135,9 +150,14 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 6. O sistema atualiza atomicamente o marcador principal do animal para as novas coordenadas e grava o histórico em \textit{item\_sightings}.\par
 7. O sistema dispara notificação push imediata ao tutor do pet informando a nova localização.
 } \\ \hline
-\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-4a. Sinal de GPS instável: o usuário ajusta manualmente o pino na rua em que o animal foi visto.
+4a. Ajuste manual de localização: caso o sinal de GPS esteja impreciso, o usuário arrasta manualmente o pino até o local visualizado na rua.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos de Exceção:}} \\
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
+4b. Coordenadas geográficas ausentes: o sistema impede a gravação do avistamento enquanto o ponto no mapa não for confirmado.\par
+5a. Falha temporária de rede: o sistema retém os dados digitados e sugere nova tentativa de envio.
 } \\ \hline
 \textbf{Pós-Condições} & Marcador do animal reposicionado no mapa, tutor alertado e histórico de rastro atualizado. \\ \hline
 \end{tabular}
@@ -167,10 +187,14 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 5. O sistema transmite a mensagem via WebSockets e notifica o destinatário via notificação push.\par
 6. A mensagem é persistida na tabela \textit{messages} e exibida na conversa.
 } \\ \hline
-\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-4a. Tentativa de contato consigo mesmo: o sistema omite o botão de chat quando o visualizador é o próprio autor do anúncio.\par
-5a. Destinatário offline: a mensagem é gravada no banco e entregue assim que o destinatário abrir o app.
+5a. Destinatário offline: a mensagem é gravada de modo permanente no banco de dados e sincronizada assim que o destinatário abrir o aplicativo.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos de Exceção:}} \\
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
+1a. Tentativa de contato consigo mesmo: o sistema oculta a opção de chat quando o visualizador é o próprio autor do anúncio.\par
+4a. Mensagem vazia: o sistema desabilita o botão de envio enquanto não houver conteúdo textual ou anexo de mídia.
 } \\ \hline
 \textbf{Pós-Condições} & Canal de comunicação estabelecido com histórico mantido na caixa de entrada. \\ \hline
 \end{tabular}
@@ -200,9 +224,13 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 5. O usuário escolhe entre salvar a imagem na galeria ou acionar o compartilhamento direto via WhatsApp ou redes sociais.\par
 6. O sistema exporta o arquivo de imagem em alta definição.
 } \\ \hline
-\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-5a. Copiar texto: o sistema oferece botão para copiar mensagem de texto pronta com link de resgate em um toque.
+4a. Cópia de texto rápido: o sistema oferece botão auxiliar para copiar texto formatado contendo os dados essenciais e o link web do animal para colar em conversas.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos de Exceção:}} \\
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
+1a. Ausência de fotografias: o sistema informa que é obrigatório dispor de pelo menos uma foto para diagramar o cartaz de busca.
 } \\ \hline
 \textbf{Pós-Condições} & Peça gráfica diagramada e compartilhada nos canais comunitários. \\ \hline
 \end{tabular}
@@ -232,9 +260,13 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 5. O sistema grava os registros e gera o Perfil Digital do Pet com código QR e identificador único.\par
 6. O perfil do animal fica disponível para consulta, edição ou compartilhamento.
 } \\ \hline
-\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-6a. O animal fugiu: o tutor aciona o botão de emergência no perfil do pet, convertendo os dados cadastrados diretamente em uma publicação de animal perdido no mapa sem precisar redigitar nada.
+6a. Acionamento de alerta de fuga: caso o animal cadastrado desapareça, o tutor aciona o botão de emergência no Perfil Digital, transformando a ficha preventiva diretamente em uma publicação de busca no mapa sem necessidade de redigitação.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos de Exceção:}} \\
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
+3a. Campos obrigatórios em branco: o sistema barra a finalização do registro caso nome ou espécie do pet não tenham sido informados.
 } \\ \hline
 \textbf{Pós-Condições} & Perfil Digital do Pet ativo e vinculado à conta do tutor. \\ \hline
 \end{tabular}
@@ -263,9 +295,14 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 4. O administrador seleciona a ação cabível: desconsiderar denúncia, suspender anúncio ou excluir publicação.\par
 5. O sistema atualiza o status do anúncio e registra a decisão no log de auditoria.
 } \\ \hline
-\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos e de Exceção:}} \\
+\multicolumn{2}{|l|}{\textbf{Fluxos Alternativos:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-4a. Violação grave/fraude: o administrador pode suspender preventivamente a conta do usuário infrator.
+4a. Descarte de denúncia infundada: o administrador constata a conformidade do anúncio e arquiva o chamado mantendo a publicação ativa.\par
+4b. Solicitação de ajuste: o administrador suspende temporariamente o anúncio e solicita alterações de dados ao usuário.
+} \\ \hline
+\multicolumn{2}{|l|}{\textbf{Fluxos de Exceção:}} \\
+\multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
+4c. Infração grave ou fraude dolosa: o administrador exclui o anúncio e suspende preventivamente a conta do usuário infrator.
 } \\ \hline
 \textbf{Pós-Condições} & Publicação moderada e integridade comunitária da plataforma assegurada. \\ \hline
 \end{tabular}
