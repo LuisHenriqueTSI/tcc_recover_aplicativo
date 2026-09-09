@@ -1,28 +1,36 @@
 \section{DESIGN DE INTERFACE E TELAS DO SISTEMA WeFIND}
 
-O design de interface de uma aplicação de utilidade pública desempenha papel determinante em sua eficácia, especialmente em situações de estresse e emergência provocadas pelo sumiço de um animal doméstico. Como ensinam Rogers, Sharp e Preece (2023), o projeto de interação deve criar experiências de uso fluidas, intuitivas e acolhedoras, minimizando a carga cognitiva exigida do usuário.
+O design de interface de uma aplicação móvel de utilidade pública desempenha papel determinante em sua eficácia prática, especialmente em cenários de emergência e estresse provocados pelo desaparecimento de um animal de estimação. Como ensinam Rogers, Sharp e Preece (2023), o projeto de interação humano-computador (IHC) deve priorizar a redução da carga cognitiva, construindo fluxos intuitivos, acolhedores e objetivos que permitam ao usuário executar ações críticas com o mínimo de esforço mental e sem barreiras de navegação.
 
-No desenvolvimento do WeFIND, o projeto gráfico e visual foi orientado pelas diretrizes de usabilidade da norma ABNT NBR ISO 9241-11 (ABNT, 2021) e pelos padrões de contraste e acessibilidade das diretrizes internacionais WCAG (W3C, 2023). A concepção priorizou a clareza nas informações, botões amplos adequados para o toque na tela de smartphones e elevado contraste para assegurar a legibilidade sob luz solar direta em ambientes abertos.
+No contexto do WeFIND, a concepção das interfaces visuais foi orientada pelos padrões consolidados da literatura de IHC, com ênfase nas dez heurísticas de usabilidade de Nielsen (1994) adaptadas para dispositivos móveis, e pelas diretrizes técnicas da norma ABNT NBR ISO 9241-11 (ABNT, 2021), que define usabilidade a partir da tríade de eficácia, eficiência e satisfação do usuário. A aplicação dessas diretrizes buscou assegurar que qualquer cidadão, independentemente de sua familiaridade com smartphones, consiga registrar um alerta ou consultar ocorrências com agilidade.
+
+Adicionalmente, o projeto gráfico incorporou os preceitos universais de acessibilidade e contraste das diretrizes internacionais \textit{Web Content Accessibility Guidelines} (WCAG 2.1) em nível AA (W3C, 2023). A escolha tipográfica, a calibragem da paleta cromática e a ergonomia de toque foram rigorosamente planejadas para viabilizar o uso confortável do aplicativo em ambientes externos sob luz solar direta, situação cotidiana em buscas de rua por animais perdidos.
+
+As subseções seguintes descrevem a tipografia, a identidade visual e o logotipo concebido com apoio de inteligência artificial generativa, a paleta cromática oficial e o catálogo completo das principais telas desenvolvidas para a plataforma WeFIND.
+
+\clearpage
 
 \subsection{Tipografia e Hierarquia Visual}
 
-A escolha da tipografia estabeleceu a primeira base do design de interface do WeFIND, visto que a clareza na leitura rápida dos textos de alerta e dados de identificação dos animais é prioritária em um aplicativo de busca. A Figura~\ref{fig:tipografia} apresenta a família tipográfica adotada na aplicação.
+A definição tipográfica constitui a base fundamental do design de interface do WeFIND, visto que a legibilidade rápida de textos de alerta, características morfológicas dos animais e endereços é indispensável em momentos de urgência. A Figura~\ref{fig:tipografia} apresenta a família tipográfica adotada na aplicação.
 
 \begin{figure}[H]
     \centering
     \caption{Família Tipográfica Roboto Adotada no WeFIND}
     \label{fig:tipografia}
-    \includegraphics[width=0.95\textwidth]{imagens/03_arquitetura_design/figura15_tipografia_roboto.png}
+    \includegraphics[width=0.85\textwidth]{imagens/03_arquitetura_design/figura15_tipografia_roboto.png}
     \fonte{Google Fonts (2024)}
 \end{figure}
 
-Adotou-se a família tipográfica sem serifa Roboto (GOOGLE FONTS, 2024), consagrada no design para sistemas móveis por suas proporções geométricas equilibradas e excelente legibilidade em telas de diferentes dimensões e resoluções. A organização da interface fundamenta-se em uma hierarquia visual intuitiva: os títulos e termos de destaque utilizam o peso em negrito (Bold), os botões de ação e indicadores de status empregam o peso médio (Medium), e os corpos de texto descritivos, campos de formulário e orientações operacionais utilizam o peso normal (Regular), mantendo espaçamento entre linhas suficiente para uma leitura confortável.
+Adotou-se a família tipográfica sem serifa Roboto (GOOGLE FONTS, 2024), consagrada no ecossistema móvel por suas proporções geométricas equilibradas, ampla abertura de glifos e excelente legibilidade em telas com variadas densidades de pixels. A hierarquia visual do WeFIND fundamenta-se na modulação harmônica de três pesos da fonte, em que o peso em negrito (\textit{bold}) é aplicado prioritariamente em títulos de tela, nomes de animais, valores de recompensa e marcadores de estado para conduzir a atenção primária do usuário. Por sua vez, o peso médio (\textit{medium}) é empregado em rótulos de botões de ação, elementos da barra de navegação inferior e etiquetas de atributos morfológicos como espécie, raça e porte, ao passo que o peso regular é destinado aos corpos de texto descritivos, relatos de avistamentos, balões de conversação no chat e orientações contextuais de preenchimento. O espaçamento entrelinhas e as margens de toque mínimas de 48 por 48 pixels para áreas clicáveis foram calibrados em estrita conformidade com as diretrizes de ergonomia móvel, assegurando conforto visual e operabilidade eficiente com apenas uma mão.
+
+\clearpage
 
 \subsection{Identidade Visual e Conceito do Aplicativo}
 
-A identidade visual do WeFIND foi projetada para transmitir sentimentos de solidariedade, segurança e esperança. A própria denominação da plataforma une o pronome coletivo em língua inglesa ``We'' (Nós) ao verbo ``Find'' (Encontrar), expressando a premissa de que o resgate de um animal de estimação constitui um esforço compartilhado entre toda a comunidade.
+A identidade visual do WeFIND foi projetada para transmitir sentimentos de solidariedade comunitária, segurança, afeto e esperança. A própria denominação da plataforma une o pronome coletivo em língua inglesa ``We'' (Nós) ao verbo ``Find'' (Encontrar), expressando a premissa de que o resgate de um animal de estimação não é um drama individual, mas uma missão compartilhada entre toda a vizinhança.
 
-Para a concepção do ícone e símbolo gráfico oficial, utilizou-se a ferramenta de inteligência artificial generativa Flow Labs (FLOW LABS, 2026), explorada por meio de engenharia de prompt iterativa no Figma. Os critérios solicitados ao modelo incluíram estilo visual minimalista e plano apropriado para ícones móveis, integração harmoniosa das duas espécies assistidas pela plataforma por meio das silhuetas de um cão e de um gato, presença centralizada do marcador clássico de mapa como representação da busca espacial ativa por GPS, e predomínio das cores institucionais verde floresta e terracota sobre fundo branco puro.
+Para a concepção do ícone e símbolo gráfico oficial, utilizou-se a ferramenta de inteligência artificial generativa Flow Labs (FLOW LABS, 2026), explorada por meio de engenharia de prompt iterativa no Figma. Os critérios solicitados ao modelo incluíram estilo visual minimalista e plano apropriado para ícones móveis, integração harmoniosa de silhuetas representativas do universo pet por meio das formas estilizadas de um cão e de um gato como símbolos universais de afeto animal, presença centralizada do marcador clássico de mapa como representação da busca espacial ativa por GPS, e predomínio das cores institucionais verde floresta e terracota sobre fundo branco puro.
 
 O prompt textual que convergiu de maneira satisfatória para esses requisitos visuais foi estruturado nos seguintes termos:
 
@@ -36,11 +44,13 @@ A partir do vetor gerado, realizou-se o refinamento geométrico e alinhamento no
     \centering
     \caption{Logotipo Oficial e Ícone do Aplicativo WeFIND}
     \label{fig:logotipo}
-    \includegraphics[width=0.65\textwidth]{imagens/03_arquitetura_design/figura13_logotipo_wefind.png}
+    \includegraphics[width=0.60\textwidth]{imagens/03_arquitetura_design/figura13_logotipo_wefind.png}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 O símbolo gráfico reúne a silhueta de um cão à esquerda e de um gato à direita, circundando o marcador clássico de localização geográfica ao centro. Essa composição sintetiza a missão do sistema de atender às principais espécies domésticas, enquanto o marcador central enfatiza o recurso de geolocalização em mapa. As cores aplicadas reforçam a proposta: o tom Terracota acolhe as silhuetas dos animais e o Verde Esperança colore o pino de localização.
+
+\clearpage
 
 \subsection{Paleta Cromática Oficial}
 
@@ -48,9 +58,11 @@ A definição cromática do WeFIND baseou-se nos princípios da psicologia das c
 
 \begin{figure}[H]
     \centering
-    \caption{Identidade Visual e Paleta Cromática Oficial: (a) Cores Institucionais da Marca; (b) Cores Semânticas de Publicação; (c) Cores de Superfície e Elementos Neutros}
+    \caption{Identidade Visual e Paleta Cromática Oficial do WeFIND}
     \label{fig:paleta_cores}
-    \includegraphics[width=0.95\textwidth]{imagens/03_arquitetura_design/figura14_paleta_cores.jpeg}
+    \includegraphics[height=5.2cm,keepaspectratio]{imagens/03_arquitetura_design/figura14_paleta_cores.jpeg}
+    \par\vspace{0.15cm}
+    {\small (a) Cores Institucionais da Marca \quad\textbar\quad (b) Cores Semânticas de Publicação \quad\textbar\quad (c) Cores de Superfície e Neutros\par}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
@@ -62,15 +74,23 @@ Na alínea (b), encontram-se as Cores Semânticas de Publicação, concebidas pa
 
 Na alínea (c), reúnem-se as Cores de Superfície e Elementos Neutros: a tonalidade cinza suave de Fundo (\#F6F8F6) evita fadiga ocular; o tom branco puro de Superfície (\#FFFFFF) destaca cartões e campos interativos; e a tipografia principal em tom Azul Noturno Escuro (\#0F172A) garante conformidade rigorosa com os níveis de contraste AA e AAA exigidos pelas diretrizes de acessibilidade WCAG.
 
+\clearpage
+
 \subsection{Funcionamento e Telas do Aplicativo}
 
 O WeFIND organiza suas funcionalidades em fluxos de navegação diretos e objetivos, orientados pela jornada prática do tutor e sustentados por uma barra de navegação inferior permanente. A Figura~\ref{fig:telas_autenticacao} apresenta o fluxo inicial de recepção do usuário na plataforma.
 
 \begin{figure}[H]
     \centering
-    \caption{Telas Iniciais do Aplicativo WeFIND: (a) Tela de Autenticação (Login); (b) Tela de Apresentação da Plataforma (Modo Conhecer)}
+    \caption{Telas Iniciais do Aplicativo WeFIND}
     \label{fig:telas_autenticacao}
-    \includegraphics[width=0.98\textwidth]{imagens/04_telas_aplicativo/figura16_telas_autenticacao.jpeg}
+    \includegraphics[height=7.4cm,keepaspectratio]{imagens/04_telas_aplicativo/figura16_telas_autenticacao.jpeg}
+    \par\vspace{0.15cm}
+    \begin{minipage}{0.88\textwidth}
+        \begin{tabular}{@{}p{0.48\linewidth}@{\hspace{0.04\linewidth}}p{0.48\linewidth}@{}}
+            \centering\small (a) Tela de Autenticação (Login) & \centering\small (b) Tela de Apresentação (Modo Conhecer)
+        \end{tabular}
+    \end{minipage}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
@@ -86,31 +106,42 @@ Após a realização do login, o usuário é direcionado à tela principal da ap
     \centering
     \caption{Tela Inicial e Feed de Publicações de Animais Ativos}
     \label{fig:tela_feed}
-    \includegraphics[width=0.65\textwidth]{imagens/04_telas_aplicativo/figura17_tela_feed.jpeg}
+    \includegraphics[height=9.2cm,keepaspectratio]{imagens/04_telas_aplicativo/figura17_tela_feed.jpeg}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Conforme apresentado na Figura~\ref{fig:tela_feed}, a interface do feed inicial concentra o cabeçalho superior com barra de busca por texto, botão com ícone de sino de notificações e botão de filtros rápidos. Abaixo, são dispostos os cartões de publicação verticalmente roláveis. Cada cartão destaca uma fotografia em alta resolução do pet, acompanhada por etiqueta de identificação com o status da ocorrência (Perdido, Encontrado ou Adoção), nome do animal, raça, tempo decorrido desde a postagem e a distância geográfica precisa em quilômetros em relação à localização atual do usuário. Na base da tela, a barra de navegação fixa dá acesso às cinco áreas centrais: Início, Mapa, botão circular destacado central para Novo Cadastro (+), Mensagens e Perfil.
 
+\clearpage
+
 A navegação espacial em mapa interativo representa uma das principais funcionalidades do WeFIND. Como ilustrado na Figura~\ref{fig:tela_mapa}, o fluxo é estruturado em quatro etapas operacionais contínuas.
 
 \begin{figure}[H]
     \centering
-    \caption{Fluxo de Utilização do Mapa Interativo e Traçado de Rotas GPS: (a) Solicitação de Permissão de Localização; (b) Mapa Principal com Marcadores; (c) Painel Resumido do Animal Selecionado; (d) Rota Viária Traçada até o Ponto do Animal}
+    \caption{Fluxo de Utilização do Mapa Interativo e Traçado de Rotas GPS}
     \label{fig:tela_mapa}
-    \includegraphics[width=0.98\textwidth]{imagens/04_telas_aplicativo/figura18_tela_mapa.jpeg}
+    \includegraphics[height=4.8cm,keepaspectratio]{imagens/04_telas_aplicativo/figura18_tela_mapa.jpeg}
+    \par\vspace{0.12cm}
+    \begin{minipage}{\textwidth}
+        \begin{tabular}{@{}p{0.24\linewidth}@{\hspace{0.013\linewidth}}p{0.24\linewidth}@{\hspace{0.013\linewidth}}p{0.24\linewidth}@{\hspace{0.013\linewidth}}p{0.24\linewidth}@{}}
+            \centering\footnotesize (a) Permissão de Localização &
+            \centering\footnotesize (b) Mapa Principal com Marcadores &
+            \centering\footnotesize (c) Detalhes do Animal Selecionado &
+            \centering\footnotesize (d) Rota para o Animal Visto
+        \end{tabular}
+    \end{minipage}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A Figura~\ref{fig:tela_mapa} disseca a experiência de busca espacial da aplicação:
+A experiência de busca espacial da Figura~\ref{fig:tela_mapa} estrutura-se em quatro fases operacionais: na alínea (a), exibe-se a Tela de Permissão de Localização, acionada no primeiro acesso ao mapa. A interface apresenta o diálogo nativo do sistema operacional solicitando acesso à posição do aparelho, com opções de autorização ``Durante o uso do app'', ``Apenas esta vez'' ou ``Não permitir''.
 
-Na alínea (a), exibe-se a Tela de Permissão de Localização, acionada no primeiro acesso ao módulo cartográfico. A interface apresenta o diálogo nativo do sistema operacional solicitando acesso à posição do aparelho, oferecendo ao usuário as opções de precisão exata ou aproximada, com botões para autorização ``Durante o uso do app'', ``Apenas esta vez'' ou ``Não permitir''.
+Na alínea (b), apresenta-se a Tela do Mapa Principal, contendo campo superior de busca rápida, botão de filtro territorial e a renderização do mapa em tempo real via Google Maps. Sobre o mapa, destacam-se marcadores circulares com as cores semânticas oficiais e ícones diferenciados por espécie (identificando cães, gatos, aves e outros animais domésticos), indicando os pontos exatos de sumiço ou avistamento, além do botão flutuante de recentralização.
 
-Na alínea (b), apresenta-se a Tela do Mapa Principal. A interface exibe campo superior de busca rápida (``Nome, raça, espécie ou cidade...''), botão de filtro territorial e a renderização do mapa de ruas em tempo real provido pelo Google Maps. Sobre o mapa, destacam-se marcadores circulares com as cores semânticas oficiais e silhuetas de cães e gatos, indicando os pontos exatos de sumiço ou avistamento, além do botão flutuante de recentralização no canto inferior direito.
+Na alínea (c), visualiza-se a Tela de Detalhes do Animal Selecionado. Ao tocar sobre qualquer marcador do mapa, emerge um painel modal na parte inferior contendo o e-mail do autor, distância pelo GPS (2,3 km), data de postagem, etiquetas de porte e pelagem, além de três botões interativos: ``Detalhes'', ``Vi o Pet'' e ``Iniciar Rota''.
 
-Na alínea (c), visualiza-se a Tela de Detalhes do Animal Selecionado. Ao tocar sobre qualquer marcador do mapa, emerge um painel modal na parte inferior contendo o e-mail do autor, distância calculada pelo GPS (2,3 km), data de postagem, título descritivo do fato, etiquetas de características físicas (macho, pequeno, pelagem preta) e a região territorial aproximada. O painel disponibiliza três botões interativos: ``Detalhes'' (para abrir a ficha completa), ``Vi o Pet'' (para enviar avistamento imediato) e ``Iniciar Rota''.
+Na alínea (d), ilustra-se a Tela de Rota para o Animal Visto, ativada ao clicar em ``Iniciar Rota''. O sistema calcula a melhor rota viária até o local exato da ocorrência, desenhando o traçado verde sobre o mapa e exibindo o tempo estimado de trajeto (6 minutos), a distância total (3,5 km) e botões operacionais para navegação.
 
-Na alínea (d), ilustra-se a Tela de Rota para o Animal Visto, ativada ao clicar em ``Iniciar Rota''. O sistema calcula a melhor rota viária até o local exato da ocorrência, desenhando o traçado verde sobre o mapa viário e exibindo na base da tela o tempo estimado de trajeto (6 minutos), a distância total (3,5 km) e botões operacionais para ``Recentralizar'', ``Visão Geral'' e ``Encerrar'' a navegação.
+\clearpage
 
 Ao selecionar a opção de detalhes completos em qualquer publicação, o aplicativo abre a tela exibida na Figura~\ref{fig:tela_detalhes}.
 
@@ -118,11 +149,13 @@ Ao selecionar a opção de detalhes completos em qualquer publicação, o aplica
     \centering
     \caption{Tela de Detalhes Completos da Publicação}
     \label{fig:tela_detalhes}
-    \includegraphics[width=0.65\textwidth]{imagens/04_telas_aplicativo/figura19_tela_detalhes.jpeg}
+    \includegraphics[height=10.5cm,keepaspectratio]{imagens/04_telas_aplicativo/figura19_tela_detalhes.jpeg}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_detalhes}, a interface organiza-se com um carrossel fotográfico superior que permite a visualização em alta definição de todas as fotos cadastradas do animal, acompanhado por botões de compartilhamento e denúncia no canto superior direito. Abaixo da galeria, figuram o nome do animal em destaque, o badge de status operacional, espécie, raça, sexo, porte, idade e descrição textual detalhada de marcas particulares e hábitos. A tela incorpora ainda um minimapa interativo destacando as coordenadas da ocorrência, o botão para registro comunitário de avistamento e o botão primário de ação ``Conversar no Chat'', que conecta o usuário diretamente com o anunciante.
+
+\clearpage
 
 Para publicar um animal desaparecido, acolhido na rua ou disponível para adoção, o tutor utiliza o formulário estruturado apresentado na Figura~\ref{fig:tela_cadastro}.
 
@@ -130,11 +163,13 @@ Para publicar um animal desaparecido, acolhido na rua ou disponível para adoç�
     \centering
     \caption{Tela de Cadastro e Edição de Publicação de Animal}
     \label{fig:tela_cadastro}
-    \includegraphics[width=0.65\textwidth]{imagens/04_telas_aplicativo/figura20_tela_cadastro.jpeg}
+    \includegraphics[height=10.5cm,keepaspectratio]{imagens/04_telas_aplicativo/figura20_tela_cadastro.jpeg}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 A interface da Figura~\ref{fig:tela_cadastro} guia o usuário de forma progressiva. O formulário inicia pela seleção da modalidade da ocorrência por meio de abas horizontais (Perdido, Encontrado ou Adoção), seguida pela área de upload fotográfico que suporta captura direta na câmera ou seleção na galeria do celular. Na sequência, são preenchidos os campos de nome do pet, espécie (cão ou gato), raça, porte físico, coloração predominante e texto explicativo. Por fim, o fluxo integra a marcação obrigatória do ponto geográfico em mapa interativo, permitindo arrastar o marcador para o local exato do desaparecimento antes de acionar o botão final de publicação.
+
+\clearpage
 
 Como suporte às ações de divulgação física nas ruas e comércios locais, o sistema disponibiliza a ferramenta de geração de cartazes apresentada na Figura~\ref{fig:tela_cartaz}.
 
@@ -142,11 +177,13 @@ Como suporte às ações de divulgação física nas ruas e comércios locais, o
     \centering
     \caption{Cartaz Digital de Busca de Animais com Código QR}
     \label{fig:tela_cartaz}
-    \includegraphics[width=0.65\textwidth]{imagens/04_telas_aplicativo/figura21_tela_cartaz.jpeg}
+    \includegraphics[height=10.5cm,keepaspectratio]{imagens/04_telas_aplicativo/figura21_tela_cartaz.jpeg}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 O cartaz digital gerado na Figura~\ref{fig:tela_cartaz} adota diagramação gráfica profissional de alto impacto visual. Em seu topo, destaca-se a faixa em cor de alerta com a palavra ``PROCURA-SE'', seguida pela foto central do pet em grandes dimensões, nome do animal, raça, características físicas singulares e o local do sumiço. O elemento central do cartaz é o código QR dinâmico posicionado na base: ao apontar a câmera de qualquer celular para o código, a pessoa é direcionada imediatamente à página do animal no sistema, permitindo visualizar fotos adicionais e registrar avistamentos sem a necessidade de expor telefones particulares no papel. Na parte inferior da interface, botões dedicados viabilizam a impressão física do arquivo em PDF ou o compartilhamento imediato em redes sociais.
+
+\clearpage
 
 Para intermediar o contato seguro e ágil entre tutores e informantes da comunidade, o aplicativo integra o canal de comunicação exibido na Figura~\ref{fig:tela_chat}.
 
@@ -154,11 +191,13 @@ Para intermediar o contato seguro e ágil entre tutores e informantes da comunid
     \centering
     \caption{Tela de Chat Privativo em Tempo Real}
     \label{fig:tela_chat}
-    \includegraphics[width=0.65\textwidth]{imagens/04_telas_aplicativo/figura22_tela_chat.jpeg}
+    \includegraphics[height=10.5cm,keepaspectratio]{imagens/04_telas_aplicativo/figura22_tela_chat.jpeg}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 A interface de conversação privativa (Figura~\ref{fig:tela_chat}) organiza-se com barra superior exibindo o nome e avatar do interlocutor, status de conexão em tempo real e atalho para a publicação do animal em questão. O corpo da tela apresenta os balões de conversa ordenados cronologicamente, com diferenciação cromática para mensagens enviadas e recebidas, além de carimbos de horário e indicador de confirmação de leitura. A barra inferior conta com campo de digitação de texto, botão com ícone de clipe para anexo de imagens comprobatórias e o botão verde com ícone de seta para envio instantâneo da mensagem.
+
+\clearpage
 
 A personalização das buscas por proximidade e por critérios zootécnicos é viabilizada pelo painel de filtros avançados apresentado na Figura~\ref{fig:tela_filtros}.
 
@@ -166,11 +205,13 @@ A personalização das buscas por proximidade e por critérios zootécnicos é v
     \centering
     \caption{Painel de Filtros Avançados de Busca}
     \label{fig:tela_filtros}
-    \includegraphics[width=0.65\textwidth]{imagens/04_telas_aplicativo/figura23_tela_filtros.jpeg}
+    \includegraphics[height=10.5cm,keepaspectratio]{imagens/04_telas_aplicativo/figura23_tela_filtros.jpeg}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 O painel de filtros (Figura~\ref{fig:tela_filtros}) abre-se como uma folha modal sobreposta. Ele disponibiliza botões de seleção múltipla para espécie (cão, gato ou ambos), status da ocorrência (perdidos, encontrados ou para adoção), porte corporal (pequeno, médio ou grande) e sexo do animal. Além disso, incorpora uma barra deslizante (\textit{slider}) para ajuste dinâmico do raio geográfico de busca (de 1 km a 50 km), permitindo circunscrever a listagem ao bairro ou expandi-la a municípios vizinhos, finalizando com o botão de confirmação ``Aplicar Filtros''.
+
+\clearpage
 
 A gestão da conta e o histórico individual de participação comunitária concentram-se na tela de perfil, ilustrada na Figura~\ref{fig:tela_perfil}.
 
@@ -178,11 +219,13 @@ A gestão da conta e o histórico individual de participação comunitária conc
     \centering
     \caption{Tela de Perfil do Usuário e Conquistas de Guardião}
     \label{fig:tela_perfil}
-    \includegraphics[width=0.65\textwidth]{imagens/04_telas_aplicativo/figura24_tela_perfil.jpeg}
+    \includegraphics[height=10.5cm,keepaspectratio]{imagens/04_telas_aplicativo/figura24_tela_perfil.jpeg}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Conforme ilustrado na Figura~\ref{fig:tela_perfil}, a interface de perfil exibe a fotografia do usuário, nome completo, e-mail cadastrado, data de ingresso e botão de edição de dados pessoais. Logo abaixo, a tela incorpora o sistema de engajamento comunitário por gamificação denominado ``Conquistas de Guardião'', exibindo distintivos e medalhas conquistados pelo usuário conforme ele realiza avistamentos válidos, compartilha anúncios ou ajuda no resgate de animais da vizinhança. A seção inferior organiza abas de acesso rápido às suas próprias publicações ativas, publicações salvas nos favoritos e atalho para deslogar do sistema.
+
+\clearpage
 
 Por fim, a aplicação estimula a prevenção e a guarda responsável mediante o Perfil Digital do Pet, apresentado na Figura~\ref{fig:tela_perfil_pet}.
 
@@ -190,11 +233,12 @@ Por fim, a aplicação estimula a prevenção e a guarda responsável mediante o
     \centering
     \caption{Tela do Perfil Digital do Pet}
     \label{fig:tela_perfil_pet}
-    \includegraphics[width=0.65\textwidth]{imagens/04_telas_aplicativo/figura25_tela_rg_pet.jpeg}
+    \includegraphics[height=10.5cm,keepaspectratio]{imagens/04_telas_aplicativo/figura25_tela_rg_pet.jpeg}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 A interface do Perfil Digital do Pet (Figura~\ref{fig:tela_perfil_pet}) funciona como um documento de identidade preventivo do animal. A tela apresenta o cartão de identificação com foto do animal, nome em destaque, raça, número de registro interno, histórico vacinal e dados médicos relevantes (alergias ou medicações contínuas). No centro do documento, exibe-se um código QR permanente e exclusivo gerado para aquele pet: o tutor pode imprimir esse código em formato reduzido para acoplar à coleira do animal. Em caso de fuga acidental, qualquer pessoa que escanear a coleira visualiza a ficha de emergência do animal e aciona o tutor instantaneamente pela aplicação, sem depender de leitor de microchip em clínica veterinária.
 
 A consolidação de todas essas telas e componentes compõe a versão final executável do WeFIND. O Capítulo 8 apresenta o planejamento, a execução e os resultados dos testes funcionais e da avaliação de usabilidade realizados sobre a aplicação.
+
 \clearpage

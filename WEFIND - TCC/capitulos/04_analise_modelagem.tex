@@ -1,14 +1,34 @@
 \section{ANÁLISE E MODELAGEM DO SISTEMA WeFIND}
 
-A partir dos dados da pesquisa com a comunidade e das limitações identificadas nos aplicativos similares (Capítulo 3), este capítulo apresenta os requisitos e a modelagem do sistema proposto. Como explica Valente (2023), a análise e a modelagem organizam o funcionamento do software, transformando as necessidades práticas dos usuários em regras bem definidas para orientar o desenvolvimento e os testes do aplicativo.
+A transição entre o diagnóstico empírico dos problemas enfrentados pela sociedade e a efetiva construção de uma ferramenta de software demanda rigor analítico e formalismo técnico. No ciclo de engenharia de software, essa transição materializa-se na fase de análise e modelagem de sistemas, etapa responsável por traduzir as carências e os anseios identificados junto aos tutores em especificações lógicas estruturadas, regras de negócio inequívocas e diagramas visuais padronizados (PRESSMAN; MAXIM, 2021; SOMMERVILLE, 2019).
 
-Neste capítulo, são apresentados os 43 requisitos funcionais e os 14 requisitos não funcionais definidos para a solução tecnológica, acompanhados da modelagem conceitual e comportamental expressa por meio de diagramas da \textit{Unified Modeling Language} (UML).
+Como elucida Valente (2023), uma modelagem criteriosa cumpre três objetivos capitais: estabelece a base conceitual compartilhada entre desenvolvedores e usuários finais, define com precisão as fronteiras e responsabilidades do sistema computacional e antecipa a descoberta de inconsistências ou omissões arquiteturais que, se postergadas para a etapa de codificação, gerariam impactos severos de custo, tempo e retrabalho.
+
+No projeto WeFIND, o processo de análise apoiou-se na elicitação de 43 requisitos funcionais e 14 requisitos não funcionais, fundamentados nos achados da pesquisa de campo (Capítulo 3) e orientados pelas normas de qualidade de produto da família ISO/IEC 25010 (ISO, 2023). Complementarmente, a especificação comportamental e conceitual do sistema foi documentada por meio da \textit{Unified Modeling Language} (UML), utilizando-se diagramas de casos de uso para mapear as interações dos perfis de usuário e diagramas de classes de domínio para formalizar a estrutura estática das informações persistidas.
+
+As seções a seguir detalham a engenharia de requisitos, a organização modular das funções do aplicativo e os modelos gráficos representativos do ecossistema WeFIND.
+
+\clearpage
 
 \subsection{Engenharia e Levantamento de Requisitos}
 
-Segundo Valente (2023), os requisitos funcionais definem o que o sistema deve fazer, ou seja, as ações e os serviços que o aplicativo coloca à disposição dos usuários. Com base nisso, o Quadro 2 relaciona os 43 requisitos funcionais definidos para o aplicativo, detalhando as rotinas de cadastro, consulta, alteração e exclusão de cada módulo.
+A engenharia de requisitos constitui a espinha dorsal de qualquer projeto de tecnologia, pois formaliza exatamente o que a aplicação deve realizar e sob quais restrições e qualidades operacionais deve funcionar (SOMMERVILLE, 2019). A elicitação de requisitos do WeFIND decorreu da triangulação metodológica descrita no Capítulo 3: as dores manifestadas pelos 20 tutores entrevistados no levantamento de campo evidenciaram a carência de um mapa interativo e de canais de comunicação privativos, enquanto a análise comparativa de plataformas similares revelou a ausência de recursos preventivos acessíveis e gratuitos.
+
+Para estruturar o desenvolvimento de maneira modular e garantir a rastreabilidade direta entre cada funcionalidade e seu respectivo objetivo operacional, os 43 requisitos funcionais estabelecidos foram organizados em oito módulos sistêmicos integrados.
+
+O módulo de gestão de contas, acesso e perfil (abrangendo os requisitos RF01 a RF08) concentra os fluxos de cadastro de usuário, autenticação persistente com sessão em nuvem, recuperação segura de credenciais por redefinição de senha via WhatsApp, consulta e atualização dos dados cadastrais e foto de perfil, encerramento protegido da sessão, painel central de notificações e o acesso público em modo visitante sem obrigatoriedade de login prévio. Em sequência, o módulo de publicações e gestão de ocorrências (RF09 a RF17) viabiliza o registro de animais nas categorias de perdidos, encontrados ou para adoção com upload fotográfico, seleção mandatória do ponto geográfico no mapa, indicação opcional de tutor terceiro, ordenação espacial dinâmica no feed de notícias, filtragem multicritério simultânea, exibição de detalhes completos da ocorrência, edição, encerramento com sucesso e exclusão definitiva de publicações.
+
+A exploração cartográfica e navegação espacial (RF18 a RF21) organiza a renderização dos marcadores coloridos diferenciados por espécie sobre o mapa (abrangendo cães, gatos, aves e outros animais domésticos), disponibiliza mecanismos de busca e filtragem em tempo real sobre os pontos geográficos, permite o ajuste contínuo do raio de busca de proximidade e realiza o cálculo automatizado de rotas viárias com estimativa de tempo e distância até o animal. Complementarmente, o módulo de rastreamento colaborativo e avistamentos (RF22 a RF27) assegura o registro comunitário de avistamentos de animais soltos com coordenadas e fotografia pelo informante, organizando uma linha do tempo cronológica na publicação, além de possibilitar a manutenção de relatos pelo autor e a atualização dinâmica do marcador principal do pet no mapa conforme novos relatos confirmados.
+
+A prevenção e a guarda responsável consolidam-se no módulo do Perfil Digital do Pet (RF28 a RF33), possibilitando o registro preventivo dos animais da família contendo histórico veterinário e vacinal, a geração do perfil digital com código QR exclusivo para acoplamento em coleiras, a manutenção cadastral contínua e a conversão instantânea da ficha preventiva em alerta público de busca em caso de fuga imprevista. Para ampliar a visibilidade dos casos, o módulo de suporte à divulgação externa e cartazes digitais (RF34 a RF36) fornece a geração automatizada de peças gráficas diagramadas com fotografia, dados vitais e código QR inteligente, oferecendo suporte aos formatos padronizados para impressão física em folha A4 e publicação em Stories e Feed de redes sociais, integrado ao painel de compartilhamento nativo do smartphone.
+
+Por fim, a comunicação direta e a integridade da comunidade são asseguradas por dois módulos essenciais. O módulo de canal privativo de comunicação e chat (RF37 a RF39) estrutura o diálogo direto e em tempo real entre quem perdeu e quem encontrou o pet, viabilizando a troca instantânea de mensagens de texto via WebSockets e o envio de fotografias comprobatórias de identidade física do animal, eliminando a exposição de telefones particulares em vias públicas. Simultaneamente, o módulo de governança comunitária, reencontros e moderação (RF40 a RF43) promove o engajamento comunitário por meio da publicação e consulta de histórias felizes de reencontro no mural colaborativo, garantindo a integridade da plataforma através de denúncias comunitárias de anúncios impróprios e rotinas administrativas de auditoria, moderação e suspensão de contas fraudulentas.
+
+\clearpage
 
 \subsubsection{Requisitos Funcionais}
+
+O Quadro~\ref{quadro:funcionais} consolida a especificação integral dos 43 requisitos funcionais do aplicativo WeFIND, indicando para cada item o respectivo identificador unívoco, a denominação operacional e a descrição do comportamento esperado pelo sistema.
 
 \vspace{0.3cm}
 {
@@ -17,12 +37,12 @@ Segundo Valente (2023), os requisitos funcionais definem o que o sistema deve fa
 \renewcommand{\arraystretch}{1.18}
 \begin{longtable}{|>{\centering\arraybackslash}p{1.3cm}|>{\raggedright\arraybackslash}p{4.2cm}|>{\raggedright\arraybackslash}p{8.8cm}|}
 \hline
-\multicolumn{3}{|c|}{\textbf{Quadro 2: Requisitos Funcionais}} \\ \hline
+\multicolumn{3}{|c|}{\textbf{Quadro 2: Requisitos Funcionais do Sistema WeFIND}} \\ \hline
 \textbf{ID} & \textbf{Nome do Requisito} & \textbf{Descrição do Comportamento Esperado} \\ \hline
 \endfirsthead
 
 \hline
-\multicolumn{3}{|c|}{\textbf{Quadro 2: Requisitos Funcionais (Continuação)}} \\ \hline
+\multicolumn{3}{|c|}{\textbf{Quadro 2: Requisitos Funcionais do Sistema WeFIND (Continuação)}} \\ \hline
 \textbf{ID} & \textbf{Nome do Requisito} & \textbf{Descrição do Comportamento Esperado} \\ \hline
 \endhead
 
@@ -36,9 +56,9 @@ Segundo Valente (2023), os requisitos funcionais definem o que o sistema deve fa
 
 \textbf{RF01} & Cadastrar Usuário & Permitir a criação de conta fornecendo nome completo, e-mail, telefone e senha de acesso. \\ \hline
 \textbf{RF02} & Autenticar Usuário (Login) & Validar credenciais de acesso e iniciar sessão persistente no aplicativo via Supabase Auth. \\ \hline
-\textbf{RF03} & Redefinir Senha de Acesso & Permitir a recuperação de conta esquecida por meio de envio de link ou código seguro de redefinição. \\ \hline
+\textbf{RF03} & Redefinir Senha de Acesso & Permitir a recuperação de conta esquecida por meio de envio de código seguro via WhatsApp. \\ \hline
 \textbf{RF04} & Consultar Perfil de Usuário & Exibir informações de cadastro, foto de perfil, dados de contato e histórico de atividades do usuário. \\ \hline
-\textbf{RF05} & Editar Dados de Perfil & Permitir a atualização de nome, imagem de exibição, número de telefone e localidade de residência. \\ \hline
+\textbf{RF05} & Editar Dados de Perfil & Permitir a atualização de nome, foto, WhatsApp com confirmação em duas etapas, redes sociais e localização GPS com raio de busca. \\ \hline
 \textbf{RF06} & Encerrar Sessão (Logout) & Finalizar a sessão ativa no dispositivo móvel de forma segura, limpando dados temporários e credenciais em cache. \\ \hline
 \textbf{RF07} & Consultar Notificações & Apresentar painel com avisos sobre novos avistamentos, mensagens recebidas e alertas de publicações próximas. \\ \hline
 \textbf{RF08} & Permitir Modo Visitante & Disponibilizar acesso público inicial para consulta de publicações e navegação no mapa sem exigir login imediato. \\ \hline
@@ -53,7 +73,7 @@ Segundo Valente (2023), os requisitos funcionais definem o que o sistema deve fa
 \textbf{RF17} & Excluir Publicação & Permitir ao autor remover permanentemente o anúncio cadastrado da base de dados e do mapa. \\ \hline
 \textbf{RF18} & Visualizar Animais no Mapa & Apresentar mapa interativo com marcadores coloridos identificando animais perdidos, encontrados e disponíveis para adoção. \\ \hline
 \textbf{RF19} & Pesquisar Marcadores no Mapa & Filtrar em tempo real os marcadores exibidos no mapa de acordo com termos de busca e atributos do pet. \\ \hline
-\textbf{RF20} & Ajustar Raio de Proximidade & Permitir configurar a distância de abrangência da busca geográfica no mapa (de 15 km até todo o território nacional). \\ \hline
+\textbf{RF20} & Ajustar Raio de Proximidade & Permitir configurar a distância de abrangência da busca geográfica no mapa (de 5 km até todo o território nacional). \\ \hline
 \textbf{RF21} & Traçar Rota GPS até o Ponto & Calcular e desenhar no mapa o trajeto viário e estimativa de deslocamento até o local onde o animal foi visto. \\ \hline
 \textbf{RF22} & Cadastrar Avistamento & Permitir a qualquer usuário relatar que avistou um pet perdido, anexando nova foto, coordenadas e descrição do local. \\ \hline
 \textbf{RF23} & Selecionar Local do Avistamento & Abrir o mapa interativo para posicionar o marcador no local exato onde o animal foi avistado em via pública. \\ \hline
@@ -80,27 +100,13 @@ Segundo Valente (2023), os requisitos funcionais definem o que o sistema deve fa
 \end{longtable}
 }
 
-Para estruturar o desenvolvimento de maneira modular e garantir a rastreabilidade de cada funcionalidade, os 43 requisitos funcionais apresentados no Quadro 2 organizam-se em oito módulos operacionais interconectados:
-
-O primeiro módulo concentra o gerenciamento de acesso e contas de usuário, englobando as rotinas essenciais de cadastro inicial (RF01), autenticação segura com persistência de sessão (RF02), recuperação de credenciais mediante redefinição de senha (RF03), consulta e edição dos dados de perfil (RF04 e RF05), encerramento protegido da sessão com limpeza de cache (RF06), acompanhamento de notificações do sistema (RF07) e a disponibilização do modo visitante (RF08), permitindo que qualquer pessoa consulte ocorrências sem barreira de login imediato.
-
-O segundo módulo estabelece o núcleo de publicações de animais, cobrindo o registro formal de anúncios nas categorias perdido, encontrado ou adoção com fotografias e dados morfológicos (RF09), marcação direta de coordenadas no mapa interativo (RF10), indicação opcional de tutor terceiro (RF11), ordenação espacial dinâmica no feed (RF12), filtragem combinada multicritério (RF13), exibição de detalhes completos da ocorrência (RF14), atualização de dados (RF15), encerramento com sucesso para casos resolvidos (RF16) e exclusão definitiva do anúncio (RF17).
-
-O terceiro módulo contempla a exploração cartográfica e navegação espacial, reunindo a plotagem de marcadores coloridos com as espécies canina e felina sobre o mapa (RF18), mecanismos de busca e filtragem em tempo real sobre os pontos renderizados (RF19), ajuste interativo do raio geográfico de proximidade entre 15 km e a totalidade do território nacional (RF20) e o cálculo automático de rotas viárias com estimativa de tempo e distância até o ponto do animal (RF21).
-
-O quarto módulo viabiliza o rastreamento colaborativo por avistamentos comunitários, assegurando que moradores e voluntários relatem a visualização de pets soltos na rua com foto e coordenadas (RF22 e RF23), mantenham a linha do tempo de avistamentos atualizada (RF24), gerenciem eventuais correções (RF25 e RF26) e atualizem automaticamente a posição geográfica principal do animal no mapa conforme novos relatos confirmados (RF27).
-
-O quinto módulo estimula a prevenção e guarda responsável por meio do Perfil Digital do Pet, viabilizando o cadastro preventivo dos animais da família com dados veterinários e vacinas (RF28 e RF29), emissão da carteirinha digital com código QR exclusivo para acoplamento em coleiras (RF30), manutenção cadastral contínua (RF31 e RF32) e a conversão instantânea da ficha do pet em alerta público no mapa em caso de fuga (RF33).
-
-O sexto módulo fornece suporte à divulgação externa por meio da geração automatizada de cartazes digitais de busca providos de código QR dinâmico (RF34), suporte aos formatos padronizados para impressão física A4, Stories e Feed (RF35) e integração direta com o compartilhamento nativo do smartphone para distribuição em mensageiros e redes sociais (RF36).
-
-O sétimo módulo estrutura o canal privativo de comunicação, permitindo o diálogo direto e em tempo real entre quem perdeu e quem encontrou o animal (RF37), troca instantânea de mensagens de texto via WebSockets (RF38) e anexo de fotografias comprobatórias (RF39), resguardando a privacidade ao dispensar a exposição de números telefônicos particulares em vias públicas.
-
-Por fim, o oitavo módulo integra as ferramentas comunitárias e administrativas, proporcionando o registro e a consulta pública de histórias felizes de reencontro no mural colaborativo (RF40 e RF41), ao passo que a integridade e a segurança do ecossistema são mantidas por meio de denúncias de anúncios indevidos pela própria comunidade (RF42) e pelas rotinas administrativas de moderação, auditoria e suspensão de contas fraudulentas (RF43).
+\clearpage
 
 \subsubsection{Requisitos Não Funcionais}
 
-Os requisitos não funcionais definem os padrões de qualidade, segurança e desempenho do aplicativo, com base na norma ISO/IEC 25010 (ISO, 2023) e na literatura de Engenharia de Software (PRESSMAN; MAXIM, 2021; VALENTE, 2023). O Quadro 3 apresenta os 14 requisitos não funcionais estabelecidos para o sistema proposto.
+Enquanto os requisitos funcionais estabelecem as ações e serviços oferecidos pela aplicação móvel, os requisitos não funcionais especificam as restrições arquiteturais, os critérios de qualidade do produto e os padrões de desempenho sob os quais o sistema deve operar (VALENTE, 2023). A definição desses parâmetros fundamentou-se na norma internacional ISO/IEC 25010 (ISO, 2023), englobando aspectos de eficiência de desempenho, compatibilidade multiplataforma, segurança da informação e confiabilidade.
+
+O Quadro~\ref{quadro:nao_funcionais} sintetiza os 14 requisitos não funcionais estabelecidos para a plataforma WeFIND, organizados por critérios mensuráveis de aceitação.
 
 \vspace{0.3cm}
 {
@@ -109,12 +115,12 @@ Os requisitos não funcionais definem os padrões de qualidade, segurança e des
 \renewcommand{\arraystretch}{1.18}
 \begin{longtable}{|>{\centering\arraybackslash}p{1.4cm}|>{\raggedright\arraybackslash}p{3.8cm}|>{\raggedright\arraybackslash}p{9.2cm}|}
 \hline
-\multicolumn{3}{|c|}{\textbf{Quadro 3: Requisitos Não Funcionais}} \\ \hline
+\multicolumn{3}{|c|}{\textbf{Quadro 3: Requisitos Não Funcionais do Sistema WeFIND}} \\ \hline
 \textbf{ID} & \textbf{Critério de Qualidade} & \textbf{Métrica Mensurável / Restrição Arquitetural} \\ \hline
 \endfirsthead
 
 \hline
-\multicolumn{3}{|c|}{\textbf{Quadro 3: Requisitos Não Funcionais (Continuação)}} \\ \hline
+\multicolumn{3}{|c|}{\textbf{Quadro 3: Requisitos Não Funcionais do Sistema WeFIND (Continuação)}} \\ \hline
 \textbf{ID} & \textbf{Critério de Qualidade} & \textbf{Métrica Mensurável / Restrição Arquitetural} \\ \hline
 \endhead
 
@@ -126,38 +132,40 @@ Os requisitos não funcionais definem os padrões de qualidade, segurança e des
 \multicolumn{3}{|l|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
 \endlastfoot
 
-\textbf{RNF01} & Carregamento Rápido e Cache & O feed deve abrir a partir da memória local em menos de 1,0 segundo, atualizando os dados com o servidor em segundo plano. \\ \hline
-\textbf{RNF02} & Eficiência de Rede & As consultas com fotos e dados do autor devem ser feitas de uma só vez, evitando consumo desnecessário de internet móvel. \\ \hline
-\textbf{RNF03} & Compactação de Fotos & As fotos tiradas na câmera ou enviadas da galeria devem ser reduzidas no próprio celular antes do envio para a nuvem. \\ \hline
-\textbf{RNF04} & Cálculo de Distância no Mapa & O cálculo de proximidade das publicações deve rodar com rapidez no celular sem causar travamentos na navegação. \\ \hline
-\textbf{RNF05} & Proteção de Dados (LGPD) & O endereço exato de casa nunca deve ser mostrado publicamente no mapa, exibindo apenas o bairro e a cidade. \\ \hline
-\textbf{RNF06} & Proteção para Lares Temporários & Animais em acolhimento temporário não devem ter a localização exata do protetor exibida no mapa público. \\ \hline
-\textbf{RNF07} & Acesso Seguro à Conta & As operações críticas como cadastro e login devem utilizar envio de links seguros de verificação. \\ \hline
-\textbf{RNF08} & Segurança no Banco de Dados & O banco PostgreSQL deve utilizar regras de segurança (RLS) para garantir que cada usuário só edite suas próprias publicações. \\ \hline
-\textbf{RNF09} & Criptografia na Comunicação & Todo o tráfego de informações entre o celular e os servidores deve utilizar protocolo HTTPS com criptografia segura. \\ \hline
-\textbf{RNF10} & Visualização Agradável e Temas & A interface deve oferecer modo claro e escuro, com contraste visual confortável para leitura ao sol. \\ \hline
-\textbf{RNF11} & Compatibilidade Android e iOS & O aplicativo deve rodar em dispositivos Android (versão 7.0 ou superior) e iOS (versão 13 ou superior) via React Native. \\ \hline
-\textbf{RNF12} & Adaptação a Telas & O design deve se ajustar automaticamente a diferentes tamanhos de tela, sem cortar botões ou encobrir a câmera frontal. \\ \hline
-\textbf{RNF13} & Disponibilidade do Servidor & A infraestrutura em nuvem deve garantir disponibilidade mínima de 99,5\% com cópias de segurança diárias. \\ \hline
-\textbf{RNF14} & Prazo Seguro para Adoção & Animais resgatados devem ter uma janela mínima de 7 dias de busca pelo tutor original antes de serem liberados para adoção definitiva. \\ \hline
+\textbf{RNF01} & Desempenho de Inicialização & O aplicativo deve carregar sua interface inicial e exibir os anúncios em tempo inferior a 2,0 segundos sob conexões de rede 4G. \\ \hline
+\textbf{RNF02} & Latência de Mensagens no Chat & A transmissão e exibição de mensagens de texto entre usuários no chat em tempo real deve ocorrer em menos de 500 ms via WebSockets. \\ \hline
+\textbf{RNF03} & Compressão Local de Imagens & Todas as fotografias selecionadas para anúncios devem passar por compressão algorítmica no próprio aparelho, limitando o arquivo a no máximo 500 KB antes do upload. \\ \hline
+\textbf{RNF04} & Precisão de Geolocalização & A captura de localização do dispositivo móvel via GPS nativo deve operar com margem de precisão horizontal inferior a 15 metros. \\ \hline
+\textbf{RNF05} & Proteção de Dados e Anonimização & O sistema não deve exibir em mapa público o endereço residencial exato do usuário, aplicando máscara de aproximação territorial por bairro. \\ \hline
+\textbf{RNF06} & Anonimato de Lares Temporários & A localização física de voluntários cadastrados para acolhimento de lar temporário deve ser estritamente preservada, mantendo oculto o endereço exato. \\ \hline
+\textbf{RNF07} & Segurança de Autenticação & A infraestrutura de autenticação do Supabase Auth deve armazenar credenciais com hash criptográfico seguro (bcrypt) e emitir tokens JWT válidos. \\ \hline
+\textbf{RNF08} & Isolamento de Dados via RLS & As operações no banco de dados PostgreSQL devem impor políticas de segurança em nível de linha (RLS), impedindo acessos ou exclusões indevidas entre contas. \\ \hline
+\textbf{RNF09} & Criptografia em Trânsito & Todo o tráfego de dados entre o aplicativo cliente móvel e a infraestrutura em nuvem deve ser obrigatoriamente cifrado via protocolo HTTPS e TLS 1.3. \\ \hline
+\textbf{RNF10} & Acessibilidade e Contraste & As telas devem oferecer suporte a Modo Claro e Modo Escuro com contraste visual mínimo de 4.5:1 para conformidade com a norma WCAG nível AA. \\ \hline
+\textbf{RNF11} & Compatibilidade Móvel & O aplicativo deve ser compilado e executado nativamente em dispositivos móveis Android (versão 7.0 ou superior) e iOS (versão 13 ou superior) via React Native. \\ \hline
+\textbf{RNF12} & Design Responsivo de Telas & A interface deve adaptar-se dinamicamente a diferentes resoluções e densidades de pixels de smartphones, sem corte de texto ou sobreposição de botões. \\ \hline
+\textbf{RNF13} & Disponibilidade da Nuvem & O backend em nuvem provido pelo Supabase deve assegurar taxa de disponibilidade de serviço mínima de 99,5\% com rotinas automatizadas de backup diário. \\ \hline
+\textbf{RNF14} & Janela Ética de Adoção & O sistema deve aplicar regra de negócio bloqueando a alteração de status de um animal encontrado para adoção definitiva antes de decorridos 7 dias de busca ativa. \\ \hline
 \end{longtable}
 }
 
-A especificação dos requisitos não funcionais constantes no Quadro 3 orientou-se pelas dimensões de qualidade preconizadas pela norma internacional ISO/IEC 25010, estruturando-se em quatro categorias centrais:
+Em termos de engenharia, os requisitos não funcionais dividem-se em quatro pilares fundamentais. No primeiro pilar (eficiência e desempenho), o sistema assegura tempos de resposta céleres para carregamento inicial (RNF01) e propagação instantânea de mensagens (RNF02), associando mecanismos de compressão fotográfica prévia no dispositivo (RNF03) e calibração de GPS (RNF04).
 
-Na dimensão de desempenho e eficiência de recursos, o sistema estabelece tempo de carregamento inicial do feed inferior a 1,0 segundo com sincronização em segundo plano (RNF01), consultas otimizadas para economia de dados móveis (RNF02), compressão algorítmica local de fotografias antes do upload (RNF03) e cálculos matemáticos de distância geodésica executados de forma fluida no próprio aparelho (RNF04).
+No segundo pilar (segurança, criptografia e conformidade com a LGPD), o aplicativo assegura a supressão de endereços residenciais exatos nos mapas públicos (RNF05), proteção de localização para lares temporários de acolhimento (RNF06), autenticação segura de contas (RNF07), isolamento estrito de permissões no PostgreSQL por políticas de segurança em nível de linha (RNF08) e criptografia de ponta a ponta nas comunicações de rede via HTTPS e TLS (RNF09).
 
-Na categoria de segurança, criptografia e conformidade com a LGPD, o aplicativo garante a supressão de endereços residenciais exatos nos mapas públicos (RNF05), proteção de localização para lares temporários de acolhimento (RNF06), autenticação segura de contas (RNF07), isolamento e proteção de dados no PostgreSQL por regras de segurança em nível de linha (RNF08) e criptografia de ponta a ponta nas comunicações de rede via HTTPS e TLS (RNF09).
+No terceiro pilar (usabilidade, acessibilidade e portabilidade), a aplicação oferece alternância entre modo claro e modo escuro com contraste estrito para uso sob luz solar direta (RNF10), compatibilidade multiplataforma entre sistemas operacionais Android e iOS via React Native (RNF11) e design responsivo com adaptação dinâmica a telas de diversas resoluções (RNF12).
 
-No âmbito da usabilidade, acessibilidade e portabilidade, a aplicação disponibiliza alternância entre modo claro e modo escuro com contraste visual estrito para uso sob luz solar direta (RNF10), compatibilidade multiplataforma entre sistemas operacionais Android e iOS via React Native (RNF11) e design responsivo com adaptação dinâmica a telas de diversas resoluções (RNF12).
+Por fim, no quarto pilar (confiabilidade e regras éticas de negócio), a infraestrutura em nuvem assegura disponibilidade contínua mínima de 99,5\% com rotinas automatizadas de backup (RNF13) e impõe a janela de segurança de busca mínima de 7 dias antes de permitir a alteração de status de um animal resgatado para adoção definitiva (RNF14).
 
-Por fim, no grupo de confiabilidade e regras éticas de negócio, a infraestrutura em nuvem assegura disponibilidade contínua mínima de 99,5\% com rotinas automatizadas de backup (RNF13) e impõe a janela de segurança de busca mínima de 7 dias antes de permitir a alteração de status de um animal resgatado para adoção definitiva (RNF14).
+\clearpage
 
 \subsection{Modelagem Conceitual e Estrutural do Sistema}
 
 A modelagem de software é uma etapa fundamental no desenvolvimento de qualquer sistema, pois organiza visualmente a lógica, as regras e o funcionamento da aplicação antes e durante a escrita do código. Ao criar esquemas visuais padronizados, a equipe alinha as expectativas com os requisitos e evita inconsistências que poderiam comprometer a arquitetura ou a experiência de uso (BEZERRA, 2021).
 
 No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por duas perspectivas complementares: a comportamental, expressa nos diagramas de casos de uso que apresentam as ações disponibilizadas a cada perfil de usuário; e a estrutural, representada pelo diagrama de classes conceituais.
+
+\clearpage
 
 \subsubsection{Diagramas de Casos de Uso}
 
@@ -171,7 +179,7 @@ A Figura~\ref{fig:caso_uso_login} apresenta o diagrama de casos de uso do módul
     \centering
     \caption{Diagrama de Casos de Uso: Módulo Pré-Login (Usuário Visitante)}
     \label{fig:caso_uso_login}
-    \includegraphics[width=0.95\textwidth]{imagens/02_modelagem/figura06_caso_uso_login.png}
+    \includegraphics[width=0.88\textwidth]{imagens/02_modelagem/figura06_caso_uso_login.png}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
@@ -179,13 +187,15 @@ Conforme apresentado na Figura~\ref{fig:caso_uso_login}, o sistema proposto foi 
 
 A partir da tela de detalhes, o visitante pode visualizar os animais no mapa por proximidade e gerar cartazes de divulgação com código QR para imprimir ou compartilhar na internet. Por fim, caso queira interagir de forma ativa no aplicativo, o visitante encontra as opções de efetuar login e realizar cadastro, contando também com a opção de redefinir senha para recuperar o acesso quando necessário.
 
+\clearpage
+
 A Figura~\ref{fig:caso_uso_geral} apresenta o diagrama de casos de uso geral, que reúne as funções disponíveis para os usuários conectados e para a moderação da plataforma.
 
 \begin{figure}[H]
     \centering
     \caption{Diagrama de Casos de Uso: Visão Geral do Sistema}
     \label{fig:caso_uso_geral}
-    \includegraphics[width=0.95\textwidth]{imagens/02_modelagem/figura07_caso_uso_geral.png}
+    \includegraphics[width=0.88\textwidth]{imagens/02_modelagem/figura07_caso_uso_geral.png}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
@@ -197,6 +207,8 @@ O usuário também tem à disposição uma área de notificações para acompanh
 
 Por sua vez, o ator \textit{Administrador} é responsável pelo gerenciamento de moderação e denúncias, tendo permissão para avaliar os anúncios reportados pela comunidade, remover conteúdos falsos e suspender contas que desrespeitem as regras de convivência. A documentação completa de cada caso de uso está apresentada no Apêndice A deste trabalho.
 
+\clearpage
+
 \subsubsection{Diagrama de Classes Conceituais}
 
 O diagrama de classes conceituais organiza as informações do sistema com base na orientação a objetos, mostrando as entidades principais do aplicativo, seus atributos e a forma como se relacionam. A Figura~\ref{fig:diagrama_classes} apresenta o diagrama de classes conceituais da aplicação proposta.
@@ -205,7 +217,7 @@ O diagrama de classes conceituais organiza as informações do sistema com base 
     \centering
     \caption{Diagrama de Classes Conceitual do Sistema Proposto}
     \label{fig:diagrama_classes}
-    \includegraphics[width=0.95\textwidth]{imagens/02_modelagem/figura08_diagrama_classes.pdf}
+    \includegraphics[width=0.88\textwidth]{imagens/02_modelagem/figura08_diagrama_classes.pdf}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
@@ -215,5 +227,6 @@ A classe \textit{Publicacao} representa os anúncios no sistema, guardando o tip
 
 A colaboração entre as pessoas é feita pela classe \textit{Avistamento}, que guarda a descrição e as coordenadas do local onde um animal foi visto na rua. A conversa entre quem perdeu e quem encontrou o pet ocorre por meio da ligação entre as classes \textit{Conversa} e \textit{Mensagem}, que reúne o texto, o horário e a confirmação de leitura no contexto de uma publicação. Por fim, a classe \textit{Denuncia} permite o controle da comunidade sobre anúncios indevidos, registrando o motivo, a situação e o parecer da moderação.
 
-Com os requisitos funcionais e não funcionais estabelecidos e os diagramas conceituais da UML devidamente formalizados, o Capítulo 5 apresenta a infraestrutura tecnológica e o banco de dados da plataforma WeFIND, detalhando as bibliotecas do ecossistema móvel e o modelo lógico relacional no PostgreSQL.
+Com os requisitos funcionais e não funcionais estabelecidos e os modelos conceituais da UML devidamente formalizados, o Capítulo 5 apresenta a plataforma WeFIND, detalhando sua proposta de valor comunitária, o relato de motivação do autor e a justificativa técnica para a priorização da abordagem móvel em detrimento de uma solução web tradicional.
+
 \clearpage

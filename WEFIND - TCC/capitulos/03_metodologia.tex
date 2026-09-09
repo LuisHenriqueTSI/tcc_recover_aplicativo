@@ -1,128 +1,150 @@
 \section{METODOLOGIA}
 
-A condução deste trabalho divide-se em duas partes complementares e integradas. A primeira parte compreende os procedimentos de pesquisa científica, responsáveis por investigar o problema real do desaparecimento de animais, diagnosticar as necessidades dos tutores e mapear as deficiências das soluções tecnológicas existentes no mercado. A segunda parte estabelece a metodologia de engenharia de software aplicada ao desenvolvimento da aplicação móvel proposta, definindo o modelo de ciclo de vida do sistema, o método ágil de controle de tarefas e as etapas técnicas percorridas desde a concepção inicial até a validação com usuários finais.
+A condução deste trabalho estrutura-se a partir da integração entre a pesquisa científica exploratório-descritiva e a engenharia de software aplicada. O ponto de partida metodológico fundamenta-se no reconhecimento de que a perda de um animal de estimação constitui um fenômeno sócio-técnico complexo, no qual a eficácia de uma solução computacional depende do alinhamento preciso entre as necessidades humanas reais e as capacidades dos dispositivos móveis contemporâneos (GIL, 2022; VALENTE, 2023). Dessa maneira, o percurso metodológico foi desenhado em duas vertentes integradas e complementares: a investigação diagnóstica de campo e o ciclo de desenvolvimento de software centrado no usuário.
+
+A primeira vertente compreendeu a realização de um diagnóstico empírico com a sociedade civil e a análise comparativa detalhada de plataformas tecnológicas congêneres. Essa fase teve como finalidade identificar os gargalos operacionais dos canais convencionais de divulgação, mapear os hábitos de prevenção dos tutores e levantar as lacunas funcionais existentes nas soluções do mercado, assegurando que o aplicativo WeFIND respondesse a demandas verificadas na prática e não a suposições teóricas descontextualizadas (LAKATOS; MARCONI, 2021).
+
+A segunda vertente estabeleceu o framework de engenharia de software orientado ao desenvolvimento da aplicação móvel. Definiu-se um ciclo de vida ágil, incremental e iterativo, associado ao método visual Kanban para a governança contínua das atividades, permitindo que os requisitos elicitados na pesquisa de campo fossem progressivamente transformados em componentes de software testáveis e funcionais. As práticas adotadas priorizaram a entrega contínua de valor, o desacoplamento arquitetural e a validação técnica precoce de cada recurso antes da integração com o subsistema seguinte (PRESSMAN; MAXIM, 2021).
+
+No tocante aos preceitos éticos e de governança de dados, a pesquisa orientou-se pelo respeito à privacidade e pelo consentimento livre e esclarecido dos participantes, em conformidade com as diretrizes da Lei Geral de Proteção de Dados Pessoais (LGPD, Lei Federal nº 13.709/2018). Todos os dados coletados no questionário de campo e nos testes práticos de usabilidade foram tratados sob rigoroso anonimato, sendo agregados exclusivamente para fins estatísticos e acadêmicos, sem a retenção ou divulgação de elementos que permitissem a identificação individual dos respondentes voluntários.
+
+A articulação entre essas etapas estruturou uma cadeia metodológica rigorosa, cujos procedimentos específicos de coleta, análise e desenvolvimento de software são detalhados nas subseções subsequentes.
+
+\clearpage
 
 \subsection{Metodologia e Procedimentos da Pesquisa}
 
-Para estruturar as decisões de projeto e garantir rigor acadêmico, a pesquisa foi organizada segundo a taxonomia proposta por Gil (2022) e Lakatos e Marconi (2021). Quanto à natureza, classifica-se como pesquisa aplicada, pois visa solucionar um problema prático da sociedade relativo à demora e às dificuldades na localização de animais de estimação desaparecidos, resultando na concepção de uma ferramenta funcional e acessível.
+Para conferir rigor acadêmico e reprodutibilidade às decisões tomadas ao longo do trabalho, a investigação apoiou-se na taxonomia metodológica proposta por Gil (2022) e Lakatos e Marconi (2021). Sob a perspectiva de sua natureza, a pesquisa classifica-se como aplicada, pois destina-se à geração de conhecimentos voltados à solução prática e imediata de uma demanda social expressiva: a ineficiência e a dispersão geográfica verificadas durante a busca por animais de estimação perdidos em centros urbanos.
 
-Em relação à abordagem do problema, adota-se um caráter quali-quantitativo integrado. O viés quantitativo envolve a tabulação estatística das respostas obtidas no formulário diagnóstico e a mensuração numérica da usabilidade pelo protocolo SUS. Por sua vez, a dimensão qualitativa compreende a análise das dificuldades relatadas pelos tutores, o estudo crítico das interfaces de sistemas similares e a avaliação das opiniões expressas pelos voluntários durante os testes práticos.
+Quanto à abordagem do problema, o estudo adota o paradigma quali-quantitativo integrado (triangulação metodológica). A vertente quantitativa viabilizou a mensuração objetiva dos hábitos dos tutores por meio da aplicação de questionário estruturado com dados tabulados percentualmente, além da quantificação da facilidade de uso do aplicativo pelo protocolo internacional \textit{System Usability Scale} (SUS). Por sua vez, a vertente qualitativa possibilitou apreender as percepções subjetivas, as frustrações relatadas no uso de redes sociais genéricas e as oportunidades de inovação reveladas na análise crítica de interfaces de sistemas similares e nas sessões práticas de testes com usuários.
 
-Quanto aos objetivos gerais, o estudo assume perfil exploratório e descritivo. O aspecto exploratório proporcionou maior aproximação com os desafios e sentimentos de angústia enfrentados pelos tutores, ao passo que o caráter descritivo permitiu mapear e correlacionar os canais habituais de divulgação e os recursos das ferramentas concorrentes. Por fim, quanto aos procedimentos técnicos, combinou-se o levantamento bibliográfico em livros, artigos e normas técnicas, a pesquisa de campo mediante questionário estruturado com tutores e protetores, e a análise comparativa direta sobre plataformas existentes no mercado.
+No tocante aos objetivos gerais, a pesquisa caracteriza-se como exploratória e descritiva. O aspecto exploratório proporcionou maior aproximação com uma problemática ainda pouco tratada sob a ótica da computação móvel regionalizada, enquanto o aspecto descritivo permitiu catalogar e analisar minuciosamente os canais usuais de busca, os perfis dos animais e as limitações das ferramentas comerciais disponíveis no mercado brasileiro e internacional.
+
+Quanto aos procedimentos técnicos, a pesquisa organizou-se em três etapas operacionais integradas. A primeira etapa compreendeu a pesquisa bibliográfica e normativa, constituída pelo levantamento da literatura especializada em livros, periódicos científicos e normas técnicas internacionais, como a ABNT NBR ISO 9241-11 e as diretrizes WCAG, com o intuito de fundamentar os conceitos de engenharia de requisitos, design centrado no usuário e arquitetura de sistemas móveis. A segunda etapa consistiu no levantamento de campo, estruturado sob a forma de um \textit{survey} diagnóstico mediante questionário online direcionado a tutores e protetores de animais, visando mapear o comportamento comunitário real e as dificuldades práticas vivenciadas frente ao desaparecimento de animais domésticos. Por fim, a terceira etapa contemplou a análise comparativa de sistemas similares (\textit{benchmarking}), por meio da investigação sistemática de quatro plataformas digitais atuantes no setor, examinando detalhadamente seus recursos operacionais, modelos de interação e deficiências técnicas.
+
+\clearpage
 
 \subsubsection{Pesquisa de Viabilidade com a Comunidade (Levantamento de Campo)}
 
-A coleta primária de dados foi realizada por meio de um questionário estruturado online elaborado na plataforma Google Forms (cujo instrumento estruturado encontra-se documentado na íntegra no Apêndice B, Seção B.1), submetido a 20 participantes voluntários, incluindo tutores de animais domésticos, protetores independentes e pessoas engajadas na causa animal.
+A coleta primária de dados empíricos foi realizada por meio de um questionário estruturado online, hospedado na plataforma Google Forms, cujo instrumento detalhado com todas as questões e opções encontra-se documentado no Apêndice B (Seção B.1). O instrumento foi disponibilizado a uma amostra de 20 participantes voluntários, composta por tutores de animais domésticos (abrangendo cães, gatos, aves e outros animais de companhia), protetores independentes e simpatizantes engajados em causas de proteção e bem-estar animal.
 
-O formulário iniciou investigando os hábitos preventivos de identificação animal adotados pelos tutores no cotidiano, consultando os voluntários a respeito do uso de microchips eletrônicos em seus animais de estimação, conforme ilustrado na Figura~\ref{fig:adocao_microchip}.
+O objetivo do levantamento foi traçar o perfil preventivo da comunidade em relação à posse responsável e mapear os procedimentos habitualmente acionados em casos de perda. A primeira questão investigou o uso de métodos eletrônicos internos de identificação, consultando os voluntários sobre a implantação de microchips subcutâneos em seus animais de estimação, conforme apresentado na Figura~\ref{fig:adocao_microchip}.
 
 \begin{figure}[H]
     \centering
     \caption{Adesão ao uso de microchip de identificação em animais domésticos}
     \label{fig:adocao_microchip}
-    \includegraphics[width=0.90\textwidth]{imagens/01_pesquisa/grafico_adocao_microchip.png}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/grafico_adocao_microchip.png}
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
 
-Os dados da Figura~\ref{fig:adocao_microchip} revelam que a expressiva maioria dos animais (70\%, totalizando 14 respostas) não utiliza microchip de identificação, somando-se a 5\% (1 resposta) de participantes que declararam não saber responder. Apenas 25\% dos respondentes (5 participantes) afirmaram que seus animais são microchipados, evidenciando uma baixa adesão a esse método de identificação entre os participantes da pesquisa.
+Os dados da Figura~\ref{fig:adocao_microchip} revelam que a expressiva maioria dos animais (70\%, totalizando 14 respostas) não utiliza microchip de identificação, somando-se a 5\% (1 resposta) de participantes que declararam não saber responder. Apenas 25\% dos respondentes (5 participantes) afirmaram que seus animais são microchipados. Esse índice evidencia que, embora o microchip seja o padrão internacional mais seguro para comprovação de tutela, sua adesão permanece restrita no contexto brasileiro, seja em virtude dos custos veterinários para implantação, seja pela indisponibilidade de leitores universais na rotina da população em geral.
 
-Em paralelo à identificação eletrônica interna, o questionário avaliou os métodos externos e visuais empregados pelos tutores no cotidiano, investigando a utilização de coleiras de identificação (Figura~\ref{fig:uso_coleira}).
+Diante do baixo índice de identificação eletrônica interna, o questionário investigou os recursos externos e visuais mantidos pelos tutores no cotidiano, examinando a utilização de coleiras de identificação (Figura~\ref{fig:uso_coleira}).
 
 \begin{figure}[H]
     \centering
     \caption{Utilização de coleiras de identificação em animais domésticos}
     \label{fig:uso_coleira}
-    \includegraphics[width=0.90\textwidth]{imagens/01_pesquisa/grafico_uso_coleira.png}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/grafico_uso_coleira.png}
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
 
-Conforme ilustrado na Figura~\ref{fig:uso_coleira}, a expressiva maioria dos entrevistados (70\%, totalizando 14 respostas) indicou que seus animais não utilizam nenhum tipo de coleira de identificação. Entre os que adotam algum recurso, 25\% (5 respostas) utilizam plaquinha de identificação convencional e apenas 5\% (1 resposta) contam com coleira equipada com GPS ou rastreamento. Os dados revelam que a maior parte dos animais circula sem qualquer forma externa de identificação visual.
+Conforme ilustrado na Figura~\ref{fig:uso_coleira}, 70\% dos entrevistados (14 respostas) indicaram que seus animais domésticos não utilizam nenhum tipo de coleira no dia a dia. Entre a minoria que adota algum cuidado, 25\% (5 respostas) utilizam plaquinha metálica convencional com gravação manual e somente 5\% (1 resposta) contam com coleiras equipadas com rastreamento eletrônico por GPS. A constatação de que sete em cada dez animais circulam desprovidos de qualquer identificação imediata reforça a necessidade de soluções de identificação digital preventiva e de baixo custo, como o Perfil Digital baseado em código QR proposto no WeFIND.
 
-Na sequência, o questionário mapeou o comportamento prático dos participantes durante episódios reais de desaparecimento, identificando os canais digitais e analógicos mais acionados para a divulgação da ocorrência. A Figura~\ref{fig:pesquisa_meios} apresenta os meios habituais de busca apontados pelos voluntários.
+Na sequência da investigação, mapeou-se o comportamento prático dos participantes durante episódios reais de desaparecimento, identificando os canais analógicos e digitais prioritariamente acionados para a busca (Figura~\ref{fig:pesquisa_meios}).
 
 \begin{figure}[H]
     \centering
     \caption{Meios habituais de divulgação utilizados em episódios de animais perdidos}
     \label{fig:pesquisa_meios}
-    \includegraphics[width=0.90\textwidth]{imagens/01_pesquisa/figura01_canais_divulgacao.png}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/figura01_canais_divulgacao.png}
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
 
-Os dados da Figura~\ref{fig:pesquisa_meios} indicam que a quase totalidade dos participantes concentra seus esforços nas redes sociais convencionais (11 respostas, equivalentes a 55\%) e nos grupos de troca de mensagens do WhatsApp (5 respostas, ou 25\%). Em contrapartida, as mídias impressas tradicionais, a exemplo de cartazes fixados em postes e comércios locais, somaram apenas 2 escolhas (10\%), ao passo que a busca presencial com vizinhos e avisos em clínicas veterinárias representaram 5\% cada.
+Os resultados da Figura~\ref{fig:pesquisa_meios} demonstram uma dependência concentrada nas redes sociais genéricas (55\%, 11 respostas) e nos grupos de troca de mensagens do WhatsApp (25\%, 5 respostas). Em contrapartida, as mídias impressas tradicionais (como cartazes fixados em postes) somaram apenas 10\% das escolhas, enquanto o contato direto de vizinhança e avisos em clínicas veterinárias representaram 5\% cada.
 
-Apesar da ampla utilização das redes sociais genéricas, os participantes relataram obstáculos críticos: as postagens perdem alcance aceleradamente devido ao fluxo contínuo de novas publicações no feed, não há filtros espaciais que limitem o aviso ao bairro do desaparecimento e dados cruciais dispersam-se em comentários paralelos.
-
-Para solucionar esse problema de alcance e dispersão geográfica, avaliou-se o interesse dos voluntários em relação a uma aplicação móvel dedicada que integrasse mapa georreferenciado por GPS e filtros de proximidade. O resultado está ilustrado na Figura~\ref{fig:interesse_mapa}.
+Apesar da preferência pelas plataformas digitais de massa, os participantes relataram obstáculos severos: as publicações em feeds convencionais perdem visibilidade rapidamente em virtude do fluxo contínuo de novas postagens, inexiste filtragem territorial por proximidade e números telefônicos particulares ficam expostos a golpes e trotes. Para avaliar a viabilidade de uma alternativa focada na localização imediata, consultou-se o nível de interesse dos participantes na utilização de uma aplicação móvel com mapa georreferenciado e filtros de raio de busca (Figura~\ref{fig:interesse_mapa}).
 
 \begin{figure}[H]
     \centering
     \caption{Nível de interesse e aceitação do mapa interativo e recursos de proximidade}
     \label{fig:interesse_mapa}
-    \includegraphics[width=0.90\textwidth]{imagens/01_pesquisa/figura02_interesse_mapa.png}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/figura02_interesse_mapa.png}
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
 
-A aceitação verificada na Figura~\ref{fig:interesse_mapa} foi amplamente favorável: 17 participantes (85\%) atribuíram nota máxima 5 à utilidade do mapa interativo com filtro de proximidade, 2 participantes (10\%) indicaram nota 4 e apenas 1 participante (5\%) atribuiu nota 3, sem nenhum registro de notas 1 ou 2. Esse resultado demonstra que 95\% dos voluntários consideram a visualização em mapa de extrema utilidade, evidenciando a carência de uma solução tecnológica gratuita e dedicada à causa do reencontro.
+A aceitação registrada na Figura~\ref{fig:interesse_mapa} foi amplamente favorável: 85\% dos participantes (17 voluntários) atribuíram nota máxima 5 à utilidade do mapa interativo com filtro de proximidade, 10\% (2 voluntários) atribuíram nota 4 e apenas 5\% (1 participante) indicou nota 3, não havendo nenhuma avaliação desfavorável (notas 1 ou 2). Esse índice positivo de 95\% confirmou a alta relevância de projetar uma aplicação móvel geolocalizada e centrada no mapa.
+
+\clearpage
 
 \subsubsection{Análise Comparativa de Sistemas Similares}
 
-Para conhecer as soluções existentes e identificar pontos de melhoria para o projeto, realizou-se uma análise comparativa com base nos critérios de usabilidade e experiência do usuário propostos por Amstel (2024). Foram analisadas quatro plataformas representativas da área: \textit{Viu Meu Pet}, \textit{PawBoost}, \textit{AlertPet} e \textit{Pet911}.
+Para conhecer em profundidade o estado da arte e embasar tecnicamente as decisões de requisitos e design do WeFIND, realizou-se uma avaliação comparativa de sistemas similares (\textit{benchmarking}), fundamentada nas diretrizes de usabilidade e experiência do usuário sintetizadas por Amstel (2024). Foram selecionadas e inspecionadas quatro plataformas representativas: \textit{Viu Meu Pet}, \textit{PawBoost}, \textit{AlertPet} e \textit{Pet911}.
 
-\noindent\textbf{Viu Meu Pet:} Trata-se de uma das plataformas brasileiras mais difundidas na área, oferecendo portal web e aplicativo móvel (Figura~\ref{fig:viumeupet}). 
+A primeira plataforma analisada foi o \textbf{Viu Meu Pet}, um dos serviços brasileiros mais difundidos no segmento, disponível em versão web e aplicativo móvel para smartphones (Figura~\ref{fig:viumeupet}). 
 
 \begin{figure}[H]
     \centering
     \caption{Interface da plataforma Viu Meu Pet}
     \label{fig:viumeupet}
-    \includegraphics[width=0.90\textwidth]{imagens/01_pesquisa/figura03_viumeupet.png}
+    \includegraphics[width=0.85\textwidth]{imagens/01_pesquisa/figura03_viumeupet.png}
     \fonte{Viu Meu Pet (2026)}
 \end{figure}
 
-A interface inicial da plataforma (Figura~\ref{fig:viumeupet}) exibe em seu topo o logotipo institucional acompanhado por links de navegação rápida (``Busca'', ``Adoção'' e ``Conheça''), o botão de apoio comunitário (``Ajude''), o botão roxo destacado para inserção de anúncios (``Anunciar'') e o atalho para login (``Entrar''). O corpo central destaca a chamada principal ``Encontre seu pet perdido'' seguida de dois botões primários de triagem: ``Perdi meu Pet (Quero buscar meu pet)'' com fundo roxo e ``Achei um Pet (Quero buscar o tutor)'' com contorno, além do link explicativo ``Como a busca funciona?''. No canto inferior esquerdo, um cartão apresenta métricas em tempo real sob o título ``Pets Encontrados'', indicando ``3 hoje'' e ``10.705 reencontros desde o início'', ao lado de fotografias em miniatura dos animais resgatados. À direita, uma ilustração fotográfica reforça a conexão afetiva entre tutor e animal.
+A interface inicial da plataforma (Figura~\ref{fig:viumeupet}) estrutura-se a partir de um cabeçalho superior contendo links de navegação rápida (``Busca'', ``Adoção'' e ``Conheça''), o botão de apoio comunitário (``Ajude''), o botão roxo de chamada de destaque (``Anunciar'') e o atalho de acesso de usuários (``Entrar''). O corpo central traz a chamada ``Encontre seu pet perdido'' seguida de dois botões primários de triagem: ``Perdi meu Pet (Quero buscar meu pet)'' com fundo roxo e ``Achei um Pet (Quero buscar o tutor)'' em estilo vazado, além do link explicativo ``Como a busca funciona?''. No canto inferior esquerdo, um cartão apresenta métricas sob o título ``Pets Encontrados'', indicando ``3 hoje'' e ``10.705 reencontros desde o início'', acompanhado por fotos em miniatura dos animais e elementos gráficos ilustrativos.
 
-Como pontos positivos, o sistema possui ampla visibilidade comunitária no Brasil, disponibiliza recursos gratuitos como painel de busca, gerador de imagens para redes sociais, cartazes com código QR para impressão e cruzamento automático de anúncios por inteligência artificial, além de serviços pagos de destaque. No entanto, sua navegação é centrada em listagens estáticas separadas por estado e cidade, sem integração fluida com mapa georreferenciado em tempo real por GPS. Outro problema crítico reside na comunicação: a plataforma não oferece chat interno privativo, expondo números particulares de telefone em anúncios públicos.
+Como pontos positivos, o \textit{Viu Meu Pet} apresenta grande penetração comunitária no território nacional, disponibiliza recursos gratuitos para cadastro de ocorrências, gerador de imagens para redes sociais, cartazes com código QR para impressão e cruzamento automatizado de anúncios por inteligência artificial, além de serviços comerciais para destaque de publicações. Em contrapartida, sua interface apoia-se predominantemente em listagens estáticas de anúncios organizadas por estado e município, carecendo de integração fluida com mapa georreferenciado interativo em tempo real via GPS. Além disso, a ferramenta não disponibiliza chat interno privativo, obrigando os tutores a divulgar números telefônicos pessoais nos anúncios públicos.
 
-\noindent\textbf{PawBoost:} Plataforma internacional com mais de sete milhões de membros cadastrados em sua rede de voluntários (\textit{Rescue Squad}™), acessível via web e aplicativos para Android e iOS (Figura~\ref{fig:pawboost}).
+\clearpage
+
+A segunda solução examinada foi o \textbf{PawBoost}, plataforma de alcance internacional que congrega mais de sete milhões de membros voluntários cadastrados em sua rede comunitária (\textit{Rescue Squad}™), acessível por portal web e aplicativos para sistemas operacionais Android e iOS (Figura~\ref{fig:pawboost}).
 
 \begin{figure}[H]
     \centering
     \caption{Interface da plataforma PawBoost}
     \label{fig:pawboost}
-    \includegraphics[width=0.90\textwidth]{imagens/01_pesquisa/figura04_pawboost.png}
+    \includegraphics[width=0.85\textwidth]{imagens/01_pesquisa/figura04_pawboost.png}
     \fonte{PawBoost (2026)}
 \end{figure}
 
-A interface principal da plataforma (Figura~\ref{fig:pawboost}) estrutura-se com uma barra superior em tom verde que abriga o logotipo, atalhos de navegação (``Como Funciona'', ``Lost Pets'', ``Found Pets'', ``Histórias Felizes'', ``Receba Alertas'') e o botão alaranjado de chamada à ação ``Anuncie Pet''. No canto superior direito, há o link para autenticação (``Entrar''). Na lateral esquerda, visualiza-se a chamada de impacto ``Find and Report Lost \& Found Pets'', acompanhada pelo contador de impacto comunitário (``2,300,058 Pets Reunidos!'') e uma maquete de smartphone demonstrando o formato de alerta geolocalizado compartilhado no Facebook. Na lateral direita, destaca-se o cartão com formulário direto ``Inicie Seu Alerta Grátis'', contendo botões de seleção de ocorrência (``I Lost My Pet'' e ``I Found A Stray Pet''), campos para nome do pet, último endereço visto, e-mail para contato, senha e o botão verde de submissão ``Traga Seu Pet Pra Casa O Quanto Antes'', acompanhado pela lista dos recursos da rede.
+A interface principal do PawBoost (Figura~\ref{fig:pawboost}) exibe uma barra superior em tom verde escuro contendo logotipo, atalhos de navegação (``Como Funciona'', ``Lost Pets'', ``Found Pets'', ``Histórias Felizes'', ``Receba Alertas'') e o botão alaranjado em destaque ``Anuncie Pet''. Na lateral esquerda, figura a chamada de impacto ``Find and Report Lost \& Found Pets'', acompanhada pelo contador de impacto social (``2,300,058 Pets Reunidos!'') e uma maquete de smartphone demonstrando o formato de anúncio geolocalizado gerado para redes sociais. Na lateral direita, exibe-se o cartão de formulário rápido com os botões de seleção ``I Lost My Pet'' e ``I Found A Stray Pet'', campos para nome, último endereço avistado, e-mail e botão de envio ``Traga Seu Pet Pra Casa O Quanto Antes''.
 
-Entre os pontos fortes, destacam-se a postagem automatizada em páginas de redes sociais, alertas por e-mail e notificações móveis para voluntários locais. Contudo, a plataforma apresenta fortes barreiras para uso no Brasil: sua segmentação territorial é desenhada para códigos postais norte-americanos e os planos pagos de impulsionamento demandam cobrança em moeda estrangeira (dólar americano), restringindo o acesso financeiro da população local.
+Entre suas principais vantagens operacionais, destacam-se a automação de postagens em páginas parceiras do Facebook, o envio acelerado de alertas por e-mail e notificações móveis para voluntários cadastrados na região da ocorrência. Não obstante sua excelência técnica, a plataforma apresenta limitações expressivas para o contexto brasileiro: sua indexação territorial baseia-se prioritariamente no sistema postal norte-americano (Zip Codes) e os planos de impulsionamento patrocinado exigem pagamentos em moeda estrangeira (dólar americano), restringindo o acesso amplo da população brasileira.
 
-\noindent\textbf{AlertPet:} Iniciativa nacional estruturada como portal web que atua no modelo de ``carro de som digital'', intermediando campanhas patrocinadas de busca regional (Figura~\ref{fig:alertpet}).
+\clearpage
+
+A terceira plataforma inspecionada foi o \textbf{AlertPet}, iniciativa brasileira estruturada no formato de portal web que opera sob o conceito de ``carro de som digital'', intermediando campanhas patrocinadas de busca geográfica regional (Figura~\ref{fig:alertpet}).
 
 \begin{figure}[H]
     \centering
     \caption{Interface da plataforma AlertPet}
     \label{fig:alertpet}
-    \includegraphics[width=0.90\textwidth]{imagens/01_pesquisa/figura05_alertpet.png}
+    \includegraphics[width=0.85\textwidth]{imagens/01_pesquisa/figura05_alertpet.png}
     \fonte{AlertPet (2026)}
 \end{figure}
 
-Conforme apresentado na Figura~\ref{fig:alertpet}, a página inicial organiza-se com um cabeçalho limpo contendo o logotipo no canto superior esquerdo, um card flutuante centralizado que simula uma notificação em tempo real (``Novo pet perdido em São Paulo -- Ajude a encontrar Pudim'' acompanhado de foto e botão ``Ver caso'') e ícones de sino de alertas e menu hamburguer. No quadrante esquerdo inferior, destaca-se o título de grande porte ``Encontre seu pet com a maior rede de busca do Brasil'', acompanhado por dados de prova social com avatares de tutores (``4.862 casos'' e nota ``4.9 com 629 avaliações''), o botão verde de ação primária ``+ Anunciar Pet'' e o botão secundário ``Como Funciona''. Na composição visual da direita, exibe-se uma tutora segurando seu cão e celular, sobreposta por um recorte de mapa indicando o ponto de sumiço (``Visto aqui'') e uma notificação instantânea simulada (``AlertPet Alerta: Bob foi localizado!'').
+A composição visual da página inicial do AlertPet (Figura~\ref{fig:alertpet}) estrutura-se com um cabeçalho limpo no qual se destaca uma notificação flutuante simulada em tempo real (``Novo pet perdido em São Paulo -- Ajude a encontrar Pudim'', com fotografia e botão ``Ver caso''). No lado esquerdo, visualiza-se o título de grande porte ``Encontre seu pet com a maior rede de busca do Brasil'', dados de prova social com fotografias de tutores (``4.862 casos'' e nota de avaliação média ``4.9 com 629 avaliações''), o botão verde primário ``+ Anunciar Pet'' e o botão secundário ``Como Funciona''. Na composição da direita, uma fotografia de tutora com seu cão e celular é sobreposta por um recorte de mapa apontando o local do desaparecimento (``Visto aqui'') e uma notificação instantânea (``AlertPet Alerta: Bob foi localizado!'').
 
-A proposta central do \textit{AlertPet} consiste na criação profissional de cartazes digitais e na veiculação de campanhas pagas altamente geolocalizadas em redes sociais no raio onde o animal sumiu, com envio de relatórios formais de métricas. Contudo, operando prioritariamente como um serviço comercial de mídia paga, a ferramenta não disponibiliza um aplicativo móvel integrado, não conta com mapa interativo gratuito com GPS em tempo real e condiciona o alcance das buscas à contratação de pacotes comerciais.
+O mérito do \textit{AlertPet} reside na elaboração profissional de peças gráficas de busca e na distribuição de anúncios patrocinados altamente segmentados por raio de quilometragem nas redes sociais, com posterior envio de relatórios de métricas (Reportei) aos tutores. Todavia, a solução opera como um serviço estritamente comercial de mídia paga, não oferecendo aplicativo móvel nativo, não dispondo de mapa interativo público gratuito e vinculando a visibilidade da ocorrência ao pagamento financeiro de pacotes.
 
-\noindent\textbf{Pet911:} Plataforma de abrangência internacional com versão dedicada ao público brasileiro, focada na centralização de anúncios de achados e perdidos de animais domésticos (Figura~\ref{fig:pet911}).
+\clearpage
+
+A quarta plataforma avaliada foi o \textbf{Pet911}, serviço de abrangência internacional com versão localizada para o Brasil, centrado no agrupamento de anúncios de animais perdidos e encontrados (Figura~\ref{fig:pet911}).
 
 \begin{figure}[H]
     \centering
     \caption{Interface da plataforma Pet911}
     \label{fig:pet911}
-    \includegraphics[width=0.90\textwidth]{imagens/01_pesquisa/figura06_pet911.png}
+    \includegraphics[width=0.85\textwidth]{imagens/01_pesquisa/figura06_pet911.png}
     \fonte{Pet911 (2026)}
 \end{figure}
 
-A interface inicial do Pet911 (Figura~\ref{fig:pet911}) adota uma composição visual mobile-first centrada na cor verde esmeralda. No topo, destaca-se o logotipo acompanhado por três molduras fotográficas circulares exibindo tutores e animais acolhidos. Abaixo, figura a chamada central ``Serviço Mundial de Achados e Perdidos de Animais de Estimação'', acompanhada pela métrica de alcance ``Já devolvemos 45.600 animais para casa''. O sistema disponibiliza duas abas superiores para alternância rápida de objetivo (o botão ativo em fundo branco ``Criar um Anúncio'' e o botão semitransparente ``Encontrar anúncio''), seguido por um cartão de triagem inicial com o título ``O que aconteceu?'' e o botão de acionamento ilustrado ``Perdi meu pet''. Na extremidade inferior, fixa-se uma barra de navegação com quatro ícones funcionais: ``+ Criar'', ``Listagens'', ``Faça login'' e ``Menu''.
+A interface do Pet911 (Figura~\ref{fig:pet911}) adota uma identidade visual verde esmeralda com abordagem \textit{mobile-first}. O topo traz o logotipo e três molduras circulares com imagens de animais resgatados, seguidas pelo título ``Serviço Mundial de Achados e Perdidos de Animais de Estimação'' e a métrica comunitária ``Já devolvemos 45.600 animais para casa''. O usuário pode alternar entre as abas superiores ``Criar um Anúncio'' e ``Encontrar anúncio'', visualizando um cartão com o título ``O que aconteceu?'' e o botão ilustrado de ação ``Perdi meu pet''. Na base da tela, fixa-se uma barra inferior de navegação com quatro ícones funcionais: ``+ Criar'', ``Listagens'', ``Faça login'' e ``Menu''.
 
-Como pontos positivos, o Pet911 oferece ampla base de dados, fluxo simplificado de cadastro preliminar e geração automática de cartazes digitais. No entanto, o sistema apresenta carências expressivas na camada interativa: as buscas dependem de listagens tabulares por cidades, não havendo navegação dinâmica em mapa com traçado de rotas por GPS em tempo real, nem canal privativo de troca de mensagens instantâneas, além de condicionar o impulsionamento comunitário a pacotes tarifados.
+Como pontos positivos, o Pet911 possui extensa base de dados mundial, fluxo simplificado de cadastro inicial e geração automática de cartazes para impressão. Em contrapartida, apresenta limitações severas na camada de exploração espacial: os anúncios são organizados em listagens tabulares por município, sem recursos de geolocalização contínua por GPS no mapa, inexiste canal privativo de troca de mensagens e o impulsionamento comunitário depende de cobrança financeira.
+
+Para consolidar os resultados da análise comparativa, o Quadro~\ref{quadro:similares} sintetiza os perfis, recursos e pontos fortes de cada sistema avaliado.
 
 \vspace{0.3cm}
 \begin{table}[H]
@@ -142,31 +164,50 @@ Como pontos positivos, o Pet911 oferece ampla base de dados, fluxo simplificado 
 \fonte{Autoria própria (2026)}
 \end{table}
 
+\clearpage
+
 \subsection{Metodologia de Desenvolvimento de Software}
 
-A construção do aplicativo exigiu uma forma ágil de trabalho, capaz de transformar as ideias da pesquisa em um aplicativo funcional, estável e fácil de usar. Como explicam Pressman e Maxim (2021) e Valente (2023), o desenvolvimento moderno de aplicativos para celular precisa de flexibilidade para receber melhorias contínuas, evitando modelos rígidos que deixam os testes apenas para o final do projeto.
+A construção de um aplicativo móvel moderno exige métodos flexíveis, capazes de absorver melhorias de forma contínua e garantir a entrega rápida de versões estáveis para validação técnica e operacional. No contexto do WeFIND, a adoção de um modelo tradicional e linear (cascata) mostraria-se inadequada, uma vez que eventuais inconsistências de usabilidade ou restrições de desempenho de hardware móvel só seriam descobertas nas fases finais do projeto, implicando custos elevados de retrabalho (PRESSMAN; MAXIM, 2021; VALENTE, 2023).
+
+Dessa forma, optou-se pela aplicação de princípios do desenvolvimento ágil de software, fundamentados no Manifesto Ágil e consolidados nas práticas de engenharia de software contemporânea. A metodologia priorizou indivíduos e interações sobre processos rígidos, software funcional sobre documentação excessiva e a capacidade de resposta contínua a mudanças sobre o seguimento cego de planos estáticos.
+
+Para materializar essas premissas no ciclo prático de trabalho, combinou-se o modelo de ciclo de vida iterativo e incremental com o método visual de gerenciamento de tarefas Kanban, operacionalizado sobre a plataforma em nuvem Trello (TRELLO, 2026), articulando a evolução das funcionalidades desde a concepção de requisitos até a bateria final de testes de usabilidade.
+
+\clearpage
 
 \subsubsection{Abordagem Ágil e Ciclo de Vida Incremental}
 
-Adotou-se o modelo de desenvolvimento em partes (incremental e iterativo) (VALENTE, 2023). Nesse modelo, o aplicativo não é construído todo de uma vez; em vez disso, cada funcionalidade é planejada, programada e testada passo a passo. 
+O desenvolvimento da aplicação estruturou-se sob o modelo de ciclo de vida incremental e iterativo (VALENTE, 2023). Sob essa abordagem, o sistema computacional não é produzido de modo monolítico em uma única etapa; pelo contrário, o escopo global é decomposto em incrementos funcionais autônomos, cada um planejado, programado, integrado e testado antes do avanço para a etapa seguinte.
 
-O primeiro incremento concentrou-se na infraestrutura de segurança e persistência (telas de autenticação, cadastro e sessão no Supabase Auth). O segundo incremento estabeleceu o núcleo geográfico da aplicação (feed de publicações e mapa interativo com GPS via Expo Location). O terceiro incremento abrangeu a criação e edição de ocorrências de animais com upload otimizado de fotografias. O quarto incremento incorporou os recursos de comunicação privativa (chat em tempo real via WebSockets). Por fim, o quinto incremento integrou recursos complementares de utilidade pública: a geração de cartazes digitais com código QR para impressão e o Perfil Digital do Pet com código QR para identificação preventiva do animal.
+Ao longo do projeto WeFIND, o software evoluiu por meio de cinco incrementos técnicos sucessivos. O primeiro incremento dedicou-se à infraestrutura de acesso e segurança, compreendendo a estruturação inicial do projeto React Native com Expo, a conexão segura com a plataforma em nuvem Supabase, a implementação dos fluxos de cadastro, a autenticação persistente com JSON Web Token (JWT) e a construção das telas de perfil de usuário.
+
+O segundo incremento contemplou o núcleo espacial e o georreferenciamento, mediante a integração do subsistema GPS pelo pacote \textit{expo-location}, a renderização do mapa interativo com \textit{react-native-maps}, a plotagem de marcadores dinâmicos diferenciados por espécie e a ordenação do feed de ocorrências conforme a proximidade física do usuário. No terceiro incremento, desenvolveu-se a gestão de publicações e mídias, contemplando os fluxos completos de cadastro de anúncios de animais nas categorias de perdidos, encontrados e adoção, o acoplamento da câmera e galeria por meio do pacote \textit{expo-image-picker}, a rotina de compressão fotográfica local com o \textit{expo-image-manipulator} e o armazenamento seguro de arquivos no Supabase Storage.
+
+O quarto incremento concentrou-se na comunicação em tempo real e no rastreamento colaborativo, abrangendo a implementação da linha do tempo de relatos de avistamentos e a criação do canal de bate-papo privativo entre usuários com conexões bidirecionais contínuas via WebSockets sustentadas pelo Supabase Realtime. Por fim, o quinto incremento materializou os recursos de apoio comunitário e prevenção, integrando a geração sob demanda de cartazes de busca com código QR escaneável pelo componente \textit{react-native-view-shot}, a estrutura da carteirinha preventiva do Perfil Digital do Pet e o compartilhamento nativo com redes sociais e mensageiros via \textit{expo-sharing}. Essa divisão garantiu que cada subsistema passasse por baterias de testes no dispositivo físico antes do acoplamento do módulo subsequente, mitigando riscos de regressão no código-fonte.
+
+\clearpage
 
 \subsubsection{O Método Visual Kanban e a Gestão de Tarefas no Trello}
 
-Para assegurar o ritmo contínuo de produção e a rastreabilidade das atividades, adotou-se o método visual Kanban, operacionalizado através da plataforma de gestão de projetos Trello (TRELLO, 2026). A rotina de trabalho apoiou-se em três princípios essenciais: a visualização contínua de todo o fluxo de trabalho por meio de cartões descritivos contendo requisitos claros, a limitação estrita do trabalho em andamento (Work in Progress) para manter o foco na conclusão e validação de cada parte antes de abrir novas demandas, e o gerenciamento ativo do fluxo de produção para evitar retrabalhos e assegurar o cumprimento dos prazos acadêmicos.
+Para assegurar disciplina, transparência e controle contínuo do fluxo produtivo ao longo dos incrementos, adotou-se o método de gestão visual Kanban, operacionalizado através da ferramenta Trello (TRELLO, 2026). O Kanban fundamenta-se no princípio de orientar a produção conforme a capacidade real do executor, eliminando gargalos e assegurando ritmo constante de entrega (VALENTE, 2023).
 
-Na prática, o quadro no Trello foi estruturado em cinco etapas sequenciais de controle. O fluxo iniciava-se no Backlog Geral, que reunia todos os requisitos funcionais e técnicos derivados da pesquisa inicial. Em seguida, as tarefas priorizadas para execução imediata eram transferidas para a lista A Fazer. Durante a fase de escrita de código-fonte no editor ou modelagem de diagramas, os cartões permaneciam na lista Em Andamento. Uma vez concluída a implementação, a funcionalidade avançava para Em Testes e Revisão, onde passava por inspeções de interface e testes em dispositivos físicos. Por fim, após a validação completa e o versionamento do código no GitHub, a atividade era finalizada na coluna Concluído.
+A rotina de gestão no projeto WeFIND apoiou-se em três pilares operacionais essenciais da disciplina ágil. O primeiro pilar consistiu na visualização integral do fluxo de trabalho, em que todas as atividades requeridas para a materialização do sistema foram formalizadas na forma de cartões descritivos no Trello, explicitando critérios de aceitação e dependências técnicas. O segundo pilar pautou-se na limitação estrita do trabalho em andamento (\textit{Work in Progress} -- WIP), restringindo o número de tarefas simultâneas na etapa de desenvolvimento ativo para evitar dispersão de foco e assegurar que nenhuma nova funcionalidade fosse iniciada antes da conclusão e validação do cartão corrente. O terceiro pilar fundamentou-se no gerenciamento contínuo do ciclo de entrega (\textit{Lead Time}), viabilizado pelo monitoramento diário do avanço das tarefas pelo quadro, antecipando bloqueios técnicos e garantindo a estrita pontualidade das entregas acadêmicas.
+
+O fluxo produtivo estruturou-se em cinco colunas sequenciais no quadro visual. Inicialmente, a coluna de Backlog Geral reuniu os 43 requisitos funcionais, os 14 requisitos não funcionais e as oportunidades de aprimoramento mapeadas a partir da pesquisa de campo e do benchmarking. A partir desse repositório, as tarefas priorizadas para o ciclo imediato transitavam para a coluna A Fazer, de onde eram puxadas individualmente para a coluna Em Andamento à medida que o código-fonte ou artefato de modelagem entrava em fase ativa de confecção. Uma vez implementada, a funcionalidade avançava para a coluna de Testes e Revisão, na qual passava por inspeção visual, validação de regras de negócio em dispositivo físico e conferência de contraste e usabilidade. Somente após a aprovação em todos os critérios de aceitação o cartão era promovido para a coluna Concluído, assinalando que o código-fonte encontrava-se testado, documentado e integrado ao repositório central no GitHub.
+
+\clearpage
 
 \subsubsection{Etapas do Processo de Desenvolvimento}
 
-O projeto percorreu quatro etapas sistemáticas ao longo do ciclo de desenvolvimento. A primeira etapa correspondeu à concepção e ao levantamento de requisitos, na qual as respostas do questionário com a comunidade e a análise das ferramentas concorrentes foram consolidadas na definição de 43 requisitos funcionais e 14 requisitos não funcionais, apresentados no Capítulo 4.
+O projeto percorreu quatro etapas sequenciais ao longo de seu ciclo global de desenvolvimento. A primeira etapa correspondeu à concepção e engenharia de requisitos, na qual as respostas obtidas no formulário de campo com a comunidade e as lições aprendidas no benchmarking dos similares foram estruturadas formalmente no levantamento de 43 requisitos funcionais e 14 requisitos não funcionais, detalhados no Capítulo 4.
 
-A segunda etapa compreendeu a modelagem conceitual e o projeto de interface, englobando a criação dos diagramas de casos de uso e classes no software Astah UML (ASTAH, 2026), a estruturação do modelo relacional de banco de dados e o desenho iterativo das telas e da identidade visual na ferramenta Figma (FIGMA, 2026).
+A segunda etapa envolveu a modelagem e o projeto de interface, compreendendo a construção dos diagramas conceituais e comportamentais da UML no software Astah UML na versão 9.0 (ASTAH, 2026), a especificação relacional do banco de dados PostgreSQL com políticas de segurança RLS no Supabase, e a elaboração iterativa do protótipo de alta fidelidade e identidade visual no Figma (FIGMA, 2026), detalhados nos Capítulos 4, 6 e 7.
 
-A terceira etapa consistiu na implementação e codificação modular do sistema, com a escrita do código-fonte em TypeScript no Visual Studio Code, adotando a biblioteca React Native (REACT NATIVE, 2026) e o ecossistema Expo (EXPO, 2026) na camada cliente, e a plataforma Supabase (SUPABASE, 2026) para serviços de autenticação, banco de dados PostgreSQL e armazenamento em nuvem, com controle de versão no Git e GitHub (apresentados nos Capítulos 5 e 6).
+A terceira etapa consistiu na implementação e codificação modular, abrangendo a escrita do código-fonte multiplataforma em TypeScript e JavaScript no editor Visual Studio Code na versão 1.96, com uso da biblioteca React Native na versão 0.81.5, plataforma Expo SDK 54, componentes utilitários do NativeWind e TailwindCSS, além da integração com a nuvem Supabase e controle de versões distribuído no Git e GitHub (Capítulo 6).
 
-Por fim, a quarta etapa envolveu os testes, a validação técnica e a avaliação de usabilidade da aplicação, abrangendo a execução de testes funcionais de caixa-preta para conferência das regras operacionais e a aplicação prática do protocolo internacional System Usability Scale com 20 voluntários, cujos resultados são detalhados no Capítulo 7.
+Por fim, a quarta etapa compreendeu os testes, validação técnica e avaliação de usabilidade, reunindo a execução de testes funcionais de caixa-preta para verificação das regras operacionais do aplicativo, medição de latência em conexões de rede móvel reais e a aplicação prática do protocolo System Usability Scale com 20 voluntários convidados, cujos procedimentos e resultados são analisados detalhadamente no Capítulo 8.
 
-A união entre a pesquisa com os usuários, a organização pelo método Kanban e as boas práticas de engenharia de software sustentou a construção de uma aplicação estável e eficiente. O Capítulo 4 apresenta em detalhes os requisitos e os modelos conceituais do sistema WeFIND.
+A união consistente entre a pesquisa de campo, a governança visual pelo Kanban e os princípios de engenharia de software sustentou a construção de uma aplicação móvel confiável, segura e orientada às necessidades da sociedade. O Capítulo 4 apresenta a especificação completa dos requisitos e os modelos conceituais da plataforma WeFIND.
+
 \clearpage
