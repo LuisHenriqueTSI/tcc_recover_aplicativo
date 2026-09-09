@@ -8,7 +8,7 @@ Neste capítulo, apresentam-se os testes funcionais de caixa-preta executados so
 
 A validação das regras operacionais adotou a técnica de testes de caixa-preta, na qual o comportamento do software é verificado mediante o fornecimento de entradas e a observação das saídas geradas, sem necessidade de inspeção do código-fonte interno. Cada caso de teste foi diretamente associado aos Requisitos Funcionais (RF) definidos no Capítulo 4, submetendo o aplicativo tanto a fluxos de uso regulares quanto a situações com dados incorretos ou incompletos.
 
-O Quadro 4 apresenta os casos de testes executados, os requisitos funcionais correspondentes e os resultados obtidos.
+O Quadro 5 apresenta os casos de testes executados, os requisitos funcionais correspondentes e os resultados obtidos.
 
 \vspace{0.3cm}
 \begin{table}[!htb]
@@ -19,7 +19,7 @@ O Quadro 4 apresenta os casos de testes executados, os requisitos funcionais cor
 \renewcommand{\arraystretch}{1.2}
 \begin{tabular}{|c|>{\centering\arraybackslash}p{1.8cm}|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{3.8cm}|>{\raggedright\arraybackslash}p{3.6cm}|c|}
 \hline
-\multicolumn{6}{|c|}{\textbf{Quadro 4: Matriz de Testes Funcionais do WeFIND}} \\ \hline
+\multicolumn{6}{|c|}{\textbf{Quadro 5: Matriz de Testes Funcionais do WeFIND}} \\ \hline
 \textbf{ID} & \textbf{Requisito} & \textbf{Cenário de Teste} & \textbf{Procedimento Executado} & \textbf{Resultado Esperado} & \textbf{Situação} \\ \hline
 CT01 & RF01, RF02 & Cadastro de usuário com dados válidos & Preenchimento de nome, e-mail válido e senha com mais de 6 caracteres & Criação da conta no Supabase Auth e direcionamento à tela inicial & Aprovado \\ \hline
 CT02 & RF01 & Validação de e-mail duplicado & Tentativa de registro utilizando e-mail já cadastrado & Exibição de mensagem informativa e bloqueio do envio & Aprovado \\ \hline
@@ -33,7 +33,7 @@ CT08 & RF28, RF30 & Visualização do Perfil Digital do Pet & Preenchimento dos 
 \fonte{Autoria própria (2026)}
 \end{table}
 
-Todos os cenários avaliados no Quadro 4 obtiveram aprovação integral, confirmando o correto funcionamento dos módulos de autenticação, persistência, busca espacial e comunicação em tempo real. As validações implementadas no cliente impediram submissões inconsistentes com mensagens claras de retorno, e as transações de escrita e upload preservaram a integridade do banco de dados relacional.
+Todos os cenários avaliados no Quadro 5 obtiveram aprovação integral, confirmando o correto funcionamento dos módulos de autenticação, persistência, busca espacial e comunicação em tempo real. As validações implementadas no cliente impediram submissões inconsistentes com mensagens claras de retorno, e as transações de escrita e upload preservaram a integridade do banco de dados relacional.
 
 \subsection{Avaliação de Usabilidade (Método SUS)}
 

@@ -2,7 +2,7 @@
 
 Para materializar os pilares conceituais e operacionais do WeFIND apresentados no Capítulo 5, a seleção tecnológica priorizou ferramentas de comprovada maturidade técnica, suporte comunitário ativo e alta produtividade na escrita do código-fonte. Como orientam Pressman e Maxim (2021) e Valente (2023), a definição criteriosa da pilha de software (tecnologias clientes, serviços de nuvem e persistência de dados) constitui a base para assegurar desempenho, escalabilidade e manutenibilidade a longo prazo.
 
-Este capítulo detalha as bibliotecas que compõem o ecossistema de desenvolvimento móvel do WeFIND, descreve a infraestrutura de computação em nuvem provida pelo Supabase, apresenta a modelagem lógica relacional do banco de dados PostgreSQL estruturada com políticas de segurança em nível de linha (RLS) e relaciona as ferramentas auxiliares utilizadas na gestão e governança do projeto.
+Este capítulo detalha as bibliotecas que compõem o ecossistema de desenvolvimento móvel do WeFIND com suas respectivas versões, descreve a infraestrutura de computação em nuvem provida pelo Supabase, apresenta a modelagem lógica relacional do banco de dados PostgreSQL estruturada com políticas de segurança em nível de linha (RLS) e relaciona as ferramentas auxiliares utilizadas na gestão e governança do projeto, culminando em um quadro consolidado de versões de software empregadas.
 
 \subsection{Tecnologias Utilizadas no Desenvolvimento Móvel}
 
@@ -16,19 +16,27 @@ A construção do aplicativo móvel exigiu a integração de ferramentas moderna
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A biblioteca React Native (REACT NATIVE, 2026) foi adotada como núcleo para a interface móvel cliente. Sua principal vantagem reside na capacidade de compilar código nativo para as plataformas Android e iOS a partir de uma base unificada escrita em TypeScript e JavaScript. Essa estratégia reduziu substancialmente o ciclo de desenvolvimento e evitou a necessidade de manter projetos paralelos com linguagens distintas, garantindo consistência visual e facilidade de manutenção corretiva.
+A biblioteca React Native, empregada na versão 0.81.5, foi adotada como núcleo para a interface móvel cliente, operando em estreita integração com a biblioteca React na versão 19.1.0. Sua principal vantagem reside na capacidade de compilar código nativo para as plataformas Android (versão 7.0 ou superior) e iOS (versão 13 ou superior) a partir de uma base de código unificada escrita em TypeScript na versão 5.9.2 e JavaScript (padrão ECMAScript 2023). Essa estratégia reduziu substancialmente o ciclo de desenvolvimento e evitou a necessidade de manter projetos paralelos com linguagens distintas, garantindo consistência visual e facilidade de manutenção corretiva.
 
-Em conjunto com o React Native, utilizou-se a plataforma Expo (EXPO, 2026). O Expo fornece um ecossistema abrangente de módulos nativos pré-configurados que simplificam o acesso aos sensores do smartphone. No WeFIND, o Expo foi fundamental para viabilizar a captura de coordenadas geográficas via pacote Expo Location, a seleção e captura de fotografias por meio do Expo Image Picker e a execução do aplicativo em dispositivos físicos durante as sessões de desenvolvimento.
+Em conjunto com o React Native, utilizou-se a plataforma Expo em sua versão SDK 54 (pacote central \textit{expo} na versão 54.0.29). O Expo fornece um ecossistema abrangente de módulos nativos pré-configurados que simplificam o acesso aos sensores e subsistemas do smartphone. No WeFIND, a integração com o hardware do aparelho foi operacionalizada mediante a seleção criteriosa de pacotes especializados do ecossistema Expo.
 
-Para resguardar o tráfego de rede e a integridade das consultas, foram inseridas regras de validação no próprio aplicativo cliente. Os formulários executam verificações em tempo real sobre campos de preenchimento obrigatório, validam a consistência de endereços de e-mail e realizam a redução e compressão automatizada de fotografias antes do upload para a nuvem, reduzindo o consumo do pacote de dados móveis do usuário.
+Para a obtenção das coordenadas geográficas em tempo real com suporte a satélite (GPS), utilizou-se o pacote \textit{expo-location} na versão 19.0.8, permitindo capturar a latitude e longitude do aparelho com precisão métrica. A captura fotográfica e o acesso aos arquivos visuais do dispositivo foram viabilizados pelo pacote \textit{expo-image-picker} na versão 17.0.10. Com a finalidade de otimizar o tráfego de rede e economizar o plano de dados dos usuários, as fotografias selecionadas passam por compressão algorítmica e redução de resolução antes da transmissão, rotina executada no próprio dispositivo pelo módulo \textit{expo-image-manipulator} na versão 14.0.8.
+
+A camada de exploração geográfica e renderização cartográfica baseia-se na biblioteca \textit{react-native-maps} na versão 1.20.1, responsável pela plotagem dinâmica de marcadores coloridos com as espécies canina e felina, desenho de polígonos de raio de busca e traçado de rotas viárias até o animal. Para a geração sob demanda dos cartazes de busca diagramados com código QR, recorreu-se à biblioteca \textit{react-native-view-shot} na versão 4.0.3, que converte a visualização do componente em arquivo rasterizado de imagem de alta definição, complementada pelo módulo \textit{expo-sharing} na versão 14.0.8 para compartilhamento direto com mensageiros instantâneos e redes sociais externas.
+
+A estruturação dos fluxos de navegação e transições de tela foi construída com a coleção de pacotes do React Navigation na versão 7, englobando o \textit{@react-navigation/native} na versão 7.1.25, o \textit{@react-navigation/bottom-tabs} na versão 7.8.12 para gerenciamento das abas inferiores fixas e o \textit{@react-navigation/native-stack} na versão 7.8.6 para pilhas modais de navegação. A retenção local de credenciais e tokens de sessão no aparelho utiliza o pacote \textit{@react-native-async-storage/async-storage} na versão 2.2.0. Por fim, a estilização visual dos elementos de interface foi agilizada com o framework utilitário NativeWind na versão 4.2.1, operando em conformidade com o TailwindCSS na versão 3.4.19, viabilizando a aplicação consistente de estilos CSS modernos sobre componentes móveis.
+
+Para resguardar o tráfego de rede e a integridade das consultas, foram inseridas regras de validação no próprio aplicativo cliente. Os formulários executam verificações em tempo real sobre campos de preenchimento obrigatório, validam a consistência sintática de endereços de e-mail e realizam a formatação padronizada de números telefônicos antes do envio à nuvem.
 
 \subsection{Serviços em Nuvem e Banco de Dados PostgreSQL}
 
-Na camada de persistência e serviços em nuvem, selecionou-se a plataforma Supabase (SUPABASE, 2026). O Supabase atua no modelo de computação em nuvem integrado, fornecendo serviço de autenticação de usuários (Supabase Auth), armazenamento seguro de arquivos multimídia (Supabase Storage) e banco de dados relacional baseado em PostgreSQL, dispensando a complexidade de aluguel e manutenção de servidores dedicados.
+Na camada de persistência e serviços em nuvem, selecionou-se a plataforma Supabase (SUPABASE, 2026). O Supabase atua no modelo de computação em nuvem integrado Backend-as-a-Service (BaaS), fornecendo serviço de autenticação de usuários (Supabase Auth), armazenamento seguro de arquivos multimídia (Supabase Storage) e banco de dados relacional baseado em PostgreSQL na versão 15.0, dispensando a complexidade de contratação, configuração e manutenção de servidores dedicados locais.
 
-O módulo Supabase Auth gerencia os fluxos de cadastro, login e redefinição de senhas, gerando chaves de autenticação em formato JWT (JSON Web Token) armazenadas de modo persistente no dispositivo móvel. Já o serviço Supabase Storage é responsável por hospedar os arquivos de imagem dos animais e dos perfis de usuário, servindo as fotografias por meio de links de distribuição pública de alta disponibilidade.
+A integração entre o aplicativo cliente React Native e a infraestrutura em nuvem é realizada pela biblioteca oficial \textit{@supabase/supabase-js} na versão 2.87.3. Para suprir a necessidade de sincronização imediata no canal de bate-papo privativo e na emissão de alertas de novos avistamentos comunitários, utilizou-se o módulo \textit{@supabase/realtime-js} na versão 2.87.3. Esse componente estabelece canais de comunicação bidirecionais contínuos baseados no protocolo WebSockets, transmitindo dados em tempo real com tempos de propagação inferiores a 300 milissegundos sem necessidade de recarregamento manual pelo usuário.
 
-A persistência estruturada dos dados é realizada no sistema gerenciador de banco de dados relacional PostgreSQL. Para organizar de forma consistente as entidades, atributos e relacionamentos da plataforma, desenvolveu-se o modelo lógico relacional apresentado na Figura~\ref{fig:modelo_logico_banco}.
+O módulo Supabase Auth gerencia os fluxos de cadastro, login e redefinição de senhas, gerando chaves de autenticação criptografadas em formato JWT (JSON Web Token) armazenadas de modo persistente no dispositivo móvel. Já o serviço Supabase Storage é responsável por hospedar os arquivos de imagem dos animais e dos perfis de usuário, servindo as fotografias por meio de links de distribuição pública de alta disponibilidade provisionados sobre redes de entrega de conteúdo (CDN).
+
+A persistência estruturada dos dados é realizada no sistema gerenciador de banco de dados relacional PostgreSQL na versão 15.0. Para organizar de forma consistente as entidades, atributos e relacionamentos da plataforma, desenvolveu-se o modelo lógico relacional apresentado na Figura~\ref{fig:modelo_logico_banco}.
 
 \begin{figure}[H]
     \centering
@@ -64,9 +72,68 @@ Durante as etapas de planejamento, especificação, escrita de código e desenho
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A escrita, compilação e depuração do código-fonte foram conduzidas no editor Visual Studio Code (VS Code), com o suporte de extensões para realce de sintaxe em TypeScript e controle de linting. Para a governança do código e histórico de alterações, empregou-se o sistema de controle de versão Git integrado ao repositório remoto no GitHub.
+No ambiente de desenvolvimento, a execução baseou-se na plataforma Node.js na versão 24.15.0, acompanhada pelo gerenciador de pacotes npm na versão 11.12.1 para a instalação, resolução e controle de versões das dependências externas do projeto. A escrita, compilação e depuração do código-fonte foram conduzidas no editor Visual Studio Code (VS Code) na versão 1.96, utilizando extensões integradas para verificação de sintaxe e controle de qualidade de código.
 
-A gestão ágil das atividades e o acompanhamento do cronograma foram operacionalizados na ferramenta Trello (TRELLO, 2026), por meio do método Kanban. A elaboração dos diagramas de modelagem conceitual foi realizada no software Astah UML (ASTAH, 2026). Por fim, o projeto das interfaces visuais, o fluxo de navegação entre componentes e os protótipos de alta fidelidade foram construídos na plataforma Figma (FIGMA, 2026).
+Para a governança do código-fonte e rastreabilidade cronológica de todas as alterações, utilizou-se o sistema distribuído de controle de versão Git na versão 2.54.0, associado à hospedagem remota em repositório privado na plataforma GitHub. A gestão ágil das atividades e o acompanhamento do cronograma foram operacionalizados na ferramenta Trello (TRELLO, 2026), por meio do método Kanban. A elaboração dos diagramas de modelagem conceitual e estrutural foi realizada no software Astah UML na versão 9.0 (ASTAH, 2026). Por fim, o projeto das interfaces visuais, o fluxo de navegação entre componentes e os protótipos de alta fidelidade foram construídos na plataforma Figma (FIGMA, 2026).
 
-Com a infraestrutura de desenvolvimento estabelecida e o modelo de banco de dados relacional estruturado, o Capítulo 7 apresenta o projeto de interface e a implementação visual do aplicativo WeFIND, detalhando os princípios de usabilidade, a tipografia, a identidade visual e as telas desenvolvidas.
+\subsection{Especificação Consolidada das Tecnologias e Versões}
+
+Para sintetizar de maneira clara e estruturada todo o conjunto de ferramentas, bibliotecas e ambientes de software empregados na materialização da plataforma WeFIND, o Quadro~\ref{quadro:tecnologias} organiza as tecnologias por camada funcional, relacionando o pacote, a versão exata adotada e sua respectiva função operacional no sistema.
+
+\vspace{0.3cm}
+{
+\phantomsection\label{quadro:tecnologias}
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{3.7cm}|>{\raggedright\arraybackslash}p{3.1cm}|>{\centering\arraybackslash}p{1.6cm}|>{\raggedright\arraybackslash}p{6.1cm}|}
+\hline
+\multicolumn{4}{|c|}{\textbf{Quadro 4: Especificação e Versões das Tecnologias do Ecossistema WeFIND}} \\ \hline
+\textbf{Camada / Domínio} & \textbf{Tecnologia / Pacote} & \textbf{Versão} & \textbf{Função e Finalidade no Sistema} \\ \hline
+\endfirsthead
+
+\hline
+\multicolumn{4}{|c|}{\textbf{Quadro 4: Especificação e Versões das Tecnologias (Continuação)}} \\ \hline
+\textbf{Camada / Domínio} & \textbf{Tecnologia / Pacote} & \textbf{Versão} & \textbf{Função e Finalidade no Sistema} \\ \hline
+\endhead
+
+\hline
+\multicolumn{4}{|r|}{\textit{Continua na próxima página}} \\ \hline
+\endfoot
+
+\hline
+\multicolumn{4}{|l|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
+\endlastfoot
+
+Interface Móvel & React Native & 0.81.5 & Framework principal para geração do aplicativo nativo multiplataforma Android e iOS. \\ \hline
+Interface Móvel & React & 19.1.0 & Biblioteca declarativa para criação da arquitetura baseada em componentes reativos. \\ \hline
+Plataforma Móvel & Expo SDK & 54.0.29 & Conjunto de ferramentas gerenciadas e bibliotecas de acesso a recursos do smartphone. \\ \hline
+Navegação Móvel & React Navigation & 7.1.25 & Gerenciamento de rotas, pilhas de navegação e abas inferiores de telas da aplicação. \\ \hline
+Estilização Visual & NativeWind & 4.2.1 & Motor de classes utilitárias para estilização direta de componentes em React Native. \\ \hline
+Estilização Visual & TailwindCSS & 3.4.19 & Framework CSS base para definição dos padrões visuais e responsividade da interface. \\ \hline
+Hardware / Satélite & expo-location & 19.0.8 & Captura precisa das coordenadas de latitude e longitude do dispositivo via GPS nativo. \\ \hline
+Hardware / Câmera & expo-image-picker & 17.0.10 & Acesso à câmera do celular e à galeria de fotos para anexar imagens aos anúncios. \\ \hline
+Processamento Local & expo-image-manipulator & 14.0.8 & Redimensionamento e compressão algorítmica de fotos antes do envio ao servidor em nuvem. \\ \hline
+Georreferenciamento & react-native-maps & 1.20.1 & Renderização do mapa interativo, marcação de pontos de ocorrência e traçado de rotas. \\ \hline
+Compartilhamento & react-native-view-shot & 4.0.3 & Captura gráfica de componentes visuais para renderização de cartazes digitais com código QR. \\ \hline
+Compartilhamento & expo-sharing & 14.0.8 & Integração com o painel nativo de compartilhamento externo do sistema operacional. \\ \hline
+Notificações Móveis & expo-notifications & 0.32.15 & Módulo para recebimento e gerenciamento de alertas sonoros e notificações instantâneas. \\ \hline
+Persistência Local & async-storage & 2.2.0 & Armazenamento seguro de chaves de autenticação JWT e preferências locais no aparelho. \\ \hline
+Serviços em Nuvem & Supabase Client & 2.87.3 & Biblioteca cliente para autenticação, consultas relacionais e upload de fotos no Supabase. \\ \hline
+Comunicação Realtime & Supabase Realtime & 2.87.3 & Sincronização contínua via WebSockets para bate-papo privativo e relatos de avistamento. \\ \hline
+Banco de Dados & PostgreSQL & 15.0 & Sistema gerenciador de banco de dados relacional com suporte a regras de segurança RLS. \\ \hline
+Linguagem de Código & TypeScript & 5.9.2 & Linguagem com tipagem estática que adiciona segurança e previsibilidade ao JavaScript. \\ \hline
+Linguagem de Código & JavaScript & ES2023 & Linguagem interpretada que executa a lógica operacional do aplicativo móvel. \\ \hline
+Ambiente de Execução & Node.js & 24.15.0 & Plataforma de execução JavaScript utilizada na máquina de desenvolvimento e compilação. \\ \hline
+Gerenciador Pacotes & npm & 11.12.1 & Ferramenta de gerenciamento de dependências e versionamento de pacotes do ecossistema. \\ \hline
+Editor de Código & Visual Studio Code & 1.96 & Ambiente de desenvolvimento integrado para escrita, teste e depuração do código-fonte. \\ \hline
+Controle de Versão & Git & 2.54.0 & Sistema distribuído de controle de versões utilizado no versionamento do projeto. \\ \hline
+Repositório Remoto & GitHub & Nuvem & Plataforma em nuvem para hospedagem do repositório remoto e governança do código. \\ \hline
+Modelagem Conceitual & Astah UML & 9.0 & Software gráfico utilizado na diagramação dos modelos de casos de uso e classes. \\ \hline
+Design de Interface & Figma & 2026 & Plataforma para elaboração dos protótipos de interface, identidade visual e telas. \\ \hline
+Gestão de Tarefas & Trello & Web & Ferramenta de acompanhamento de atividades baseado no fluxo visual Kanban. \\ \hline
+\end{longtable}
+}
+
+Com a infraestrutura de desenvolvimento estabelecida, o modelo de banco de dados relacional estruturado e as versões de todas as ferramentas formalizadas no Quadro~\ref{quadro:tecnologias}, o Capítulo 7 apresenta o projeto de interface e a implementação visual do aplicativo WeFIND, detalhando os princípios de usabilidade, a tipografia, a identidade visual e as telas desenvolvidas.
 \clearpage
