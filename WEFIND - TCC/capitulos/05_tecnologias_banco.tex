@@ -1,0 +1,82 @@
+\section{TECNOLOGIAS E BANCO DE DADOS DO SISTEMA WeFIND}
+
+A construção do WeFIND foi orientada pelo objetivo de entregar uma aplicação comunitária estável, rápida e intuitiva, capaz de responder à urgência de situações reais de desaparecimento e resgate de animais domésticos. A concepção do sistema partiu da constatação prática de que a dispersão de informações em redes sociais e a lentidão dos canais analógicos diminuem sensivelmente as chances de reencontro de cães e gatos perdidos nas cidades.
+
+Para superar esses obstáculos, o projeto selecionou ferramentas modernas de desenvolvimento móvel e serviços de persistência em nuvem. Este capítulo apresenta a justificativa para a adoção de um aplicativo móvel em relação a plataformas web convencionais, detalha as bibliotecas que compõem o ecossistema de programação, descreve a modelagem lógica do banco de dados relacional PostgreSQL hospedado no Supabase e relaciona o conjunto de ferramentas auxiliares empregadas na construção do projeto.
+
+\subsection{Justificativa da Abordagem Móvel em Relação à Web}
+
+A decisão de projetar o WeFIND como um aplicativo para smartphones, em vez de um portal web tradicional, decorre da natureza dinâmica e urgente das buscas nas ruas. Uma página web apresenta a desvantagem de depender da iniciativa do usuário de abrir o navegador cotidianamente para consultar avisos, o que se mostra incompatível com a rotina da maioria das pessoas.
+
+Ademais, estudos da literatura de Computação demonstram que animais assustados tendem a se deslocar com rapidez, percorrendo distâncias expressivas entre 14 e 26 quilômetros em um único dia (SOUZA et al., 2022). Diante desse comportamento, as ações de busca precisam acontecer no ambiente urbano, exatamente onde os cidadãos transitam com seus celulares em mãos.
+
+A abordagem móvel se sobressai por três aspectos operacionais determinantes. Primeiro, pelo sistema de notificações imediatas: enquanto um site fechado permanece inerte, o aplicativo instalado no celular é capaz de emitir alertas visuais e sonoros informando que um animal sumiu a poucas quadras da posição atual do usuário. Segundo, pela facilidade de integração nativa com o receptor de GPS e a câmera fotográfica do aparelho: ao se deparar com um animal desorientado na via pública, o cidadão registra a foto e fixa a localização com um único toque, dispensando a digitação manual de nomes de ruas ou pontos de referência. Terceiro, pelo incentivo ao cadastro preventivo: o tutor pode registrar previamente as características físicas, vacinas e o Perfil Digital do Pet com tranquilidade; caso ocorra uma fuga inesperada, a publicação é gerada instantaneamente, aproveitando as informações já armazenadas no dispositivo.
+
+Para contemplar também os indivíduos que ainda não possuem o aplicativo instalado no smartphone, o WeFIND dispõe da ferramenta de geração automatizada de cartazes digitais contendo código QR. Dessa maneira, qualquer pessoa que aponte a câmera do celular para o cartaz impresso tem acesso imediato à página pública do animal e às instruções de contato, promovendo engajamento comunitário sem barreiras de instalação.
+
+\subsection{Tecnologias Utilizadas no Desenvolvimento Móvel}
+
+A definição das tecnologias priorizou soluções com ampla maturidade técnica, suporte comunitário ativo e alta produtividade na escrita do código. A Figura~\ref{fig:principais_tecnologias} destaca as principais tecnologias adotadas no projeto.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagens/03_arquitetura_design/figura11_principais_tecnologias.png}
+    \caption{Principais tecnologias que compõem o ecossistema WeFIND}
+    \label{fig:principais_tecnologias}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+A biblioteca React Native (REACT NATIVE, 2026) foi adotada como núcleo para a interface móvel cliente. Sua principal vantagem reside na capacidade de compilar código nativo para as plataformas Android e iOS a partir de uma base unificada escrita em TypeScript e JavaScript. Essa estratégia reduziu substancialmente o ciclo de desenvolvimento e evitou a necessidade de manter projetos paralelos com linguagens distintas, garantindo consistência visual e facilidade de manutenção corretiva.
+
+Em conjunto com o React Native, utilizou-se a plataforma Expo (EXPO, 2026). O Expo fornece um ecossistema abrangente de módulos nativos pré-configurados que simplificam o acesso aos sensores do smartphone. No WeFIND, o Expo foi fundamental para viabilizar a captura de coordenadas geográficas via pacote Expo Location, a seleção e captura de fotografias por meio do Expo Image Picker e a execução do aplicativo em dispositivos físicos durante as sessões de desenvolvimento.
+
+Para resguardar o tráfego de rede e a integridade das consultas, foram inseridas regras de validação no próprio aplicativo cliente. Os formulários executam verificações em tempo real sobre campos de preenchimento obrigatório, validam a consistência de endereços de e-mail e realizam a redução e compressão automatizada de fotografias antes do upload para a nuvem, reduzindo o consumo do pacote de dados móveis do usuário.
+
+\subsection{Serviços em Nuvem e Banco de Dados PostgreSQL}
+
+Na camada de persistência e serviços em nuvem, selecionou-se a plataforma Supabase (SUPABASE, 2026). O Supabase atua no modelo de computação em nuvem integrado, fornecendo serviço de autenticação de usuários (Supabase Auth), armazenamento seguro de arquivos multimídia (Supabase Storage) e banco de dados relacional baseado em PostgreSQL, dispensando a complexidade de aluguel e manutenção de servidores dedicados.
+
+O módulo Supabase Auth gerencia os fluxos de cadastro, login e redefinição de senhas, gerando chaves de autenticação em formato JWT (JSON Web Token) armazenadas de modo persistente no dispositivo móvel. Já o serviço Supabase Storage é responsável por hospedar os arquivos de imagem dos animais e dos perfis de usuário, servindo as fotografias por meio de links de distribuição pública de alta disponibilidade.
+
+A persistência estruturada dos dados é realizada no sistema gerenciador de banco de dados relacional PostgreSQL. Para organizar de forma consistente as entidades, atributos e relacionamentos da plataforma, desenvolveu-se o modelo lógico relacional apresentado na Figura~\ref{fig:modelo_logico_banco}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{imagens/02_modelagem/figura09_modelo_logico_banco.png}
+    \caption{Modelo Lógico Relacional do Banco de Dados PostgreSQL}
+    \label{fig:modelo_logico_banco}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+O modelo lógico da Figura~\ref{fig:modelo_logico_banco} é composto por cinco tabelas relacionais fundamentais:
+
+A tabela \textit{usuarios} centraliza os dados cadastrais dos participantes do sistema. O campo identificador primário conecta-se diretamente à chave única fornecida pelo serviço Supabase Auth, registrando o nome completo, endereço de correio eletrônico, fotografia de perfil, número de telefone para contato emergencial, cidade, estado de residência e o registro de data e hora de criação da conta.
+
+A tabela \textit{animais} armazena todas as ocorrências cadastradas na plataforma e estabelece chave estrangeira com a tabela \textit{usuarios}, identificando o autor da publicação. Entre os campos estruturados, constam o status operacional do registro (Perdido, Encontrado ou Adoção), nome do animal, espécie (canina ou felina), raça, porte físico, padrão de coloração da pelagem, sexo, faixa etária aproximada e indicador do uso prévio de coleira. Para possibilitar a busca espacial por proximidade e a plotagem exata no mapa interativo, a tabela armazena as coordenadas de latitude e longitude em formato de ponto flutuante, acompanhadas de campos descritivos para logradouro, bairro, município, data do fato, observações gerais e indicador de resolução do caso.
+
+A tabela \textit{fotos\_animais} gerencia as fotografias anexadas a cada publicação, mantendo relacionamento de cardinalidade um-para-muitos com a tabela \textit{animais}. Essa estrutura armazena a URL pública da imagem persistida no armazenamento em nuvem do Supabase Storage, viabilizando o carregamento de múltiplas fotografias por anúncio com controle individual de exclusão.
+
+A tabela \textit{avistamentos} organiza os relatos colaborativos fornecidos pela comunidade ao visualizarem animais soltos na rua. Cada registro vincula-se ao animal correspondente e ao usuário informante, armazenando as coordenadas de latitude e longitude do local exato do avistamento, ponto de referência descritivo, endereço textual aproximado, fotografia comprobatória opcional e carimbo de data e hora do relato.
+
+Por fim, a tabela \textit{mensagens} dá suporte ao canal de comunicação privativo da aplicação. Ela reúne o identificador do animal em discussão, o identificador do usuário remetente, o identificador do usuário destinatário, o conteúdo textual da mensagem, anexo opcional de imagem, indicador booleano de confirmação de leitura e registro cronológico do envio.
+
+A segurança e a integridade do banco de dados relacional são asseguradas por políticas de segurança em nível de linha (Row Level Security, ou RLS). Por meio desse mecanismo, implementado diretamente no mecanismo do PostgreSQL, define-se que qualquer usuário autenticado ou visitante possui permissão de leitura sobre as publicações de animais ativos, porém apenas o usuário proprietário daquele registro detém privilégios para alterar ou excluir suas próprias publicações e dados de perfil, impedindo modificações não autorizadas.
+
+\subsection{Ferramentas Auxiliares de Apoio}
+
+Durante as etapas de planejamento, especificação, escrita de código e desenho visual, recorreu-se a um conjunto de ferramentas auxiliares de apoio ao desenvolvimento, ilustradas na Figura~\ref{fig:ferramentas_auxiliares}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imagens/03_arquitetura_design/figura12_ferramentas_auxiliares.png}
+    \caption{Ferramentas auxiliares de apoio ao desenvolvimento do projeto}
+    \label{fig:ferramentas_auxiliares}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+A escrita, compilação e depuração do código-fonte foram conduzidas no editor Visual Studio Code (VS Code), com o suporte de extensões para realce de sintaxe em TypeScript e controle de linting. Para a governança do código e histórico de alterações, empregou-se o sistema de controle de versão Git integrado ao repositório remoto no GitHub.
+
+A gestão ágil das atividades e o acompanhamento do cronograma foram operacionalizados na ferramenta Trello (TRELLO, 2026), por meio do método Kanban. A elaboração dos diagramas de modelagem conceitual foi realizada no software Astah UML (ASTAH, 2026). Por fim, o projeto das interfaces visuais, o fluxo de navegação entre componentes e os protótipos de alta fidelidade foram construídos na plataforma Figma (FIGMA, 2026).
+
+Com a infraestrutura de desenvolvimento estabelecida e o modelo de banco de dados relacional estruturado, o Capítulo 6 apresenta o projeto de interface e a implementação visual do aplicativo WeFIND, detalhando os princípios de usabilidade, a tipografia, a identidade visual e as telas desenvolvidas.
+\clearpage

@@ -1,8 +1,8 @@
-\section{ANÁLISE E MODELAGEM DO SISTEMA}
+\section{ANÁLISE E MODELAGEM DO SISTEMA WeFIND}
 
 A partir dos dados da pesquisa com a comunidade e das limitações identificadas nos aplicativos similares (Capítulo 3), este capítulo apresenta os requisitos e a modelagem do sistema proposto. Como explica Valente (2023), a análise e a modelagem organizam o funcionamento do software, transformando as necessidades práticas dos usuários em regras bem definidas para orientar o desenvolvimento e os testes do aplicativo.
 
-Neste capítulo, são apresentados os 43 requisitos funcionais e os 14 requisitos não funcionais definidos para a solução tecnológica, acompanhados da modelagem conceitual expressa por meio de diagramas da \textit{Unified Modeling Language} (UML) e do modelo lógico de dados relacional.
+Neste capítulo, são apresentados os 43 requisitos funcionais e os 14 requisitos não funcionais definidos para a solução tecnológica, acompanhados da modelagem conceitual e comportamental expressa por meio de diagramas da \textit{Unified Modeling Language} (UML).
 
 \subsection{Engenharia e Levantamento de Requisitos}
 
@@ -129,7 +129,7 @@ Os requisitos não funcionais definem os padrões de qualidade, segurança e des
 
 A modelagem de software é uma etapa fundamental no desenvolvimento de qualquer sistema, pois organiza visualmente a lógica, as regras e o funcionamento da aplicação antes e durante a escrita do código. Ao criar esquemas visuais padronizados, a equipe alinha as expectativas com os requisitos e evita inconsistências que poderiam comprometer a arquitetura ou a experiência de uso (BEZERRA, 2021).
 
-No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por duas perspectivas complementares: a comportamental, expressa nos diagramas de casos de uso que apresentam as ações disponibilizadas a cada perfil de usuário; e a estrutural, representada pelo diagrama de classes conceituais e pelo modelo lógico do banco de dados relacional.
+No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por duas perspectivas complementares: a comportamental, expressa nos diagramas de casos de uso que apresentam as ações disponibilizadas a cada perfil de usuário; e a estrutural, representada pelo diagrama de classes conceituais.
 
 \subsubsection{Diagramas de Casos de Uso}
 
@@ -187,23 +187,5 @@ A classe \textit{Publicacao} representa os anúncios no sistema, guardando o tip
 
 A colaboração entre as pessoas é feita pela classe \textit{Avistamento}, que guarda a descrição e as coordenadas do local onde um animal foi visto na rua. A conversa entre quem perdeu e quem encontrou o pet ocorre por meio da ligação entre as classes \textit{Conversa} e \textit{Mensagem}, que reúne o texto, o horário e a confirmação de leitura no contexto de uma publicação. Por fim, a classe \textit{Denuncia} permite o controle da comunidade sobre anúncios indevidos, registrando o motivo, a situação e o parecer da moderação.
 
-\subsubsection{Modelo Lógico do Banco de Dados}
-
-Enquanto o diagrama de classes descreve os dados sob o ponto de vista da programação orientada a objetos, o modelo lógico do banco de dados organiza as informações em tabelas no banco relacional PostgreSQL, hospedado na plataforma Supabase. A Figura~\ref{fig:modelo_logico_banco} apresenta o modelo relacional do banco de dados do sistema proposto.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.88\textwidth]{imagens/02_modelagem/figura09_modelo_logico_banco.png}
-    \caption{Modelo Lógico Relacional do Banco de Dados PostgreSQL}
-    \label{fig:modelo_logico_banco}
-    \fonte{Autoria própria (2026)}
-\end{figure}
-
-A estrutura do banco de dados conta com cinco tabelas integradas. A tabela \textit{usuarios} guarda os dados de conta e perfil com chave primária única ligada ao Supabase Auth, armazenando nome, e-mail, foto, telefone, cidade, estado e data de criação.
-
-A tabela \textit{animais} centraliza as publicações e se liga ao usuário que criou o anúncio. Ela armazena o status, nome do pet, espécie, raça, porte, cor, sexo, idade aproximada e se o animal usava coleira. Para permitir as buscas no mapa, a tabela guarda as coordenadas de latitude e longitude, além de endereço, bairro, cidade, data do ocorrido, descrição e situação de resolução.
-
-As imagens são organizadas na tabela \textit{fotos\_animais}, que relaciona o animal cadastrado à URL da foto salva no armazenamento em nuvem, permitindo que cada anúncio tenha mais de uma foto. A tabela \textit{avistamentos} guarda os relatos de animais vistos na rua, ligando o pet ao usuário informante com latitude, longitude, ponto de referência, descrição do local, foto e data. Por fim, a tabela \textit{mensagens} gerencia o chat privativo, guardando o identificador do animal em discussão, o remetente, o destinatário, o texto enviado, anexo de imagem, confirmação de leitura e horário de envio.
-
-Com os requisitos levantados e os modelos estruturais e comportamentais do sistema devidamente formalizados, o Capítulo 5 apresenta em detalhes a plataforma desenvolvida, denominada \textbf{WeFIND}, abordando sua arquitetura em nuvem, tecnologias adotadas, identidade visual e implementação prática de suas telas operacionais.
+Com os requisitos funcionais e não funcionais estabelecidos e os diagramas conceituais da UML devidamente formalizados, o Capítulo 5 apresenta a infraestrutura tecnológica e o banco de dados da plataforma WeFIND, detalhando as bibliotecas do ecossistema móvel e o modelo lógico relacional no PostgreSQL.
 \clearpage

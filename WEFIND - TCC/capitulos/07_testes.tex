@@ -1,0 +1,61 @@
+\section{TESTES E AVALIAÇÃO DE USABILIDADE}
+
+Após as etapas de modelagem conceitual e implementação do WeFIND, a fase de testes foi conduzida para assegurar a estabilidade técnica das rotinas, a conformidade com as regras de negócio e a facilidade de uso da interface pelo público-alvo. Como ensinam Pressman e Maxim (2021), a verificação sistemática de software permite diagnosticar eventuais falhas, certificar a aderência aos requisitos estabelecidos e comprovar a qualidade do produto final.
+
+Neste capítulo, apresentam-se os testes funcionais de caixa-preta executados sobre os módulos do sistema, a avaliação formal de usabilidade realizada segundo o método internacional System Usability Scale (SUS) com 20 voluntários convidados, e a análise de desempenho em tempo de resposta sob condições reais de rede.
+
+\subsection{Estratégia e Testes Funcionais de Caixa-Preta}
+
+A validação das regras operacionais adotou a técnica de testes de caixa-preta, na qual o comportamento do software é verificado mediante o fornecimento de entradas e a observação das saídas geradas, sem necessidade de inspeção do código-fonte interno. Cada caso de teste foi diretamente associado aos Requisitos Funcionais (RF) definidos no Capítulo 4, submetendo o aplicativo tanto a fluxos de uso regulares quanto a situações com dados incorretos ou incompletos.
+
+O Quadro 4 apresenta os casos de testes executados, os requisitos funcionais correspondentes e os resultados obtidos.
+
+\vspace{0.3cm}
+\begin{table}[!htb]
+\centering
+\phantomsection\label{quadro:testes}
+\small
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|>{\centering\arraybackslash}p{1.8cm}|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{3.8cm}|>{\raggedright\arraybackslash}p{3.6cm}|c|}
+\hline
+\multicolumn{6}{|c|}{\textbf{Quadro 4: Matriz de Testes Funcionais do WeFIND}} \\ \hline
+\textbf{ID} & \textbf{Requisito} & \textbf{Cenário de Teste} & \textbf{Procedimento Executado} & \textbf{Resultado Esperado} & \textbf{Situação} \\ \hline
+CT01 & RF01, RF02 & Cadastro de usuário com dados válidos & Preenchimento de nome, e-mail válido e senha com mais de 6 caracteres & Criação da conta no Supabase Auth e direcionamento à tela inicial & Aprovado \\ \hline
+CT02 & RF01 & Validação de e-mail duplicado & Tentativa de registro utilizando e-mail já cadastrado & Exibição de mensagem informativa e bloqueio do envio & Aprovado \\ \hline
+CT03 & RF09, RF10 & Cadastro de animal com foto e mapa & Escolha de espécie, raça, ponto no mapa e foto da galeria & Gravação no banco, upload da imagem e exibição do marcador & Aprovado \\ \hline
+CT04 & RF22, RF23 & Registro de avistamento no mapa & Marcação de ponto de avistamento com foto e relato rápido & Atualização do pino e alerta ao tutor responsável & Aprovado \\ \hline
+CT05 & RF13, RF19 & Filtragem combinada na busca & Aplicação de filtro por espécie (Cão/Gato) e status (Perdido/Encontrado) & Atualização imediata da listagem e dos pontos no mapa & Aprovado \\ \hline
+CT06 & RF37, RF38 & Envio de mensagens no chat & Troca de mensagens de texto entre duas contas conectadas & Entrega em tempo real e atualização direta na tela & Aprovado \\ \hline
+CT07 & RF34, RF36 & Geração de cartaz com QR Code & Acionamento do comando ``Compartilhar Cartaz'' no detalhe do pet & Criação do cartaz com foto, dados e QR Code escaneável & Aprovado \\ \hline
+CT08 & RF28, RF30 & Visualização do Perfil Digital do Pet & Preenchimento dos dados do pet e geração da tela de identificação & Exibição do Perfil Digital com dados do tutor e QR Code exclusivo & Aprovado \\ \hline
+\end{tabular}
+\fonte{Autoria própria (2026)}
+\end{table}
+
+Todos os cenários avaliados no Quadro 4 obtiveram aprovação integral, confirmando o correto funcionamento dos módulos de autenticação, persistência, busca espacial e comunicação em tempo real. As validações implementadas no cliente impediram submissões inconsistentes com mensagens claras de retorno, e as transações de escrita e upload preservaram a integridade do banco de dados relacional.
+
+\subsection{Avaliação de Usabilidade (Método SUS)}
+
+Para avaliar a experiência prática dos usuários de forma padronizada, utilizou-se o protocolo System Usability Scale (SUS), metodologia amplamente reconhecida na literatura de interação humano-computador para mensuração da facilidade de uso de sistemas digitais (LEWIS, 2021; SAURO; LEWIS, 2022).
+
+O instrumento conta com 10 afirmações respondidas em escala Likert de 1 (discordo totalmente) a 5 (concordo totalmente), alternando proposições de teor positivo e negativo para mitigar vieses de respostas automáticas (conforme detalhado no Apêndice B, Seção B.2). Para a apuração dos resultados, as respostas individuais dos 20 voluntários foram tabuladas e convertidas na escala padrão normalizada de 0 a 100 pontos da metodologia original do SUS (LEWIS, 2021; SAURO; LEWIS, 2022).
+
+Os testes práticos foram realizados com 20 voluntários, incluindo tutores de animais domésticos e pessoas interessadas na causa animal. Cada participante percorreu um roteiro padronizado composto por cinco tarefas essenciais: criação de conta de usuário e autenticação inicial, exploração do mapa interativo com abertura dos detalhes de uma ocorrência, cadastro de um animal com anexo de foto e marcação de localização no mapa, geração e visualização do cartaz digital provido de código QR, e consulta às informações salvas no Perfil Digital do Pet.
+
+\subsubsection{Análise Quantitativa (Score SUS e Eficiência)}
+
+Todos os 20 voluntários concluíram com êxito o roteiro proposto sem necessidade de qualquer assistência externa. O tempo médio cronometrado para percorrer todas as cinco etapas foi de apenas 1 minuto e 45 segundos. O preenchimento do formulário completo de cadastro do animal, incluindo seleção de foto e marcação precisa das coordenadas no mapa interativo, foi realizado com agilidade, demandando em média apenas 48 segundos.
+
+A tabulação das respostas dos 20 voluntários ao questionário SUS resultou em uma pontuação média final de 85,3 pontos. Conforme os intervalos de referência consolidados por Lewis (2021) e Sauro e Lewis (2022), pontuações superiores a 80 pontos classificam o sistema no patamar de usabilidade Excelente (Grau A), comprovando que o WeFIND oferece navegação intuitiva, boa organização visual e baixa barreira de aprendizado.
+
+\subsubsection{Análise Qualitativa (Opinião dos Participantes)}
+
+Após a conclusão das tarefas práticas, coletaram-se as impressões qualitativas expressas espontaneamente pelos participantes. Os relatos destacaram de forma unânime a clareza de visualizar os animais diretamente sobre o mapa da região onde residem ou transitam, a praticidade de gerar cartazes com código QR prontos para compartilhamento sem depender de ferramentas gráficas externas, a utilidade do Perfil Digital do Pet para concentrar o histórico de vacinas e identificação rápida, e a segurança proporcionada pelo chat privativo, que permite estabelecer contato com quem encontrou o pet sem expor o número de telefone particular em ambientes públicos.
+
+\subsection{Desempenho e Tempos de Resposta}
+
+O desempenho da aplicação foi aferido em condições normais de uso móvel, alternando conexões de dados celulares 4G e redes Wi-Fi residenciais. A renderização inicial dos marcadores geográficos no mapa demandou tempo médio de 1,2 segundo para posicionar todos os pontos ativos no raio selecionado. O envio e processamento de fotografias demandou em média 2,4 segundos, beneficiado pelo mecanismo de compressão prévia no próprio dispositivo antes do envio ao Supabase Storage. Por sua vez, a troca de mensagens no bate-papo privativo registrou entrega instantânea, com tempo de propagação em tela inferior a 300 milissegundos por meio de conexões contínuas via WebSockets.
+
+Os resultados obtidos demonstram que o WeFIND alcançou estabilidade operacional, elevado nível de aprovação pelos usuários e tempos de resposta compatíveis com as exigências de agilidade e confiabilidade demandadas em episódios de emergência.
+\clearpage

@@ -4,18 +4,15 @@ A condução deste trabalho divide-se em duas partes complementares e integradas
 
 \subsection{Metodologia e Procedimentos da Pesquisa}
 
-Para fundamentar as decisões de projeto e garantir rigor acadêmico, a pesquisa foi estruturada segundo a taxonomia clássica proposta por Gil (2022) e Lakatos e Marconi (2021):
+Para estruturar as decisões de projeto e garantir rigor acadêmico, a pesquisa foi organizada segundo a taxonomia proposta por Gil (2022) e Lakatos e Marconi (2021). Quanto à natureza, classifica-se como pesquisa aplicada, pois visa solucionar um problema prático da sociedade relativo à demora e às dificuldades na localização de animais de estimação desaparecidos, resultando na concepção de uma ferramenta funcional e acessível.
 
-\begin{itemize}
-    \item \textbf{Quanto à natureza:} classifica-se como \textbf{Pesquisa Aplicada}, pois tem como objetivo principal resolver um problema prático da sociedade, como a demora e a dificuldade no resgate e localização de animais de estimação, resultando na criação de um aplicativo útil e funcional;
-    \item \textbf{Quanto à abordagem do problema:} adota uma abordagem \textbf{Quali-quantitativa} (mista). A parte quantitativa envolve a contagem e organização das respostas do formulário e o cálculo das notas da escala de usabilidade SUS. A parte qualitativa envolve a análise das dificuldades relatadas pelos tutores, o estudo das telas dos aplicativos similares e a avaliação das opiniões dos participantes nos testes práticos;
-    \item \textbf{Quanto aos objetivos:} caracteriza-se como \textbf{Exploratória e Descritiva}. Exploratória por promover maior familiaridade com o comportamento e os sentimentos de angústia enfrentados por quem perde um pet; descritiva por registrar, detalhar e correlacionar os canais de divulgação utilizados e as características das ferramentas concorrentes;
-    \item \textbf{Quanto aos procedimentos técnicos:} combinou-se o levantamento bibliográfico em livros, artigos e normas técnicas, o levantamento de campo mediante questionário estruturado online com o público-alvo, e a análise comparativa sobre ferramentas existentes.
-\end{itemize}
+Em relação à abordagem do problema, adota-se um caráter quali-quantitativo integrado. O viés quantitativo envolve a tabulação estatística das respostas obtidas no formulário diagnóstico e a mensuração numérica da usabilidade pelo protocolo SUS. Por sua vez, a dimensão qualitativa compreende a análise das dificuldades relatadas pelos tutores, o estudo crítico das interfaces de sistemas similares e a avaliação das opiniões expressas pelos voluntários durante os testes práticos.
+
+Quanto aos objetivos gerais, o estudo assume perfil exploratório e descritivo. O aspecto exploratório proporcionou maior aproximação com os desafios e sentimentos de angústia enfrentados pelos tutores, ao passo que o caráter descritivo permitiu mapear e correlacionar os canais habituais de divulgação e os recursos das ferramentas concorrentes. Por fim, quanto aos procedimentos técnicos, combinou-se o levantamento bibliográfico em livros, artigos e normas técnicas, a pesquisa de campo mediante questionário estruturado com tutores e protetores, e a análise comparativa direta sobre plataformas existentes no mercado.
 
 \subsubsection{Pesquisa de Viabilidade com a Comunidade (Levantamento de Campo)}
 
-A coleta primária de dados foi realizada por meio de um questionário estruturado online elaborado na plataforma Google Forms (cujo link de acesso encontra-se disponível no Apêndice B, Seção B.1), submetido a 20 participantes voluntários, incluindo tutores de animais domésticos, protetores independentes e pessoas engajadas na causa animal.
+A coleta primária de dados foi realizada por meio de um questionário estruturado online elaborado na plataforma Google Forms (cujo instrumento estruturado encontra-se documentado na íntegra no Apêndice B, Seção B.1), submetido a 20 participantes voluntários, incluindo tutores de animais domésticos, protetores independentes e pessoas engajadas na causa animal.
 
 O formulário iniciou investigando os hábitos preventivos de identificação animal adotados pelos tutores no cotidiano, consultando os voluntários a respeito do uso de microchips eletrônicos em seus animais de estimação, conforme ilustrado na Figura~\ref{fig:adocao_microchip}.
 
@@ -136,34 +133,19 @@ O primeiro incremento concentrou-se na infraestrutura de segurança e persistên
 
 \subsubsection{O Método Visual Kanban e a Gestão de Tarefas no Trello}
 
-Para assegurar o ritmo contínuo de produção e a rastreabilidade das atividades, adotou-se o método visual \textbf{Kanban}, operacionalizado através da plataforma de gestão de projetos \textbf{Trello} (TRELLO, 2026).
+Para assegurar o ritmo contínuo de produção e a rastreabilidade das atividades, adotou-se o método visual Kanban, operacionalizado através da plataforma de gestão de projetos Trello (TRELLO, 2026). A rotina de trabalho apoiou-se em três princípios essenciais: a visualização contínua de todo o fluxo de trabalho por meio de cartões descritivos contendo requisitos claros, a limitação estrita do trabalho em andamento (Work in Progress) para manter o foco na conclusão e validação de cada parte antes de abrir novas demandas, e o gerenciamento ativo do fluxo de produção para evitar retrabalhos e assegurar o cumprimento dos prazos acadêmicos.
 
-O Kanban apoia-se em três princípios fundamentais que guiaram a rotina de desenvolvimento do aplicativo:
-\begin{enumerate}
-    \item \textbf{Visualização do fluxo de trabalho:} cada funcionalidade, bug ou melhoria visual foi documentado na forma de cartões descritivos contendo requisitos claros, critérios de aceitação e referências a componentes de interface;
-    \item \textbf{Limitação do trabalho em andamento (\textit{Work in Progress}, ou WIP):} limitou-se o número de tarefas feitas ao mesmo tempo, mantendo foco na conclusão e teste de cada parte antes de iniciar novas atividades;
-    \item \textbf{Gestão e melhoria do fluxo contínuo:} monitoramento constante das tarefas para evitar retrabalhos técnicos e garantir o cumprimento do cronograma acadêmico.
-\end{enumerate}
-
-O quadro Kanban no Trello foi estruturado em cinco listas sequenciais:
-\begin{itemize}
-    \item \textbf{Backlog Geral:} repositório inicial contendo o conjunto de requisitos funcionais e técnicos extraídos da pesquisa de campo e do estudo de similares;
-    \item \textbf{A Fazer (\textit{To Do}):} tarefas devidamente refinadas e priorizadas para execução no ciclo de trabalho imediato;
-    \item \textbf{Em Andamento (\textit{In Progress}):} tarefas sob desenvolvimento ativo de código-fonte no VS Code ou modelagem de artefatos;
-    \item \textbf{Em Testes e Revisão (\textit{Review / Testing}):} código finalizado submetido a testes funcionais de interface, validação em aparelhos reais e inspeção de regras de negócio;
-    \item \textbf{Concluído (\textit{Done}):} funcionalidades totalmente finalizadas, validadas, integradas ao ecossistema e com código devidamente versionado no GitHub.
-\end{itemize}
+Na prática, o quadro no Trello foi estruturado em cinco etapas sequenciais de controle. O fluxo iniciava-se no Backlog Geral, que reunia todos os requisitos funcionais e técnicos derivados da pesquisa inicial. Em seguida, as tarefas priorizadas para execução imediata eram transferidas para a lista A Fazer. Durante a fase de escrita de código-fonte no editor ou modelagem de diagramas, os cartões permaneciam na lista Em Andamento. Uma vez concluída a implementação, a funcionalidade avançava para Em Testes e Revisão, onde passava por inspeções de interface e testes em dispositivos físicos. Por fim, após a validação completa e o versionamento do código no GitHub, a atividade era finalizada na coluna Concluído.
 
 \subsubsection{Etapas do Processo de Desenvolvimento}
 
-O projeto percorreu quatro etapas sistemáticas ao longo do ciclo de desenvolvimento:
+O projeto percorreu quatro etapas sistemáticas ao longo do ciclo de desenvolvimento. A primeira etapa correspondeu à concepção e ao levantamento de requisitos, na qual as respostas do questionário com a comunidade e a análise das ferramentas concorrentes foram consolidadas na definição de 43 requisitos funcionais e 14 requisitos não funcionais, apresentados no Capítulo 4.
 
-\begin{enumerate}
-    \item \textbf{Etapa 1: Concepção e Levantamento de Requisitos:} organização das respostas da pesquisa de campo e estudo das ferramentas concorrentes, resultando na definição de 43 requisitos funcionais e 14 requisitos não funcionais (apresentados no Capítulo 4);
-    \item \textbf{Etapa 2: Modelagem Conceitual e Prototipação de Interface:} elaboração dos diagramas de Casos de Uso e Classes na ferramenta Astah UML (ASTAH, 2026), projeto do modelo relacional no PostgreSQL e desenho iterativo de todas as telas, componentes e paleta cromática de alta fidelidade no Figma (FIGMA, 2026);
-    \item \textbf{Etapa 3: Implementação e Codificação Modular:} escrita modular do código-fonte no Visual Studio Code, adotando TypeScript, a biblioteca React Native (REACT NATIVE, 2026) e o ecossistema Expo (EXPO, 2026) para a camada móvel cliente, e Supabase (SUPABASE, 2026) para autenticação, banco de dados e armazenamento em nuvem, com versionamento colaborativo via Git e GitHub (apresentados no Capítulo 5);
-    \item \textbf{Etapa 4: Testes, Validação e Avaliação de Usabilidade:} execução de testes funcionais de caixa-preta para conferência de regras de negócio e aplicação prática do protocolo internacional \textit{System Usability Scale} (SUS) com 20 voluntários (apresentados no Capítulo 6).
-\end{enumerate}
+A segunda etapa compreendeu a modelagem conceitual e o projeto de interface, englobando a criação dos diagramas de casos de uso e classes no software Astah UML (ASTAH, 2026), a estruturação do modelo relacional de banco de dados e o desenho iterativo das telas e da identidade visual na ferramenta Figma (FIGMA, 2026).
 
-A união entre a pesquisa com os usuários, a organização com o quadro Kanban e as boas práticas de programação formou a base para construir o aplicativo. O Capítulo 4 apresenta em detalhes os requisitos e os diagramas do sistema.
+A terceira etapa consistiu na implementação e codificação modular do sistema, com a escrita do código-fonte em TypeScript no Visual Studio Code, adotando a biblioteca React Native (REACT NATIVE, 2026) e o ecossistema Expo (EXPO, 2026) na camada cliente, e a plataforma Supabase (SUPABASE, 2026) para serviços de autenticação, banco de dados PostgreSQL e armazenamento em nuvem, com controle de versão no Git e GitHub (apresentados nos Capítulos 5 e 6).
+
+Por fim, a quarta etapa envolveu os testes, a validação técnica e a avaliação de usabilidade da aplicação, abrangendo a execução de testes funcionais de caixa-preta para conferência das regras operacionais e a aplicação prática do protocolo internacional System Usability Scale com 20 voluntários, cujos resultados são detalhados no Capítulo 7.
+
+A união entre a pesquisa com os usuários, a organização pelo método Kanban e as boas práticas de engenharia de software sustentou a construção de uma aplicação estável e eficiente. O Capítulo 4 apresenta em detalhes os requisitos e os modelos conceituais do sistema WeFIND.
 \clearpage
