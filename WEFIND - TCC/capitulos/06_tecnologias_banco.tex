@@ -1,12 +1,12 @@
 \section{TECNOLOGIAS UTILIZADAS}
 
-A concretização dos pilares conceituais e operacionais da plataforma WeFIND exigiu a seleção judiciosa de uma pilha tecnológica moderna, madura e escalável. Como ensinam Pressman e Maxim (2021) e Valente (2023), a arquitetura de software de um sistema móvel contemporâneo deve conciliar alta produtividade no ciclo de desenvolvimento, baixo acoplamento entre camadas e robustez na persistência e distribuição dos dados em nuvem.
+A concretização dos pilares conceituais e operacionais da plataforma WeFIND exigiu a escolha criteriosa de um conjunto de tecnologias modernas, maduras e escaláveis. Como ensinam Pressman e Maxim (2021) e Valente (2023), a arquitetura de software de um sistema móvel atual deve conciliar alta produtividade no ciclo de desenvolvimento, baixo acoplamento entre camadas e robustez na persistência e distribuição dos dados em nuvem.
 
 O projeto adotou o padrão arquitetural cliente-servidor distribuído, segmentado em duas camadas fundamentais e independentes: a camada cliente móvel (executada nos smartphones dos usuários) e a camada de serviços em nuvem (hospedada na infraestrutura do Supabase). Essa abordagem desacoplada assegura que a lógica de interface e renderização gráfica ocorra localmente no processador do celular, ao passo que as operações de autenticação, persistência relacional, upload de arquivos multimídia e sincronização de mensagens em tempo real são delegadas a serviços gerenciados em nuvem de alta disponibilidade (BaaS -- \textit{Backend-as-a-Service}).
 
 A integridade do ecossistema é garantida pela integração com o banco de dados relacional PostgreSQL, estruturado com políticas de segurança em nível de linha (\textit{Row Level Security} - RLS). Esse mecanismo transfere o controle de acesso e isolamento de permissões para o próprio motor do banco de dados, impedindo que requisições não autorizadas alterem ou excluam dados alheios, mesmo em eventuais falhas na camada de apresentação móvel.
 
-Este capítulo detalha as tecnologias que compõem o ecossistema cliente do WeFIND, descreve a infraestrutura de computação em nuvem provida pelo Supabase, apresenta a modelagem lógica relacional das entidades e tabelas no PostgreSQL e documenta as ferramentas auxiliares empregadas na governança do projeto, culminando em um quadro consolidado com a especificação e versão de todas as tecnologias utilizadas.
+Este capítulo detalha as tecnologias que compõem o ecossistema cliente do WeFIND, descreve a infraestrutura de computação em nuvem provida pelo Supabase, apresenta a modelagem lógica relacional das entidades e tabelas no PostgreSQL e documenta as ferramentas auxiliares empregadas no projeto, finalizando com um quadro consolidado com a especificação e versão de todas as tecnologias utilizadas.
 
 \clearpage
 
@@ -22,7 +22,7 @@ A construção do aplicativo móvel exigiu a integração de ferramentas moderna
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A biblioteca React Native foi adotada como núcleo para a interface móvel cliente, operando em estreita integração com o React. Sua principal vantagem reside na capacidade de compilar código nativo para as plataformas Android e iOS a partir de uma base de código unificada escrita em TypeScript e JavaScript. Essa estratégia reduziu substancialmente o ciclo de desenvolvimento e evitou a necessidade de manter projetos paralelos com linguagens distintas, garantindo consistência visual e facilidade de manutenção corretiva.
+A biblioteca React Native foi adotada como núcleo para a interface móvel cliente, operando em estreita integração com o React. Sua principal vantagem está na capacidade de compilar código nativo para as plataformas Android e iOS a partir de uma base de código unificada escrita em TypeScript e JavaScript. Essa estratégia reduziu substancialmente o ciclo de desenvolvimento e evitou a necessidade de manter projetos paralelos com linguagens distintas, garantindo consistência visual e facilidade de manutenção corretiva.
 
 Em conjunto com o React Native, utilizou-se a plataforma Expo. O Expo fornece um ecossistema abrangente de módulos nativos pré-configurados que simplificam o acesso aos sensores e subsistemas do smartphone. No WeFIND, a integração com o hardware do aparelho foi operacionalizada mediante a seleção criteriosa de pacotes especializados do ecossistema Expo.
 
@@ -32,7 +32,7 @@ A camada de exploração geográfica e renderização cartográfica baseia-se na
 
 A estruturação dos fluxos de navegação e transições de tela foi construída com a coleção de pacotes do React Navigation, englobando o pacote central para rotas, módulos de abas inferiores fixas e pilhas de navegação. A retenção local de credenciais e tokens de sessão no aparelho utiliza o pacote \textit{@react-native-async-storage/async-storage}. Por fim, a estilização visual dos elementos de interface foi agilizada com o framework utilitário NativeWind, operando em conformidade com o TailwindCSS, viabilizando a aplicação consistente de estilos CSS modernos sobre componentes móveis.
 
-Para resguardar o tráfego de rede e a integridade das consultas, foram inseridas regras de validação no próprio aplicativo cliente. Os formulários executam verificações em tempo real sobre campos de preenchimento obrigatório, validam a consistência sintática de endereços de e-mail e realizam a formatação padronizada de números telefônicos antes do envio à nuvem.
+Para proteger o tráfego de rede e a integridade das consultas, foram inseridas regras de validação no próprio aplicativo cliente. Os formulários executam verificações em tempo real sobre campos de preenchimento obrigatório, validam a consistência sintática de endereços de e-mail e realizam a formatação padronizada de números telefônicos antes do envio à nuvem.
 
 \clearpage
 
@@ -56,9 +56,9 @@ A persistência estruturada dos dados é realizada no sistema gerenciador de ban
 
 O modelo lógico da Figura~\ref{fig:modelo_logico_banco} é composto por cinco tabelas relacionais fundamentais:
 
-A tabela \textit{usuarios} centraliza os dados cadastrais dos participantes do sistema. O campo identificador primário conecta-se diretamente à chave única fornecida pelo serviço Supabase Auth, registrando o nome completo, endereço de correio eletrônico, fotografia de perfil, número de telefone para contato emergencial, cidade, estado de residência e o registro de data e hora de criação da conta.
+A tabela \textit{usuarios} centraliza os dados cadastrais dos participantes do sistema. O campo identificador primário conecta-se diretamente à chave única fornecida pelo serviço Supabase Auth, registrando o nome completo, endereço de e-mail, fotografia de perfil, número de telefone para contato emergencial, cidade, estado de residência e o registro de data e hora de criação da conta.
 
-A tabela \textit{animais} armazena todas as publicações cadastradas na plataforma e estabelece chave estrangeira com a tabela \textit{usuarios}, identificando o autor da publicação. Entre os campos estruturados, constam o status operacional do registro (Perdido, Encontrado ou Adoção), nome do animal, espécie (canina ou felina), raça, porte físico, padrão de coloração da pelagem, sexo, faixa etária aproximada e indicador do uso prévio de coleira. Para possibilitar a busca espacial por proximidade e a plotagem exata no mapa interativo, a tabela armazena as coordenadas de latitude e longitude em formato de ponto flutuante, acompanhadas de campos descritivos para logradouro, bairro, município, data do fato, observações gerais e indicador de resolução do caso.
+A tabela \textit{animais} armazena todas as publicações cadastradas na plataforma e estabelece chave estrangeira com a tabela \textit{usuarios}, identificando o autor da publicação. Entre os campos estruturados, constam o status operacional do registro (Perdido, Encontrado ou Adoção), nome do animal, espécie (canina ou felina), raça, porte físico, padrão de coloração da pelagem, sexo, faixa etária aproximada e indicador do uso prévio de coleira. Para possibilitar a busca espacial por proximidade e a plotagem exata no mapa interativo, a tabela armazena as coordenadas de latitude e longitude em formato de ponto flutuante, acompanhadas de campos descritivos para endereço, bairro, cidade, data do fato, observações gerais e indicador de resolução do caso.
 
 A tabela \textit{fotos\_animais} gerencia as fotografias anexadas a cada publicação, mantendo relacionamento de cardinalidade um-para-muitos com a tabela \textit{animais}. Essa estrutura armazena a URL pública da imagem persistida no armazenamento em nuvem do Supabase Storage, viabilizando o carregamento de múltiplas fotografias por anúncio com controle individual de exclusão.
 
@@ -82,9 +82,9 @@ Durante as etapas de planejamento, especificação, escrita de código e desenho
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-No ambiente de desenvolvimento, a execução baseou-se na plataforma Node.js, acompanhada pelo gerenciador de pacotes npm para a instalação, resolução e controle de dependências externas do projeto. A escrita, compilação e depuração do código-fonte foram conduzidas no editor Visual Studio Code (VS Code), utilizando extensões integradas para verificação de sintaxe e controle de qualidade de código.
+A viabilização do projeto articulou um ecossistema produtivo integrado que cobriu desde o versionamento de código e a gestão de atividades ágeis até a diagramação arquitetural e a prototipação de alta fidelidade das interfaces. A infraestrutura de desenvolvimento baseou-se na plataforma Node.js com o gerenciador npm para o gerenciamento de dependências externas, tendo o editor Visual Studio Code como ambiente central de escrita e depuração.
 
-Para a governança do código-fonte e rastreabilidade cronológica de todas as alterações, utilizou-se o sistema distribuído de controle de versão Git, associado à hospedagem remota em repositório privado na plataforma GitHub. A gestão ágil das atividades e o acompanhamento do cronograma foram operacionalizados na ferramenta Trello (TRELLO, 2026), por meio do método Kanban. A elaboração dos diagramas de modelagem conceitual e estrutural foi realizada no software Astah UML (ASTAH, 2026). O projeto das interfaces visuais, o fluxo de navegação entre componentes e os protótipos de alta fidelidade foram construídos na plataforma Figma (FIGMA, 2026). Por fim, recorreu-se à ferramenta Flow Labs (FLOW LABS, 2026) para a geração de imagens auxiliares, criação de ativos visuais complementares e concepção do símbolo gráfico oficial integrado ao logotipo da aplicação.
+Para o controle de versões do código e acompanhamento do cronograma, utilizaram-se o Git e a plataforma GitHub para versionamento distribuído, associados ao método Kanban no Trello. No suporte à modelagem e ao design, empregou-se o software Astah UML para diagramação conceitual, o Figma para concepção dos protótipos de alta fidelidade e a ferramenta Flow Labs para geração de ativos gráficos auxiliares e refinamento do logotipo, cujas especificações técnicas detalhadas encontram-se consolidadas no Quadro~\ref{quadro:tecnologias}.
 
 \clearpage
 
@@ -140,7 +140,7 @@ Ambiente de Execução & Node.js & 24.15.0 & Plataforma de execução JavaScript
 Gerenciador Pacotes & npm & 11.12.1 & Ferramenta de gerenciamento de dependências e versionamento de pacotes do ecossistema. \\ \hline
 Editor de Código & Visual Studio Code & 1.96 & Ambiente de desenvolvimento integrado para escrita, teste e depuração do código-fonte. \\ \hline
 Controle de Versão & Git & 2.54.0 & Sistema distribuído de controle de versões utilizado no versionamento do projeto. \\ \hline
-Repositório Remoto & GitHub & Nuvem & Plataforma em nuvem para hospedagem do repositório remoto e governança do código. \\ \hline
+Repositório Remoto & GitHub & Nuvem & Plataforma em nuvem para hospedagem do repositório remoto e controle do código. \\ \hline
 Modelagem Conceitual & Astah UML & 9.0 & Software gráfico utilizado na diagramação dos modelos de casos de uso e classes. \\ \hline
 Design de Interface & Figma & 2026 & Plataforma para elaboração dos protótipos de interface, identidade visual e telas. \\ \hline
 Geração de Imagens & Flow Labs & Web & Plataforma de inteligência artificial generativa utilizada na criação de ativos gráficos, ícones e logotipo. \\ \hline
