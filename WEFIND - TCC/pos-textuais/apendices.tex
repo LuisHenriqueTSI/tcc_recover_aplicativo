@@ -65,10 +65,10 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 1. O usuário toca na opção ``Cadastre-se'' na tela de login.\par
 2. O sistema abre o formulário de registro solicitando nome completo, e-mail, telefone WhatsApp e senha.\par
 3. O usuário preenche as informações e confirma o cadastro.\par
-4. O sistema valida os campos, cria o registro no Supabase Auth e dispara um código OTP de 6 dígitos para o WhatsApp informado.\par
+4. O sistema valida os campos, cria o registro no Supabase Auth e aciona por inclusão (\textit{«include»}) o caso de uso \textbf{Verificar Código}, disparando um código OTP de 6 dígitos para o WhatsApp informado.\par
 5. O sistema exibe a tela de confirmação de telefone com 6 campos numéricos.\par
 6. O usuário digita o código recebido no WhatsApp.\par
-7. O sistema valida o código e ativa a conta de usuário permanentemente.
+7. O caso de uso \textbf{Verificar Código} valida a sequência numérica e ativa a conta de usuário permanentemente.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
@@ -165,7 +165,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 
 \clearpage
 
-\subsection*{Caso de Uso UC05: Iniciar Conversa via Chat}
+\subsection*{Caso de Uso UC05: Enviar Mensagem}
 \noindent
 \begin{table}[H]
 \centering
@@ -173,7 +173,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC05 \\ \hline
-\textbf{Nome do Caso de Uso} & Iniciar Conversa via Chat \\ \hline
+\textbf{Nome do Caso de Uso} & Enviar Mensagem \\ \hline
 \textbf{Ator Principal} & Usuário (Autenticado) \\ \hline
 \textbf{Atores Secundários} & Serviço de Mensagens em Tempo Real (Supabase WebSockets) \\ \hline
 \textbf{Resumo} & Viabiliza canal direto e privativo de troca de mensagens e imagens entre o tutor do animal e voluntários da comunidade sem expor contatos telefônicos. \\ \hline
@@ -202,7 +202,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 
 \vspace{0.8cm}
 
-\subsection*{Caso de Uso UC06: Gerar Cartaz}
+\subsection*{Caso de Uso UC06: Compartilhar Publicação}
 \noindent
 \begin{table}[H]
 \centering
@@ -210,7 +210,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC06 \\ \hline
-\textbf{Nome do Caso de Uso} & Gerar Cartaz \\ \hline
+\textbf{Nome do Caso de Uso} & Compartilhar Publicação \\ \hline
 \textbf{Ator Principal} & Usuário / Usuário Visitante \\ \hline
 \textbf{Atores Secundários} & Módulo Gerador de Código QR e API Nativa de Compartilhamento \\ \hline
 \textbf{Resumo} & Permite a qualquer usuário renderizar automaticamente artes gráficas diagramadas em múltiplos formatos (A4, Stories e Feed) contendo código QR para divulgação rápida. \\ \hline
@@ -238,7 +238,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 
 \clearpage
 
-\subsection*{Caso de Uso UC07: Manter Cadastro meu Pet}
+\subsection*{Caso de Uso UC07: Cadastro Preventivo de Pets}
 \noindent
 \begin{table}[H]
 \centering
@@ -246,7 +246,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC07 \\ \hline
-\textbf{Nome do Caso de Uso} & Manter Animais Tutelados \\ \hline
+\textbf{Nome do Caso de Uso} & Cadastro Preventivo de Pets \\ \hline
 \textbf{Ator Principal} & Usuário (Autenticado) \\ \hline
 \textbf{Atores Secundários} & Banco de Dados (PostgreSQL) e Supabase Storage \\ \hline
 \textbf{Resumo} & Permite cadastrar previamente os dados dos animais domésticos tutelados, gerando a ficha de identificação com código QR de autenticidade. \\ \hline
