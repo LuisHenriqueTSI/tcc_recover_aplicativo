@@ -41,6 +41,10 @@ flowchart LR
         UC_CropPhotos(["Ajustar e Cortar Fotos"])
         UC_ThirdParty(["Informar Tutor Terceiro"])
 
+        %% Módulo de Animais Tutelados e Prevenção
+        UC_MaintainTutored(["Manter Animais Tutelados"])
+        UC_TriggerAlert(["Acionar Alerta de Desaparecimento"])
+
         %% Módulo de Informações e Interação
         UC_MaintainSightings(["Manter Informações do Pet"])
         UC_PickMapLocation(["Selecionar Ponto no Mapa"])
@@ -65,6 +69,7 @@ flowchart LR
     User --- UC_ViewDetail
     User --- UC_ShareFlyer
     User --- UC_MaintainPets
+    User --- UC_MaintainTutored
     User --- UC_MaintainSightings
     User --- UC_MaintainChat
 
@@ -79,12 +84,41 @@ flowchart LR
     %% Extensões Opcionais (<<extend>>)
     UC_CropPhotos -.->|«extend»| UC_MaintainPets
     UC_ThirdParty -.->|«extend»| UC_MaintainPets
+    UC_TriggerAlert -.->|«extend»| UC_MaintainTutored
     UC_NotifyOwnerWhatsApp -.->|«extend»| UC_MaintainSightings
 ```
 
 ---
 
-## 📋 3. Especificação Textual dos Principais Casos de Uso
+## 📊 3. Tabela Completa de Casos de Uso do Sistema
+
+Esta tabela consolida todos os casos de uso do WeFIND, seus respectivos atores primários/secundários, operações padronizadas (com a semântica de *Manter* para CRUDs) e relacionamentos de inclusão (`«include»`) e extensão (`«extend»`).
+
+> **Regra de Generalização:** O ator **Usuário Autenticado** herda todas as permissões do ator **Visitante** (`Usuário Autenticado --|> Visitante`). Dessa forma, qualquer caso de uso acessível ao Visitante é automaticamente executável pelo Usuário Autenticado.
+
+| Identificador | Caso de Uso (Elipse) | Ator Primário | Atores Secundários / Serviços | Descrição / Operações Padronizadas | Relacionamentos (`«include»`) | Relacionamentos (`«extend»`) |
+|---|---|---|---|---|---|---|
+| **UC01** | Efetuar Cadastro de Conta | Visitante | Evolution API (WhatsApp), Supabase Auth | Criação de nova conta de acesso mediante dados cadastrais e validação em duas etapas. | «include» UC02 (Verificar Conta por WhatsApp) | — |
+| **UC02** | Verificar Conta por WhatsApp | Visitante / Usuário | Evolution API (WhatsApp) | Recepção e validação do token OTP de 6 dígitos enviado ao mensageiro. | — | — |
+| **UC03** | Efetuar Autenticação (Login / Logout) | Visitante / Usuário | Supabase Auth | Autenticação por e-mail e senha, restauração de sessão persistente e encerramento. | — | — |
+| **UC04** | Manter Perfil de Usuário | Usuário Autenticado | Supabase Storage, Evolution API | Cadastro, consulta, atualização de dados pessoais/contatos, foto de perfil, localização residencial e raio de busca. | «include» UC02 (caso altere o WhatsApp) | — |
+| **UC05** | Consultar Ocorrências no Feed e Mapa | Visitante | GPS / Mapbox | Visualização espacial de animais perdidos, encontrados e para adoção com filtros combinados (espécie, raio em km, status). | — | — |
+| **UC06** | Visualizar Detalhes do Animal | Visitante | GPS / Mapbox | Exibição de histórico, galeria de fotos, características morfológicas, mapa e dados do tutor. | — | — |
+| **UC07** | Gerar e Compartilhar Cartaz (Flyer) | Visitante | API Nativa de Compartilhamento | Renderização de peça gráfica em alta resolução com dados da ocorrência e código QR inteligente para impressão ou redes. | — | — |
+| **UC08** | Manter Publicações de Animais | Usuário Autenticado | Supabase Storage, GPS / Geocoding | CRUD completo de anúncios (cadastrar, consultar, editar, marcar como resolvido/reencontrado e excluir). | «include» UC12 (Selecionar Ponto no Mapa) | «extend» UC09 (Ajustar e Cortar Fotos), «extend» UC10 (Informar Tutor Terceiro) |
+| **UC09** | Ajustar e Cortar Fotos | Usuário Autenticado | — | Ferramenta de enquadramento, recorte proporcional e compressão JPEG de até 6 fotografias antes do upload. | — | «extend» de UC08 |
+| **UC10** | Informar Tutor Terceiro | Usuário Autenticado | Evolution API | Cadastro opcional de nome e WhatsApp de terceiro responsável pelo resgate/guarda do pet. | — | «extend» de UC08 |
+| **UC11** | Manter Animais Tutelados | Usuário Autenticado | Supabase Storage, Gerador QR Code | Cadastro preventivo dos pets sob guarda do tutor, registro de vacinas, fotos e emissão de carteirinha digital com código QR de autenticidade. | — | «extend» UC11a (Acionar Alerta de Desaparecimento) |
+| **UC11a**| Acionar Alerta de Desaparecimento | Usuário Autenticado | Notificações Push, Motor de Match | Conversão instantânea da ficha preventiva do animal tutelado em publicação ativa de perda no mapa, alertando a comunidade sem redigitação. | «extend» de UC11 | — |
+| **UC12** | Selecionar Ponto no Mapa | Usuário Autenticado | GPS / Geocoding Reversa | Marcação precisa de coordenadas geográficas no mapa interativo com preenchimento automatizado de logradouro e bairro. | — | — |
+| **UC13** | Manter Informações de Avistamento | Usuário Autenticado | GPS / Geocoding, Evolution API, Supabase Storage | Relato de pistas ou avistamento de pet perdido com foto do local, descrição e atualização da rota. | «include» UC12 (Selecionar Ponto no Mapa) | «extend» UC14 (Notificar Tutor no WhatsApp) |
+| **UC14** | Notificar Tutor no WhatsApp | Usuário Autenticado | Evolution API | Disparo automatizado de mensagem instantânea ao tutor informando novo avistamento com link direto para navegação no Google Maps. | — | «extend» de UC13 |
+| **UC15** | Manter Conversas via Chat Privativo | Usuário Autenticado | Supabase Realtime (WebSockets) | Envio e recepção de mensagens de texto e anexos fotográficos em canal seguro em tempo real, sem exposição de telefone. | — | — |
+| **UC16** | Manter Moderação e Denúncias | Administrador | Painel de Moderação | Auditoria de publicações denunciadas pela comunidade, exclusão de postagens impróprias e suspensão de contas. | — | — |
+
+---
+
+## 📋 4. Especificação Textual dos Principais Casos de Uso
 
 ### **1. Criar Conta com Verificação 2FA**
 * **Ator Principal:** Visitante.
@@ -141,7 +175,7 @@ flowchart LR
 
 ---
 
-## 📄 4. Código Fonte PlantUML (Opcional para TCCs em LaTeX / Word)
+## 📄 5. Código Fonte PlantUML (Opcional para TCCs em LaTeX / Word)
 
 Caso o seu orientador ou modelo de TCC exija o formato **PlantUML**:
 
@@ -164,12 +198,14 @@ rectangle "Aplicativo WeFIND" {
   usecase "Manter Perfil de Usuário" as UC4
   usecase "Consultar Pets no Feed" as UC5
   usecase "Visualizar Detalhes do Pet" as UC6
-  usecase "Manter Publicações de Pets" as UC7
-  usecase "Ajustar e Cortar Fotos" as UC8
-  usecase "Informar Tutor Terceiro" as UC9
-  usecase "Gerar e Compartilhar Flyer" as UC10
-  usecase "Manter Informações do Pet" as UC12
-  usecase "Selecionar Ponto no Mapa" as UC13
+  usecase "Gerar e Compartilhar Flyer" as UC7
+  usecase "Manter Publicações de Animais" as UC8
+  usecase "Ajustar e Cortar Fotos" as UC9
+  usecase "Informar Tutor Terceiro" as UC10
+  usecase "Manter Animais Tutelados" as UC11
+  usecase "Acionar Alerta de Desaparecimento" as UC11a
+  usecase "Selecionar Ponto no Mapa" as UC12
+  usecase "Manter Informações de Avistamento" as UC13
   usecase "Notificar Tutor no WhatsApp" as UC14
   usecase "Manter Conversas via Chat" as UC15
   usecase "Manter Moderação e Denúncias" as UC16
@@ -179,22 +215,24 @@ Visitor --> UC1
 Visitor --> UC3
 Visitor --> UC5
 Visitor --> UC6
-Visitor --> UC10
+Visitor --> UC7
 
-User --> UC7
-User --> UC12
-User --> UC15
 User --> UC4
+User --> UC8
+User --> UC11
+User --> UC13
+User --> UC15
 
 Admin --> UC16
 
 UC1 ..> UC2 : <<include>>
-UC7 ..> UC13 : <<include>>
-UC12 ..> UC13 : <<include>>
+UC8 ..> UC12 : <<include>>
+UC13 ..> UC12 : <<include>>
 
-UC8 ..> UC7 : <<extend>>
-UC9 ..> UC7 : <<extend>>
-UC14 ..> UC12 : <<extend>>
+UC9 ..> UC8 : <<extend>>
+UC10 ..> UC8 : <<extend>>
+UC11a ..> UC11 : <<extend>>
+UC14 ..> UC13 : <<extend>>
 @enduml
 ```
 

@@ -42,6 +42,10 @@ eas.json
 supabase/.temp/
 .temp/
 
+# LaTeX build directory
+WEFIND - TCC/build/
+*.synctex.gz
+
 # Astah lock files
 *.asta.lock
 

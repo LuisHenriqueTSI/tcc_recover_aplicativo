@@ -246,29 +246,29 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.8cm}|}
 \hline
 \textbf{Identificador} & UC07 \\ \hline
-\textbf{Nome do Caso de Uso} & Manter Cadastro meu Pet \\ \hline
+\textbf{Nome do Caso de Uso} & Manter Animais Tutelados \\ \hline
 \textbf{Ator Principal} & Usuário (Autenticado) \\ \hline
 \textbf{Atores Secundários} & Banco de Dados (PostgreSQL) e Supabase Storage \\ \hline
-\textbf{Resumo} & Permite cadastrar previamente os dados dos animais domésticos tutelados, gerando o Perfil Digital do Pet com código QR de autenticidade. \\ \hline
+\textbf{Resumo} & Permite cadastrar previamente os dados dos animais domésticos tutelados, gerando a ficha de identificação com código QR de autenticidade. \\ \hline
 \textbf{Pré-Condições} & Usuário logado na sua conta. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-1. O usuário acessa a opção ``Meus Pets'' no menu do perfil.\par
-2. O sistema lista os animais previamente cadastrados ou oferece a opção de novo cadastro.\par
+1. O usuário acessa a opção ``Animais Tutelados'' no menu do perfil.\par
+2. O sistema lista os animais tutelados previamente cadastrados ou oferece a opção de novo cadastro.\par
 3. O usuário insere a foto do animal, nome, espécie, raça, data de nascimento e dados veterinários (vacinas e castração).\par
 4. O usuário confirma o salvamento dos dados.\par
-5. O sistema grava os registros e gera o Perfil Digital do Pet com código QR e identificador único.\par
-6. O perfil do animal fica disponível para consulta, edição ou compartilhamento.
+5. O sistema grava os registros e gera a ficha de identificação do animal tutelado com código QR e identificador único.\par
+6. A ficha do animal fica disponível para consulta, emissão da carteirinha ou acionamento de alerta de desaparecimento.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-6a. Acionamento de alerta de fuga: caso o animal cadastrado desapareça, o tutor aciona o botão de emergência no Perfil Digital, transformando a ficha preventiva diretamente em uma publicação de busca no mapa sem necessidade de redigitação.
+6a. Acionamento de alerta de desaparecimento: caso o animal tutelado desapareça ou fuja, o tutor aciona o comando de alerta de desaparecimento, transformando a ficha preventiva diretamente em uma publicação de busca no mapa sem necessidade de redigitação.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos de Exceção:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 3a. Campos obrigatórios em branco: o sistema barra a finalização do registro caso nome ou espécie do pet não tenham sido informados.
 } \\ \hline
-\textbf{Pós-Condições} & Perfil Digital do Pet ativo e vinculado à conta do tutor. \\ \hline
+\textbf{Pós-Condições} & Cadastro do animal tutelado ativo e vinculado à conta do tutor. \\ \hline
 \end{tabular}
 \end{table}
 
@@ -384,7 +384,7 @@ Instrumento estruturado de coleta de dados primários aplicado aos 20 participan
 \textbf{Questão 8: Quais recursos você consideraria mais importantes em um aplicativo como o WeFIND?}\par
 [ ] Geração automática de cartazes de busca com código QR\par
 [ ] Bate-papo privativo em tempo real para contato seguro\par
-[ ] Cadastro preventivo com Perfil Digital do Pet\par
+[ ] Cadastro preventivo e identificação de animais tutelados\par
 [ ] Filtros avançados por espécie (cães, gatos, aves e outros), cor e porte do animal\par
 [ ] Mural comunitário com relatos e fotos de reencontros felizes
 
@@ -515,14 +515,14 @@ Para alinhar o resgate de um animal avistado sem expor números pessoais a fraud
 
 \clearpage
 
-\subsection*{Passo 6: Cadastro e Visualização do Perfil Digital do Pet}
+\subsection*{Passo 6: Cadastro e Identificação de Animais Tutelados}
 \noindent
-Como medida de identificação preventiva, o tutor acessa a área de seus pets no perfil para cadastrar previamente seu animal, incluindo vacinas, fotos e histórico médico. O sistema gera o Perfil Digital do Pet com código QR para identificação rápida. A Figura C6 ilustra a tela do Perfil Digital do Pet.
+Como medida de identificação preventiva, o tutor acessa a área de seus pets no perfil para cadastrar previamente seu animal, incluindo vacinas, fotos e histórico médico. O sistema gera a ficha de identificação do animal tutelado com código QR para identificação rápida. A Figura C6 ilustra a tela de identificação do animal tutelado.
 
 \vspace{0.2cm}
 \noindent\begin{minipage}{\linewidth}
 \centering
-    \textbf{Figura C6: Tela do Perfil Digital do Pet}\\[0.2cm]
+    \textbf{Figura C6: Tela de Identificação do Animal Tutelado}\\[0.2cm]
     \includegraphics[height=8.5cm, keepaspectratio]{imagens/04_telas_aplicativo/figura25_tela_rg_pet.jpeg}\\[0.2cm]
     {\footnotesize Fonte: Autoria própria (2026)}
 \end{minipage}

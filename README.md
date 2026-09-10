@@ -63,10 +63,10 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
   - **Feed Quadrado (1:1):** Arte compacta otimizada para feed do Instagram/Facebook e encaminhamento em grupos de WhatsApp.
 - Seletor de formatos com pré-visualização ao vivo, exportação nativa em imagem PNG e botão para copiar texto com link.
 
-✅ **RG Pet Digital / Carteirinha de Identificação (`PetRgCard.jsx`, `MyPetsScreen.jsx` & `AddEditPetScreen.jsx`)**
-- Cadastro de pets domésticos no perfil do tutor com foto, cuidados médicos, vacinas e castração.
-- Emissão do **Registro Geral Animal (RGA)** com visual oficial (*República Federativa dos Pets / WeFIND*), carimbo de autenticação, dados do tutor e **QR Code de autenticidade**.
-- **Botão de Pânico "🚨 MEU PET FUGIU!":** Converte instantaneamente os dados do RG em uma publicação de animal perdido no mapa, notifica os voluntários da região e executa o motor de match inteligente.
+✅ **Cadastro de Animais Tutelados / Carteirinha de Identificação (`PetRgCard.jsx`, `MyPetsScreen.jsx` & `AddEditPetScreen.jsx`)**
+- Cadastro de animais tutelados no perfil do tutor com foto, cuidados médicos, vacinas e castração.
+- Emissão da **Ficha de Identificação Animal** com visual estruturado (*WeFIND*), dados do tutor e **QR Code de autenticidade**.
+- **Acionar Alerta de Desaparecimento "🚨 MEU PET FUGIU!":** Converte instantaneamente os dados do animal tutelado em uma publicação de animal perdido no mapa, notifica os voluntários da região e executa o motor de match inteligente.
 
 ✅ **Gamificação & Selos de Guardião da Comunidade (`gamification.js` & `GamificationCard.jsx`)**
 - **5 Níveis de Guardião:** *Amigo dos Animais 🐾*, *Protetor Local 🛡️*, *Olhos Atentos 👁️*, *Anjo da Guarda 👼* e *Guardião Lendário WeFIND 👑*.

@@ -90,6 +90,9 @@ const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
+const isStreetFoundItem = (item) =>
+  item?.status === 'found' && item?.extra_fields?.found_custody === 'spotted';
+
 const formatItemDate = (value) => {
   if (!value) return '';
   const raw = String(value);
@@ -293,6 +296,7 @@ const MapScreen = ({ route, navigation }) => {
   const isNavigatingRef = useRef(false);
   const handledRouteParamRef = useRef(null);
   const [resolvedItemAddress, setResolvedItemAddress] = useState('');
+  const selectedItemCanHaveRoute = isStreetFoundItem(selectedItem);
 
   // Sighting Modal State
   const [sightingModalVisible, setSightingModalVisible] = useState(false);
@@ -581,6 +585,14 @@ const MapScreen = ({ route, navigation }) => {
     }
   }, [userCoords]);
 
+  const handleSelectItem = useCallback((item) => {
+    setSelectedItem(item);
+    isNavigatingRef.current = false;
+    setIsNavigating(false);
+    setRouteCoordinates([]);
+    setRouteInfo(null);
+  }, []);
+
   // Visão geral de toda a rota
   const fitRouteOverview = useCallback(() => {
     if (mapRef.current && userCoords && selectedItem) {
@@ -681,9 +693,9 @@ const MapScreen = ({ route, navigation }) => {
       };
 
       if (target?.latitude && target?.longitude) {
-        setSelectedItem(target);
+        handleSelectItem(target);
 
-        if (showRoute) {
+        if (showRoute && isStreetFoundItem(target)) {
           (async () => {
             let current = userCoords;
             if (!current) {
@@ -723,7 +735,7 @@ const MapScreen = ({ route, navigation }) => {
         }
       }
     }
-  }, [route?.params?.focusItemId, route?.params?.showRoute, items, calculateRoute]);
+  }, [route?.params?.focusItemId, route?.params?.showRoute, items, calculateRoute, handleSelectItem]);
 
   // Ao buscar, recentraliza suavemente no primeiro animal correspondente encontrado
   useEffect(() => {
@@ -1083,7 +1095,7 @@ const MapScreen = ({ route, navigation }) => {
         customMapStyle={PETS_ONLY_MAP_STYLE}
       >
         {/* Traçado da Rota GPS */}
-        {routeCoordinates.length > 1 && (
+        {selectedItemCanHaveRoute && routeCoordinates.length > 1 && (
           <>
             <Polyline
               coordinates={routeCoordinates.filter(c => c && Number.isFinite(c.latitude) && Number.isFinite(c.longitude))}
@@ -1111,14 +1123,14 @@ const MapScreen = ({ route, navigation }) => {
               key={String(item.id)}
               item={item}
               isSelected={selectedItem?.id === item.id}
-              onPress={() => setSelectedItem(item)}
+              onPress={() => handleSelectItem(item)}
               onCalloutPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
             />
           ))}
       </MapView>
 
       {/* Banner Superior de Rota Ativa com botão Iniciar Navegação */}
-      {routeInfo && !isNavigating && (
+      {routeInfo && !isNavigating && selectedItemCanHaveRoute && (
         <View style={[styles.activeRouteBanner, { top: Math.max(insets.top + 64, 100) }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
             <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
@@ -1521,53 +1533,55 @@ const MapScreen = ({ route, navigation }) => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: routeCoordinates.length > 0 ? '#16A34A' : COLORS.primary,
-                borderRadius: 12,
-                paddingHorizontal: 14,
-                paddingVertical: 10,
-                shadowColor: routeCoordinates.length > 0 ? '#16A34A' : COLORS.primary,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
-              onPress={async () => {
-                let current = userCoords;
-                if (!current) {
-                  current = await requestUserLocation();
-                }
-                if (current && selectedItem?.latitude && selectedItem?.longitude) {
-                  // Se a rota ainda não foi calculada, calcula sem afastar a câmera e inicia navegação
-                  if (routeCoordinates.length === 0) {
-                    await calculateRoute(current, {
-                      latitude: Number(selectedItem.latitude),
-                      longitude: Number(selectedItem.longitude),
-                    }, false);
+            {selectedItemCanHaveRoute && (
+              <TouchableOpacity
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: routeCoordinates.length > 0 ? '#16A34A' : COLORS.primary,
+                  borderRadius: 12,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                  shadowColor: routeCoordinates.length > 0 ? '#16A34A' : COLORS.primary,
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}
+                onPress={async () => {
+                  let current = userCoords;
+                  if (!current) {
+                    current = await requestUserLocation();
                   }
-                  // Inicia navegação e recentraliza com aproximação direta na posição do usuário
-                  startNavigation(current);
-                } else if (!current) {
-                  Alert.alert('Localização necessária', 'Ative o GPS do seu dispositivo para iniciar a rota até o animal.');
-                }
-              }}
-              activeOpacity={0.85}
-            >
-              <MaterialIcons name="navigation" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
-              <Text style={{ fontSize: 12, fontWeight: '800', color: '#FFFFFF' }}>
-                {isNavigating ? 'Navegando' : (routeCoordinates.length > 0 ? 'Iniciar' : 'Iniciar Rota')}
-              </Text>
-            </TouchableOpacity>
+                  if (current && selectedItem?.latitude && selectedItem?.longitude) {
+                    // Se a rota ainda não foi calculada, calcula sem afastar a câmera e inicia navegação
+                    if (routeCoordinates.length === 0) {
+                      await calculateRoute(current, {
+                        latitude: Number(selectedItem.latitude),
+                        longitude: Number(selectedItem.longitude),
+                      }, false);
+                    }
+                    // Inicia navegação e recentraliza com aproximação direta na posição do usuário
+                    startNavigation(current);
+                  } else if (!current) {
+                    Alert.alert('Localização necessária', 'Ative o GPS do seu dispositivo para iniciar a rota até o animal.');
+                  }
+                }}
+                activeOpacity={0.85}
+              >
+                <MaterialIcons name="navigation" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
+                <Text style={{ fontSize: 12, fontWeight: '800', color: '#FFFFFF' }}>
+                  {isNavigating ? 'Navegando' : (routeCoordinates.length > 0 ? 'Iniciar' : 'Iniciar Rota')}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       )}
 
       {/* 8. HUD Flutuante de Navegação Ativa em Tempo Real (Estilo Google Maps) */}
-      {isNavigating && (
+      {isNavigating && selectedItemCanHaveRoute && (
         <View style={styles.navigationHudCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <View style={{ flex: 1, marginRight: 10 }}>
@@ -2380,4 +2394,3 @@ class MapErrorBoundary extends React.Component {
 }
 
 export default MapErrorBoundary;
-

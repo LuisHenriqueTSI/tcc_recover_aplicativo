@@ -51,7 +51,7 @@ pessoal é livre e pode ser feita diretamente na tela de cadastro.
   combinados de espécie, status, porte e proximidade.
 * Cadastro de Publicação: Cadastro de um pet com upload de foto e 
   marcação do ponto do desaparecimento/encontro no mapa.
-* Perfil Digital do Pet: Identificação digital com dados de cuidados, 
+* Identificação do Animal Tutelado: Cadastro do animal tutelado com dados de cuidados, 
   contato do tutor e código QR exclusivo para coleiras.
 * Gerador de Cartaz: Botão "Compartilhar Cartaz" na tela do animal 
   para gerar peça gráfica com foto e QR Code para impressão.

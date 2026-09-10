@@ -143,8 +143,8 @@ export async function deletePet(userId, petId) {
 }
 
 /**
- * BOTÃO DE PÂNICO: "🚨 Meu Pet Fugiu!"
- * Converte automaticamente o pet cadastrado em uma publicação de animal perdido no mapa,
+ * ALERTA DE DESAPARECIMENTO: "🚨 Meu Pet Fugiu!"
+ * Converte automaticamente o animal tutelado cadastrado em uma publicação de animal perdido no mapa,
  * dispara alerta por proximidade para a vizinhança e executa o motor de match inteligente!
  */
 export async function declarePetLost(userId, pet, userProfile, locationOverride = null) {
@@ -156,10 +156,26 @@ export async function declarePetLost(userId, pet, userProfile, locationOverride 
     const addressNeighborhood = locationOverride?.neighborhood || pet.neighborhood || userProfile?.neighborhood || '';
     const addressStreet = locationOverride?.street || pet.street || '';
     const addressText = [addressStreet, addressNeighborhood, addressCity, addressState].filter(Boolean).join(' - ') || 'Local informado pelo tutor';
+    const species = pet.species || 'Animal';
+    const colorValue = String(pet.color || '').trim();
+    const color = colorValue && colorValue.toLowerCase() !== 'não informado' ? colorValue.toLowerCase() : '';
+    const statusLabel = species.toLowerCase() === 'ave' ? 'perdida' : 'perdido';
+    const titleLocation = addressStreet || addressNeighborhood || addressCity;
+    const locationPhrase = titleLocation
+      ? (/^(rua|avenida|av\.|praça|praca|alameda|travessa|estrada|rodovia)\b/i.test(titleLocation)
+        ? `na ${titleLocation}`
+        : `em ${titleLocation}`)
+      : '';
+    const titleParts = [species, color, statusLabel, locationPhrase].filter(Boolean);
+    const descriptionParts = [
+      pet.name ? `Meu animal de estimação se chama ${pet.name} e desapareceu.` : 'Meu animal de estimação desapareceu.',
+      pet.description?.trim(),
+      pet.medical_notes ? `Observações médicas: ${pet.medical_notes}` : '',
+    ].filter(Boolean);
 
     const itemData = {
-      title: `${pet.species || 'Animal'} ${pet.name} (${pet.breed || 'SRD'}) perdido`,
-      description: pet.description || `Meu animal de estimação ${pet.name} desapareceu. ${pet.medical_notes ? `Observações médicas: ${pet.medical_notes}` : ''}`,
+      title: titleParts.join(' '),
+      description: descriptionParts.join(' '),
       category: 'animal',
       status: 'lost',
       species: pet.species || 'Cachorro',

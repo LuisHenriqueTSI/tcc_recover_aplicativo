@@ -309,13 +309,13 @@ const ProfileScreen = ({ navigation }) => {
         </View>
         <View style={styles.postsTextBox}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text style={[styles.postsTitle, { color: colors.text }]}>Meus Pets & RG Digital</Text>
+            <Text style={[styles.postsTitle, { color: colors.text }]}>Animais Tutelados & Carteira</Text>
             <View style={{ backgroundColor: '#16A34A', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 4 }}>
               <Text style={{ fontSize: 9, fontWeight: '900', color: '#FFFFFF' }}>NOVO</Text>
             </View>
           </View>
           <Text style={[styles.postsSubtitle, { color: colors.textSecondary }]}>
-            Carteirinha oficial, dados de saúde e botão de emergência
+            Carteirinha oficial, dados de saúde e alerta de desaparecimento
           </Text>
         </View>
         <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ marginLeft: 4 }} />

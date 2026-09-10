@@ -139,9 +139,9 @@ const MyPetsScreen = ({ navigation }) => {
             <MaterialIcons name="badge" size={24} color="#FFFFFF" />
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={[styles.bannerTitle, { color: colors.text }]}>RG Pet & Carteira Digital</Text>
+            <Text style={[styles.bannerTitle, { color: colors.text }]}>Identificação & Carteira Digital</Text>
             <Text style={[styles.bannerSub, { color: colors.textSecondary }]}>
-              Cadastre seus animais para gerar a carteirinha oficial e ter um botão de emergência caso eles fujam.
+              Cadastre seus animais tutelados para gerar a carteirinha oficial e ter o alerta de desaparecimento caso eles fujam.
             </Text>
           </View>
         </View>
@@ -240,7 +240,7 @@ const MyPetsScreen = ({ navigation }) => {
                   </TouchableOpacity>
                 </View>
 
-                {/* BOTÃO DE PÂNICO EM DESTAQUE */}
+                {/* ALERTA DE DESAPARECIMENTO EM DESTAQUE */}
                 <TouchableOpacity
                   style={[styles.panicButton, declaringLostId === pet.id && { opacity: 0.7 }]}
                   onPress={() => handleDeclareLost(pet)}
@@ -252,7 +252,7 @@ const MyPetsScreen = ({ navigation }) => {
                   ) : (
                     <>
                       <MaterialIcons name="warning" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
-                      <Text style={styles.panicButtonText}>🚨 MEU PET FUGIU! (DISPARAR ALERTA)</Text>
+                      <Text style={styles.panicButtonText}>🚨 MEU PET FUGIU! (ACIONAR ALERTA)</Text>
                     </>
                   )}
                 </TouchableOpacity>
