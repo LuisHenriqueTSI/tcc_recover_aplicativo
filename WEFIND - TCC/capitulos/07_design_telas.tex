@@ -2,7 +2,7 @@
 
 O design de interface de uma aplicação móvel de utilidade pública desempenha papel determinante em sua eficácia prática, especialmente em cenários de emergência e estresse provocados pelo desaparecimento de um animal de estimação. Como ensinam Rogers, Sharp e Preece (2023), o projeto de interação humano-computador (IHC) deve priorizar a redução da carga cognitiva, construindo fluxos intuitivos, acolhedores e objetivos que permitam ao usuário executar ações críticas com o mínimo de esforço mental e sem barreiras de navegação.
 
-No contexto do WeFIND, a concepção das interfaces visuais foi orientada pelos padrões consolidados da literatura de IHC, com ênfase nas dez heurísticas de usabilidade de Nielsen (1994) adaptadas para dispositivos móveis, e pelas diretrizes técnicas da norma ABNT NBR ISO 9241-11 (ABNT, 2021), que define usabilidade a partir da tríade de eficácia, eficiência e satisfação do usuário. A aplicação dessas diretrizes buscou assegurar que qualquer cidadão, independentemente de sua familiaridade com smartphones, consiga registrar um alerta ou consultar ocorrências com agilidade.
+No contexto do WeFIND, a concepção das interfaces visuais foi orientada pelos padrões consolidados da literatura de IHC, com ênfase nas dez heurísticas de usabilidade de Nielsen (1994) adaptadas para dispositivos móveis, e pelas diretrizes técnicas da norma ABNT NBR ISO 9241-11 (ABNT, 2021), que define usabilidade a partir da tríade de eficácia, eficiência e satisfação do usuário. A aplicação dessas diretrizes buscou assegurar que qualquer cidadão, independentemente de sua familiaridade com smartphones, consiga registrar um alerta ou consultar publicações com agilidade.
 
 Adicionalmente, o projeto gráfico incorporou os preceitos universais de acessibilidade e contraste das diretrizes internacionais \textit{Web Content Accessibility Guidelines} (WCAG 2.1) em nível AA (W3C, 2023). A escolha tipográfica, a calibragem da paleta cromática e a ergonomia de toque foram rigorosamente planejadas para viabilizar o uso confortável do aplicativo em ambientes externos sob luz solar direta, situação cotidiana em buscas de rua por animais perdidos.
 
@@ -70,7 +70,7 @@ A organização das cores na Figura~\ref{fig:paleta_cores} estrutura-se em três
 
 Na alínea (a), apresentam-se as Cores Institucionais da Marca. A Cor Primária em tom Verde (\#2E5634) evoca sentimentos de equilíbrio, esperança e solidez, sendo empregada como cor de fundo das barras superiores de navegação e em botões principais de ação. A Cor Secundária em tom Terracota (\#B1734A) remete ao cuidado, afeto e acolhimento animal, sendo utilizada em elementos secundários e detalhes de destaque.
 
-Na alínea (b), encontram-se as Cores Semânticas de Publicação, concebidas para permitir a triagem visual rápida do status de cada ocorrência: o tom Laranja Alerta (\#E67E22) sinaliza animais Perdidos; o Verde Sucesso (\#16A34A) identifica animais já Encontrados; o Magenta (\#BE185D) indica anúncios voltados à Adoção; e o tom Amarelo Dourado (\#D4AC0D) destaca Avisos urgentes e novos relatos de avistamento comunitário.
+Na alínea (b), encontram-se as Cores Semânticas de Publicação, concebidas para permitir a triagem visual rápida do status de cada publicação: o tom Laranja Alerta (\#E67E22) sinaliza animais Perdidos; o Verde Sucesso (\#16A34A) identifica animais já Encontrados; o Magenta (\#BE185D) indica anúncios voltados à Adoção; e o tom Amarelo Dourado (\#D4AC0D) destaca Avisos urgentes e novos relatos de avistamento comunitário.
 
 Na alínea (c), reúnem-se as Cores de Superfície e Elementos Neutros: a tonalidade cinza suave de Fundo (\#F6F8F6) evita fadiga ocular; o tom branco puro de Superfície (\#FFFFFF) destaca cartões e campos interativos; e a tipografia principal em tom Azul Noturno Escuro (\#0F172A) garante conformidade rigorosa com os níveis de contraste AA e AAA exigidos pelas diretrizes de acessibilidade WCAG.
 
@@ -131,20 +131,20 @@ Mesmo sem realizar login imediato, a plataforma garante acesso democrático para
         \centering
         \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-feed.jpeg}
         \par\vspace{0.15cm}
-        {\small (a) À esquerda: Feed de Ocorrências no Modo Visitante}
+        {\small (a) À esquerda: Feed de Publicações no Modo Visitante}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
         \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-mapa.jpeg}
         \par\vspace{0.15cm}
-        {\small (b) À direita: Mapa de Ocorrências sem Login}
+        {\small (b) À direita: Mapa de Publicações sem Login}
     \end{minipage}
     \par\vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-À esquerda da Figura~\ref{fig:tela_visitante_feed_mapa}, observa-se a aba Explorar disponibilizada para o visitante, contendo a listagem pública de animais perdidos e encontrados com fotos e bairros de ocorrência. À direita, apresenta-se o mapa interativo em modo somente leitura, permitindo ao visitante visualizar os pontos geográficos onde animais foram vistos na cidade, sem a exigência de cadastro prévio para consultas humanitárias.
+À esquerda da Figura~\ref{fig:tela_visitante_feed_mapa}, observa-se a aba Explorar disponibilizada para o visitante, contendo a listagem pública de animais perdidos e encontrados com fotos e bairros de publicação. À direita, apresenta-se o mapa interativo em modo somente leitura, permitindo ao visitante visualizar os pontos geográficos onde animais foram vistos na cidade, sem a exigência de cadastro prévio para consultas humanitárias.
 
 Ao consultar uma publicação específica, o visitante visualiza todas as características do pet, sendo orientado a se autenticar caso deseje interagir ativamente ou enviar comentários, conforme ilustrado na Figura~\ref{fig:tela_visitante_detalhes_alerta}.
 
@@ -176,7 +176,7 @@ Uma vez autenticado, o usuário tem acesso irrestrito ao painel principal do apl
 
 \begin{figure}[H]
     \centering
-    \caption{Tela Inicial e Feed de Ocorrências Ativas}
+    \caption{Tela Inicial e Feed de Publicações Ativas}
     \label{fig:tela_feed}
     \vspace{0.2cm}
     \includegraphics[height=7.8cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-inicial-feed.jpeg}
@@ -212,33 +212,59 @@ Para que as listagens reflitam com precisão o raio geográfico de interesse do 
 
 Na porção esquerda da Figura~\ref{fig:tela_ajuste_localidade}, observa-se o modal de ajuste rápido do raio de busca, que permite ao usuário limitar ou expandir o alcance da exibição entre 5 km e 80 km com apenas um toque. Na porção direita, exibe-se a tela de atualização de localidade, na qual o participante pode selecionar uma nova cidade de referência ou tocar na opção de escolha direta no mapa para reposicionar seu endereço central, recalculando todas as distâncias apresentadas no feed.
 
-Enquanto a consulta em lista no feed organiza as publicações de forma cronológica e por distância linear, a identificação territorial dos animais é potencializada pela navegação direta sobre o mapa interativo, demonstrada na Figura~\ref{fig:tela_mapa}.
+Enquanto a consulta em lista no feed organiza as publicações de forma cronológica e por distância linear, a identificação territorial dos animais é potencializada pela navegação espacial sobre o mapa interativo, demonstrada na Figura~\ref{fig:tela_mapa_permissao_navegacao}.
 
 \begin{figure}[H]
     \centering
-    \caption{Navegação Espacial no Mapa Interativo e Informações do Marcador}
-    \label{fig:tela_mapa}
+    \caption{Permissão de Localização GPS e Navegação no Mapa Interativo}
+    \label{fig:tela_mapa_permissao_navegacao}
     \vspace{0.2cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-mapa-card.jpeg}
+        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-permissao-localizacao.jpeg}
         \par\vspace{0.15cm}
-        {\small (a) À esquerda: Mapa Geral e Detalhes do Marcador}
+        {\small (a) À esquerda: Solicitação de Permissão de Acesso ao GPS}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-informacoes.jpeg}
+        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-principal.jpeg}
         \par\vspace{0.15cm}
-        {\small (b) À direita: Diretrizes de Resgate no Mapa Interativo}
+        {\small (b) À direita: Navegação Espacial no Mapa Principal}
     \end{minipage}
     \par\vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-À esquerda da Figura~\ref{fig:tela_mapa}, visualiza-se o mapa interativo baseado em Google Maps, destacando marcadores geográficos com a foto do pet e o cartão inferior do animal selecionado, contendo distância, porte e atalhos rápidos para traçar rotas e registrar pistas. À direita, apresenta-se o painel modal com as diretrizes do mapa, esclarecendo o foco operacional em ocorrências de rua para acelerar resgates e a proteção de privacidade de lares temporários.
+À esquerda da Figura~\ref{fig:tela_mapa_permissao_navegacao}, ilustra-se a caixa de diálogo nativa de permissão de geolocalização do dispositivo móvel, solicitando autorização para uso durante o uso do aplicativo, etapa indispensável para centralizar a visualização cartográfica no ponto exato do usuário e calcular distâncias dinâmicas. À direita, apresenta-se o mapa interativo em tela cheia baseado em Google Maps, destacando marcadores circulares com fotos reais dos animais nas imediações, botão flutuante para recentralizar o GPS e chave superior de alternância rápida para a exibição em lista no feed.
 
-Ao avistar um animal perdido em via pública, o cidadão pode relatar imediatamente a ocorrência à comunidade por meio do formulário de avistamento apresentado na Figura~\ref{fig:tela_registro_avistamento}.
+A interação direta com os elementos cartográficos permite consultar informações resumidas de cada ponto e acionar o cálculo imediato de rotas de deslocamento, conforme exibido na Figura~\ref{fig:tela_mapa_card_rota}.
+
+\begin{figure}[H]
+    \centering
+    \caption{Identificação do Marcador e Traçado de Rota até o Animal}
+    \label{fig:tela_mapa_card_rota}
+    \vspace{0.2cm}
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-card-avistamento.jpeg}
+        \par\vspace{0.15cm}
+        {\small (a) À esquerda: Card Informativo do Marcador Selecionado}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-rota-animal.jpeg}
+        \par\vspace{0.15cm}
+        {\small (b) À direita: Traçado de Rota em Tempo Real até o Animal}
+    \end{minipage}
+    \par\vspace{0.1cm}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+À esquerda da Figura~\ref{fig:tela_mapa_card_rota}, observa-se a abertura instantânea do cartão inferior de pré-visualização ao tocar em um marcador do mapa: o componente destaca a foto do animal, o selo semântico amarelo ``Visto na Rua'', a localização descritiva, a distância linear em relação ao usuário e os botões de ação para abrir os detalhes completos ou traçar a rota de resgate. À direita, demonstra-se a funcionalidade de navegação por rotas ativas da Google Directions API, que traça a linha viária em azul diretamente sobre as ruas da cidade até o ponto de avistamento, indicando a previsão em tempo real (1 minuto e 0,3 km de percurso) para acelerar a chegada do tutor ou voluntário ao local.
+
+Ao avistar um animal perdido em via pública, o cidadão pode relatar imediatamente a publicação à comunidade por meio do formulário de avistamento apresentado na Figura~\ref{fig:tela_registro_avistamento}.
 
 \begin{figure}[H]
     \centering
@@ -276,7 +302,7 @@ Além de registrar avistamentos rápidos, o usuário pode acessar a ficha descri
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-À esquerda da Figura~\ref{fig:tela_detalhes}, apresenta-se a tela de detalhes públicos contendo galeria fotográfica, status operacional, características morfológicas, marcas singulares, minimapa interativo com o ponto exato da ocorrência e botões para envio de pistas comunitárias e início de conversa pelo chat. À direita, observa-se a visualização diferenciada exibida exclusivamente para o autor do anúncio, que incorpora botões de controle para editar dados, renovar a publicação ativa na comunidade, excluir a postagem ou encerrar o caso marcando o animal como reencontrado.
+À esquerda da Figura~\ref{fig:tela_detalhes}, apresenta-se a tela de detalhes públicos contendo galeria fotográfica, status operacional, características morfológicas, marcas singulares, minimapa interativo com o ponto exato do avistamento e botões para envio de pistas comunitárias e início de conversa pelo chat. À direita, observa-se a visualização diferenciada exibida exclusivamente para o autor do anúncio, que incorpora botões de controle para editar dados, renovar a publicação ativa na comunidade, excluir a postagem ou encerrar o caso marcando o animal como reencontrado.
 
 Nos episódios em que um animal acolhido temporariamente é reconhecido por um tutor, o processo de devolução exige a apresentação de comprovação idônea de posse para evitar apropriações indevidas, conforme ilustrado na Figura~\ref{fig:tela_comprovacao_tutela}.
 
@@ -318,19 +344,97 @@ Uma vez iniciada a interação entre o tutor e a pessoa que avistou ou resgatou 
 
 À esquerda da Figura~\ref{fig:tela_chat}, ilustra-se a caixa de entrada do usuário, que lista todas as salas de bate-papo ativas ordenadas pela mensagem mais recente, com indicador visual de mensagens não lidas e identificação do animal em negociação. À direita, visualiza-se a interface de chat em tempo real sustentada por WebSockets no Supabase, permitindo envio imediato de mensagens de texto, troca de fotografias para conferência de pelagem e carimbos de envio e leitura sem a necessidade de fornecer números telefônicos particulares.
 
-Além de interagir em publicações existentes, qualquer guardião autenticado pode cadastrar uma nova ocorrência de animal perdido, encontrado ou para adoção, utilizando o formulário apresentado na Figura~\ref{fig:tela_cadastro}.
+Além de interagir em publicações existentes, qualquer guardião autenticado pode cadastrar uma nova publicação de animal perdido, encontrado ou para adoção. O fluxo estruturado para registro de um animal avistado na rua é conduzido por etapas intuitivas, apresentadas sequencialmente a partir da Figura~\ref{fig:tela_cadastrar_encontrado_1_2}.
 
 \begin{figure}[H]
     \centering
-    \caption{Tela de Cadastro e Publicação de Animal}
-    \label{fig:tela_cadastro}
+    \caption{Cadastro de Publicação: Modalidade de Avistamento e Morfologia}
+    \label{fig:tela_cadastrar_encontrado_1_2}
     \vspace{0.2cm}
-    \includegraphics[height=7.8cm,keepaspectratio]{imagens/04_telas_aplicativo/figura20_tela_cadastro.jpeg}
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-1.jpeg}
+        \par\vspace{0.15cm}
+        {\small (a) À esquerda: Seleção de Objetivo, Avistamento e Fotografia}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-2.jpeg}
+        \par\vspace{0.15cm}
+        {\small (b) À direita: Atributos Físicos e Características Morfológicas}
+    \end{minipage}
+    \par\vspace{0.1cm}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+À esquerda da Figura~\ref{fig:tela_cadastrar_encontrado_1_2}, observa-se a primeira etapa do fluxo de cadastro sob a categoria ``Encontrei um Pet'': o usuário seleciona a opção ``Apenas vi o animal (está na rua)'', insere a fotografia capturada da cena (com indicador de progresso de upload 1/6) e seleciona a espécie correspondente (neste caso, a espécie felina). À direita, apresenta-se o formulário de atributos morfológicos padronizados, onde o informante define rapidamente a cor predominante da pelagem (amarelo), sexo (macho), porte físico (médio), faixa etária aproximada (adulto), ausência de coleira e raça Sem Raça Definida (SRD), reduzindo ambiguidades visuais para a comunidade.
+
+Com as características morfológicas preenchidas, o sistema solicita a definição precisa da localização geográfica do animal, demonstrada na Figura~\ref{fig:tela_cadastrar_encontrado_3_4}.
+
+\begin{figure}[H]
+    \centering
+    \caption{Cadastro de Publicação: Georreferenciamento e Confirmação de Endereço}
+    \label{fig:tela_cadastrar_encontrado_3_4}
+    \vspace{0.2cm}
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-3.jpeg}
+        \par\vspace{0.15cm}
+        {\small (a) À esquerda: Fixação Interativa do Ponto no Mapa}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-4.jpeg}
+        \par\vspace{0.15cm}
+        {\small (b) À direita: Geocodificação Reversa e Confirmação de Endereço}
+    \end{minipage}
+    \par\vspace{0.1cm}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+À esquerda da Figura~\ref{fig:tela_cadastrar_encontrado_3_4}, visualiza-se a interface de escolha interativa do ponto no mapa georreferenciado: o usuário pode arrastar o marcador vermelho ou tocar diretamente no ponto da via pública onde o pet se encontra (neste exemplo, na Avenida Doutor Guilherme Minssen). À direita, demonstra-se a integração automática com a API de geocodificação reversa, que converte as coordenadas de latitude e longitude no endereço textual correspondente, aplicando a etiqueta informativa ``Visto na Rua / Via Pública'' e permitindo ajustes manuais caso necessário.
+
+Definido o local geográfico, o guardião finaliza o processo registrando a data e submetendo os dados, conforme apresentado na Figura~\ref{fig:tela_cadastrar_encontrado_5_6}.
+
+\begin{figure}[H]
+    \centering
+    \caption{Cadastro de Publicação: Submissão e Confirmação de Sucesso}
+    \label{fig:tela_cadastrar_encontrado_5_6}
+    \vspace{0.2cm}
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-5.jpeg}
+        \par\vspace{0.15cm}
+        {\small (a) À esquerda: Data do Evento e Botão de Publicar}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-6.jpeg}
+        \par\vspace{0.15cm}
+        {\small (b) À direita: Modal de Publicação Criada com Sucesso}
+    \end{minipage}
+    \par\vspace{0.1cm}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+À esquerda da Figura~\ref{fig:tela_cadastrar_encontrado_5_6}, exibe-se a etapa final de submissão, contendo a data do avistamento (10/09/2026), a opção de assinalar publicação em nome de terceiros e o botão principal em terracota ``Publicar Animal''. À direita, ilustra-se o modal de confirmação imediata: o sistema valida os dados no banco Supabase, grava as fotografias no armazenamento seguro e notifica o participante com a mensagem ``Publicação Criada com Sucesso!'', disponibilizando o atalho direto para visualizar o anúncio ativo.
+
+Assim que a confirmação é concluída, a nova publicação passa a compor imediatamente o feed principal de notícias geolocalizadas da comunidade, conforme registrado na Figura~\ref{fig:tela_feed_card_encontrado_rua}.
+
+\begin{figure}[H]
+    \centering
+    \caption{Exibição da Nova Publicação Cadastrada no Feed Comunitário}
+    \label{fig:tela_feed_card_encontrado_rua}
+    \vspace{0.2cm}
+    \includegraphics[height=7.8cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-feed-card-encontrado-rua.jpeg}
     \vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-O formulário estruturado de cadastro (Figura~\ref{fig:tela_cadastro}) guia o usuário em etapas lógicas: define-se primeiramente a categoria do anúncio (Perdido, Encontrado ou Adoção), anexam-se fotografias nítidas capturadas pela câmera ou galeria, indicam-se atributos como espécie, raça, porte e coloração, e finaliza-se com a marcação do ponto exato no mapa interativo com suporte de geocodificação reversa.
+A Figura~\ref{fig:tela_feed_card_encontrado_rua} comprova a integração em tempo real do ecossistema: o anúncio recém-criado passa a ser exibido no feed da vizinhança encabeçado pelo selo semântico amarelo ``Visto na Rua'', destacando a foto do gato, a identificação da via pública (Avenida Doutor Guilherme Minssen), a distância exata calculada em tempo real (a 6,0 km do usuário) e o botão direto ``Como Chegar'' para acionamento de rotas.
 
 Imediatamente após a confirmação da publicação, a plataforma oferece recursos gráficos automáticos de divulgação externa para alcançar cidadãos que não utilizam smartphones, conforme exibido na Figura~\ref{fig:tela_cartaz}.
 
@@ -344,7 +448,7 @@ Imediatamente após a confirmação da publicação, a plataforma oferece recurs
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-O cartaz digital gerado na Figura~\ref{fig:tela_cartaz} adota diagramação gráfica de alto contraste inspirada em materiais de utilidade pública. Em sua área central, exibe a foto ampliada do pet, características de identificação e o ponto de sumiço. Na base, incorpora um código QR dinâmico gerado exclusivamente para a ocorrência: qualquer transeunte pode apontar a câmera do celular para o código e abrir instantaneamente a ficha do animal no WeFIND, visualizando novos relatos e enviando pistas sem expor o telefone pessoal do tutor em postes ou muros públicos.
+O cartaz digital gerado na Figura~\ref{fig:tela_cartaz} adota diagramação gráfica de alto contraste inspirada em materiais de utilidade pública. Em sua área central, exibe a foto ampliada do pet, características de identificação e o ponto de sumiço. Na base, incorpora um código QR dinâmico gerado exclusivamente para a publicação: qualquer transeunte pode apontar a câmera do celular para o código e abrir instantaneamente a ficha do animal no WeFIND, visualizando novos relatos e enviando pistas sem expor o telefone pessoal do tutor em postes ou muros públicos.
 
 Contudo, a proteção animal mais eficiente reside na prevenção prévia, razão pela qual o aplicativo disponibiliza o fluxo de cadastro preventivo de animais domésticos apresentado na Figura~\ref{fig:tela_cadastrar_pet}.
 
@@ -442,7 +546,7 @@ Complementando os avisos convencionais, a plataforma dispõe de um mecanismo alg
 
 \begin{figure}[H]
     \centering
-    \caption{Sistema de Correspondências Inteligentes entre Ocorrências}
+    \caption{Sistema de Correspondências Inteligentes entre Publicações}
     \label{fig:tela_correspondencias}
     \vspace{0.2cm}
     \begin{minipage}[t]{0.48\textwidth}
@@ -462,7 +566,7 @@ Complementando os avisos convencionais, a plataforma dispõe de um mecanismo alg
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-Na Figura~\ref{fig:tela_correspondencias}, exibe-se a funcionalidade de sugestões inteligentes de compatibilidade. O sistema cruza parâmetros como espécie, raça, porte, pelagem e proximidade geográfica das ocorrências cadastradas, gerando uma lista ranqueada de potenciais correspondências com índices percentuais de similaridade para que os tutores comparem fotos e detalhes rapidamente.
+Na Figura~\ref{fig:tela_correspondencias}, exibe-se a funcionalidade de sugestões inteligentes de compatibilidade. O sistema cruza parâmetros como espécie, raça, porte, pelagem e proximidade geográfica das publicações cadastradas, gerando uma lista ranqueada de potenciais correspondências com índices percentuais de similaridade para que os tutores comparem fotos e detalhes rapidamente.
 
 A identidade individual do cidadão na plataforma, seu histórico de contribuições solidárias e as medalhas obtidas no aplicativo são reunidos na tela de perfil, ilustrada na Figura~\ref{fig:tela_perfil}.
 
@@ -528,7 +632,7 @@ Além de gerenciar seus dados cadastrais, o guardião pode acompanhar centraliza
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-No painel de gerenciamento (Figura~\ref{fig:tela_minhas_publicacoes}), o usuário visualiza em abas organizadas todas as suas ocorrências ativas, pausadas ou concluídas, acompanhando o número de avistamentos recebidos e acionando atalhos imediatos para editar informações ou marcar o caso como resolvido.
+No painel de gerenciamento (Figura~\ref{fig:tela_minhas_publicacoes}), o usuário visualiza em abas organizadas todas as suas publicações ativas, pausadas ou concluídas, acompanhando o número de avistamentos recebidos e acionando atalhos imediatos para editar informações ou marcar o caso como resolvido.
 
 Para garantir a transparência e a segurança nas negociações comunitárias de resgate e adoção, os participantes podem consultar o perfil público de outros membros e registrar avaliações mútuas, como demonstrado na Figura~\ref{fig:tela_perfil_membro}.
 

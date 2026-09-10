@@ -114,14 +114,14 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 3a. Informar tutor de terceiros (\textit{<<extend>>}): o usuário aciona a extensão para indicar o contato de outro responsável pelo animal.\par
 4a. Edição de publicação existente: o autor atualiza fotos ou descrições do anúncio já publicado.\par
-4b. Encerramento com sucesso: o autor altera o status para ``Reencontrado'' ou ``Adotado'', arquivando a ocorrência.
+4b. Encerramento com sucesso: o autor altera o status para ``Reencontrado'' ou ``Adotado'', arquivando a publicação.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos de Exceção:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
 4c. Imagem inválida ou tamanho excessivo: o sistema impede o upload e solicita a seleção de uma foto válida.\par
 5a. Ponto no mapa não demarcado: o sistema bloqueia a submissão e exige a marcação das coordenadas geográficas.
 } \\ \hline
-\textbf{Pós-Condições} & Ocorrência persistida, visível no mapa e disponível para a comunidade. \\ \hline
+\textbf{Pós-Condições} & Publicação persistida, visível no mapa e disponível para a comunidade. \\ \hline
 \end{tabular}
 \end{table}
 
@@ -217,7 +217,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Pré-Condições} & O animal deve possuir ao menos uma fotografia cadastrada. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-1. Na tela de detalhes da ocorrência, o usuário clica em ``Compartilhar Cartaz''.\par
+1. Na tela de detalhes da publicação, o usuário clica em ``Compartilhar Cartaz''.\par
 2. O sistema abre o modal com pré-visualização ao vivo da arte gerada.\par
 3. O sistema gera dinamicamente o código QR apontando para o link público do animal.\par
 4. O usuário seleciona o formato desejado (A4 para impressão, Stories 9:16 ou Feed 1:1).\par
@@ -440,8 +440,8 @@ Ao abrir o aplicativo, o usuário visualiza a tela de login. Caso ainda não pos
     \textbf{Figura C1: Telas de Login e Cadastro de Usuário}\\[0.2cm]
     \includegraphics[height=7.8cm, keepaspectratio]{imagens/05_manual_usuario/figura15_tela_login.jpeg}
     \hspace{0.5cm}
-    \includegraphics[height=7.8cm, keepaspectratio]{imagens/05_manual_usuario/figura31_tela_cadastro.jpeg}\\[0.15cm]
-    \begin{tabular}{p{4.5cm} p{4.5cm}}
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/04_telas_aplicativo/tela-criar-conta.jpeg}\\[0.15cm]
+    \begin{tabular}{p{5.0cm} p{5.0cm}}
         \centering\footnotesize (a) Tela de Login & \centering\footnotesize (b) Tela de Cadastro
     \end{tabular}\\[0.15cm]
     {\footnotesize Fonte: Autoria própria (2026)}
@@ -449,52 +449,57 @@ Ao abrir o aplicativo, o usuário visualiza a tela de login. Caso ainda não pos
 
 \clearpage
 
-\subsection*{Passo 2: Navegação no Mapa Interativo e Aplicação de Filtros}
+\subsection*{Passo 2: Navegação no Mapa Interativo e Traçado de Rotas}
 \noindent
-Após o acesso, o usuário explora as ocorrências no feed ordenado por proximidade e no mapa georreferenciado por GPS, podendo filtrar os animais por espécie, porte ou raio de distância. A Figura C2 ilustra as telas de exploração.
+Após o acesso, o usuário explora as publicações no feed ordenado por proximidade e no mapa georreferenciado por GPS, podendo filtrar os animais por espécie, porte ou raio de distância e traçar rotas de deslocamento em tempo real até o animal avistado. A Figura C2 ilustra o mapa interativo e o traçado de rota.
 
 \vspace{0.2cm}
 \noindent\begin{minipage}{\linewidth}
 \centering
-    \textbf{Figura C2: Telas de Feed Geral e Mapa Interativo de Ocorrências}\\[0.2cm]
-    \includegraphics[height=8.0cm, keepaspectratio]{imagens/04_telas_aplicativo/figura17_tela_feed.jpeg}
+    \textbf{Figura C2: Telas de Mapa Interativo e Traçado de Rota até o Animal}\\[0.2cm]
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-principal.jpeg}
     \hspace{0.5cm}
-    \includegraphics[height=8.0cm, keepaspectratio]{imagens/05_manual_usuario/tela-mapa.jpeg}\\[0.15cm]
-    \begin{tabular}{p{4.5cm} p{4.5cm}}
-        \centering\footnotesize (a) Feed Geral & \centering\footnotesize (b) Mapa Interativo
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-rota-animal.jpeg}\\[0.15cm]
+    \begin{tabular}{p{5.0cm} p{5.0cm}}
+        \centering\footnotesize (a) Mapa com Marcadores & \centering\footnotesize (b) Traçado de Rota ao Vivo
     \end{tabular}\\[0.15cm]
     {\footnotesize Fonte: Autoria própria (2026)}
 \end{minipage}
 
 \clearpage
 
-\subsection*{Passo 3: Publicação de Nova Ocorrência (Perdido, Encontrado ou Adoção)}
+\subsection*{Passo 3: Registro de Publicação de Animal Encontrado na Rua}
 \noindent
-Para registrar um animal, o usuário aciona o botão central \textbf{``+''}, escolhe a finalidade do anúncio, insere as fotos com recorte proporcional, preenche as características físicas e marca a localização no mapa. A Figura C3 apresenta a tela de cadastro.
+Para cadastrar um animal avistado ou recolhido na rua, o usuário aciona o botão central \textbf{``+''}, define o objetivo do anúncio, anexa fotografias, seleciona os atributos físicos e fixa as coordenadas geográficas exatas no mapa interativo com suporte de geocodificação reversa. A Figura C3 apresenta as etapas de cadastro morfológico e georreferenciamento.
 
 \vspace{0.2cm}
 \noindent\begin{minipage}{\linewidth}
 \centering
-    \textbf{Figura C3: Tela de Cadastro de Ocorrência de Animal}\\[0.2cm]
-    \includegraphics[height=8.5cm, keepaspectratio]{imagens/04_telas_aplicativo/figura20_tela_cadastro.jpeg}\\[0.2cm]
+    \textbf{Figura C3: Registro de Publicação e Fixação de Ponto no Mapa}\\[0.2cm]
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-1.jpeg}
+    \hspace{0.5cm}
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-3.jpeg}\\[0.15cm]
+    \begin{tabular}{p{5.0cm} p{5.0cm}}
+        \centering\footnotesize (a) Avistamento e Fotografia & \centering\footnotesize (b) Escolha de Local no Mapa
+    \end{tabular}\\[0.15cm]
     {\footnotesize Fonte: Autoria própria (2026)}
 \end{minipage}
 
 \clearpage
 
-\subsection*{Passo 4: Consulta de Detalhes e Geração de Cartazes com QR Code}
+\subsection*{Passo 4: Consulta de Detalhes e Geração de Cartazes com Código QR}
 \noindent
-Ao tocar em qualquer animal no feed ou no mapa, a tela de detalhes exibe fotos em alta definição, características físicas e localização aproximada. O tutor pode acionar o botão \textbf{``Compartilhar Cartaz''} para gerar automaticamente cartazes em formato A4, Stories (9:16) ou Feed (1:1) com código QR integrado. A Figura C4 apresenta a tela de detalhes e o modal de cartazes.
+Ao tocar em qualquer animal no feed ou no mapa, a tela de detalhes exibe fotos em alta definição, características físicas e localização aproximada. O tutor pode acionar o botão \textbf{``Compartilhar Cartaz''} para gerar automaticamente cartazes diagramados em múltiplos formatos com código QR integrado. A Figura C4 apresenta a tela de detalhes e o cartaz digital de busca.
 
 \vspace{0.2cm}
 \noindent\begin{minipage}{\linewidth}
 \centering
-    \textbf{Figura C4: Tela de Detalhes do Animal e Modal de Compartilhamento de Cartaz}\\[0.2cm]
-    \includegraphics[height=7.8cm, keepaspectratio]{imagens/05_manual_usuario/tela-detalhes-animal-perdido.jpeg}
+    \textbf{Figura C4: Tela de Detalhes do Animal e Cartaz Digital de Busca}\\[0.2cm]
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/04_telas_aplicativo/tela-detalhes-do-animal.jpeg}
     \hspace{0.5cm}
-    \includegraphics[height=7.8cm, keepaspectratio]{imagens/05_manual_usuario/tela-compartilhar-animal-perdido.jpeg}\\[0.15cm]
-    \begin{tabular}{p{4.5cm} p{4.5cm}}
-        \centering\footnotesize (a) Detalhes do Animal & \centering\footnotesize (b) Modal de Compartilhamento
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/04_telas_aplicativo/figura21_tela_cartaz.jpeg}\\[0.15cm]
+    \begin{tabular}{p{5.0cm} p{5.0cm}}
+        \centering\footnotesize (a) Detalhes da Publicação & \centering\footnotesize (b) Cartaz Digital com QR Code
     \end{tabular}\\[0.15cm]
     {\footnotesize Fonte: Autoria própria (2026)}
 \end{minipage}
@@ -503,27 +508,37 @@ Ao tocar em qualquer animal no feed ou no mapa, a tela de detalhes exibe fotos e
 
 \subsection*{Passo 5: Comunicação Direta e Segura via Chat Interno}
 \noindent
-Para alinhar o resgate de um animal avistado sem expor números pessoais a fraudes, o aplicativo disponibiliza o chat privativo interno com troca de fotos e mensagens em tempo real. A Figura C5 ilustra a tela de conversa.
+Para alinhar o resgate de um animal avistado sem expor números pessoais a fraudes ou trotes, o aplicativo disponibiliza o canal de mensagens privativo em tempo real via WebSockets. A Figura C5 ilustra a caixa de mensagens e a conversa ativa.
 
 \vspace{0.2cm}
 \noindent\begin{minipage}{\linewidth}
 \centering
-    \textbf{Figura C5: Tela de Chat Privativo em Tempo Real}\\[0.2cm]
-    \includegraphics[height=8.5cm, keepaspectratio]{imagens/05_manual_usuario/tela-mensagens.jpeg}\\[0.2cm]
+    \textbf{Figura C5: Central de Mensagens e Bate-papo Privativo em Tempo Real}\\[0.2cm]
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/04_telas_aplicativo/tela-mensagens.jpeg}
+    \hspace{0.5cm}
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/04_telas_aplicativo/tela-conversa.jpeg}\\[0.15cm]
+    \begin{tabular}{p{5.0cm} p{5.0cm}}
+        \centering\footnotesize (a) Caixa de Mensagens & \centering\footnotesize (b) Chat em Tempo Real
+    \end{tabular}\\[0.15cm]
     {\footnotesize Fonte: Autoria própria (2026)}
 \end{minipage}
 
 \clearpage
 
-\subsection*{Passo 6: Cadastro e Identificação de Animais Tutelados}
+\subsection*{Passo 6: Cadastro Preventivo e Carteirinha Digital (RG Pet)}
 \noindent
-Como medida de identificação preventiva, o tutor acessa a área de seus pets no perfil para cadastrar previamente seu animal, incluindo vacinas, fotos e histórico médico. O sistema gera a ficha de identificação do animal tutelado com código QR para identificação rápida. A Figura C6 ilustra a tela de identificação do animal tutelado.
+Como medida de identificação preventiva, o tutor acessa a área de seus pets no perfil para cadastrar previamente seu animal sob guarda responsável, incluindo vacinas, fotos e marcas singulares. O sistema gera a carteirinha digital de identificação com código QR para identificação rápida em coleiras. A Figura C6 ilustra o painel de gestão preventiva e a carteirinha digital.
 
 \vspace{0.2cm}
 \noindent\begin{minipage}{\linewidth}
 \centering
-    \textbf{Figura C6: Tela de Identificação do Animal Tutelado}\\[0.2cm]
-    \includegraphics[height=8.5cm, keepaspectratio]{imagens/04_telas_aplicativo/figura25_tela_rg_pet.jpeg}\\[0.2cm]
+    \textbf{Figura C6: Gestão Preventiva de Pets e Carteirinha Digital (RG Pet)}\\[0.2cm]
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/04_telas_aplicativo/tela-meus-pets-carteirinha-digital.jpeg}
+    \hspace{0.5cm}
+    \includegraphics[height=7.8cm, keepaspectratio]{imagens/04_telas_aplicativo/figura25_tela_rg_pet.jpeg}\\[0.15cm]
+    \begin{tabular}{p{5.0cm} p{5.0cm}}
+        \centering\footnotesize (a) Painel Meus Pets & \centering\footnotesize (b) Carteirinha Digital (RG Pet)
+    \end{tabular}\\[0.15cm]
     {\footnotesize Fonte: Autoria própria (2026)}
 \end{minipage}
 
