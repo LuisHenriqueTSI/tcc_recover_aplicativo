@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  Linking,
   Alert,
   Modal,
   TextInput,
@@ -47,6 +46,7 @@ const UserProfileScreen = ({ route, navigation }) => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [reviewComment, setReviewComment] = useState('');
   const [submittingRating, setSubmittingRating] = useState(false);
+  const [ratingEligible, setRatingEligible] = useState(false);
 
   const isOwnProfile = currentUser && currentUser.id === userId;
 
@@ -57,12 +57,15 @@ const UserProfileScreen = ({ route, navigation }) => {
       return;
     }
     try {
-      const [profileRes, itemsRes, ratingsRes, fosterRes, gamiRes] = await Promise.allSettled([
+      const [profileRes, itemsRes, ratingsRes, fosterRes, gamiRes, ratingEligibilityRes] = await Promise.allSettled([
         userService.getUserById(userId),
         itemsService.getUserItems(userId),
         ratingsService.getUserRatings(userId),
         getFosterProfile(userId),
-        getUserGamificationData(userId, profileData),
+        getUserGamificationData(userId),
+        currentUser && currentUser.id !== userId
+          ? ratingsService.canRateUser(currentUser.id, userId)
+          : Promise.resolve(false),
       ]);
 
       const profileData = profileRes.status === 'fulfilled' ? profileRes.value : null;
@@ -70,12 +73,14 @@ const UserProfileScreen = ({ route, navigation }) => {
       const userRatings = ratingsRes.status === 'fulfilled' ? ratingsRes.value : null;
       const fosterData = fosterRes.status === 'fulfilled' ? fosterRes.value : null;
       const gamiData = gamiRes.status === 'fulfilled' ? gamiRes.value : null;
+      const canRate = ratingEligibilityRes.status === 'fulfilled' && ratingEligibilityRes.value === true;
 
       setProfile(profileData || { id: userId, name: initialName || 'Membro WeFIND', avatar_url: initialAvatar });
       setFosterProfile(fosterData);
       setUserItems(Array.isArray(itemsData) ? itemsData : []);
       setRatingsData(userRatings || { ratings: [], average: 5.0, total: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
       setGamificationData(gamiData);
+      setRatingEligible(canRate);
 
       // Se o usuário logado já tiver avaliação existente, pré-carrega
       if (currentUser && userRatings?.ratings && Array.isArray(userRatings.ratings)) {
@@ -119,6 +124,14 @@ const UserProfileScreen = ({ route, navigation }) => {
 
     if (isOwnProfile) {
       Alert.alert('Aviso', 'Você não pode avaliar seu próprio perfil.');
+      return;
+    }
+
+    if (!ratingEligible) {
+      Alert.alert(
+        'Classificação indisponível',
+        'Você poderá classificar este membro após 24 horas sem novas mensagens entre vocês.'
+      );
       return;
     }
 
@@ -295,40 +308,6 @@ const UserProfileScreen = ({ route, navigation }) => {
     );
   };
 
-  const handleOpenWhatsApp = () => {
-    const rawPhone = profile?.whatsapp || profile?.phone;
-    if (!rawPhone) {
-      Alert.alert('Informação', 'Este usuário não disponibilizou número de WhatsApp público.');
-      return;
-    }
-    let digits = String(rawPhone).replace(/\D/g, '');
-    if (!digits.startsWith('55')) {
-      digits = `55${digits}`;
-    }
-    const message = encodeURIComponent(`Olá ${profile?.name || ''}, vi seu perfil no aplicativo WeFIND!`);
-    const url = `whatsapp://send?phone=${digits}&text=${message}`;
-    Linking.canOpenURL(url)
-      .then((supported) => {
-        if (supported) {
-          Linking.openURL(url);
-        } else {
-          Linking.openURL(`https://wa.me/${digits}?text=${message}`);
-        }
-      })
-      .catch(() => {
-        Linking.openURL(`https://wa.me/${digits}?text=${message}`);
-      });
-  };
-
-  const formatDisplayPhone = (value) => {
-    let digits = String(value || '').replace(/\D/g, '');
-    if (!digits.startsWith('55')) digits = digits.slice(2);
-    if (!digits) return null;
-    if (digits.length === 10) return `(${digits.slice(0, 2)}) 9${digits.slice(2, 6)}-${digits.slice(6)}`;
-    if (digits.length === 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-    return digits;
-  };
-
   const formatJoinDate = (dateStr) => {
     if (!dateStr) return 'Membro da Comunidade';
     try {
@@ -376,9 +355,6 @@ const UserProfileScreen = ({ route, navigation }) => {
   const displayName = profile?.name || initialName || 'Membro WeFIND';
   const initial = displayName.trim()[0]?.toUpperCase() || 'U';
   const avatarUri = profile?.avatar_url || profile?.avatarUrl || initialAvatar;
-  const phoneNumber = profile?.whatsapp || profile?.phone;
-  const formattedPhone = formatDisplayPhone(phoneNumber);
-
   const city = profile?.city;
   const state = profile?.state;
   const neighborhood = profile?.neighborhood;
@@ -511,7 +487,7 @@ const UserProfileScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             )}
 
-            {!isOwnProfile && (
+            {!isOwnProfile && ratingEligible && (
               <TouchableOpacity
                 onPress={handleOpenRatingModal}
                 style={[styles.rateActionBtn, { backgroundColor: isDark ? '#1E293B' : '#FEF3C7', borderColor: '#F59E0B' }]}
@@ -521,16 +497,6 @@ const UserProfileScreen = ({ route, navigation }) => {
                 <Text style={[styles.rateActionBtnText, { color: isDark ? '#FBBF24' : '#B45309' }]}>
                   {existingMyRating ? 'Editar Nota' : 'Classificar'}
                 </Text>
-              </TouchableOpacity>
-            )}
-
-            {phoneNumber && currentUser && !isOwnProfile && (
-              <TouchableOpacity
-                onPress={handleOpenWhatsApp}
-                style={[styles.whatsappActionBtn, { backgroundColor: '#25D366' }]}
-                activeOpacity={0.85}
-              >
-                <Feather name="phone-call" size={16} color="#FFFFFF" />
               </TouchableOpacity>
             )}
 
@@ -832,7 +798,7 @@ const UserProfileScreen = ({ route, navigation }) => {
           </View>
 
           {/* Botão de Avaliar */}
-          {!isOwnProfile && (
+          {!isOwnProfile && ratingEligible && (
             <TouchableOpacity
               onPress={handleOpenRatingModal}
               style={[styles.leaveReviewCTA, { backgroundColor: colors.primary }]}
@@ -933,35 +899,42 @@ const UserProfileScreen = ({ route, navigation }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+            <View style={styles.modalHandle} />
             {/* Header do Modal */}
             <View style={styles.modalHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <MaterialIcons name="star-half" size={22} color="#F59E0B" />
-                <Text style={[styles.modalTitle, { color: colors.text }]}>Classificar Experiência</Text>
+              <View style={styles.modalHeaderTitle}>
+                <View style={styles.modalHeaderIcon}>
+                  <MaterialIcons name="auto-awesome" size={19} color="#FFFFFF" />
+                </View>
+                <View>
+                  <Text style={[styles.modalEyebrow, { color: colors.primary }]}>SUA EXPERIÊNCIA</Text>
+                  <Text style={[styles.modalTitle, { color: colors.text }]}>Classificar membro</Text>
+                </View>
               </View>
-              <TouchableOpacity onPress={() => setRatingModalVisible(false)} style={styles.modalCloseBtn}>
+              <TouchableOpacity onPress={() => setRatingModalVisible(false)} style={[styles.modalCloseBtn, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
                 <MaterialIcons name="close" size={22} color={colors.textMuted} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: Dimensions.get('window').height * 0.7 }}>
               <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
-                Como foi seu contato, negociação ou experiência de reencontro com <Text style={{ fontWeight: '700', color: colors.text }}>{displayName}</Text>?
+                Como foi sua experiência com <Text style={{ fontWeight: '800', color: colors.text }}>{displayName}</Text>?
               </Text>
 
               {/* Seletor de Estrelas */}
-              <View style={styles.starsPickerContainer}>
+              <View style={[styles.starsPickerContainer, { backgroundColor: isDark ? '#241F13' : '#FFF9EB', borderColor: isDark ? '#5B4817' : '#FDE7A9' }]}>
+                <Text style={[styles.modalRatingPrompt, { color: colors.text }]}>Qual nota você daria?</Text>
                 <View style={styles.starsPickerRow}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <TouchableOpacity
                       key={star}
                       onPress={() => setSelectedStars(star)}
                       activeOpacity={0.7}
-                      style={{ padding: 6 }}
+                      style={styles.starButton}
                     >
                       <MaterialIcons
                         name={star <= selectedStars ? 'star' : 'star-border'}
-                        size={40}
+                        size={36}
                         color="#F59E0B"
                       />
                     </TouchableOpacity>
@@ -974,8 +947,9 @@ const UserProfileScreen = ({ route, navigation }) => {
 
               {/* Elogios e Destaques */}
               <Text style={[styles.formLabel, { color: colors.text }]}>
-                Destaques da sua experiência (opcional):
+                O que marcou sua experiência?
               </Text>
+              <Text style={[styles.formHint, { color: colors.textMuted }]}>Selecione todas as opções que combinam.</Text>
               <View style={styles.tagsContainer}>
                 {ratingsService.POPULAR_RATING_TAGS.map((tag) => {
                   const isSelected = selectedTags.includes(tag);
@@ -990,6 +964,12 @@ const UserProfileScreen = ({ route, navigation }) => {
                       ]}
                       activeOpacity={0.8}
                     >
+                      <MaterialIcons
+                        name={isSelected ? 'check-box' : 'check-box-outline-blank'}
+                        size={21}
+                        color={isSelected ? '#D97706' : (isDark ? '#94A3B8' : '#64748B')}
+                        style={{ marginRight: 7 }}
+                      />
                       <Text style={[
                         styles.tagChipText,
                         { color: isDark ? '#94A3B8' : '#475569' },
@@ -1004,7 +984,7 @@ const UserProfileScreen = ({ route, navigation }) => {
 
               {/* Comentário / Relato */}
               <Text style={[styles.formLabel, { color: colors.text }]}>
-                Deixe um comentário ou depoimento (opcional):
+                Quer contar mais? <Text style={{ color: colors.textMuted, fontWeight: '500' }}>(opcional)</Text>
               </Text>
               <TextInput
                 style={[
@@ -1015,7 +995,7 @@ const UserProfileScreen = ({ route, navigation }) => {
                     color: colors.text,
                   },
                 ]}
-                placeholder="Conte com mais detalhes como foi o atendimento, cuidado com o pet ou comunicação..."
+                placeholder="Escreva uma mensagem sobre o atendimento, cuidado ou comunicação..."
                 placeholderTextColor={colors.textMuted}
                 value={reviewComment}
                 onChangeText={setReviewComment}
@@ -1043,7 +1023,10 @@ const UserProfileScreen = ({ route, navigation }) => {
                   {submittingRating ? (
                     <ActivityIndicator size="small" color="#FFFFFF" />
                   ) : (
-                    <Text style={styles.modalSubmitText}>Salvar Avaliação</Text>
+                    <>
+                      <MaterialIcons name="check" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                      <Text style={styles.modalSubmitText}>Publicar avaliação</Text>
+                    </>
                   )}
                 </TouchableOpacity>
               </View>
@@ -1215,18 +1198,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
   },
-  whatsappActionBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#25D366',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
-  },
   iconActionBtn: {
     width: 42,
     height: 42,
@@ -1308,6 +1279,27 @@ const styles = StyleSheet.create({
   tabChipTextActive: {
     color: '#FFFFFF',
     fontWeight: '800',
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 18,
+  },
+  tagChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 11,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  tagChipSelected: {
+    borderWidth: 1.5,
+  },
+  tagChipText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   emptyPostsCard: {
     padding: 26,
@@ -1724,65 +1716,121 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     textAlign: 'center',
   },
-  modalBackdrop: {
+  modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    backgroundColor: 'rgba(15, 23, 42, 0.72)',
     justifyContent: 'flex-end',
   },
   modalCard: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     borderWidth: 1,
-    padding: 20,
-    paddingBottom: 36,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 28,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  modalHandle: {
+    alignSelf: 'center',
+    width: 42,
+    height: 4,
+    borderRadius: 4,
+    backgroundColor: '#CBD5E1',
+    marginBottom: 18,
   },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 12,
+  },
+  modalHeaderTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  modalHeaderIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 13,
+    backgroundColor: '#F59E0B',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalEyebrow: {
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1.1,
+    marginBottom: 2,
   },
   modalTitle: {
-    fontSize: 17,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: -0.4,
   },
   modalCloseBtn: {
-    padding: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalSubtitle: {
-    fontSize: 13,
-    marginBottom: 16,
+    fontSize: 13.5,
+    lineHeight: 20,
+    marginBottom: 18,
   },
   modalRatingPrompt: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 13.5,
+    fontWeight: '800',
     textAlign: 'center',
-    marginBottom: 8,
-  },
-  modalStarsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10,
-    marginBottom: 16,
-  },
-  starTouchable: {
-    padding: 4,
-  },
-  modalInputLabel: {
-    fontSize: 12.5,
-    fontWeight: '700',
     marginBottom: 6,
   },
-  modalTextInput: {
-    borderRadius: 14,
+  starsPickerContainer: {
+    borderRadius: 20,
     borderWidth: 1,
-    padding: 12,
-    fontSize: 13.5,
-    minHeight: 80,
-    textAlignVertical: 'top',
-    marginBottom: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    marginBottom: 22,
   },
-  modalBtnRow: {
+  starsPickerRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 3,
+  },
+  starButton: {
+    padding: 4,
+  },
+  starFeedbackText: {
+    fontSize: 12,
+    fontWeight: '900',
+    marginTop: 2,
+  },
+  formLabel: {
+    fontSize: 14,
+    fontWeight: '900',
+    marginBottom: 6,
+  },
+  formHint: {
+    fontSize: 11.5,
+    marginBottom: 10,
+  },
+  commentInput: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    fontSize: 13.5,
+    minHeight: 96,
+    textAlignVertical: 'top',
+    marginBottom: 20,
+  },
+  modalActionsRow: {
     flexDirection: 'row',
     gap: 10,
   },
@@ -1800,8 +1848,9 @@ const styles = StyleSheet.create({
   },
   modalSubmitBtn: {
     flex: 1.5,
-    paddingVertical: 12,
+    minHeight: 50,
     borderRadius: 14,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: COLORS.primary,

@@ -101,6 +101,9 @@ const formatStreetNumberNeighborhood = (item, isAuthorized = false) => {
   return district || '';
 };
 
+const isStreetFoundItem = (item) =>
+  item?.status === 'found' && item?.extra_fields?.found_custody === 'spotted';
+
 const ItemDetailScreen = ({ route, navigation }) => {
   const { itemId } = route.params;
   const { user, userProfile, isAdmin } = useAuth();
@@ -788,6 +791,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleOpenRoute = async () => {
     if (!item) return;
+    if (!isStreetFoundItem(item)) return;
 
     let lat = item.latitude || item.extra_fields?.location_details?.latitude;
     let lng = item.longitude || item.extra_fields?.location_details?.longitude;
@@ -1467,7 +1471,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
             </View>
           )}
 
-          {/* Botão de Ver Rota GPS */}
+          {/* Botão de Ver Rota GPS: disponível somente para animais encontrados na rua */}
+          {isStreetFoundItem(item) && (
           <TouchableOpacity
             style={{
               flexDirection: 'row',
@@ -1493,6 +1498,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
               Ver Rota no Mapa
             </Text>
           </TouchableOpacity>
+          )}
         </View>
       </View>
 

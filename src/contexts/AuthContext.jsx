@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import * as supabaseAuth from '../services/supabaseAuth';
 import * as userService from '../services/user';
 import { registerForPushNotificationsAsync } from '../services/pushNotifications';
+import { syncRatingNotifications } from '../services/ratings';
 import { supabase } from '../lib/supabase';
 import { useTheme } from './ThemeContext';
 
@@ -40,6 +41,9 @@ export const AuthProvider = ({ children }) => {
 
           // Registra token para push notifications
           registerForPushNotificationsAsync(currentUser.id).catch(() => {});
+          syncRatingNotifications(currentUser.id).catch((error) => {
+            console.warn('[Auth] Não foi possível sincronizar notificações de classificação:', error.message);
+          });
 
           // Garante que o perfil exista após restaurar a sessão
           const userPhone = currentUser.user_metadata?.whatsapp || currentUser.user_metadata?.phone || '';
@@ -79,6 +83,9 @@ export const AuthProvider = ({ children }) => {
         if (event === 'SIGNED_IN') {
           if (session?.user) {
             setUser(session.user);
+            syncRatingNotifications(session.user.id).catch((error) => {
+              console.warn('[Auth] Não foi possível sincronizar notificações de classificação:', error.message);
+            });
             const sessionPhone = session.user.user_metadata?.whatsapp || session.user.user_metadata?.phone || '';
             const profile = await userService.createProfileIfMissing(session.user.id, {
               name: session.user.user_metadata?.name,

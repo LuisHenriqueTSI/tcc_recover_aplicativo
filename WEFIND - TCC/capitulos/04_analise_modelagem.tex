@@ -167,45 +167,126 @@ No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeli
 
 \clearpage
 
-\subsubsection{Diagramas de Casos de Uso}
+\subsubsection{Diagrama de Casos de Uso}
 
-O diagrama de casos de uso mostra as funções do sistema pela visão das pessoas que o utilizam, mapeando o que cada tipo de usuário pode fazer no aplicativo (IBM, 2021). Vale destacar que, como explicam Pressman e Maxim (2021) e Valente (2023), o número de requisitos funcionais é sempre maior do que a quantidade de círculos no diagrama de casos de uso. Isso acontece porque os requisitos detalham cada ação de criar, consultar, editar e excluir (CRUD) com suas regras de validação, enquanto cada círculo do caso de uso resume um objetivo completo do usuário (como publicar avisos de animais, buscar no mapa ou trocar mensagens no chat).
+O diagrama de casos de uso da \textit{Unified Modeling Language} (UML) estabelece a modelagem comportamental externa do sistema sob a ótica dos atores participantes, delimitando os objetivos operacionais, as fronteiras da aplicação e as interações disponibilizadas aos usuários e serviços parceiros (BEZERRA, 2021; VALENTE, 2023). Como enfatizam Pressman e Maxim (2021), a especificação de casos de uso não visa reproduzir exaustivamente cada rotina interna de validação ou instrução de banco de dados, mas sim consolidar os cenários de utilização que entregam valor direto aos usuários da solução tecnológica.
 
-Para assegurar clareza e legibilidade aos fluxos, os casos de uso do sistema proposto foram organizados em dois diagramas: o primeiro voltado ao usuário visitante, que navega pelo aplicativo antes de realizar a autenticação; e o segundo apresentando todas as funções do usuário autenticado e as ferramentas de moderação do administrador.
-
-A Figura~\ref{fig:caso_uso_login} apresenta o diagrama de casos de uso do módulo pré-login, voltado ao ator \textit{Usuário Visitante}.
+Diferente de abordagens fragmentadas que dividem os fluxos de forma desarticulada, optou-se pela concepção de um diagrama de casos de uso geral unificado. Esse modelo sintetiza, em uma única visão integrada e formalizada na ferramenta Astah UML, todas as permissões públicas de visitantes, os fluxos protegidos de usuários cadastrados, as rotinas de moderação administrativa e a comunicação com serviços externos. A Figura~\ref{fig:diagrama_casos_de_uso} ilustra o diagrama de casos de uso geral da plataforma WeFIND.
 
 \begin{figure}[H]
     \centering
-    \caption{Diagrama de Casos de Uso: Módulo Pré-Login (Usuário Visitante)}
-    \label{fig:caso_uso_login}
-    \includegraphics[width=0.88\textwidth]{imagens/02_modelagem/figura06_caso_uso_login.png}
+    \caption{Diagrama de Casos de Uso Geral da Plataforma WeFIND}
+    \label{fig:diagrama_casos_de_uso}
+    \vspace{0.2cm}
+    \includegraphics[width=\textwidth]{imagens/02_modelagem/figura06_diagrama_casos_de_uso.pdf}
+    \vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-Conforme apresentado na Figura~\ref{fig:caso_uso_login}, o sistema proposto foi desenhado para que qualquer pessoa possa começar a ajudar na busca de animais imediatamente, sem a obrigação de criar uma conta logo no primeiro acesso. O usuário visitante pode acessar diretamente a função de visualizar histórias felizes no mural comunitário e consultar a lista de publicações de animais perdidos, encontrados e para adoção. Essa listagem conta com a extensão opcional de filtrar publicações por espécie, porte, cor ou cidade, além de permitir abrir a tela com os detalhes completos do animal. 
+A análise da arquitetura funcional apresentada na Figura~\ref{fig:diagrama_casos_de_uso} evidencia uma estrutura rigorosamente orientada aos objetivos operacionais do sistema, organizada em torno de quatro atores e módulos funcionais interdependentes:
 
-A partir da tela de detalhes, o visitante pode visualizar os animais no mapa por proximidade e gerar cartazes de divulgação com código QR para imprimir ou compartilhar na internet. Por fim, caso queira interagir de forma ativa no aplicativo, o visitante encontra as opções de efetuar login e realizar cadastro, contando também com a opção de redefinir senha para recuperar o acesso quando necessário.
+\paragraph{Atores do Sistema e Regra de Generalização:} O ecossistema define três atores humanos primários e um ator secundário tecnológico:
+\begin{enumerate}[label=\alph*)]
+    \item \textbf{Usuário Visitante:} ator primário que acessa o aplicativo sem necessidade de autenticação prévia. Dispõe de acesso irrestrito às ações de utilidade pública: consultar publicações de animais no feed contínuo, explorar marcadores georreferenciados no mapa interativo, consultar o mural comunitário de reencontros felizes, acessar os detalhes completos de qualquer publicação, realizar cadastro de nova conta ou efetuar login na plataforma.
+    \item \textbf{Usuário Autenticado:} cidadão ou tutor com conta validada por verificação de telefone celular. No diagrama, modelou-se uma relação formal de \textbf{generalização/herança} da UML entre os atores, indicada pela seta com triângulo vazado direcionada ao \textit{Usuário Visitante} (\textit{Usuário Autenticado} herda de \textit{Usuário Visitante}). Esse relacionamento estabelece que o usuário autenticado herda nativamente todas as funções públicas do visitante, agregando adicionalmente as permissões de escrita, comunicação segura, publicação georreferenciada e salvaguarda preventiva de animais tutelados.
+    \item \textbf{Administrador:} ator responsável pela governança ética e segurança da plataforma, atuando no caso de uso especializado de moderação e auditoria de denúncias.
+    \item \textbf{API WhatsApp:} ator tecnológico secundário (sistema externo), acionado de forma programática pelo backend para entrega de códigos numéricos de autenticação temporária (OTP) e alertas imediatos.
+\end{enumerate}
+
+\paragraph{Módulo de Identidade, Autenticação e Acesso Seguro:} A entrada na plataforma estrutura-se pelos casos de uso \textit{Realizar Cadastro} e \textit{Efetuar Login}. A criação de conta estabelece uma dependência obrigatória de inclusão (\textit{«include»}) com o caso de uso \textit{Verificar Código no WhatsApp}, impedindo o registro de contas fraudulentas ou com números inexistentes. O caso de uso \textit{Efetuar Login} conecta-se à extensão opcional (\textit{«extend»}) \textit{Redefinir Senha}, permitindo ao usuário recuperar o acesso mediante revalidação por código via WhatsApp (\textit{«include» Verificar Código no WhatsApp}). Complementarmente, o gerenciamento de identidade é sustentado por \textit{Manter Cadastro de Usuário} e \textit{Manter Perfil de Usuário}, do qual deriva a extensão de saída segura \textit{Fazer Logout}.
+
+\paragraph{Módulo de Descoberta Espacial e Consulta Cartográfica:} A visualização de animais apoia-se em \textit{Visualizar Publicações} (disposição vertical em feed contínuo ordenado por proximidade) e \textit{Visualizar Animais no Mapa} (renderização cartográfica com marcação colorida por status operacional). A exploração no mapa integra duas extensões: \textit{Ajustar Raio de Proximidade}, viabilizando a calibragem do filtro de busca entre bairros contíguos ou âmbito nacional, e \textit{Atualizar Localização}, que sincroniza a posição do usuário via satélite GPS.
+
+\paragraph{Ações Especializadas a partir do Detalhe da Publicação:} A consulta aprofundada ao anúncio (\textit{Visualizar Detalhes da Publicação}) funciona como ponto central de convergência para decisões do usuário, disponibilizando cinco extensões condicionais (\textit{«extend»}):
+\begin{itemize}
+    \item \textit{Traçar rota até o animal}: estende a visualização mediante o ponto de extensão condicional \textit{``Se o animal for visto na rua''}, integrando a API de roteamento para desenhar trajetos viários e calcular tempos de deslocamento até o ponto onde o pet foi avistado;
+    \item \textit{Enviar Mensagem}: recurso disponível sob a condição \textit{``Se Autenticado''}, conectando-se ao módulo \textit{Manter Mensagens Privadas} para conversação em tempo real sem expor números telefônicos particulares;
+    \item \textit{Solicitar Devolução}: voltada à reivindicação de tutela sob a condição \textit{``Se Autenticado''}, incorporando como requisito mandatório (\textit{«include»}) o caso de uso \textit{Enviar Comprovação} (anexo de fotografias históricas, registros veterinários ou comprovantes de tutela);
+    \item \textit{Compartilhar Publicação}: gera automaticamente cartazes digitais diagramados com código QR escaneável para difusão externa;
+    \item \textit{Visualizar Perfil do Membro}: exibe o histórico comunitário do anunciante, admitindo a extensão \textit{Classificar Membro} sob a condição de guarda \textit{``Se Autenticado, se houver troca de mensagens com usuario''}, consolidando o mecanismo de reputação comunitária.
+\end{itemize}
+
+\paragraph{Módulo de Publicação, Comentários e Gestão Comunitária:} O anúncio de animais é formalizado no caso de uso \textit{Manter Publicação}, que executa as operações CRUD completas. Para assegurar integridade espacial, este caso inclui compulsoriamente (\textit{«include»}) \textit{Selecionar Localização no Mapa} para garantia de georreferenciamento exato, e admite as extensões opcionais \textit{Informar Tutor Terceiro} (quando o animal resgatado permanece com pessoa distinta do anunciante) e \textit{Manter Comentário} (destinado a relatos colaborativos de avistamento e pistas da vizinhança).
+
+\paragraph{Módulo de Prevenção e Alerta Imediato:} A guarda responsável e a prevenção contra perdas definitivas articulam-se a partir de \textit{Manter Perfil de Usuário}, que se estende para \textit{Cadastro Preventivo de Pets}. Essa rotina viabiliza o registro antecipado de animais da família com dados clínicos, vacinas e carteirinha digital com código QR. Em caso de fuga imprevista, aciona-se a extensão \textit{Acionar Alerta de Desaparecimento}, que converte instantaneamente os dados do animal tutelado em publicação ativa de perda no mapa, alertando moradores próximos sem exigir a redigitação de fotos e atributos morfológicos.
+
+\paragraph{Módulo de Governança e Apoio Comunitário:} A integridade da plataforma é resguardada por \textit{Manter Moderação e Denúncias}, acessível ao ator \textit{Administrador} para sanção de anúncios ilícitos e suspensão de contas fraudulentas. Em contrapartida, os reencontros bem-sucedidos são celebrados em \textit{Visualizar Mural de Reencontros} e \textit{Manter História Feliz}, enquanto o recebimento de alertas contínuos é estruturado em \textit{Consultar Notificações}.
 
 \clearpage
 
-A Figura~\ref{fig:caso_uso_geral} apresenta o diagrama de casos de uso geral, que reúne as funções disponíveis para os usuários conectados e para a moderação da plataforma.
+\paragraph{Mapeamento de Rastreabilidade (Requisitos Funcionais vs. Casos de Uso):}
+Para demonstrar a cobertura integral do projeto de software segundo os preceitos da Engenharia de Requisitos (PRESSMAN; MAXIM, 2021; SOMMERVILLE, 2019), o Quadro~\ref{quadro:mapeamento_rf_uc} formaliza a matriz de rastreabilidade bidirecional entre os 43 requisitos funcionais especificados no Quadro~\ref{quadro:funcionais} e os casos de uso modelados na Figura~\ref{fig:diagrama_casos_de_uso}, discriminando o ator responsável e a natureza do relacionamento UML.
 
-\begin{figure}[H]
-    \centering
-    \caption{Diagrama de Casos de Uso: Visão Geral do Sistema}
-    \label{fig:caso_uso_geral}
-    \includegraphics[width=0.88\textwidth]{imagens/02_modelagem/figura07_caso_uso_geral.png}
-    \fonte{Autoria própria (2026)}
-\end{figure}
+\vspace{0.3cm}
+{
+\phantomsection\label{quadro:mapeamento_rf_uc}
+\small
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{|>{\centering\arraybackslash}p{1.1cm}|>{\raggedright\arraybackslash}p{3.7cm}|>{\raggedright\arraybackslash}p{4.0cm}|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{2.3cm}|}
+\hline
+\multicolumn{5}{|c|}{\textbf{Quadro 4: Mapeamento de Rastreabilidade entre Requisitos e Casos de Uso}} \\ \hline
+\textbf{ID RF} & \textbf{Requisito Funcional} & \textbf{Caso de Uso Correspondente} & \textbf{Ator Primário} & \textbf{Relação UML} \\ \hline
+\endfirsthead
 
-Conforme ilustrado na Figura~\ref{fig:caso_uso_geral}, o sistema divide suas ações entre dois atores principais: o \textit{Usuário} comum e o \textit{Administrador}. O usuário conectado tem acesso a todas as funções de busca, além de poder cadastrar e gerenciar informações. Ele pode visualizar as histórias felizes e também registrar uma nova história feliz com fotos após reencontrar seu pet. 
+\hline
+\multicolumn{5}{|c|}{\textbf{Quadro 4: Mapeamento de Rastreabilidade entre Requisitos e Casos de Uso (Cont.)}} \\ \hline
+\textbf{ID RF} & \textbf{Requisito Funcional} & \textbf{Caso de Uso Correspondente} & \textbf{Ator Primário} & \textbf{Relação UML} \\ \hline
+\endhead
 
-Na navegação principal, o usuário visualiza as publicações tanto na listagem quanto no mapa interativo. Ao abrir a tela de detalhes de uma publicação, abrem-se várias ações possíveis: iniciar uma conversa pelo chat interno em tempo real com o autor do anúncio, gerar cartazes de divulgação com código QR, registrar um novo avistamento informando onde o pet foi visto, atualizar os dados de um avistamento já feito ou denunciar o anúncio caso note algo errado.
+\hline
+\multicolumn{5}{|r|}{\textit{Continua na próxima página}} \\ \hline
+\endfoot
 
-O usuário também tem à disposição uma área de notificações para acompanhar alertas de mensagens e avistamentos por perto, a tela de perfil para atualizar seus dados pessoais e a área de gestão de seus animais tutelados, onde cadastra preventivamente seus pets e emite a ficha de identificação com código QR. Para publicar um animal sumido ou encontrado, o usuário utiliza a função de cadastrar e gerenciar publicações, que inclui a opção de indicar os dados de um terceiro responsável e exige obrigatoriamente a seleção do ponto exato no mapa interativo. Essa mesma marcação no mapa é exigida no momento de registrar um avistamento. 
+\hline
+\multicolumn{5}{|l|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
+\endlastfoot
 
-Por sua vez, o ator \textit{Administrador} é responsável pelo gerenciamento de moderação e denúncias, tendo permissão para avaliar os anúncios reportados pela comunidade, remover conteúdos falsos e suspender contas que desrespeitem as regras de convivência. A documentação completa de cada caso de uso está apresentada no Apêndice A deste trabalho.
+\textbf{RF01} & Cadastrar Usuário & Realizar Cadastro & Usuário Visitante & «include» (WhatsApp) \\ \hline
+\textbf{RF02} & Autenticar Usuário (Login) & Efetuar Login & Usuário Visitante & Associação Direta \\ \hline
+\textbf{RF03} & Redefinir Senha de Acesso & Redefinir Senha & Usuário Visitante & «extend» (Efetuar Login) \\ \hline
+\textbf{RF04} & Consultar Perfil de Usuário & Manter Perfil de Usuário & Usuário Autenticado & Associação Direta \\ \hline
+\textbf{RF05} & Editar Dados de Perfil & Manter Perfil de Usuário & Usuário Autenticado & Associação Direta \\ \hline
+\textbf{RF06} & Encerrar Sessão (Logout) & Fazer Logout & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
+\textbf{RF07} & Consultar Notificações & Consultar Notificações & Usuário Autenticado & Associação Direta \\ \hline
+\textbf{RF08} & Permitir Modo Visitante & Acesso público aos casos de uso & Usuário Visitante & Associação Direta \\ \hline
+\textbf{RF09} & Cadastrar Publicação & Manter Publicação & Usuário Autenticado & «include» (Localização) \\ \hline
+\textbf{RF10} & Selecionar Localização da Publicação & Selecionar Localização no Mapa & Usuário Autenticado & «include» de Publicação \\ \hline
+\textbf{RF11} & Informar Tutor Terceiro & Informar Tutor Terceiro & Usuário Autenticado & «extend» (Publicação) \\ \hline
+\textbf{RF12} & Listar Publicações no Feed & Visualizar Publicações & Usuário Visitante & Associação Direta \\ \hline
+\textbf{RF13} & Filtrar e Buscar Publicações & Visualizar Publicações & Usuário Visitante & Associação Direta \\ \hline
+\textbf{RF14} & Consultar Detalhes da Publicação & Visualizar Detalhes da Publicação & Usuário Visitante & «extend» (Publicações) \\ \hline
+\textbf{RF15} & Editar Dados da Publicação & Manter Publicação & Usuário Autenticado & Associação Direta \\ \hline
+\textbf{RF16} & Atualizar Status da Publicação & Manter Publicação & Usuário Autenticado & Associação Direta \\ \hline
+\textbf{RF17} & Excluir Publicação & Manter Publicação & Usuário Autenticado & Associação Direta \\ \hline
+\textbf{RF18} & Visualizar Animais no Mapa & Visualizar Animais no Mapa & Usuário Visitante & Associação Direta \\ \hline
+\textbf{RF19} & Pesquisar Marcadores no Mapa & Visualizar Animais no Mapa & Usuário Visitante & Associação Direta \\ \hline
+\textbf{RF20} & Ajustar Raio de Proximidade & Ajustar Raio de Proximidade & Usuário Visitante & «extend» (Mapa) \\ \hline
+\textbf{RF21} & Traçar Rota GPS até o Ponto & Traçar rota até o animal & Usuário Visitante & «extend» (Detalhes) \\ \hline
+\textbf{RF22} & Cadastrar Avistamento & Manter Comentário & Usuário Autenticado & «extend» (Publicação) \\ \hline
+\textbf{RF23} & Selecionar Local do Avistamento & Selecionar Localização no Mapa & Usuário Autenticado & «include» de Publicação \\ \hline
+\textbf{RF24} & Listar Histórico de Avistamentos & Visualizar Detalhes da Publicação & Usuário Visitante & «extend» (Publicações) \\ \hline
+\textbf{RF25} & Editar Dados do Avistamento & Manter Comentário & Usuário Autenticado & «extend» (Publicação) \\ \hline
+\textbf{RF26} & Excluir Registro de Avistamento & Manter Comentário & Usuário Autenticado & «extend» (Publicação) \\ \hline
+\textbf{RF27} & Atualizar Posição por Avistamento & Atualizar Localização & Usuário Visitante & «extend» (Mapa) \\ \hline
+\textbf{RF28} & Cadastrar Pet Preventivo & Cadastro Preventivo de Pets & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
+\textbf{RF29} & Listar Pets Cadastrados & Cadastro Preventivo de Pets & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
+\textbf{RF30} & Consultar Identificação do Animal & Cadastro Preventivo de Pets & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
+\textbf{RF31} & Editar Dados de Meu Pet & Cadastro Preventivo de Pets & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
+\textbf{RF32} & Excluir Cadastro de Meu Pet & Cadastro Preventivo de Pets & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
+\textbf{RF33} & Acionar Alerta de Desaparecimento & Acionar Alerta de Desaparecimento & Usuário Autenticado & «extend» (Cadastro Pet) \\ \hline
+\textbf{RF34} & Gerar Cartaz de Busca & Compartilhar Publicação & Usuário Visitante & «extend» (Detalhes) \\ \hline
+\textbf{RF35} & Escolher Formato do Cartaz & Compartilhar Publicação & Usuário Visitante & «extend» (Detalhes) \\ \hline
+\textbf{RF36} & Compartilhar Cartaz Digital & Compartilhar Publicação & Usuário Visitante & «extend» (Detalhes) \\ \hline
+\textbf{RF37} & Iniciar Conversa via Chat & Enviar Mensagem & Usuário Autenticado & «extend» (Detalhes) \\ \hline
+\textbf{RF38} & Trocar Mensagens em Tempo Real & Manter Mensagens Privadas & Usuário Autenticado & Associação Direta \\ \hline
+\textbf{RF39} & Enviar Imagens no Chat & Manter Mensagens Privadas & Usuário Autenticado & Associação Direta \\ \hline
+\textbf{RF40} & Cadastrar História Feliz & Manter História Feliz & Usuário Autenticado & Associação Direta \\ \hline
+\textbf{RF41} & Listar Histórias Felizes no Mural & Visualizar Mural de Reencontros & Usuário Visitante & Associação Direta \\ \hline
+\textbf{RF42} & Denunciar Publicação Suspeita & Manter Moderação e Denúncias & Usuário Autenticado & Associação Direta \\ \hline
+\textbf{RF43} & Gerenciar Denúncias e Moderação & Manter Moderação e Denúncias & Administrador & Associação Direta \\ \hline
+\end{longtable}
+}
 
 \clearpage
 

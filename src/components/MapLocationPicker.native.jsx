@@ -194,20 +194,37 @@ const MapLocationPicker = ({
 
   useEffect(() => {
     if (!visible) return;
-    setCoordinate(initialLocation || null);
+    let cancelled = false;
 
-    if (initialLocation?.latitude && initialLocation?.longitude) {
-      reverseGeocodeCoordinate(initialLocation);
-      setTimeout(() => {
-        if (mapRef.current) {
-          mapRef.current.animateCamera({ center: initialLocation, zoom: 16.5 }, { duration: 400 });
-          mapRef.current.animateToRegion({ ...initialLocation, latitudeDelta: 0.006, longitudeDelta: 0.006 }, 400);
-        }
-      }, 200);
-      return;
-    }
+    const prepareMap = async () => {
+      try {
+        // Solicita a permissão ao abrir o seletor, mesmo quando já existe uma coordenada inicial.
+        await Location.requestForegroundPermissionsAsync();
+      } catch (error) {
+        console.warn('[MapLocationPicker] Não foi possível solicitar permissão de localização:', error.message);
+      }
 
-    loadCurrentLocation();
+      if (cancelled) return;
+      setCoordinate(initialLocation || null);
+
+      if (initialLocation?.latitude && initialLocation?.longitude) {
+        reverseGeocodeCoordinate(initialLocation);
+        setTimeout(() => {
+          if (mapRef.current) {
+            mapRef.current.animateCamera({ center: initialLocation, zoom: 16.5 }, { duration: 400 });
+            mapRef.current.animateToRegion({ ...initialLocation, latitudeDelta: 0.006, longitudeDelta: 0.006 }, 400);
+          }
+        }, 200);
+        return;
+      }
+
+      loadCurrentLocation();
+    };
+
+    prepareMap();
+    return () => {
+      cancelled = true;
+    };
   }, [visible, initialLocation]);
 
   const handleMapPress = (event) => {

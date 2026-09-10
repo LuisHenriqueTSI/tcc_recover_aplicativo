@@ -90,7 +90,7 @@ export const getUserById = async (userId) => {
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, name, avatar_url, avatar_path, bio, city, state, neighborhood, created_at, role, adm')
       .eq('id', userId)
       .maybeSingle();
 

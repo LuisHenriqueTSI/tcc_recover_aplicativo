@@ -30,6 +30,11 @@ const GENDER_OPTIONS = ['Macho', 'Fêmea'];
 const SIZE_OPTIONS = ['Pequeno', 'Médio', 'Grande', 'Gigante'];
 const AGE_OPTIONS = ['Filhote', 'Jovem', 'Adulto', 'Idoso'];
 const COLOR_PRESETS = ['Preto', 'Branco', 'Marrom', 'Caramelo', 'Cinza', 'Mesclado', 'Amarelo'];
+const normalizeBreed = (value) => String(value || '').replace(/\s*\(SRD\)\s*$/i, '').trim();
+const getSelectedColors = (value) => String(value || '')
+  .split(/\s+com\s+|,\s*/)
+  .map((part) => part.trim().toLowerCase())
+  .filter(Boolean);
 
 const AddEditPetScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
@@ -38,7 +43,7 @@ const AddEditPetScreen = ({ navigation, route }) => {
 
   const [name, setName] = useState(editingPet?.name || '');
   const [species, setSpecies] = useState(editingPet?.species || 'Cachorro');
-  const [breed, setBreed] = useState(editingPet?.breed || 'Sem raça definida (SRD)');
+  const [breed, setBreed] = useState(normalizeBreed(editingPet?.breed));
   const [gender, setGender] = useState(editingPet?.gender || 'Macho');
   const [size, setSize] = useState(editingPet?.size || 'Médio');
   const [color, setColor] = useState(editingPet?.color || 'Preto');
@@ -75,18 +80,13 @@ const AddEditPetScreen = ({ navigation, route }) => {
   };
 
   const handleSave = async () => {
-    if (!name.trim()) {
-      Alert.alert('Atenção', 'Por favor, informe o nome do seu pet.');
-      return;
-    }
-
     setSaving(true);
     try {
       const petData = {
         id: editingPet?.id || undefined,
-        name: name.trim(),
+        name: name.trim() || null,
         species,
-        breed: breed.trim() || 'Sem raça definida',
+        breed: normalizeBreed(breed) || null,
         gender,
         size,
         color: color.trim() || 'Não informado',
@@ -107,7 +107,7 @@ const AddEditPetScreen = ({ navigation, route }) => {
       await savePet(user.id, petData);
       Alert.alert(
         'Sucesso!',
-        `Os dados e o RG de ${name.trim()} foram salvos com sucesso.`,
+        `Os dados e o RG${name.trim() ? ` de ${name.trim()}` : ''} foram salvos com sucesso.`,
         [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
     } catch (err) {
@@ -146,7 +146,7 @@ const AddEditPetScreen = ({ navigation, route }) => {
 
         {/* Nome do Pet */}
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text }]}>Nome do Pet *</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Nome do Pet (Opcional)</Text>
           <TextInput
             style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
             placeholder="Ex: Rex, Mel, Thor..."
@@ -275,15 +275,32 @@ const AddEditPetScreen = ({ navigation, route }) => {
         <View style={styles.inputGroup}>
           <Text style={[styles.label, { color: colors.text }]}>Cor / Pelagem</Text>
           <View style={[styles.optionsRow, { marginBottom: 8 }]}>
-            {COLOR_PRESETS.map((c) => (
-              <TouchableOpacity
-                key={c}
-                style={[styles.miniColorTag, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}
-                onPress={() => setColor(c)}
-              >
-                <Text style={[styles.miniColorTagText, { color: colors.textSecondary }]}>{c}</Text>
-              </TouchableOpacity>
-            ))}
+            {COLOR_PRESETS.map((c) => {
+              const isSelected = getSelectedColors(color).includes(c.toLowerCase());
+              return (
+                <TouchableOpacity
+                  key={c}
+                  style={[
+                    styles.miniColorTag,
+                    {
+                      backgroundColor: isSelected
+                        ? (isDark ? 'rgba(46, 86, 52, 0.3)' : '#DCFCE7')
+                        : (isDark ? '#1E293B' : '#F1F5F9'),
+                      borderColor: isSelected ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => {
+                    const selected = getSelectedColors(color);
+                    const next = selected.includes(c.toLowerCase())
+                      ? selected.filter((value) => value !== c.toLowerCase())
+                      : [...selected, c.toLowerCase()];
+                    setColor(next.map((value) => value.charAt(0).toUpperCase() + value.slice(1)).join(' com '));
+                  }}
+                >
+                  <Text style={[styles.miniColorTagText, { color: isSelected ? colors.primary : colors.textSecondary }]}>{c}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
           <TextInput
             style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
@@ -496,6 +513,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
+    borderWidth: 1,
   },
   miniColorTagText: {
     fontSize: 11,

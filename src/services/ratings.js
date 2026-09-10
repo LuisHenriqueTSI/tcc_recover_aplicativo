@@ -1,5 +1,7 @@
 import { supabase } from '../lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createNotification } from './notifications';
+import { sendPushNotification } from './pushNotifications';
 
 const LOCAL_RATINGS_KEY = '@wefind_user_ratings_store';
 
@@ -12,6 +14,107 @@ export const POPULAR_RATING_TAGS = [
   '🤝 Muito Pontual',
   '⭐ Recomendo a Todos',
 ];
+
+const RATING_INACTIVITY_MS = 24 * 60 * 60 * 1000;
+const RATING_NOTIFICATION_TYPE = 'rating_available';
+
+export const canRateUser = async (reviewerId, targetUserId) => {
+  if (!reviewerId || !targetUserId || reviewerId === targetUserId) return false;
+
+  try {
+    const [sentResult, receivedResult] = await Promise.all([
+      supabase
+        .from('messages')
+        .select('sent_at')
+        .eq('sender_id', reviewerId)
+        .eq('receiver_id', targetUserId)
+        .order('sent_at', { ascending: false })
+        .limit(1),
+      supabase
+        .from('messages')
+        .select('sent_at')
+        .eq('sender_id', targetUserId)
+        .eq('receiver_id', reviewerId)
+        .order('sent_at', { ascending: false })
+        .limit(1),
+    ]);
+
+    if (sentResult.error) throw sentResult.error;
+    if (receivedResult.error) throw receivedResult.error;
+
+    const timestamps = [
+      sentResult.data?.[0]?.sent_at,
+      receivedResult.data?.[0]?.sent_at,
+    ]
+      .filter(Boolean)
+      .map((value) => new Date(value).getTime())
+      .filter(Number.isFinite);
+
+    if (timestamps.length === 0) return false;
+    return Date.now() - Math.max(...timestamps) >= RATING_INACTIVITY_MS;
+  } catch (error) {
+    console.warn('[ratings] Não foi possível verificar a conclusão da conversa:', error.message);
+    return false;
+  }
+};
+
+export const syncRatingNotifications = async (userId) => {
+  if (!userId) return [];
+
+  const { data: messages, error } = await supabase
+    .from('messages')
+    .select('sender_id, receiver_id, sent_at')
+    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+    .order('sent_at', { ascending: false })
+    .limit(200);
+
+  if (error) throw error;
+
+  const latestByUser = new Map();
+  (messages || []).forEach((message) => {
+    const otherUserId = message.sender_id === userId ? message.receiver_id : message.sender_id;
+    if (!otherUserId || latestByUser.has(otherUserId)) return;
+    latestByUser.set(otherUserId, message.sent_at);
+  });
+
+  const notificationTypes = Array.from(latestByUser.keys())
+    .map((otherUserId) => `${RATING_NOTIFICATION_TYPE}:${otherUserId}`);
+  const { data: existingNotifications, error: notificationsError } = await supabase
+    .from('notifications')
+    .select('type')
+    .eq('user_id', userId)
+    .in('type', notificationTypes.length > 0 ? notificationTypes : [RATING_NOTIFICATION_TYPE]);
+
+  if (notificationsError) throw notificationsError;
+
+  const existingTypes = new Set((existingNotifications || []).map((notification) => notification.type));
+  const created = [];
+
+  for (const [otherUserId, sentAt] of latestByUser.entries()) {
+    if (Date.now() - new Date(sentAt).getTime() < RATING_INACTIVITY_MS) continue;
+
+    const notificationType = `${RATING_NOTIFICATION_TYPE}:${otherUserId}`;
+    if (existingTypes.has(notificationType)) continue;
+
+    const notification = await createNotification({
+      user_id: userId,
+      type: notificationType,
+      title: 'Classificação disponível',
+      message: 'Sua conversa foi concluída. Você já pode registrar uma classificação.',
+    });
+    if (notification) {
+      created.push(notification);
+      await sendPushNotification(
+        userId,
+        'Classificação disponível',
+        'Sua conversa foi concluída. Aproveite para classificar sua experiência.',
+        { type: RATING_NOTIFICATION_TYPE, targetUserId: otherUserId }
+      );
+    }
+  }
+
+  return created;
+};
 
 export const getUserRatings = async (targetUserId) => {
   if (!targetUserId) return { ratings: [], average: 5.0, total: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } };
@@ -99,6 +202,10 @@ export const submitUserRating = async ({
 
   if (targetUserId === reviewerId) {
     throw new Error('Você não pode avaliar seu próprio perfil.');
+  }
+
+  if (!(await canRateUser(reviewerId, targetUserId))) {
+    throw new Error('A classificação será liberada após 24 horas sem novas mensagens entre vocês.');
   }
 
   const safeStars = Math.max(1, Math.min(5, Number(stars) || 5));
