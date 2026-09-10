@@ -94,7 +94,61 @@ O WeFIND organiza suas funcionalidades em fluxos de navegação diretos e objeti
 
 À esquerda da Figura~\ref{fig:telas_autenticacao}, visualiza-se a Tela de Autenticação (Login), contendo o logotipo institucional, campos de e-mail e senha com botão de máscara para visibilidade, atalho para recuperação de credenciais esquecidas e a opção de acesso sem login. À direita, exibe-se a Tela de Apresentação (Modo Conhecer), concebida para ambientar novos usuários que optam por explorar o aplicativo como visitantes, destacando as ferramentas de busca por código QR, o alerta para a vizinhança e depoimentos de casos resolvidos.
 
-Após a realização do login e a validação de segurança da conta, o usuário é direcionado imediatamente ao painel principal do aplicativo, apresentado na Figura~\ref{fig:tela_feed}.
+Para usufruir plenamente dos recursos colaborativos, os novos participantes realizam o cadastro no aplicativo, ao passo que membros cadastrados que tenham esquecido suas credenciais dispõem de um fluxo seguro de redefinição de senha, conforme ilustrado na Figura~\ref{fig:tela_cadastro_recuperacao}.
+
+\begin{figure}[H]
+    \centering
+    \caption{Cadastro de Usuário e Recuperação de Conta}
+    \label{fig:tela_cadastro_recuperacao}
+    \vspace{0.2cm}
+    \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-criar-conta.jpeg}
+    \hspace{0.5cm}
+    \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-recuperar-senha.jpeg}
+    \par\vspace{0.15cm}
+    {\small (a) Tela de Cadastro de Novo Usuário \quad\textbar\quad (b) Tela de Recuperação de Senha\par}
+    \vspace{0.1cm}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+À esquerda da Figura~\ref{fig:tela_cadastro_recuperacao}, apresenta-se o formulário de cadastro de usuário, onde o cidadão informa nome completo, endereço eletrônico, telefone celular para contato e senha de acesso, iniciando a verificação de segurança em duas etapas por código OTP. À direita, exibe-se a tela de recuperação de conta, que possibilita solicitar o envio de código de segurança para redefinição rápida da senha, assegurando que o tutor retome o acesso à sua conta a qualquer momento.
+
+Mesmo sem realizar login imediato, a plataforma garante acesso democrático para que qualquer pessoa possa consultar animais perdidos ou encontrados em sua região por meio do modo visitante, como demonstrado na Figura~\ref{fig:tela_visitante_feed_mapa}.
+
+\begin{figure}[H]
+    \centering
+    \caption{Navegação no Modo Visitante em Feed e Mapa}
+    \label{fig:tela_visitante_feed_mapa}
+    \vspace{0.2cm}
+    \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-feed.jpeg}
+    \hspace{0.5cm}
+    \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-mapa.jpeg}
+    \par\vspace{0.15cm}
+    {\small (a) Feed de Ocorrências no Modo Visitante \quad\textbar\quad (b) Mapa de Ocorrências sem Login\par}
+    \vspace{0.1cm}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+À esquerda da Figura~\ref{fig:tela_visitante_feed_mapa}, observa-se a aba Explorar disponibilizada para o visitante, contendo a listagem pública de animais perdidos e encontrados com fotos e bairros de ocorrência. À direita, apresenta-se o mapa interativo em modo somente leitura, permitindo ao visitante visualizar os pontos geográficos onde animais foram vistos na cidade, sem a exigência de cadastro prévio para consultas humanitárias.
+
+Ao consultar uma publicação específica, o visitante visualiza todas as características do pet, sendo orientado a se autenticar caso deseje interagir ativamente ou enviar comentários, conforme ilustrado na Figura~\ref{fig:tela_visitante_detalhes_alerta}.
+
+\begin{figure}[H]
+    \centering
+    \caption{Detalhes do Animal e Incentivo à Autenticação no Modo Visitante}
+    \label{fig:tela_visitante_detalhes_alerta}
+    \vspace{0.2cm}
+    \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-detalhes.jpeg}
+    \hspace{0.5cm}
+    \includegraphics[height=7.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-alerta-login-comentario.jpeg}
+    \par\vspace{0.15cm}
+    {\small (a) Ficha do Animal Visualizada por Visitante \quad\textbar\quad (b) Alerta de Ação Restrita com Incentivo ao Login\par}
+    \vspace{0.1cm}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+À esquerda da Figura~\ref{fig:tela_visitante_detalhes_alerta}, exibe-se a tela de detalhes acessada pelo visitante, contendo fotografias, descrição física e referências de localização. À direita, ilustra-se o alerta visual amigável exibido quando o visitante tenta comentar, enviar mensagens ou registrar avistamentos: o modal esclarece que a ação requer identificação do autor para segurança da comunidade, oferecendo botões diretos para login ou criação de conta.
+
+Uma vez autenticado, o usuário tem acesso irrestrito ao painel principal do aplicativo, apresentado na Figura~\ref{fig:tela_feed}.
 
 \begin{figure}[H]
     \centering
@@ -144,7 +198,21 @@ Enquanto a consulta em lista no feed organiza as publicações de forma cronoló
 
 À esquerda da Figura~\ref{fig:tela_mapa}, visualiza-se a visão geral do mapa baseada em Google Maps, destacando marcadores circulares coloridos por status e com ícones diferenciados por espécie para facilitar o reconhecimento visual rápido. À direita, demonstra-se o painel modal que emerge na parte inferior da interface quando o usuário toca sobre qualquer marcador: o cartão exibe foto em miniatura, nome do animal, distância calculada pelo GPS, dados essenciais de pelagem e porte, além de botões para traçar rota até o local onde o pet foi visto ou abrir a ficha descritiva completa.
 
-Ao acionar a opção de detalhes a partir do mapa ou tocar em qualquer cartão no feed, o usuário tem acesso à tela de detalhamento completo da publicação, apresentada na Figura~\ref{fig:tela_detalhes}.
+Ao avistar um animal perdido em via pública, o cidadão pode relatar imediatamente a ocorrência à comunidade por meio do formulário de avistamento apresentado na Figura~\ref{fig:tela_registro_avistamento}.
+
+\begin{figure}[H]
+    \centering
+    \caption{Registro Comunitário de Avistamento (``Vi o Pet'')}
+    \label{fig:tela_registro_avistamento}
+    \vspace{0.2cm}
+    \includegraphics[height=7.8cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-registro-avistamento.jpeg}
+    \vspace{0.1cm}
+    \fonte{Autoria própria (2026)}
+\end{figure}
+
+A interface de registro de avistamento (Figura~\ref{fig:tela_registro_avistamento}) viabiliza o envio rápido de pistas. O voluntário captura uma fotografia do animal no local em que ele foi visto, relata o comportamento do pet (por exemplo, se parecia assustado ou ferido) e confirma as coordenadas do ponto geográfico. O sistema atualiza a linha do tempo da publicação e alerta o tutor instantaneamente por notificação push, acelerando o cerco de buscas na região.
+
+Além de registrar avistamentos rápidos, o usuário pode acessar a ficha descritiva completa de qualquer publicação ou gerenciar seus próprios anúncios, como exibido na Figura~\ref{fig:tela_detalhes}.
 
 \begin{figure}[H]
     \centering
