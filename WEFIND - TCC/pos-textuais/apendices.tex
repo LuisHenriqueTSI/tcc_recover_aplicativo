@@ -426,19 +426,11 @@ Instrumento padronizado de avaliação de usabilidade aplicado aos 20 voluntári
 \section*{APÊNDICE C: GUIA DE UTILIZAÇÃO DO SISTEMA WeFIND (MANUAL DO USUÁRIO)}
 \addcontentsline{toc}{section}{APÊNDICE C: GUIA DE UTILIZAÇÃO DO SISTEMA WeFIND (MANUAL DO USUÁRIO)}
 
-Este guia foi elaborado para orientar tutores, colaboradores voluntários e a sociedade na utilização prática do ecossistema móvel WeFIND. O manual sintetiza a jornada operacional do usuário por meio de roteiros visuais comentados, demonstrando o funcionamento de cada interface concebida para mitigar o desaparecimento e acelerar o reencontro comunitário de animais de estimação.
+Este guia foi elaborado para orientar tutores, colaboradores voluntários e a comunidade na utilização prática do aplicativo móvel WeFIND. O manual apresenta a jornada operacional do usuário por meio de sequências comentadas das interfaces do sistema, demonstrando o funcionamento dos recursos concebidos para auxiliar na localização, no resgate e no reencontro de animais de estimação.
 
-A estrutura do manual está organizada em seis passos sequenciais representativos das principais jornadas do sistema:
-\begin{enumerate}[label=\textbf{Passo \arabic*:}, leftmargin=2.0cm]
-    \item \textbf{Autenticação e Criação de Conta:} procedimentos de cadastro e acesso seguro;
-    \item \textbf{Navegação no Mapa Interativo e Rotas:} exploração por GPS e cálculo viário;
-    \item \textbf{Registro de Publicação de Animal Encontrado:} cadastro morfológico e georreferenciamento;
-    \item \textbf{Detalhes e Geração de Cartazes Digitais:} ficha completa e exportação com código QR;
-    \item \textbf{Comunicação Direta via Bate-Papo Privativo:} mensageria em tempo real com sigilo telefônico;
-    \item \textbf{Cadastro Preventivo e Carteirinha Digital (RG Pet):} identificação preventiva e alerta de fuga.
-\end{enumerate}
+A estrutura do roteiro contempla os seis fluxos fundamentais da aplicação: autenticação e criação de conta de usuário; navegação no mapa interativo com traçado de rotas por geolocalização; registro de publicações de animais encontrados na rua; consulta detalhada de anúncios e diagramação de cartazes digitais de busca; comunicação direta por mensagens privativas em tempo real; e a gestão preventiva de animais tutelados com emissão da carteirinha digital de identificação (RG Pet).
 
-As seções a seguir detalham cada etapa por meio de capturas de tela reais do aplicativo, acompanhadas de instruções operacionais de uso.
+Nas seções a seguir, cada uma dessas etapas é apresentada por meio de capturas de tela do aplicativo acompanhadas das respectivas instruções de uso.
 
 \clearpage
 
@@ -449,7 +441,7 @@ As seções a seguir detalham cada etapa por meio de capturas de tela reais do a
 
 \subsection*{Passo 1: Autenticação e Criação de Conta}
 \noindent
-Ao iniciar o aplicativo WeFIND pela primeira vez, o cidadão é recepcionado pela tela de login, onde pode autenticar-se caso já possua conta ativa ou optar por ingressar na comunidade. Para novos participantes, o acesso inicia-se tocando no botão em destaque \textbf{``Cadastre-se''}, que conduz ao formulário unificado de criação de conta. A Figura~C1 ilustra as interfaces de autenticação e registro.
+Ao iniciar o aplicativo WeFIND pela primeira vez, o cidadão visualiza a tela de login, onde pode autenticar-se caso já possua conta ativa ou optar por ingressar na comunidade. Para novos participantes, o acesso inicia-se tocando na opção ``Cadastre-se'', que conduz ao formulário unificado de criação de conta. As interfaces correspondentes estão ilustradas na Figura~C1.
 
 \begin{figure}[H]
     \centering
@@ -460,20 +452,20 @@ Ao iniciar o aplicativo WeFIND pela primeira vez, o cidadão é recepcionado pel
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/05_manual_usuario/figura15_tela_login.jpeg}
         \par\vspace{0.12cm}
-        {\small (a) À esquerda: Formulário de Login}
+        {\small Figura C1.a) Formulário de Login}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-criar-conta.jpeg}
         \par\vspace{0.12cm}
-        {\small (b) À direita: Criação de Nova Conta}
+        {\small Figura C1.b) Criação de Nova Conta}
     \end{minipage}
     \par\vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-Conforme apresentado na Figura~C1, à esquerda (a), a tela de login solicita o e-mail cadastrado e a senha de acesso, contando com botão de alternância de visibilidade da senha e o atalho \textbf{``Esqueceu a senha?''} para recuperação via código OTP no WhatsApp. À direita (b), o formulário de cadastro requer o preenchimento de nome completo, endereço de e-mail, telefone celular para contato comunitário e senha de acesso segura. Após a validação sintática das entradas e o registro criptografado no serviço Supabase Auth, a sessão é automaticamente persistida no dispositivo e o usuário é redirecionado ao feed principal da aplicação.
+Na Figura~C1.a, a tela de login solicita o e-mail cadastrado e a senha de acesso, contando com botão de alternância de visibilidade da senha e o atalho ``Esqueceu a senha?'' para recuperação via código OTP no WhatsApp. Na Figura~C1.b, o formulário de cadastro requer o preenchimento de nome completo, endereço de e-mail, telefone celular para contato comunitário e senha de acesso segura. Após a validação sintática das entradas e o registro criptografado no serviço Supabase Auth, a sessão é automaticamente persistida no dispositivo e o usuário é redirecionado ao feed principal da aplicação.
 
 \clearpage
 
@@ -490,26 +482,26 @@ Após o ingresso no aplicativo, o usuário é direcionado à exploração espaci
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-principal.jpeg}
         \par\vspace{0.12cm}
-        {\small (a) À esquerda: Mapa com Marcadores}
+        {\small Figura C2.a) Mapa com Marcadores}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-rota-animal.jpeg}
         \par\vspace{0.12cm}
-        {\small (b) À direita: Traçado de Rota ao Vivo}
+        {\small Figura C2.b) Traçado de Rota ao Vivo}
     \end{minipage}
     \par\vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A visualização da Figura~C2 evidencia a convergência entre geolocalização e mobilidade urbana. À esquerda (a), o mapa renderiza marcadores georreferenciados diferenciados por cores e ícones conforme a espécie (cães, gatos, aves e outros animais domésticos), circundados por um raio de busca semitransparente ajustável pelo usuário. Ao tocar sobre qualquer marcador, o sistema exibe um cartão rápido com foto, nome e distância em quilômetros. Ao acionar o botão de navegação, a tela à direita (b) traça automaticamente a rota viária otimizada até as coordenadas do animal, informando o tempo estimado de deslocamento e a distância a percorrer para apoiar a ação imediata do voluntário ou tutor.
+A visualização da Figura~C2 evidencia a convergência entre geolocalização e mobilidade urbana. Na Figura~C2.a, o mapa renderiza marcadores georreferenciados diferenciados por cores e ícones conforme a espécie (cães, gatos, aves e outros animais domésticos), circundados por um raio de busca semitransparente ajustável pelo usuário. Ao tocar sobre qualquer marcador, o sistema exibe um cartão rápido com foto, nome e distância em quilômetros. Ao acionar o botão de navegação, a interface exibida na Figura~C2.b traça automaticamente a rota viária otimizada até as coordenadas do animal, informando o tempo estimado de deslocamento e a distância a percorrer para apoiar a ação imediata do voluntário ou tutor.
 
 \clearpage
 
 \subsection*{Passo 3: Registro de Publicação de Animal Encontrado na Rua}
 \noindent
-Ao avistar ou resgatar um animal desorientado em vias públicas, o cidadão inicia o fluxo de cadastro comunitário acionando o botão central \textbf{``+''} na barra inferior de navegação. O assistente orienta o preenchimento por etapas sequenciais, associando dados morfológicos, mídias fotográficas e coordenadas geográficas exatas. A Figura~C3 ilustra a etapa de caracterização do animal e o georreferenciamento no mapa interativo.
+Ao avistar ou resgatar um animal desorientado em vias públicas, o cidadão inicia o fluxo de cadastro comunitário acionando o botão central ``+'' na barra inferior de navegação. O assistente orienta o preenchimento por etapas sequenciais, associando dados morfológicos, mídias fotográficas e coordenadas geográficas exatas. A Figura~C3 ilustra a etapa de caracterização do animal e o georreferenciamento no mapa interativo.
 
 \begin{figure}[H]
     \centering
@@ -520,20 +512,20 @@ Ao avistar ou resgatar um animal desorientado em vias públicas, o cidadão inic
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-1.jpeg}
         \par\vspace{0.12cm}
-        {\small (a) À esquerda: Morfologia e Fotos}
+        {\small Figura C3.a) Morfologia e Fotos}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-3.jpeg}
         \par\vspace{0.12cm}
-        {\small (b) À direita: Fixação no Mapa}
+        {\small Figura C3.b) Fixação no Mapa}
     \end{minipage}
     \par\vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-O procedimento de registro documentado na Figura~C3 garante a precisão das informações disponibilizadas à comunidade. À esquerda (a), o usuário define a categoria da publicação (animal encontrado na rua), anexa fotografias em alta definição capturadas na hora pela câmera ou selecionadas da galeria, e seleciona espécie, sexo, porte e cores predominantes da pelagem. Na etapa seguinte, exibida à direita (b), o sistema captura a posição atual do aparelho via GPS ou permite ao colaborador ajustar manualmente o pino sobre o logradouro exato onde o animal foi visto, acionando rotinas de geocodificação reversa para preencher automaticamente o endereço antes da publicação no feed geral.
+O procedimento de registro documentado na Figura~C3 garante a precisão das informações disponibilizadas à comunidade. Na Figura~C3.a, o usuário define a categoria da publicação (animal encontrado na rua), anexa fotografias em alta definição capturadas na hora pela câmera ou selecionadas da galeria, e seleciona espécie, sexo, porte e cores predominantes da pelagem. Na etapa seguinte, exibida na Figura~C3.b, o sistema captura a posição atual do aparelho via GPS ou permite ao colaborador ajustar manualmente o pino sobre o logradouro exato onde o animal foi visto, acionando rotinas de geocodificação reversa para preencher automaticamente o endereço antes da publicação no feed geral.
 
 \clearpage
 
@@ -550,20 +542,20 @@ Para viabilizar a identificação inequívoca de um animal anunciado, o sistema 
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-detalhes-do-animal.jpeg}
         \par\vspace{0.12cm}
-        {\small (a) À esquerda: Ficha da Publicação}
+        {\small Figura C4.a) Ficha da Publicação}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/04_telas_aplicativo/figura21_tela_cartaz.jpeg}
         \par\vspace{0.12cm}
-        {\small (b) À direita: Cartaz com QR Code}
+        {\small Figura C4.b) Cartaz com Código QR}
     \end{minipage}
     \par\vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A articulação entre a ficha descritiva e a divulgação externa visualiza-se na Figura~C4. À esquerda (a), a tela de detalhes consolida a galeria fotográfica com paginação deslizante, a descrição pormenorizada de marcas singulares e cicatrizes, o mapa de localização aproximada e os botões de ação comunitária (\textbf{``Vi o Pet''}, \textbf{``Entrar em Contato''} e \textbf{``Compartilhar Cartaz''}). Ao tocar na opção de compartilhamento, o componente nativo renderiza a tela à direita (b), diagramando automaticamente o cartaz de busca com fotografia destacada, dados essenciais, telefone protegido e código QR inteligente para escaneamento, com suporte de exportação nos formatos A4 para impressão e 9:16 ou 1:1 para redes sociais.
+A articulação entre a ficha descritiva e a divulgação externa visualiza-se na Figura~C4. Na Figura~C4.a, a tela de detalhes consolida a galeria fotográfica com paginação deslizante, a descrição pormenorizada de marcas singulares e cicatrizes, o mapa de localização aproximada e os botões de ação comunitária (``Vi o Pet'', ``Entrar em Contato'' e ``Compartilhar Cartaz''). Ao tocar na opção de compartilhamento, o componente nativo renderiza a tela exibida na Figura~C4.b, diagramando automaticamente o cartaz de busca com fotografia destacada, dados essenciais, telefone protegido e código QR inteligente para escaneamento, com suporte de exportação nos formatos A4 para impressão e 9:16 ou 1:1 para redes sociais.
 
 \clearpage
 
@@ -580,20 +572,20 @@ A articulação do resgate e a devolução segura do animal exigem um canal de c
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mensagens.jpeg}
         \par\vspace{0.12cm}
-        {\small (a) À esquerda: Caixa de Mensagens}
+        {\small Figura C5.a) Caixa de Mensagens}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-conversa.jpeg}
         \par\vspace{0.12cm}
-        {\small (b) À direita: Chat em Tempo Real}
+        {\small Figura C5.b) Chat em Tempo Real}
     \end{minipage}
     \par\vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-Conforme ilustrado na Figura~C5, o sistema de mensageria promove o alinhamento seguro entre as partes envolvidas no resgate. À esquerda (a), a central de mensagens reúne as conversas ativas organizadas por animal, exibindo a fotografia do interlocutor, o status do anúncio, o carimbo de data e hora e o indicador de mensagens não lidas. Ao acessar uma conversa específica, a tela à direita (b) exibe o bate-papo criptografado e bidirecional com entrega imediata, no qual os membros podem trocar orientações de ponto de encontro e anexar fotografias comprobatórias de marcas singulares, eliminando por completo a necessidade de expor telefones particulares em murais públicos.
+Conforme ilustrado na Figura~C5, o sistema de mensageria promove o alinhamento seguro entre as partes envolvidas no resgate. Na Figura~C5.a, a central de mensagens reúne as conversas ativas organizadas por animal, exibindo a fotografia do interlocutor, o status do anúncio, o carimbo de data e hora e o indicador de mensagens não lidas. Ao acessar uma conversa específica, a tela exibida na Figura~C5.b exibe o bate-papo criptografado e bidirecional com entrega imediata, no qual os membros podem trocar orientações de ponto de encontro e anexar fotografias comprobatórias de marcas singulares, eliminando por completo a necessidade de expor telefones particulares em murais públicos.
 
 \clearpage
 
@@ -610,20 +602,20 @@ Como pilar central da posse responsável, o WeFIND disponibiliza um ambiente pre
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-meus-pets-carteirinha-digital.jpeg}
         \par\vspace{0.12cm}
-        {\small (a) À esquerda: Painel Meus Pets}
+        {\small Figura C6.a) Painel Meus Pets}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
         \includegraphics[height=11.2cm,keepaspectratio]{imagens/04_telas_aplicativo/figura25_tela_rg_pet.jpeg}
         \par\vspace{0.12cm}
-        {\small (b) À direita: Carteirinha (RG Pet)}
+        {\small Figura C6.b) Carteirinha (RG Pet)}
     \end{minipage}
     \par\vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A estrutura preventiva sintetizada na Figura~C6 consolida uma barreira de segurança de baixo custo contra o desaparecimento definitivo de animais. À esquerda (a), o painel de gestão preventiva lista os pets sob responsabilidade do usuário, exibindo foto, raça, idade e o botão de emergência \textbf{``Alerta de Fuga''}, que converte instantaneamente o prontuário em anúncio de busca ativo no mapa e feed com um único toque. Ao selecionar o animal, a tela à direita (b) exibe a carteirinha digital de identificação (RG Pet), contendo dados biométricos, contato de emergência e código QR exclusivo para impressão ou acoplamento a plaquinhas de coleira, permitindo que qualquer pessoa que encontre o animal na rua acesse a ficha pública segura escaneando a câmera do celular.
+A estrutura preventiva sintetizada na Figura~C6 consolida uma barreira de segurança de baixo custo contra o desaparecimento definitivo de animais. Na Figura~C6.a, o painel de gestão preventiva lista os pets sob responsabilidade do usuário, exibindo foto, raça, idade e a ação de emergência ``Alerta de Fuga'', que converte instantaneamente o prontuário em anúncio de busca ativo no mapa e feed com um único toque. Ao selecionar o animal, a tela exibida na Figura~C6.b exibe a carteirinha digital de identificação (RG Pet), contendo dados biométricos, contato de emergência e código QR exclusivo para impressão ou acoplamento a plaquinhas de coleira, permitindo que qualquer pessoa que encontre o animal na rua acesse a ficha pública segura escaneando a câmera do celular.
 
 \clearpage
 
