@@ -80,7 +80,8 @@ const UserProfileScreen = ({ route, navigation }) => {
       setUserItems(Array.isArray(itemsData) ? itemsData : []);
       setRatingsData(userRatings || { ratings: [], average: 5.0, total: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
       setGamificationData(gamiData);
-      setRatingEligible(canRate);
+      const existingRating = userRatings?.ratings?.find((rating) => rating.reviewerId === currentUser?.id);
+      setRatingEligible(canRate && !existingRating);
 
       // Se o usuário logado já tiver avaliação existente, pré-carrega
       if (currentUser && userRatings?.ratings && Array.isArray(userRatings.ratings)) {
@@ -856,7 +857,7 @@ const UserProfileScreen = ({ route, navigation }) => {
                     </View>
                   </View>
 
-                  {(isAdmin || (currentUser && rating.reviewerId === currentUser.id)) && (
+                  {isAdmin && (
                     <TouchableOpacity
                       onPress={() => handleDeleteReview(rating)}
                       style={{ padding: 6, backgroundColor: '#FEE2E2', borderRadius: 8, marginLeft: 6 }}

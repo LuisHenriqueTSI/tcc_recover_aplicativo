@@ -208,6 +208,24 @@ export const submitUserRating = async ({
     throw new Error('A classificação será liberada após 24 horas sem novas mensagens entre vocês.');
   }
 
+  const { data: existingRemoteRating, error: existingRemoteError } = await supabase
+    .from('user_ratings')
+    .select('id')
+    .eq('target_user_id', targetUserId)
+    .eq('reviewer_id', reviewerId)
+    .maybeSingle();
+
+  if (existingRemoteError) throw existingRemoteError;
+  if (existingRemoteRating) {
+    throw new Error('Você já enviou sua classificação para este membro. Ela não pode ser editada.');
+  }
+
+  const localRaw = await AsyncStorage.getItem(LOCAL_RATINGS_KEY);
+  const localRatings = localRaw ? JSON.parse(localRaw) : [];
+  if (localRatings.some((rating) => rating.targetUserId === targetUserId && rating.reviewerId === reviewerId)) {
+    throw new Error('Você já enviou sua classificação para este membro. Ela não pode ser editada.');
+  }
+
   const safeStars = Math.max(1, Math.min(5, Number(stars) || 5));
   const newRating = {
     id: `rating-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -223,7 +241,7 @@ export const submitUserRating = async ({
 
   // 1. Tenta salvar no Supabase
   try {
-    await supabase.from('user_ratings').upsert({
+    const { error } = await supabase.from('user_ratings').insert({
       target_user_id: targetUserId,
       reviewer_id: reviewerId,
       reviewer_name: newRating.reviewerName,
@@ -232,18 +250,16 @@ export const submitUserRating = async ({
       tags: newRating.tags,
       comment: newRating.comment,
       created_at: newRating.createdAt,
-    }, { onConflict: 'target_user_id,reviewer_id' });
+    });
+    if (error) throw error;
   } catch (remoteErr) {
     console.log('[ratings] Aviso ao salvar no Supabase:', remoteErr.message);
   }
 
   // 2. Salva no AsyncStorage local
   try {
-    const raw = await AsyncStorage.getItem(LOCAL_RATINGS_KEY);
-    const existing = raw ? JSON.parse(raw) : [];
-    // Substitui se o mesmo reviewer já havia avaliado este target
-    const filtered = existing.filter(r => !(r.targetUserId === targetUserId && r.reviewerId === reviewerId));
-    const updated = [newRating, ...filtered];
+    const existing = localRaw ? JSON.parse(localRaw) : [];
+    const updated = [newRating, ...existing];
     await AsyncStorage.setItem(LOCAL_RATINGS_KEY, JSON.stringify(updated));
   } catch (localErr) {
     console.log('[ratings] Erro no AsyncStorage:', localErr.message);
