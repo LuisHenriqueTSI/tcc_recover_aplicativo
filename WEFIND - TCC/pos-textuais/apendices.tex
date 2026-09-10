@@ -543,3 +543,87 @@ Como medida de identificação preventiva, o tutor acessa a área de seus pets n
 \end{minipage}
 
 \clearpage
+
+% ============================================================
+% APÊNDICE D: MATRIZ DE RASTREABILIDADE DE REQUISITOS E TESTES
+% ============================================================
+\section*{APÊNDICE D: MATRIZ DE RASTREABILIDADE DE REQUISITOS E TESTES}
+\addcontentsline{toc}{section}{APÊNDICE D: MATRIZ DE RASTREABILIDADE DE REQUISITOS E TESTES}
+
+Este apêndice formaliza a cadeia integral de rastreabilidade bidirecional do projeto WeFIND, articulando as necessidades empíricas e oportunidades de \textit{benchmarking} diagnosticadas no Capítulo~3 com os 43 requisitos funcionais elicitados (Capítulo~4), as funcionalidades operacionais ativas desenvolvidas no aplicativo móvel (Capítulo~7) e os procedimentos experimentais de validação executados (Capítulo~8).
+
+A Tabela~D1 consolida a matriz segundo a estrutura de quatro eixos: \textbf{Necessidade Identificada} $\rightarrow$ \textbf{Requisito Funcional} $\rightarrow$ \textbf{Funcionalidade Implementada} $\rightarrow$ \textbf{Caso de Teste Associado}, atestando que 100\% dos 43 requisitos funcionais foram efetivamente implementados no código-fonte e homologados com aprovação integral em testes com dispositivos físicos.
+
+\vspace{0.3cm}
+{
+\small
+\renewcommand{\arraystretch}{1.18}
+\setlength{\tabcolsep}{2.5pt}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{4.5cm}|>{\centering\arraybackslash}p{1.8cm}|>{\raggedright\arraybackslash}p{6.4cm}|>{\centering\arraybackslash}p{1.3cm}|}
+\hline
+\multicolumn{4}{|c|}{\textbf{Tabela D1: Matriz de Rastreabilidade do Sistema WeFIND}} \\
+\multicolumn{4}{|c|}{\textbf{(Pesquisa $\rightarrow$ Requisitos $\rightarrow$ Funcionalidades $\rightarrow$ Testes)}} \\ \hline
+\textbf{Necessidade Identificada (Pesquisa/Diagnóstico)} & \textbf{Requisito} & \textbf{Funcionalidade Implementada} & \textbf{Teste} \\ \hline
+\endfirsthead
+
+\hline
+\multicolumn{4}{|c|}{\textbf{Tabela D1: Matriz de Rastreabilidade do Sistema WeFIND (Continuação)}} \\
+\multicolumn{4}{|c|}{\textbf{(Pesquisa $\rightarrow$ Requisitos $\rightarrow$ Funcionalidades $\rightarrow$ Testes)}} \\ \hline
+\textbf{Necessidade Identificada (Pesquisa/Diagnóstico)} & \textbf{Requisito} & \textbf{Funcionalidade Implementada} & \textbf{Teste} \\ \hline
+\endhead
+
+\hline
+\multicolumn{4}{|r|}{\textit{Continua na próxima página}} \\ \hline
+\endfoot
+
+\hline
+\multicolumn{4}{|l|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
+\endlastfoot
+
+Pesquisa apontou 55\% de dependência de redes sociais abertas; necessidade de controle de autenticidade comunitária para coibir perfis falsos e fraudes. & \textbf{RF01} & Tela de cadastro de novos usuários com higienização sintática de entradas, validação de campos obrigatórios e persistência criptografada no Supabase Auth. & CT01 \\ \hline
+Necessidade de ambiente seguro com sessão contínua para acesso imediato a publicações e mensagens sem requisições repetitivas de credenciais. & \textbf{RF02} & Módulo de autenticação com validação de e-mail e senha no Supabase Auth, gerando token JWT com armazenamento seguro em cache local (\textit{AsyncStorage}). & CT01 \\ \hline
+Garantir recuperação autônoma de conta em situações de esquecimento de senha ou perda de acesso rápido. & \textbf{RF03} & Rotina de recuperação de credenciais com geração e despacho de código numérico OTP de uso único via API do WhatsApp, viabilizando redefinição segura. & CT02 \\ \hline
+Manutenção e atualização contínua de dados de contato e foto do tutor para identificação confiável pela comunidade. & \textbf{RF04} & Painel de perfil permitindo edição de nome completo, telefone, biografia e upload de foto de perfil armazenada em bucket no Supabase Storage. & CT03 \\ \hline
+Conferência da reputação, histórico comunitário e publicações ativas de outros membros antes de iniciar contatos de resgate. & \textbf{RF05} & Tela pública de perfil do membro exibindo foto, tempo de plataforma, histórico de animais cadastrados, reputação por estrelas e anúncios ativos. & CT03 \\ \hline
+Preservação da privacidade e segurança dos dados pessoais em aparelhos compartilhados ou trocas de dispositivo. & \textbf{RF06} & Botão de saída segura no perfil que revoga o token de sessão ativa no Supabase Auth e expurga dados de cache persistidos no \textit{AsyncStorage}. & CT04 \\ \hline
+Alertas imediatos ao tutor quando seu animal recebe novos relatos de avistamento ou mensagens diretas de bate-papo. & \textbf{RF07} & Central dedicada na barra superior listando eventos de avistamentos, respostas em publicações e mensagens privadas, com marcação visual de leitura. & CT05 \\ \hline
+Triagem ágil e consulta sem barreiras por cidadãos que encontram um animal na rua e necessitam verificar o mural sem tempo para criar conta. & \textbf{RF08} & Navegação pública em modo somente leitura pelo feed e mapa, com travas contextuais inteligentes que incentivam o login apenas para interações ativas. & CT06 \\ \hline
+Diagnóstico de dispersão de avisos: 55\% dos tutores dependem de redes sociais onde avisos somem rapidamente sem dados estruturados de localização. & \textbf{RF09} & Formulário estruturado com seleção de status (Perdido, Encontrado, Adoção), espécie, raça, porte, cores, descrição e upload de imagens comprimidas. & CT07 \\ \hline
+Pesquisa revelou que 85\% dos respondentes consideram indispensável o mapa interativo com geolocalização precisa do local do sumiço ou encontro. & \textbf{RF10} & Componente de mapa interativo no fluxo de cadastro permitindo captura automática via GPS (\textit{expo-location}) ou fixação manual de pin georreferenciado. & CT08 \\ \hline
+Apoio a protetores e cidadãos que encontram animais na rua e desejam intermediar a busca para vizinhos ou idosos sem aplicativo instalado. & \textbf{RF11} & Chave seletora no cadastro que habilita campos complementares de identificação e contato do tutor real ou responsável temporário pelo animal. & CT07 \\ \hline
+Centralização dos animais cadastrados em ordem lógica de relevância geográfica para mobilização prioritária da vizinhança. & \textbf{RF12} & Listagem em cartão com paginação infinita, cálculo dinâmico de distância em quilômetros em relação ao usuário e \textit{badges} coloridos de status. & CT09 \\ \hline
+Dificuldade de filtrar animais por espécie e raio em redes sociais genéricas relatada pelos participantes. & \textbf{RF13} & Gaveta de filtros multicritério combinando simultaneamente categoria (perdido/encontrado/adoção), espécie (cão, gato, ave, outros) e raio de busca. & CT10 \\ \hline
+Consulta completa das características físicas e marcas singulares essenciais para a identificação do animal resgatado. & \textbf{RF14} & Tela de detalhes contendo carrossel de fotos em alta resolução, dados biométricos, mini-mapa com localização aproximada e atalhos de ação. & CT11 \\ \hline
+Possibilidade de atualizar dados físicos, novas fotos ou informações complementares fornecidas por informantes. & \textbf{RF15} & Formulário de atualização exclusivo do autor, com validação de permissão via RLS no banco relacional e sincronização imediata no feed. & CT12 \\ \hline
+Evitar buscas inúteis por animais que já foram reencontrados ou adotados com sucesso. & \textbf{RF16} & Botão de alternância para encerramento de anúncio (``Reencontrado'' ou ``Adotado''), arquivando o marcador no mapa e alimentando o mural de reencontros. & CT12 \\ \hline
+Controle e direito do tutor de remover postagens duplicadas, errôneas ou expiradas. & \textbf{RF17} & Ação de exclusão com diálogo modal de confirmação, exclusão em cascata das mídias associadas no storage e expurgo do banco de dados. & CT12 \\ \hline
+95\% de aprovação na pesquisa diagnóstica quanto à necessidade de visualização espacial direta sobre mapa interativo. & \textbf{RF18} & Tela de mapa em tela cheia com \textit{react-native-maps}, plotando marcadores com ícones e cores padronizados por espécie de animal (cão, gato, ave, outros). & CT13 \\ \hline
+Localização imediata de animais em bairros específicos ou por palavras-chave (nome do pet, raça). & \textbf{RF19} & Barra de pesquisa superior integrada ao mapa que filtra marcadores em tempo real por nome, raça ou logradouro, reposicionando a câmera do mapa. & CT10 \\ \hline
+Concentrar a exploração no perímetro de caminhada comum de animais perdidos (evitando alertas fora da região). & \textbf{RF20} & Controle deslizante (\textit{slider}) dinâmico para seleção do raio em quilômetros (1~km a 50~km), redesenhando círculo semitransparente na tela. & CT14 \\ \hline
+Agilizar o deslocamento físico do voluntário ou tutor até o último ponto onde o animal foi visto. & \textbf{RF21} & Integração com APIs de mapas e navegação nativa do dispositivo, traçando rota viária com cálculo de distância e tempo estimado de percurso. & CT15 \\ \hline
+Relatos comunitários informais em redes sociais perdem-se rapidamente e não fornecem coordenadas do avistamento em tempo real. & \textbf{RF22} & Botão ``Vi o Pet'' na tela de detalhes do animal, abrindo modal com captura de foto comprobatória, descrição e coordenadas geográficas no mapa. & CT16 \\ \hline
+Visualização da trajetória percorrida pelo animal solto para orientar buscas em campo. & \textbf{RF23} & Visualização no mini-mapa da publicação com marcadores secundários interligados indicando a sequência espacial de avistamentos registrados. & CT16 \\ \hline
+Organização temporal cronológica das pistas para acompanhamento minucioso pelo tutor. & \textbf{RF24} & Linha do tempo na tela de detalhes listando autor do relato, data, hora, fotografia capturada e observações do estado do animal. & CT16 \\ \hline
+Correção de informações de pistas enviadas equivocadamente pelo colaborador comunitário. & \textbf{RF25} & Permissão de edição do relato restrita ao autor do avistamento, com atualização imediata no banco relacional. & CT16 \\ \hline
+Remoção de pistas descartadas, duplicadas ou que se provaram incorretas pelo próprio informante. & \textbf{RF26} & Ação de exclusão do relato com validação de autoria via políticas de segurança RLS no Supabase. & CT16 \\ \hline
+Precisão métrica no local da pista para viabilizar resgate imediato antes que o animal se desloque. & \textbf{RF27} & Captura automática de latitude e longitude via GPS nativo do aparelho com opção de ajuste fino manual do pino sobre a via. & CT14 \\ \hline
+Pesquisa revelou que 70\% dos animais não usam coleira e 70\% não possuem microchip, impondo uma barreira preventiva digital. & \textbf{RF28} & Módulo preventivo no perfil permitindo cadastrar previamente os animais da família com foto, raça, pelagem, marcas e dados de vacinação. & CT17 \\ \hline
+Gestão centralizada e ágil de todos os animais sob guarda responsável da residência. & \textbf{RF29} & Painel ``Meus Pets'' listando cartões individuais de cada animal cadastrado com indicadores rápidos de status e saúde. & CT17 \\ \hline
+Alternativa de identificação visual imediata de baixo custo acessível a qualquer cidadão com smartphone sem exigir leitor de microchip. & \textbf{RF30} & Carteirinha digital preventiva com código QR unívoco gerado dinamicamente para fixação em plaquinhas de coleira, abrindo ficha pública segura. & CT18 \\ \hline
+Atualização de fotografias recentes, histórico de vacinas ou novas características do animal em crescimento. & \textbf{RF31} & Tela de manutenção preventiva permitindo atualizar todos os atributos biométricos e sanitários do pet mantido pelo usuário. & CT17 \\ \hline
+Exclusão de cadastros preventivos por doação definitiva ou transferência de tutela. & \textbf{RF32} & Ação de exclusão protegida com confirmação modal e remoção do identificador da carteirinha do banco. & CT17 \\ \hline
+Redução crítica do tempo de resposta no momento do sumiço, transformando a ficha preventiva em anúncio de busca em segundos. & \textbf{RF33} & Botão de emergência na carteirinha digital que converte instantaneamente o perfil preventivo em publicação de animal perdido ativa no feed e mapa. & CT18 \\ \hline
+Tutores perdem tempo valioso editando cartazes manuais em editores externos em momento de forte abalo emocional. & \textbf{RF34} & Gerador sob demanda com \textit{react-native-view-shot}, diagramando foto em alta definição, nome, raça, local de sumiço, contato seguro e código QR. & CT19 \\ \hline
+Adequação técnica imediata tanto para colagem física em postes/estabelecimentos quanto para divulgação em redes sociais digitais. & \textbf{RF35} & Seletor de formatos com pré-visualização instantânea para folha A4 para impressão física, formato 9:16 (Stories/Status) e formato 1:1 (Feed/WhatsApp). & CT19 \\ \hline
+Ampliação comunitária imediata do alcance da busca integrando os mensageiros e redes preferidos da população. & \textbf{RF36} & Integração com a API nativa \textit{expo-sharing}, abrindo a folha de compartilhamento do smartphone para WhatsApp, Instagram, Telegram e e-mail. & CT19 \\ \hline
+Preservação do número de telefone pessoal de tutores e informantes frente a riscos de fraudes, assédios e trotes em redes públicas. & \textbf{RF37} & Canal de mensagens privativo entre tutor e informante com entrega instantânea e bidirecional em tempo real via WebSockets (Supabase Realtime). & CT20 \\ \hline
+Continuidade no alinhamento das buscas e resgates entre os membros envolvidos. & \textbf{RF38} & Caixa de entrada exibindo conversas ativas agrupadas por animal, indicando mensagens não lidas, carimbo de horário e foto do interlocutor. & CT20 \\ \hline
+Verificação visual segura de marcas e cicatrizes singulares para atestar a legitimidade da tutela antes do deslocamento presencial. & \textbf{RF39} & Botão de anexo na tela de conversa acoplando câmera e galeria com upload fotográfico imediato no bucket seguro de mensagens. & CT20 \\ \hline
+Prova social e incentivo ao engajamento voluntário da comunidade através da celebração de desfechos felizes. & \textbf{RF40} & Formulário pós-reencontro convidando o tutor a compartilhar fotos do pet reunido com a família e depoimento de agradecimento. & CT21 \\ \hline
+Inspiração e fortalecimento da esperança comunitária em desfechos positivos. & \textbf{RF41} & Mural comemorativo de histórias felizes acessível publicamente no aplicativo com contagem de reencontros e fotos da família. & CT21 \\ \hline
+Prevenção de golpes financeiros (exigência de falsos resgates), comércio clandestino e publicação de conteúdos impróprios. & \textbf{RF42} & Ação de denúncia no menu da publicação permitindo selecionar categorias de infração (fraude, violência, trote, duplicidade) com justificativa. & CT22 \\ \hline
+Mecanismo contínuo de governança e confiabilidade para manter o ambiente comunitário íntegro e seguro. & \textbf{RF43} & Avaliação por estrelas (1 a 5) concedida entre tutores e informantes após conclusão de contatos, refletida na média de reputação do perfil. & CT22 \\ \hline
+\end{longtable}
+}
+
+\clearpage
