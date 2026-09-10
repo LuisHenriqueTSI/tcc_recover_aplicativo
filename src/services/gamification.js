@@ -68,7 +68,7 @@ export const ALL_BADGES = [
   {
     id: 'pet_rg',
     title: 'Tutor Exemplar 🪪',
-    description: 'Cadastrou seus pets domésticos no RG Digital oficial',
+    description: 'Cadastrou seus pets domésticos na carteirinha digital',
     icon: 'badge',
     category: 'pets',
     xpReward: 50,

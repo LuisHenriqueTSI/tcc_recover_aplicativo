@@ -114,7 +114,7 @@ export default function ProofUploadModal({
         );
         return;
       }
-      compiledMessage = `[Comprovação por Documentação Veterinária/Sanitária]\nRegistro/Microchip: ${vetDocNumber.trim() || 'Foto em anexo'}\n\nDetalhes: ${compiledMessage || 'Documento veterinário em anexo'}`;
+      compiledMessage = `[Comprovação por documentação veterinária]\nMicrochip/registro: ${vetDocNumber.trim() || 'Foto em anexo'}\n\nDetalhes: ${compiledMessage || 'Documento veterinário em anexo'}`;
     } else {
       if (photos.length === 0 && !compiledMessage) {
         Alert.alert(
@@ -345,12 +345,12 @@ export default function ProofUploadModal({
                 {proofType === 'documents' && (
                   <View style={styles.dynamicBox}>
                     <Text style={[styles.inputLabel, { color: colors.text }]}>
-                      Número de Microchip / RGA ou Registro Veterinário:
+                      Número de microchip ou registro veterinário:
                     </Text>
                     <TextInput
                       value={vetDocNumber}
                       onChangeText={setVetDocNumber}
-                      placeholder="Ex: Microchip Nº 981098123... ou Carteira Clínica Vet"
+                      placeholder="Ex: número do microchip ou registro da clínica"
                       placeholderTextColor={colors.textMuted}
                       style={[styles.singleInput, { backgroundColor: isDark ? '#0A120D' : '#F8FAFC', borderColor: colors.border, color: colors.text }]}
                       editable={!loading}

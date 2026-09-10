@@ -674,7 +674,7 @@ const MainStack = () => {
       <Stack.Screen
         name="MyPets"
         component={MyPetsScreen}
-        options={{ title: 'Meus Pets & RG Digital' }}
+        options={{ title: 'Meus Pets & Carteirinhas' }}
       />
       <Stack.Screen
         name="AddEditPet"

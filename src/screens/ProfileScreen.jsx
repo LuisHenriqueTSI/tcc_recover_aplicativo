@@ -315,7 +315,7 @@ const ProfileScreen = ({ navigation }) => {
             </View>
           </View>
           <Text style={[styles.postsSubtitle, { color: colors.textSecondary }]}>
-            Carteirinha oficial, dados de saúde e alerta de desaparecimento
+            Carteirinha digital, dados de saúde e alerta de desaparecimento
           </Text>
         </View>
         <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ marginLeft: 4 }} />

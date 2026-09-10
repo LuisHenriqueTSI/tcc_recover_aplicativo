@@ -17,8 +17,7 @@ import COLORS from '../constants/theme';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 /**
- * Componente do Registro Geral Animal (RG Pet WeFIND)
- * Carteirinha visual oficial estilizada para salvar e compartilhar
+ * Carteirinha digital do pet para salvar e compartilhar.
  */
 const PetRgCard = ({ pet, userProfile, onClose }) => {
   const cardRef = useRef(null);
@@ -26,7 +25,7 @@ const PetRgCard = ({ pet, userProfile, onClose }) => {
 
   if (!pet) return null;
 
-  const rgaNumber = pet.microchip || `RGA-${(pet.id || '000').slice(-6).toUpperCase()}`;
+  const petIdentifier = pet.microchip || 'Não informado';
   const tutorName = userProfile?.name || pet.owner_name || 'Tutor do Pet';
   const tutorPhone = userProfile?.whatsapp || userProfile?.phone || pet.owner_phone || 'Não informado';
   const tutorCity = userProfile?.city || pet.city || 'Pelotas';
@@ -53,11 +52,11 @@ const PetRgCard = ({ pet, userProfile, onClose }) => {
 
       await Sharing.shareAsync(uri, {
         mimeType: 'image/png',
-        dialogTitle: `RG Pet - ${pet.name}`,
+        dialogTitle: `Carteirinha do Pet - ${pet.name || 'Pet'}`,
         UTI: 'public.png',
       });
     } catch (error) {
-      console.error('[PetRgCard] Erro ao compartilhar RG:', error);
+      console.error('[PetRgCard] Erro ao compartilhar carteirinha:', error);
       Alert.alert('Erro', 'Não foi possível gerar a carteirinha: ' + error.message);
     } finally {
       setSharing(false);
@@ -66,20 +65,20 @@ const PetRgCard = ({ pet, userProfile, onClose }) => {
 
   return (
     <View style={styles.wrapper}>
-      {/* Visual da Carteirinha Oficial de RG */}
+      {/* Visual da carteirinha digital */}
       <View ref={cardRef} collapsable={false} style={styles.rgContainer}>
-        {/* Topo / Brasão e Cabeçalho Nacional */}
+        {/* Cabeçalho da carteirinha */}
         <View style={styles.rgHeader}>
           <View style={styles.brasaoRow}>
             <MaterialIcons name="pets" size={24} color="#FBBF24" />
             <View style={{ alignItems: 'center' }}>
-              <Text style={styles.rgHeaderCountry}>REPÚBLICA FEDERATIVA DOS PETS</Text>
-              <Text style={styles.rgHeaderApp}>SISTEMA NACIONAL DE IDENTIFICAÇÃO ANIMAL • WEFIND</Text>
+              <Text style={styles.rgHeaderCountry}>IDENTIFICAÇÃO DO PET</Text>
+              <Text style={styles.rgHeaderApp}>CARTEIRINHA DIGITAL • WEFIND</Text>
             </View>
             <MaterialIcons name="verified" size={24} color="#FBBF24" />
           </View>
           <View style={styles.rgaNumberBadge}>
-            <Text style={styles.rgaNumberText}>REGISTRO GERAL ANIMAL Nº: {rgaNumber}</Text>
+            <Text style={styles.rgaNumberText}>MICROCHIP / REGISTRO: {petIdentifier}</Text>
           </View>
         </View>
 
@@ -97,7 +96,7 @@ const PetRgCard = ({ pet, userProfile, onClose }) => {
               )}
               {/* Carimbo Digital */}
               <View style={styles.stampBadge}>
-                <Text style={styles.stampBadgeText}>AUTENTICADO</Text>
+                <Text style={styles.stampBadgeText}>DADOS INFORMADOS</Text>
               </View>
             </View>
 
@@ -161,9 +160,9 @@ const PetRgCard = ({ pet, userProfile, onClose }) => {
         <View style={styles.rgFooter}>
           <Image source={{ uri: qrCodeUrl }} style={styles.qrImage} resizeMode="contain" />
           <View style={{ flex: 1, marginLeft: 10 }}>
-            <Text style={styles.footerCityText}>EMISSÃO DIGITAL: {tutorCity} - {tutorState}</Text>
+            <Text style={styles.footerCityText}>CADASTRADO EM: {tutorCity} - {tutorState}</Text>
             <Text style={styles.footerAppText}>
-              Documento digital emitido via plataforma oficial <Text style={{ fontWeight: '900', color: '#B1734A' }}>We</Text><Text style={{ fontWeight: '900', color: '#166534' }}>FIND</Text>
+              Carteirinha digital criada no <Text style={{ fontWeight: '900', color: '#B1734A' }}>We</Text><Text style={{ fontWeight: '900', color: '#166534' }}>FIND</Text>
             </Text>
           </View>
           <View style={styles.validSeal}>
@@ -185,7 +184,7 @@ const PetRgCard = ({ pet, userProfile, onClose }) => {
           ) : (
             <>
               <MaterialIcons name="share" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
-              <Text style={styles.shareBtnText}>Salvar / Compartilhar RG Digital</Text>
+              <Text style={styles.shareBtnText}>Salvar / Compartilhar Carteirinha</Text>
             </>
           )}
         </TouchableOpacity>
@@ -207,7 +206,7 @@ const styles = StyleSheet.create({
   },
   rgContainer: {
     width: 340,
-    backgroundColor: '#FAF5EA', // Fundo de papel oficial de documento
+    backgroundColor: '#FAF5EA', // Fundo visual da carteirinha
     borderRadius: 18,
     borderWidth: 2,
     borderColor: '#2E5634',

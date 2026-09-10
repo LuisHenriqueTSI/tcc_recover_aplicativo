@@ -141,7 +141,7 @@ const MyPetsScreen = ({ navigation }) => {
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={[styles.bannerTitle, { color: colors.text }]}>Identificação & Carteira Digital</Text>
             <Text style={[styles.bannerSub, { color: colors.textSecondary }]}>
-              Cadastre seus animais tutelados para gerar a carteirinha oficial e ter o alerta de desaparecimento caso eles fujam.
+              Cadastre seus animais tutelados para organizar os dados do pet e ativar o alerta de desaparecimento caso ele fuja.
             </Text>
           </View>
         </View>
@@ -202,22 +202,22 @@ const MyPetsScreen = ({ navigation }) => {
                     </Text>
                     {pet.microchip ? (
                       <Text style={[styles.petChipText, { color: colors.primary }]} numberOfLines={1}>
-                        🔍 Chip/RGA: {pet.microchip}
+                        🔍 Microchip/registro: {pet.microchip}
                       </Text>
                     ) : null}
                   </View>
                 </View>
 
-                {/* Linha de Ações: Ver RG, Editar e Excluir */}
+                {/* Linha de ações da carteirinha, edição e exclusão */}
                 <View style={[styles.cardActionsRow, { borderTopColor: colors.border }]}>
-                  {/* Botão Ver RG */}
+                  {/* Botão Ver carteirinha */}
                   <TouchableOpacity
                     style={[styles.actionBtn, { backgroundColor: isDark ? 'rgba(46, 86, 52, 0.25)' : '#DCFCE7' }]}
                     onPress={() => setSelectedRgPet(pet)}
                     activeOpacity={0.8}
                   >
                     <MaterialIcons name="badge" size={16} color="#15803D" style={{ marginRight: 4 }} />
-                    <Text style={[styles.actionBtnText, { color: '#15803D' }]}>Ver RG Pet</Text>
+                    <Text style={[styles.actionBtnText, { color: '#15803D' }]}>Ver carteirinha</Text>
                   </TouchableOpacity>
 
                   {/* Botão Editar */}

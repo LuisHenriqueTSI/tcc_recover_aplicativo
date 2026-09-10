@@ -107,7 +107,7 @@ const AddEditPetScreen = ({ navigation, route }) => {
       await savePet(user.id, petData);
       Alert.alert(
         'Sucesso!',
-        `Os dados e o RG${name.trim() ? ` de ${name.trim()}` : ''} foram salvos com sucesso.`,
+        `Os dados${name.trim() ? ` de ${name.trim()}` : ''} foram salvos com sucesso.`,
         [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
     } catch (err) {
@@ -345,9 +345,9 @@ const AddEditPetScreen = ({ navigation, route }) => {
           </View>
         </View>
 
-        {/* Número do Microchip ou RGA */}
+        {/* Identificador opcional do pet */}
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text }]}>Microchip / Registro RGA (Opcional)</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Microchip ou registro do pet (Opcional)</Text>
           <TextInput
             style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
             placeholder="Ex: 981020000123456"
@@ -412,7 +412,7 @@ const AddEditPetScreen = ({ navigation, route }) => {
             <>
               <MaterialIcons name="badge" size={20} color="#FFFFFF" style={{ marginRight: 6 }} />
               <Text style={styles.saveButtonText}>
-                {editingPet ? 'Salvar Alterações do RG' : 'Salvar Pet & Gerar RG Digital'}
+                {editingPet ? 'Salvar Alterações' : 'Salvar Pet'}
               </Text>
             </>
           )}
