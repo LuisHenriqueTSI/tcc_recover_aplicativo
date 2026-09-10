@@ -40,6 +40,7 @@ import { findMatchesForPet } from '../services/petMatching';
 import PetMatchModal from '../components/PetMatchModal';
 import OptimizedImage from '../components/OptimizedImage';
 import * as Location from 'expo-location';
+import { canTraceRouteToItem, getPublicRouteTarget } from '../services/routeEligibility';
 
 const formatItemDate = (value) => {
   if (!value) return '';
@@ -100,9 +101,6 @@ const formatStreetNumberNeighborhood = (item, isAuthorized = false) => {
 
   return district || '';
 };
-
-const isStreetFoundItem = (item) =>
-  item?.status === 'found' && item?.extra_fields?.found_custody === 'spotted';
 
 const ItemDetailScreen = ({ route, navigation }) => {
   const { itemId } = route.params;
@@ -791,15 +789,16 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
   const handleOpenRoute = async () => {
     if (!item) return;
-    if (!isStreetFoundItem(item)) return;
+    if (!canTraceRouteToItem(item)) return;
 
-    let lat = item.latitude || item.extra_fields?.location_details?.latitude;
-    let lng = item.longitude || item.extra_fields?.location_details?.longitude;
+    const routeTarget = getPublicRouteTarget(item);
+    let lat = routeTarget?.latitude;
+    let lng = routeTarget?.longitude;
 
     if (!lat || !lng) {
       try {
         const query = [
-          item.street,
+          item.extra_fields?.last_sighting_address || item.street,
           item.neighborhood,
           item.city,
           item.state,
@@ -1471,8 +1470,8 @@ const ItemDetailScreen = ({ route, navigation }) => {
             </View>
           )}
 
-          {/* Botão de Ver Rota GPS: disponível somente para animais encontrados na rua */}
-          {isStreetFoundItem(item) && (
+          {/* Rota usa apenas localização pública: encontrada na rua ou último avistamento de um perdido */}
+          {canTraceRouteToItem(item) && (
           <TouchableOpacity
             style={{
               flexDirection: 'row',
@@ -1495,7 +1494,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
           >
             <MaterialIcons name="directions" size={20} color="#FFFFFF" style={{ marginRight: 6 }} />
             <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13.5 }}>
-              Ver Rota no Mapa
+              {item.status === 'lost' ? 'Ver Rota até o Último Avistamento' : 'Ver Rota no Mapa'}
             </Text>
           </TouchableOpacity>
           )}

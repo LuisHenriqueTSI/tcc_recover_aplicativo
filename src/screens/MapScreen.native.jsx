@@ -11,6 +11,7 @@ import SightingModal from '../components/SightingModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import COLORS from '../constants/theme';
+import { canTraceRouteToItem, getPublicRouteTarget } from '../services/routeEligibility';
 
 const BRAZIL_REGION = {
   latitude: -14.235,
@@ -89,9 +90,6 @@ const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
-
-const isStreetFoundItem = (item) =>
-  item?.status === 'found' && item?.extra_fields?.found_custody === 'spotted';
 
 const formatItemDate = (value) => {
   if (!value) return '';
@@ -296,7 +294,7 @@ const MapScreen = ({ route, navigation }) => {
   const isNavigatingRef = useRef(false);
   const handledRouteParamRef = useRef(null);
   const [resolvedItemAddress, setResolvedItemAddress] = useState('');
-  const selectedItemCanHaveRoute = isStreetFoundItem(selectedItem);
+  const selectedItemCanHaveRoute = canTraceRouteToItem(selectedItem);
 
   // Sighting Modal State
   const [sightingModalVisible, setSightingModalVisible] = useState(false);
@@ -349,10 +347,10 @@ const MapScreen = ({ route, navigation }) => {
     setResolvedItemAddress(staticAddr);
 
     // Auto-resolução com número de rua APENAS se for animal avistado solto na via pública
-    const isSpottedStreet = selectedItem.status === 'found' && selectedItem.extra_fields?.found_custody === 'spotted';
-    if (isSpottedStreet) {
-      const lat = selectedItem.latitude ?? selectedItem.extra_fields?.location_details?.latitude;
-      const lng = selectedItem.longitude ?? selectedItem.extra_fields?.location_details?.longitude;
+    const routeTarget = getPublicRouteTarget(selectedItem);
+    if (routeTarget) {
+      const lat = routeTarget.latitude;
+      const lng = routeTarget.longitude;
 
       if (lat != null && lng != null && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
         sightingsService.resolveReadableAddress({ latitude: Number(lat), longitude: Number(lng) })
@@ -537,10 +535,11 @@ const MapScreen = ({ route, navigation }) => {
 
     if (coords && mapRef.current) {
       let heading = 0;
-      if (selectedItem?.latitude && selectedItem?.longitude) {
-        const dLng = (Number(selectedItem.longitude) - coords.longitude) * (Math.PI / 180);
+      const routeTarget = getPublicRouteTarget(selectedItem);
+      if (routeTarget) {
+        const dLng = (routeTarget.longitude - coords.longitude) * (Math.PI / 180);
         const lat1 = coords.latitude * (Math.PI / 180);
-        const lat2 = Number(selectedItem.latitude) * (Math.PI / 180);
+        const lat2 = routeTarget.latitude * (Math.PI / 180);
         const y = Math.sin(dLng) * Math.cos(lat2);
         const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
         heading = (Math.atan2(y, x) * 180) / Math.PI;
@@ -595,9 +594,10 @@ const MapScreen = ({ route, navigation }) => {
 
   // Visão geral de toda a rota
   const fitRouteOverview = useCallback(() => {
-    if (mapRef.current && userCoords && selectedItem) {
+    const routeTarget = getPublicRouteTarget(selectedItem);
+    if (mapRef.current && userCoords && routeTarget) {
       mapRef.current.fitToCoordinates(
-        [userCoords, { latitude: Number(selectedItem.latitude), longitude: Number(selectedItem.longitude) }, ...routeCoordinates],
+        [userCoords, routeTarget, ...routeCoordinates],
         {
           edgePadding: { top: 140, right: 60, bottom: isNavigating ? 260 : 440, left: 60 },
           animated: true,
@@ -608,7 +608,8 @@ const MapScreen = ({ route, navigation }) => {
 
   // Monitora a localização do usuário em tempo real quando uma rota estiver ativa
   useEffect(() => {
-    const hasActiveRoute = (routeCoordinates.length > 0 || isNavigating) && selectedItem?.latitude && selectedItem?.longitude;
+    const routeTarget = getPublicRouteTarget(selectedItem);
+    const hasActiveRoute = (routeCoordinates.length > 0 || isNavigating) && routeTarget;
     if (hasActiveRoute && locationStatus === 'granted') {
       let isSubscribed = true;
 
@@ -652,8 +653,8 @@ const MapScreen = ({ route, navigation }) => {
 
           if (shouldRecalculate) {
             calculateRoute(newCoord, {
-              latitude: Number(selectedItem.latitude),
-              longitude: Number(selectedItem.longitude),
+              latitude: routeTarget.latitude,
+              longitude: routeTarget.longitude,
             }, false);
           }
         }
@@ -695,7 +696,7 @@ const MapScreen = ({ route, navigation }) => {
       if (target?.latitude && target?.longitude) {
         handleSelectItem(target);
 
-        if (showRoute && isStreetFoundItem(target)) {
+        if (showRoute && canTraceRouteToItem(target)) {
           (async () => {
             let current = userCoords;
             if (!current) {
@@ -713,8 +714,8 @@ const MapScreen = ({ route, navigation }) => {
 
             if (current) {
               calculateRoute(current, {
-                latitude: Number(target.latitude),
-                longitude: Number(target.longitude),
+                latitude: getPublicRouteTarget(target).latitude,
+                longitude: getPublicRouteTarget(target).longitude,
               }, true);
             } else {
               mapRef.current?.animateToRegion({
@@ -1554,12 +1555,14 @@ const MapScreen = ({ route, navigation }) => {
                   if (!current) {
                     current = await requestUserLocation();
                   }
-                  if (current && selectedItem?.latitude && selectedItem?.longitude) {
+                  if (current && getPublicRouteTarget(selectedItem)) {
                     // Se a rota ainda não foi calculada, calcula sem afastar a câmera e inicia navegação
                     if (routeCoordinates.length === 0) {
+                      const routeTarget = getPublicRouteTarget(selectedItem);
+                      if (!routeTarget) return;
                       await calculateRoute(current, {
-                        latitude: Number(selectedItem.latitude),
-                        longitude: Number(selectedItem.longitude),
+                        latitude: routeTarget.latitude,
+                        longitude: routeTarget.longitude,
                       }, false);
                     }
                     // Inicia navegação e recentraliza com aproximação direta na posição do usuário

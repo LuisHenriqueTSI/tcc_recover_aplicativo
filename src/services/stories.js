@@ -52,6 +52,51 @@ export const listSuccessStories = async () => {
   }
 };
 
+export const getStoryLikeState = async (stories, userId) => {
+  const storyIds = (stories || [])
+    .map((story) => String(story.id || ''))
+    .filter((id) => id && !id.startsWith('local-story-'));
+
+  if (storyIds.length === 0) return {};
+
+  const { data, error } = await supabase
+    .from('success_story_likes')
+    .select('story_id, user_id')
+    .in('story_id', storyIds);
+
+  if (error) throw error;
+
+  return storyIds.reduce((state, storyId) => {
+    const likes = (data || []).filter((like) => String(like.story_id) === storyId);
+    state[storyId] = {
+      count: likes.length,
+      likedByUser: Boolean(userId && likes.some((like) => String(like.user_id) === String(userId))),
+    };
+    return state;
+  }, {});
+};
+
+export const toggleStoryLike = async (storyId, userId, likedByUser) => {
+  if (!storyId || !userId) throw new Error('É necessário estar logado para curtir uma história.');
+  if (String(storyId).startsWith('local-story-')) {
+    throw new Error('Esta história ainda não está disponível para curtidas.');
+  }
+
+  if (likedByUser) {
+    const { error } = await supabase
+      .from('success_story_likes')
+      .delete()
+      .eq('story_id', String(storyId))
+      .eq('user_id', String(userId));
+    if (error) throw error;
+  } else {
+    const { error } = await supabase
+      .from('success_story_likes')
+      .insert({ story_id: String(storyId), user_id: String(userId) });
+    if (error) throw error;
+  }
+};
+
 export const submitSuccessStory = async ({
   petName,
   author,

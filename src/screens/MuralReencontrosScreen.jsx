@@ -22,36 +22,6 @@ import * as storiesService from '../services/stories';
 import OptimizedImage from '../components/OptimizedImage';
 import COLORS from '../constants/theme';
 
-const DEFAULT_FEATURED_STORIES = [
-  {
-    id: 'featured-spike',
-    petName: 'Spike',
-    author: 'Anna',
-    rating: 5,
-    location: 'Guarulhos - SP',
-    photoUrl: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300&auto=format&fit=crop&q=80',
-    testimonial: 'Pessoas incríveis, me acionaram e cuidaram dele, até hoje na segunda ele chegou na rua no sábado de madrugada. Eles alimentaram ele, colocaram mantinha, água, pessoas de grande coração, eu quase chorei de emoção!',
-  },
-  {
-    id: 'featured-agnes',
-    petName: 'Agnes',
-    author: 'Luane',
-    rating: 5,
-    location: 'Guaxupé - MG',
-    photoUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&auto=format&fit=crop&q=80',
-    testimonial: 'Sigam a dica do app e do mapa! Saímos à noite atraindo pelo cheirinho e compartilhamos o cartaz! Uma vizinha viu a publicação no WeFIND e nos acionou de imediato.',
-  },
-  {
-    id: 'featured-collins',
-    petName: 'Collins',
-    author: 'Paulo',
-    rating: 5,
-    location: 'Curitiba - PR',
-    photoUrl: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=300&auto=format&fit=crop&q=80',
-    testimonial: 'Encontramos os sapecas! Muito obrigado a todos da comunidade que compartilharam e ajudaram de alguma forma com avisos e mensagens no chat em tempo real! 💕🐶',
-  },
-];
-
 const FALLBACK_REUNITED_AVATARS = [
   'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=200&auto=format&fit=crop&q=80',
   'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&auto=format&fit=crop&q=80',
@@ -64,6 +34,8 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
   const { user, userProfile, isAdmin } = useAuth();
   const { colors, isDark } = useTheme();
   const [userStories, setUserStories] = useState([]);
+  const [storyLikes, setStoryLikes] = useState({});
+  const [likingStoryId, setLikingStoryId] = useState(null);
   const [recoveredPets, setRecoveredPets] = useState([]);
   const [statistics, setStatistics] = useState({
     resolved_count: 0,
@@ -113,6 +85,12 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
         itemsService.listRecoveredPets(10),
       ]);
       setUserStories(storiesList || []);
+      try {
+        setStoryLikes(await storiesService.getStoryLikeState(storiesList || [], user?.id));
+      } catch (likeError) {
+        console.warn('[MuralReencontrosScreen] Erro ao carregar curtidas:', likeError.message);
+        setStoryLikes({});
+      }
       if (stats) setStatistics(stats);
       if (recoveredList) setRecoveredPets(recoveredList);
     } catch (error) {
@@ -121,7 +99,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     loadData();
@@ -139,6 +117,33 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
   const onRefresh = () => {
     setRefreshing(true);
     loadData();
+  };
+
+  const handleToggleStoryLike = async (story) => {
+    if (!user) {
+      Alert.alert('Login necessário', 'Entre para curtir uma história de reencontro.', [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Entrar', onPress: () => navigation.navigate('Login') },
+      ]);
+      return;
+    }
+
+    const currentLike = storyLikes[String(story.id)] || { count: 0, likedByUser: false };
+    setLikingStoryId(String(story.id));
+    try {
+      await storiesService.toggleStoryLike(story.id, user.id, currentLike.likedByUser);
+      setStoryLikes((current) => ({
+        ...current,
+        [String(story.id)]: {
+          count: Math.max(0, currentLike.count + (currentLike.likedByUser ? -1 : 1)),
+          likedByUser: !currentLike.likedByUser,
+        },
+      }));
+    } catch (error) {
+      Alert.alert('Não foi possível curtir', error.message || 'Tente novamente.');
+    } finally {
+      setLikingStoryId(null);
+    }
   };
 
   const handleDeleteStory = (story) => {
@@ -231,7 +236,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
     }
   };
 
-  const displayedStories = userStories.length > 0 ? userStories : DEFAULT_FEATURED_STORIES;
+  const displayedStories = userStories;
 
   const recentAvatars = (recoveredPets || [])
     .map((p) => p.item_photos?.[0]?.url)
@@ -365,7 +370,7 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.featuredScroll}
           >
-            {displayedStories.map((story) => (
+            {displayedStories.length > 0 ? displayedStories.map((story) => (
               <TouchableOpacity
                 key={String(story.id)}
                 style={[
@@ -455,9 +460,31 @@ const MuralReencontrosScreen = ({ navigation, route }) => {
                   <Text style={[styles.testimonialQuote, { color: isDark ? '#CBD5E1' : '#334155' }]} numberOfLines={5}>
                     "{story.testimonial}"
                   </Text>
+                  <TouchableOpacity
+                    style={styles.likeStoryButton}
+                    onPress={() => handleToggleStoryLike(story)}
+                    disabled={likingStoryId === String(story.id)}
+                    activeOpacity={0.75}
+                  >
+                    <MaterialIcons
+                      name={storyLikes[String(story.id)]?.likedByUser ? 'favorite' : 'favorite-border'}
+                      size={19}
+                      color={storyLikes[String(story.id)]?.likedByUser ? '#E11D48' : colors.textMuted}
+                    />
+                    <Text style={[styles.likeStoryText, { color: storyLikes[String(story.id)]?.likedByUser ? '#E11D48' : colors.textMuted }]}>
+                      {storyLikes[String(story.id)]?.count || 0}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </TouchableOpacity>
-            ))}
+            )) : (
+              <View style={[styles.emptyStoriesCard, { borderColor: colors.cardBorder, backgroundColor: colors.card }]}>
+                <MaterialIcons name="favorite-border" size={32} color={colors.textMuted} />
+                <Text style={[styles.emptyStoriesText, { color: colors.textSecondary }]}>
+                  Ainda não há histórias publicadas.
+                </Text>
+              </View>
+            )}
           </ScrollView>
         </View>
 
@@ -904,6 +931,35 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontStyle: 'italic',
     lineHeight: 19,
+  },
+  likeStoryButton: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 7,
+    borderRadius: 12,
+  },
+  likeStoryText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  emptyStoriesCard: {
+    width: 300,
+    minHeight: 150,
+    borderRadius: 18,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  emptyStoriesText: {
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 8,
   },
   fullRecoveredBtn: {
     flexDirection: 'row',

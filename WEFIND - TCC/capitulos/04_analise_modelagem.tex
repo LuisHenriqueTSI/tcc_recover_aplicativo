@@ -203,78 +203,20 @@ Na área de prevenção, o perfil do usuário se conecta ao caso de uso \textit{
 
 Por fim, a moderação do aplicativo é feita pelo caso de uso \textit{Manter Moderação e Denúncias}, acessível ao administrador. Os casos de reencontro são reunidos no caso de uso \textit{Visualizar Mural de Reencontros} e mantidos por \textit{Manter História Feliz}, enquanto os avisos e alertas do aplicativo são acompanhados por meio de \textit{Consultar Notificações}.
 
-Para apresentar a ligação entre os requisitos levantados e os casos de uso do sistema, o Quadro~\ref{quadro:mapeamento_rf_uc} traz a tabela de rastreabilidade entre os 43 requisitos funcionais e os casos de uso correspondentes, indicando o ator principal e o tipo de relação em cada situação.
+\enlargethispage{3\baselineskip}
+A relação direta entre os casos de uso do diagrama e os requisitos funcionais do sistema se dá da seguinte maneira:
 
-\vspace{0.3cm}
-{
-\phantomsection\label{quadro:mapeamento_rf_uc}
-\small
-\setlength{\tabcolsep}{3.5pt}
-\renewcommand{\arraystretch}{1.06}
-\begin{longtable}{|>{\centering\arraybackslash}p{1.1cm}|>{\raggedright\arraybackslash}p{3.7cm}|>{\raggedright\arraybackslash}p{4.0cm}|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{2.3cm}|}
-\hline
-\multicolumn{5}{|c|}{\textbf{Quadro 4: Mapeamento de Rastreabilidade entre Requisitos e Casos de Uso}} \\ \hline
-\textbf{ID RF} & \textbf{Requisito Funcional} & \textbf{Caso de Uso Correspondente} & \textbf{Ator Primário} & \textbf{Relação UML} \\ \hline
-\endfirsthead
+O caso de uso \textit{Realizar Cadastro} atende aos requisitos RF01 e RF08, enquanto \textit{Efetuar Login} atende ao RF02 e \textit{Redefinir Senha} ao RF03. A gestão da conta do usuário é atendida por \textit{Manter Cadastro de Usuário} e \textit{Manter Perfil de Usuário} (RF04 e RF05), além de \textit{Fazer Logout} (RF06) e \textit{Consultar Notificações} (RF07).
 
-\hline
-\multicolumn{5}{|c|}{\textbf{Quadro 4: Mapeamento de Rastreabilidade entre Requisitos e Casos de Uso (Cont.)}} \\ \hline
-\textbf{ID RF} & \textbf{Requisito Funcional} & \textbf{Caso de Uso Correspondente} & \textbf{Ator Primário} & \textbf{Relação UML} \\ \hline
-\endhead
+O caso de uso \textit{Manter Publicação} concentra os requisitos de publicação de anúncios (RF09, RF15, RF16 e RF17), funcionando em conjunto com \textit{Selecionar Localização no Mapa} (RF10) e \textit{Informar Tutor Terceiro} (RF11). A visualização das postagens é atendida por \textit{Visualizar Publicações} (RF12 e RF13), \textit{Visualizar Detalhes da Publicação} (RF14) e \textit{Compartilhar Publicação} (RF34, RF35 e RF36).
 
-\hline
-\multicolumn{5}{|r|}{\textit{Continua na próxima página}} \\ \hline
-\endfoot
+No mapa, os casos de uso \textit{Visualizar Animais no Mapa} (RF18 e RF19), \textit{Ajustar Raio de Proximidade} (RF20), \textit{Traçar rota até o animal} (RF21) e \textit{Atualizar Localização} (RF27) cobrem as necessidades de localização geográfica e rotas.
 
-\hline
-\multicolumn{5}{|l|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
-\endlastfoot
+A parte de pistas e relatos comunitários é atendida por \textit{Manter Comentário} (RF22, RF24, RF25 e RF26) e pela avaliação de participantes com \textit{Visualizar Perfil do Membro} e \textit{Classificar Membro}. O contato direto entre pessoas fica a cargo de \textit{Enviar Mensagem} (RF37) e \textit{Manter Mensagens Privadas} (RF38 e RF39).
 
-\textbf{RF01} & Cadastrar Usuário & Realizar Cadastro & Usuário Visitante & «include» (WhatsApp) \\ \hline
-\textbf{RF02} & Autenticar Usuário (Login) & Efetuar Login & Usuário Visitante & Associação Direta \\ \hline
-\textbf{RF03} & Redefinir Senha de Acesso & Redefinir Senha & Usuário Visitante & «extend» (Efetuar Login) \\ \hline
-\textbf{RF04} & Consultar Perfil de Usuário & Manter Perfil de Usuário & Usuário Autenticado & Associação Direta \\ \hline
-\textbf{RF05} & Editar Dados de Perfil & Manter Perfil de Usuário & Usuário Autenticado & Associação Direta \\ \hline
-\textbf{RF06} & Encerrar Sessão (Logout) & Fazer Logout & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
-\textbf{RF07} & Consultar Notificações & Consultar Notificações & Usuário Autenticado & Associação Direta \\ \hline
-\textbf{RF08} & Permitir Modo Visitante & Acesso público aos casos de uso & Usuário Visitante & Associação Direta \\ \hline
-\textbf{RF09} & Cadastrar Publicação & Manter Publicação & Usuário Autenticado & «include» (Localização) \\ \hline
-\textbf{RF10} & Selecionar Localização da Publicação & Selecionar Localização no Mapa & Usuário Autenticado & «include» de Publicação \\ \hline
-\textbf{RF11} & Informar Tutor Terceiro & Informar Tutor Terceiro & Usuário Autenticado & «extend» (Publicação) \\ \hline
-\textbf{RF12} & Listar Publicações no Feed & Visualizar Publicações & Usuário Visitante & Associação Direta \\ \hline
-\textbf{RF13} & Filtrar e Buscar Publicações & Visualizar Publicações & Usuário Visitante & Associação Direta \\ \hline
-\textbf{RF14} & Consultar Detalhes da Publicação & Visualizar Detalhes da Publicação & Usuário Visitante & «extend» (Publicações) \\ \hline
-\textbf{RF15} & Editar Dados da Publicação & Manter Publicação & Usuário Autenticado & Associação Direta \\ \hline
-\textbf{RF16} & Atualizar Status da Publicação & Manter Publicação & Usuário Autenticado & Associação Direta \\ \hline
-\textbf{RF17} & Excluir Publicação & Manter Publicação & Usuário Autenticado & Associação Direta \\ \hline
-\textbf{RF18} & Visualizar Animais no Mapa & Visualizar Animais no Mapa & Usuário Visitante & Associação Direta \\ \hline
-\textbf{RF19} & Pesquisar Marcadores no Mapa & Visualizar Animais no Mapa & Usuário Visitante & Associação Direta \\ \hline
-\textbf{RF20} & Ajustar Raio de Proximidade & Ajustar Raio de Proximidade & Usuário Visitante & «extend» (Mapa) \\ \hline
-\textbf{RF21} & Traçar Rota GPS até o Ponto & Traçar rota até o animal & Usuário Visitante & «extend» (Detalhes) \\ \hline
-\textbf{RF22} & Cadastrar Avistamento & Manter Comentário & Usuário Autenticado & «extend» (Publicação) \\ \hline
-\textbf{RF23} & Selecionar Local do Avistamento & Selecionar Localização no Mapa & Usuário Autenticado & «include» de Publicação \\ \hline
-\textbf{RF24} & Listar Histórico de Avistamentos & Visualizar Detalhes da Publicação & Usuário Visitante & «extend» (Publicações) \\ \hline
-\textbf{RF25} & Editar Dados do Avistamento & Manter Comentário & Usuário Autenticado & «extend» (Publicação) \\ \hline
-\textbf{RF26} & Excluir Registro de Avistamento & Manter Comentário & Usuário Autenticado & «extend» (Publicação) \\ \hline
-\textbf{RF27} & Atualizar Posição por Avistamento & Atualizar Localização & Usuário Visitante & «extend» (Mapa) \\ \hline
-\textbf{RF28} & Cadastrar Pet Preventivo & Cadastro Preventivo de Pets & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
-\textbf{RF29} & Listar Pets Cadastrados & Cadastro Preventivo de Pets & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
-\textbf{RF30} & Consultar Identificação do Animal & Cadastro Preventivo de Pets & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
-\textbf{RF31} & Editar Dados de Meu Pet & Cadastro Preventivo de Pets & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
-\textbf{RF32} & Excluir Cadastro de Meu Pet & Cadastro Preventivo de Pets & Usuário Autenticado & «extend» (Manter Perfil) \\ \hline
-\textbf{RF33} & Acionar Alerta de Desaparecimento & Acionar Alerta de Desaparecimento & Usuário Autenticado & «extend» (Cadastro Pet) \\ \hline
-\textbf{RF34} & Gerar Cartaz de Busca & Compartilhar Publicação & Usuário Visitante & «extend» (Detalhes) \\ \hline
-\textbf{RF35} & Escolher Formato do Cartaz & Compartilhar Publicação & Usuário Visitante & «extend» (Detalhes) \\ \hline
-\textbf{RF36} & Compartilhar Cartaz Digital & Compartilhar Publicação & Usuário Visitante & «extend» (Detalhes) \\ \hline
-\textbf{RF37} & Iniciar Conversa via Chat & Enviar Mensagem & Usuário Autenticado & «extend» (Detalhes) \\ \hline
-\textbf{RF38} & Trocar Mensagens em Tempo Real & Manter Mensagens Privadas & Usuário Autenticado & Associação Direta \\ \hline
-\textbf{RF39} & Enviar Imagens no Chat & Manter Mensagens Privadas & Usuário Autenticado & Associação Direta \\ \hline
-\textbf{RF40} & Cadastrar História Feliz & Manter História Feliz & Usuário Autenticado & Associação Direta \\ \hline
-\textbf{RF41} & Listar Histórias Felizes no Mural & Visualizar Mural de Reencontros & Usuário Visitante & Associação Direta \\ \hline
-\textbf{RF42} & Denunciar Publicação Suspeita & Manter Moderação e Denúncias & Usuário Autenticado & Associação Direta \\ \hline
-\textbf{RF43} & Gerenciar Denúncias e Moderação & Manter Moderação e Denúncias & Administrador & Associação Direta \\ \hline
-\end{longtable}
-}
+A proteção e a prevenção contra perdas são atendidas pelo \textit{Cadastro Preventivo de Pets} (RF28 a RF32) e pelo \textit{Acionar Alerta de Desaparecimento} (RF33), além da reivindicação segura do animal tutelado com \textit{Solicitar Devolução} e \textit{Enviar Comprovação}.
+
+Por fim, os relatos de sucesso são atendidos por \textit{Manter História Feliz} (RF40) e \textit{Visualizar Mural de Reencontros} (RF41), enquanto a fiscalização e a segurança da comunidade são garantidas pelo caso de uso \textit{Manter Moderação e Denúncias} (RF42 e RF43).
 
 \clearpage
 

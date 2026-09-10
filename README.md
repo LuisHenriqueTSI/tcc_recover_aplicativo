@@ -42,8 +42,8 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - Tela de apresentação institucional (**"Sobre o WeFIND"** - `SobreScreen.jsx`) reformulada no estilo *landing page* minimalista com seções em zigue-zague intercaladas:
   - Seção de Divulgação com ilustração vetorial moderna do celular exibindo cartaz com QR Code inteligente.
   - Seção de Comunidade e Alertas com ilustração do pin WeFIND conectando tutores e protetores.
-  - Sistema de fallback para o **Mural de Reencontros**: injeção automática de histórias inspiradoras de exemplo (*Mock Data*) caso o banco de dados ainda não possua relatos enviados.
-- **Mural de Reencontros (`MuralReencontrosScreen.jsx`):** Tela dedicada e de carregamento instantâneo com placar comunitário em tempo real dos reencontros do dia atual (`startOfToday`), total acumulado desde o início e histórias/depoimentos enviados por tutores.
+  - O **Mural de Reencontros** exibe somente histórias reais publicadas no banco de dados, sem inserção automática de exemplos (*Mock Data*).
+- **Mural de Reencontros (`MuralReencontrosScreen.jsx`):** Tela dedicada com placar comunitário em tempo real dos reencontros do dia atual (`startOfToday`), total acumulado desde o início, histórias/depoimentos enviados por tutores e curtidas da comunidade.
 - **Ícone de Navegação do Mapa:** Marcador de localização (`location-on`) na barra inferior alinhado com o símbolo oficial do WeFIND.
 - **Ícone do Aplicativo Android (Adaptive Icon):** Configuração refinada no `app.json` apontando para `adaptive-icon.png` com margens de respiro exatas, garantindo centralização impecável e evitando cortes na compilação do APK.
 - **Paleta de Cores Padronizada:** 100% alinhada à identidade visual WeFIND (Azul Real `#2563EB`, Verde Sucesso `#10B981`/`#16A34A`, Dourado `#FEA937` e Neutros/Ardósia), sem cores roxas.
@@ -278,7 +278,18 @@ Quando um usuário encontra um animal na rua e inicia o cadastro:
 
 ---
 
-### 5. 🛡️ Arquitetura de Privacidade e Segurança do Tutor (Privacy by Design - LGPD)
+### 5. ❤️ Histórias reais e curtidas do Mural de Reencontros
+
+* **Sem histórias fictícias:** o carrossel não utiliza mais histórias de demonstração. Quando não existem relatos publicados, o mural informa que ainda não há histórias disponíveis.
+* **Login obrigatório:** visitantes podem visualizar as histórias, mas precisam entrar na conta para curtir.
+* **Curtir e descurtir:** o mesmo botão alterna entre `favorite-border` e `favorite`, permitindo adicionar ou remover a curtida.
+* **Uma curtida por usuário:** a tabela `success_story_likes` possui uma restrição única para o par `story_id + user_id`, evitando duplicidades.
+* **Persistência no Supabase:** a quantidade de curtidas e o estado da curtida do usuário são carregados ao abrir ou atualizar o mural.
+* **Proteção por RLS:** qualquer pessoa pode consultar as curtidas; somente usuários autenticados podem inserir e remover a própria curtida.
+* **Histórias locais:** histórias armazenadas apenas no dispositivo não recebem curtidas até serem persistidas no Supabase.
+* **Migração:** execute [`supabase/success_story_likes.sql`](supabase/success_story_likes.sql) no SQL Editor do Supabase antes de utilizar o recurso em produção.
+
+### 6. 🛡️ Arquitetura de Privacidade e Segurança do Tutor (Privacy by Design - LGPD)
 
 Um dos pilares acadêmicos e operacionais mais críticos do **WeFIND** é a proteção integral da integridade física, psicológica e patrimonial dos tutores em momentos de vulnerabilidade:
 
@@ -307,7 +318,7 @@ Um dos pilares acadêmicos e operacionais mais críticos do **WeFIND** é a prot
 
 ---
 
-### 6. 🔔 Sistema de Push Notifications e Alertas Comunitários por Proximidade (Expo + Supabase)
+### 7. 🔔 Sistema de Push Notifications e Alertas Comunitários por Proximidade (Expo + Supabase)
 
 O **WeFIND** implementa uma arquitetura completa de notificações móveis push em tempo real utilizando o ecossistema oficial do **Expo (`expo-notifications`)** integrado ao banco de dados Supabase e à fórmula geodésica de Haversine:
 
