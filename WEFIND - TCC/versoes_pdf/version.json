@@ -49,7 +49,12 @@
                         "version":  10,
                         "filename":  "TCC_WeFIND_v10_10-09-2026-16h14.pdf",
                         "date":  "2026-09-10T16:14:50-03:00"
+                    },
+                    {
+                        "version":  11,
+                        "filename":  "TCC_WeFIND_v11_10-09-2026-17h53.pdf",
+                        "date":  "2026-09-10T17:53:12-03:00"
                     }
                 ],
-    "current_version":  10
+    "current_version":  11
 }
