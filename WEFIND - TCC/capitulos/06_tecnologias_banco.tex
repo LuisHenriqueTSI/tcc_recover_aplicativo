@@ -2,9 +2,9 @@
 
 A concretização dos pilares conceituais e operacionais da plataforma WeFIND exigiu a escolha criteriosa de um conjunto de tecnologias modernas, maduras e escaláveis. Como ensinam Pressman e Maxim (2021) e Valente (2023), a arquitetura de software de um sistema móvel atual deve conciliar alta produtividade no ciclo de desenvolvimento, baixo acoplamento entre camadas e robustez na persistência e distribuição dos dados em nuvem.
 
-O projeto adotou o padrão arquitetural cliente-servidor distribuído, segmentado em duas camadas fundamentais e independentes: a camada cliente móvel (executada nos smartphones dos usuários) e a camada de serviços em nuvem (hospedada na infraestrutura do Supabase). Essa abordagem desacoplada assegura que a lógica de interface e renderização gráfica ocorra localmente no processador do celular, ao passo que as operações de autenticação, persistência relacional, upload de arquivos multimídia e sincronização de mensagens em tempo real são delegadas a serviços gerenciados em nuvem de alta disponibilidade (BaaS -- \textit{Backend-as-a-Service}).
+O projeto adotou o padrão arquitetural cliente-servidor distribuído, segmentado em duas camadas fundamentais e independentes: a camada cliente móvel (executada nos smartphones dos usuários) e a camada de serviços em nuvem (hospedada na infraestrutura do Supabase). Essa abordagem desacoplada assegura que a lógica de interface e renderização gráfica ocorra localmente no processador do celular, ao passo que as operações de autenticação, persistência relacional, upload de arquivos multimídia e sincronização de mensagens em tempo real são delegadas a serviços gerenciados em nuvem de alta disponibilidade (BaaS, sigla para \textit{Backend-as-a-Service}).
 
-A integridade do ecossistema é garantida pela integração com o banco de dados relacional PostgreSQL, estruturado com políticas de segurança em nível de linha (\textit{Row Level Security} - RLS). Esse mecanismo transfere o controle de acesso e isolamento de permissões para o próprio motor do banco de dados, impedindo que requisições não autorizadas alterem ou excluam dados alheios, mesmo em eventuais falhas na camada de apresentação móvel.
+A integridade do ecossistema é garantida pela integração com o banco de dados relacional PostgreSQL, estruturado com políticas de segurança em nível de linha (\textit{Row Level Security}, ou RLS). Esse mecanismo transfere o controle de acesso e isolamento de permissões para o próprio motor do banco de dados, impedindo que requisições não autorizadas alterem ou excluam dados alheios, mesmo em eventuais falhas na camada de apresentação móvel.
 
 Este capítulo detalha as tecnologias que compõem o ecossistema cliente do WeFIND, descreve a infraestrutura de computação em nuvem provida pelo Supabase, apresenta a modelagem lógica relacional das entidades e tabelas no PostgreSQL e documenta as ferramentas auxiliares empregadas no projeto, finalizando com um quadro consolidado com a especificação e versão de todas as tecnologias utilizadas.
 
@@ -72,7 +72,7 @@ A segurança e a integridade do banco de dados relacional são asseguradas por p
 
 \subsubsection{Ciclo de Vida das Publicações e Política de Limpeza do Banco de Dados}
 
-Para solucionar a permanência de postagens antigas nas redes sociais — onde animais já resgatados continuam sendo compartilhados por meses —, o WeFIND adota uma lógica ativa de controle do ciclo de vida das publicações.
+Para solucionar a permanência de postagens antigas nas redes sociais, nas quais animais já resgatados continuam sendo compartilhados por meses, o WeFIND adota uma lógica ativa de controle do ciclo de vida das publicações.
 
 Cada anúncio possui um período determinado de vigência ativa. Conforme o prazo expira, o aplicativo notifica o tutor para confirmar se o pet continua desaparecido; se a busca prosseguir, a prorrogação é feita com um toque no botão ``Renovar'' no painel de gestão. Sem a confirmação do usuário, a publicação é automaticamente ocultada das buscas públicas, deixando de aparecer no feed e no mapa interativo para não mobilizar a comunidade em torno de casos já resolvidos.
 
