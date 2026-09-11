@@ -192,13 +192,21 @@ Para materializar essas premissas no ciclo prático de trabalho, combinou-se o m
 
 \subsubsection{Abordagem Ágil e Ciclo de Vida Incremental}
 
-O desenvolvimento da aplicação estruturou-se sob o modelo de ciclo de vida incremental e iterativo (VALENTE, 2023). Sob essa abordagem, o sistema computacional não é produzido de modo monolítico em uma única etapa; pelo contrário, o escopo global é decomposto em incrementos funcionais autônomos, cada um planejado, programado, integrado e testado antes do avanço para a etapa seguinte.
+Para o desenvolvimento da aplicação, adotou-se o modelo de ciclo de vida incremental e iterativo (VALENTE, 2023). Sob essa abordagem, o sistema não é produzido de uma só vez em um bloco único; pelo contrário, o projeto foi dividido em pequenas entregas chamadas de incrementos funcionais, cada um planejado, desenvolvido e testado no dispositivo móvel antes do início da fase seguinte.
 
-Ao longo do projeto, o software evoluiu por meio de cinco incrementos técnicos sucessivos. O primeiro incremento dedicou-se à infraestrutura de acesso e segurança, compreendendo a estruturação inicial do projeto React Native com Expo, a conexão segura com a plataforma em nuvem Supabase, a implementação dos fluxos de cadastro, a autenticação persistente com JSON Web Token (JWT) e a construção das telas de perfil de usuário.
+A evolução do aplicativo organizou-se em cinco incrementos funcionais:
 
-O segundo incremento contemplou o núcleo espacial e o georreferenciamento, mediante a integração do subsistema GPS pelo pacote \textit{expo-location}, a renderização do mapa interativo com \textit{react-native-maps}, a plotagem de marcadores dinâmicos diferenciados por espécie e a ordenação do mural de publicações conforme a proximidade física do usuário. No terceiro incremento, desenvolveu-se a gestão de publicações e mídias, contemplando os fluxos completos de cadastro de anúncios de animais nas categorias de perdidos, encontrados e adoção, o acoplamento da câmera e galeria por meio do pacote \textit{expo-image-picker}, a rotina de compressão fotográfica local com o \textit{expo-image-manipulator} e o armazenamento seguro de arquivos no Supabase Storage.
+O primeiro incremento dedicou-se ao acesso e à gestão de usuários, compreendendo a criação de conta, o login seguro e a visualização do perfil pessoal.
 
-O quarto incremento concentrou-se na comunicação em tempo real e no rastreamento colaborativo, abrangendo a implementação da linha do tempo de relatos de avistamentos e a criação do canal de bate-papo privativo entre usuários com conexões bidirecionais contínuas via WebSockets sustentadas pelo Supabase Realtime. Por fim, o quinto incremento materializou os recursos de apoio comunitário e prevenção, integrando a geração sob demanda de cartazes de busca com código QR escaneável pelo componente \textit{react-native-view-shot}, a estrutura da carteirinha preventiva do animal tutelado e o compartilhamento nativo com redes sociais e mensageiros via \textit{expo-sharing}. Essa divisão garantiu que cada subsistema passasse por baterias de testes no dispositivo físico antes do acoplamento do módulo subsequente, reduzindo riscos de falhas no código-fonte.
+O segundo incremento contemplou o núcleo espacial de busca, envolvendo o mapa interativo, a exibição de animais perdidos e encontrados por proximidade física e a filtragem rápida por espécie.
+
+No terceiro incremento, desenvolveu-se a gestão de publicações e fotos, permitindo cadastrar anúncios detalhados nas categorias de animais perdidos, encontrados e disponíveis para adoção, acompanhados de características físicas e fotos.
+
+O quarto incremento concentrou-se na comunicação e colaboração, integrando a linha do tempo de relatos de avistamentos pela comunidade e o canal de mensagens privativo em tempo real, permitindo o contato seguro entre tutores sem expor números de telefone.
+
+Por fim, o quinto incremento reuniu os recursos de prevenção e apoio comunitário, incluindo a criação automática de cartazes padronizados de busca com código QR para compartilhamento ou impressão, além da carteirinha preventiva do animal com dados do tutor.
+
+Essa organização permitiu testar e validar cada funcionalidade em aparelhos celulares reais ao final de cada ciclo, reduzindo falhas e garantindo que o aplicativo evoluísse de forma estável até a sua versão final.
 
 \clearpage
 
@@ -216,9 +224,9 @@ O fluxo produtivo estruturou-se em cinco colunas sequenciais no quadro visual. I
 
 O projeto percorreu quatro etapas sequenciais ao longo de seu ciclo global de desenvolvimento. A primeira etapa correspondeu à concepção e engenharia de requisitos, na qual as respostas obtidas no formulário de campo com a comunidade e as lições aprendidas na análise comparativa de plataformas similares foram estruturadas formalmente no levantamento de 43 requisitos funcionais e 14 requisitos não funcionais, detalhados no Capítulo 4.
 
-A segunda etapa envolveu a modelagem e o projeto de interface, compreendendo a construção dos diagramas conceituais e comportamentais da UML no software Astah UML (ASTAH, 2026), a especificação relacional do banco de dados PostgreSQL com políticas de segurança RLS no Supabase, e a elaboração iterativa do protótipo de alta fidelidade e identidade visual no Figma (FIGMA, 2026), detalhados nos Capítulos 4, 6 e 7.
+A segunda etapa envolveu a modelagem e o projeto de interface, compreendendo a construção dos diagramas conceituais da UML no software Astah UML (ASTAH, 2026), o planejamento estrutural do banco de dados relacional e a elaboração iterativa do protótipo visual e de interação no Figma (FIGMA, 2026), apresentados nos Capítulos 4, 6 e 7.
 
-A terceira etapa consistiu na implementação e codificação modular, abrangendo a escrita do código-fonte multiplataforma em TypeScript e JavaScript no editor Visual Studio Code, com uso da biblioteca React Native, plataforma Expo, componentes utilitários do NativeWind e TailwindCSS, além da integração com a nuvem Supabase e controle de versões distribuído no Git e GitHub (Capítulo 6).
+A terceira etapa consistiu na implementação e codificação modular do aplicativo móvel, em que as telas, regras de negócio e serviços de sincronização em nuvem foram programados e integrados com apoio do controle de versões no Git e GitHub (Capítulo 6).
 
 Por fim, a quarta etapa compreendeu os testes, validação técnica e avaliação de usabilidade, reunindo a execução de testes funcionais de caixa-preta para verificação das regras operacionais do aplicativo, medição de latência em conexões de rede móvel reais e a aplicação prática do protocolo System Usability Scale com 20 voluntários convidados, cujos procedimentos e resultados são analisados detalhadamente no Capítulo 8.
 
