@@ -50,32 +50,33 @@ A persistência estruturada dos dados é realizada no sistema gerenciador de ban
     \centering
     \caption{Modelo Lógico Relacional do Banco de Dados PostgreSQL}
     \label{fig:modelo_logico_banco}
-    \includegraphics[width=0.88\textwidth]{imagens/02_modelagem/figura09_modelo_logico_banco.png}
+    \includegraphics[width=0.95\textwidth]{imagens/02_modelagem/figura09_modelo_logico_banco.png}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-O modelo lógico da Figura~\ref{fig:modelo_logico_banco} é composto por cinco tabelas relacionais fundamentais:
+O modelo lógico da Figura~\ref{fig:modelo_logico_banco} é composto por seis tabelas relacionais fundamentais:
 
 A tabela \textit{usuarios} centraliza os dados cadastrais dos participantes do sistema. O campo identificador primário conecta-se diretamente à chave única fornecida pelo serviço Supabase Auth, registrando o nome completo, endereço de e-mail, fotografia de perfil, número de telefone para contato emergencial, cidade, estado de residência e o registro de data e hora de criação da conta.
 
-A tabela \textit{animais} armazena todas as publicações cadastradas na plataforma e estabelece chave estrangeira com a tabela \textit{usuarios}, identificando o autor da publicação. Entre os campos estruturados, constam o status operacional do registro (Perdido, Encontrado ou Adoção), nome do animal, espécie (canina ou felina), raça, porte físico, padrão de coloração da pelagem, sexo, faixa etária aproximada e indicador do uso prévio de coleira. Para possibilitar a busca espacial por proximidade e a plotagem exata no mapa interativo, a tabela armazena as coordenadas de latitude e longitude em formato de ponto flutuante, acompanhadas de campos descritivos para endereço, bairro, cidade, data do fato, observações gerais e indicador de resolução do caso.
+A tabela \textit{animais} gerencia os animais domésticos cadastrados preventivamente pelos tutores, registrando nome, espécie, raça, porte físico, coloração da pelagem, sexo, idade aproximada, código de microchip eletrônico, código QR exclusivo para a coleira de identificação e URL da foto de perfil para emissão da carteirinha digital.
 
-A tabela \textit{fotos\_animais} gerencia as fotografias anexadas a cada publicação, mantendo relacionamento de cardinalidade um-para-muitos com a tabela \textit{animais}. Essa estrutura armazena a URL pública da imagem persistida no armazenamento em nuvem do Supabase Storage, viabilizando o carregamento de múltiplas fotografias por anúncio com controle individual de exclusão.
+A tabela \textit{publicacoes} estrutura as ocorrências georreferenciadas na comunidade (Perdido, Encontrado ou Adoção). Estabelece vínculo com o usuário autor e chave estrangeira opcional com a tabela \textit{animais} (\textit{pet\_id}), viabilizando alertas automáticos sem redigitação de dados. Armazena título, descrição, coordenadas de latitude e longitude em ponto flutuante, endereço, data do fato, indicador de resolução do caso, carimbo de criação (\textit{created\_at}), data da última renovação (\textit{updated\_at}) e data limite para expiração ativa (\textit{data\_expiracao}).
 
-A tabela \textit{avistamentos} organiza os relatos colaborativos fornecidos pela comunidade ao visualizarem animais soltos na rua. Cada registro vincula-se ao animal correspondente e ao usuário informante, armazenando as coordenadas de latitude e longitude do local exato do avistamento, ponto de referência descritivo, endereço textual aproximado, fotografia comprobatória opcional e carimbo de data e hora do relato.
+A tabela \textit{fotos\_publicacoes} gerencia a galeria de imagens vinculada a cada anúncio, mantendo cardinalidade um-para-muitos com a tabela \textit{publicacoes} e armazenando a URL pública da mídia persistida no armazenamento em nuvem do Supabase Storage.
 
-Por fim, a tabela \textit{mensagens} dá suporte ao canal de comunicação privativo da aplicação. Ela reúne o identificador do animal em discussão, o identificador do usuário remetente, o identificador do usuário destinatário, o conteúdo textual da mensagem, anexo opcional de imagem, indicador booleano de confirmação de leitura e registro cronológico do envio.
+A tabela \textit{avistamentos} organiza os relatos colaborativos fornecidos pela comunidade ao visualizarem animais soltos na via pública. Cada registro conecta-se à respectiva publicação e ao usuário informante, registrando as coordenadas de latitude e longitude do ponto do avistamento, referências descritivas, fotografia de evidência e carimbo temporal.
+
+Por fim, a tabela \textit{mensagens} dá suporte ao canal de comunicação privativo da aplicação. Ela reúne o identificador da publicação em discussão, o usuário remetente, o destinatário, o conteúdo textual da mensagem, anexo opcional de imagem, indicador booleano de confirmação de leitura e registro cronológico do envio.
 
 A segurança e a integridade do banco de dados relacional são asseguradas por políticas de segurança em nível de linha (Row Level Security, ou RLS). Por meio desse mecanismo, implementado diretamente no mecanismo do PostgreSQL, define-se que qualquer usuário autenticado ou visitante possui permissão de leitura sobre as publicações de animais ativos, porém apenas o usuário proprietário daquele registro detém privilégios para alterar ou excluir suas próprias publicações e dados de perfil, impedindo modificações não autorizadas.
 
-\enlargethispage{\baselineskip}
 \subsubsection{Ciclo de Vida das Publicações e Política de Limpeza do Banco de Dados}
 
 Para solucionar a permanência de postagens antigas nas redes sociais — onde animais já resgatados continuam sendo compartilhados por meses —, o WeFIND adota uma lógica ativa de controle do ciclo de vida das publicações.
 
 Cada anúncio possui um período determinado de vigência ativa. Conforme o prazo expira, o aplicativo notifica o tutor para confirmar se o pet continua desaparecido; se a busca prosseguir, a prorrogação é feita com um toque no botão ``Renovar'' no painel de gestão. Sem a confirmação do usuário, a publicação é automaticamente ocultada das buscas públicas, deixando de aparecer no feed e no mapa interativo para não mobilizar a comunidade em torno de casos já resolvidos.
 
-Para impedir o inchaço do banco de dados e evitar o acúmulo de arquivos em nuvem, o sistema adota uma rotina periódica de limpeza definitiva. Caso a publicação permaneça inativa após um período de carência (30 a 60 dias), ela é apagada em definitivo da base PostgreSQL. Essa exclusão ocorre em cascata (\textit{CASCADE}), removendo os registros vinculados na tabela \textit{fotos\_animais} e apagando as imagens hospedadas no Supabase Storage, assegurando alta performance e sustentabilidade da infraestrutura.
+Para impedir o inchaço do banco de dados e evitar o acúmulo de arquivos em nuvem, o sistema adota uma rotina periódica de limpeza definitiva. Caso a publicação permaneça inativa após um período de carência (30 a 60 dias), ela é apagada em definitivo da base PostgreSQL. Essa exclusão ocorre em cascata (\textit{CASCADE}), removendo os registros vinculados na tabela \textit{fotos\_publicacoes} e apagando as imagens hospedadas no Supabase Storage, assegurando alta performance e sustentabilidade da infraestrutura.
 
 \clearpage
 
