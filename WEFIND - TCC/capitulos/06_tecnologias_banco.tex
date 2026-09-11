@@ -84,6 +84,88 @@ Para prevenir a sobrecarga do banco de dados e evitar o acúmulo de arquivos obs
 
 \clearpage
 
+\subsection{Motor Heurístico de Correspondência Inteligente (Matching Multicritério)}
+
+O sucesso na localização de um animal doméstico depende diretamente da velocidade com que informações complementares são conectadas. Em plataformas convencionais e grupos de redes sociais, tutores aflitos precisam revisar manualmente dezenas de postagens todos os dias para tentar reconhecer seu pet em fotos tiradas por terceiros. Para superar essa limitação e agir de forma proativa, o WeFIND incorpora em sua camada de serviços o motor de correspondência inteligente (\textit{petMatching.js}), que realiza o cruzamento automatizado entre publicações ativas com status complementares (animais Perdidos versus animais Encontrados).
+
+O motor opera em duas etapas sequenciais: a triagem eliminatória imediata e o cômputo ponderado de similaridade morfológica e espacial.
+
+\subsubsection{Critérios de Eliminação Estrita (\textit{Deal Breakers})}
+
+Para evitar o envio de alertas enganosos e não gerar falsas expectativas na comunidade, o algoritmo executa primeiramente uma checagem de viabilidade biológica e física. Três critérios possuem poder de veto absoluto (\textit{deal breakers}); caso qualquer um deles seja violado, o sistema atribui pontuação nula (0\%) imediatamente, encerrando o cálculo sem necessidade de avaliações adicionais:
+
+\begin{itemize}
+    \item \textbf{Espécies Incompatíveis}: registros pertencentes a categorias zoológicas distintas (como cão e gato, ou equino e ave) são descartados sumariamente;
+    \item \textbf{Sexo Oposto Comprovado}: quando ambos os anúncios informam com precisão o sexo do animal e estes divergem formalmente (macho versus fêmea), a possibilidade de equivalência é anulada;
+    \item \textbf{Portes Extremos Antagônicos}: animais classificados com portes nos extremos da escala (como porte pequeno ou mini confrontado com porte grande ou gigante) são considerados mutuamente exclusivos.
+\end{itemize}
+
+\subsubsection{Sistema de Ponderação, Penalidades e Proximidade por Haversine}
+
+Ultrapassada a barreira dos critérios eliminatórios, os anúncios são submetidos a uma matriz de pontuação cumulativa calibrada entre 0 e 100 pontos. Cada atributo físico coincidente adiciona valor ao índice de compatibilidade, ao passo que divergências relevantes em raça, pelagem ou distância geográfica aplicam penalidades matemáticas para mitigar falsos positivos. O Quadro~\ref{quadro:matching} consolida os critérios, as condições de pontuação e os pesos implementados no algoritmo.
+
+\vspace{0.3cm}
+{
+\phantomsection\label{quadro:matching}
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{3.3cm}|>{\raggedright\arraybackslash}p{8.4cm}|>{\centering\arraybackslash}p{2.5cm}|}
+\hline
+\multicolumn{3}{|c|}{\textbf{Quadro 4: Critérios e Pesos do Algoritmo de Matching do WeFIND}} \\ \hline
+\textbf{Critério Avaliado} & \textbf{Condição Lógica e Regra de Negócio} & \textbf{Pontuação} \\ \hline
+\endfirsthead
+
+\hline
+\multicolumn{3}{|c|}{\textbf{Quadro 4: Critérios e Pesos do Algoritmo de Matching (Continuação)}} \\ \hline
+\textbf{Critério Avaliado} & \textbf{Condição Lógica e Regra de Negócio} & \textbf{Pontuação} \\ \hline
+\endhead
+
+\hline
+\multicolumn{3}{|r|}{\textit{Continua na próxima página}} \\ \hline
+\endfoot
+
+\hline
+\multicolumn{3}{|c|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
+\endlastfoot
+
+\textbf{Espécie Animal} & Mesma espécie biológica confirmada (cão, gato, ave, cavalo). & +20 pontos \\ \cline{2-3}
+& Espécie genérica ou não informada em um dos cadastros. & +10 pontos \\ \hline
+\textbf{Sexo / Gênero} & Mesmo sexo informado em ambas as publicações. & +10 pontos \\ \cline{2-3}
+& Sexo não informado em pelo menos um dos anúncios. & +3 pontos \\ \hline
+\textbf{Porte Físico} & Mesmo porte identificado (ex.: ambos médios). & +15 pontos \\ \cline{2-3}
+& Portes contíguos na escala (pequeno e médio, ou médio e grande). & +6 pontos \\ \hline
+\textbf{Raça Declarada} & Mesma raça pura específica (ex.: Labrador com Labrador). & +25 pontos \\ \cline{2-3}
+& Raças compatíveis ou variações de grafia aproximadas. & +18 pontos \\ \cline{2-3}
+& Ambos classificados como sem raça definida (SRD/mestiço). & +8 pontos \\ \cline{2-3}
+& Raças puras declaradas claramente divergentes (conflito). & -20 pontos \\ \hline
+\textbf{Cores da Pelagem} & Duas ou mais cores coincidentes via dicionário semântico. & +20 pontos \\ \cline{2-3}
+& Uma única cor coincidente entre os dois animais. & +12 pontos \\ \cline{2-3}
+& Cores expressamente opostas sem intersecção (ex.: preto e branco). & -25 pontos \\ \hline
+\textbf{Faixa Etária} & Mesma faixa de idade declarada (filhote, jovem, adulto, idoso). & +5 pontos \\ \cline{2-3}
+& Conflito biológico flagrante (filhote versus animal sênior). & -15 pontos \\ \hline
+\textbf{Proximidade Geográfica} & Raio imediato até 1,2~km calculado pela fórmula de Haversine. & +15 pontos \\ \cline{2-3}
+& Mesma vizinhança urbana entre 1,2~km e 3,5~km de distância. & +10 pontos \\ \cline{2-3}
+& Mesma região geográfica entre 3,5~km e 8,0~km de distância. & +5 pontos \\ \cline{2-3}
+& Distância excessiva superior a 20,0~km entre as coordenadas. & -15 pontos \\ \cline{2-3}
+& Sem coordenadas GPS: mesmo bairro (+12 pts) ou mesma cidade (+5 pts). & +5 a +12 pts \\ \hline
+\end{longtable}
+}
+
+\subsubsection{Classificação Semântica e Disparo Automatizado de Notificações}
+
+O total de pontos obtido é normalizado em uma escala percentual de 0\% a 100\%, associando-se a categorias intuitivas de probabilidade visual:
+
+\begin{itemize}
+    \item \textbf{Altíssima Probabilidade ($\ge$ 85\%)}: indicada pelo selo semântico verde, sinaliza forte compatibilidade em múltiplos atributos físicos e proximidade geográfica quase idêntica;
+    \item \textbf{Grande Chance (70\% a 84\%)}: representada pelo tom verde floresta, indica animais com mesma raça e pelagem avistados na mesma região urbana;
+    \item \textbf{Possível Semelhança (55\% a 69\%)}: sinalizada com selo amarelo dourado, sugere verificação preventiva de animais com porte e cores similares;
+    \item \textbf{Descarte Automático ($<$ 55\%)}: registros abaixo do limiar mínimo são filtrados e não geram alertas, mantendo o ecossistema livre de poluição informativa.
+\end{itemize}
+
+Sempre que uma nova publicação atinge compatibilidade de no mínimo 60\% com algum animal ativo no banco de dados, o WeFIND aciona a rotina \textit{processAndNotifyPetMatches}. Esse serviço notifica em tempo real ambas as partes envolvidas: tanto o usuário recém-cadastrado quanto o tutor da publicação preexistente recebem notificações internas na aplicação, alertas sonoros por \textit{Push Notification} nativo no smartphone e mensagens ativas no WhatsApp viabilizadas pela Evolution API, apresentando atalhos imediatos para a tela de comparação minuciosa de fotografias e dados.
+
+\clearpage
+
 \subsection{Ferramentas Auxiliares de Apoio}
 
 Durante as etapas de planejamento, especificação, escrita de código e desenho visual, recorreu-se a um conjunto de ferramentas auxiliares de apoio ao desenvolvimento, apresentadas na Figura~\ref{fig:ferramentas_auxiliares}.
@@ -114,12 +196,12 @@ Para sintetizar de maneira clara e estruturada todo o conjunto de ferramentas, b
 \renewcommand{\arraystretch}{1.10}
 \begin{longtable}{|>{\raggedright\arraybackslash}p{3.7cm}|>{\raggedright\arraybackslash}p{3.1cm}|>{\centering\arraybackslash}p{1.6cm}|>{\raggedright\arraybackslash}p{6.1cm}|}
 \hline
-\multicolumn{4}{|c|}{\textbf{Quadro 4: Especificação e Versões das Tecnologias do Ecossistema WeFIND}} \\ \hline
+\multicolumn{4}{|c|}{\textbf{Quadro 5: Especificação e Versões das Tecnologias do Ecossistema WeFIND}} \\ \hline
 \textbf{Camada / Domínio} & \textbf{Tecnologia / Pacote} & \textbf{Versão} & \textbf{Função e Finalidade no Sistema} \\ \hline
 \endfirsthead
 
 \hline
-\multicolumn{4}{|c|}{\textbf{Quadro 4: Especificação e Versões das Tecnologias (Continuação)}} \\ \hline
+\multicolumn{4}{|c|}{\textbf{Quadro 5: Especificação e Versões das Tecnologias (Continuação)}} \\ \hline
 \textbf{Camada / Domínio} & \textbf{Tecnologia / Pacote} & \textbf{Versão} & \textbf{Função e Finalidade no Sistema} \\ \hline
 \endhead
 

@@ -15,13 +15,13 @@ As seções a seguir detalham os cenários de teste formulados, os resultados em
 A verificação do comportamento funcional do WeFIND baseou-se na técnica de testes de caixa-preta (\textit{black-box testing}), método no qual as funcionalidades são examinadas estritamente a partir do fornecimento de entradas e da inspeção dos resultados e saídas produzidas, sem intervenção direta ou dependência da estrutura interna do código-fonte (VALENTE, 2023).
 
 \ifversaoorientadora
-Para conferir rigor acadêmico e assegurar a cobertura integral do escopo do projeto, cada caso de teste foi desenhado e especificado para validar um conjunto articulado de Requisitos Funcionais (RF) estabelecidos no Capítulo 4. A suíte contempla 24 casos de teste estruturados (CT01 a CT24), combinando fluxos de caminho feliz (execução regular das rotinas), validações de robustez frente a dados inconsistentes e operações críticas em banco de dados e sensores nativos. Dessa forma, estrutura-se a cobertura planejada de 100\% dos 45 requisitos funcionais do aplicativo, cuja rastreabilidade individual completa frente às necessidades diagnosticadas na pesquisa de campo encontra-se catalogada no Apêndice D.
+Para conferir rigor acadêmico e assegurar a cobertura integral do escopo do projeto, cada caso de teste foi desenhado e especificado para validar um conjunto articulado de Requisitos Funcionais (RF) estabelecidos no Capítulo 4. A suíte contempla 25 casos de teste estruturados (CT01 a CT25), combinando fluxos de caminho feliz (execução regular das rotinas), validações de robustez frente a dados inconsistentes e operações críticas em banco de dados e sensores nativos. Dessa forma, estrutura-se a cobertura planejada de 100\% dos 46 requisitos funcionais do aplicativo, cuja rastreabilidade individual completa frente às necessidades diagnosticadas na pesquisa de campo encontra-se catalogada no Apêndice D.
 
-O Quadro~\ref{quadro:testes} consolida a especificação detalhada dos 22 cenários de testes funcionais estruturados para o sistema.
+O Quadro~\ref{quadro:testes} consolida a especificação detalhada dos 25 cenários de testes funcionais estruturados para o sistema.
 \else
-Para conferir rigor acadêmico e assegurar a cobertura integral do escopo do projeto, cada caso de teste foi desenhado para validar um conjunto articulado de Requisitos Funcionais (RF) estabelecidos no Capítulo 4. A suíte contempla 24 casos de teste estruturados (CT01 a CT24), combinando fluxos de caminho feliz (execução regular das rotinas), validações de robustez frente a dados inconsistentes e operações críticas em banco de dados e sensores nativos. Dessa forma, atesta-se a cobertura de 100\% dos 45 requisitos funcionais do aplicativo, cuja rastreabilidade individual completa frente às necessidades diagnosticadas na pesquisa de campo encontra-se catalogada no Apêndice D.
+Para conferir rigor acadêmico e assegurar a cobertura integral do escopo do projeto, cada caso de teste foi desenhado para validar um conjunto articulado de Requisitos Funcionais (RF) estabelecidos no Capítulo 4. A suíte contempla 25 casos de teste estruturados (CT01 a CT25), combinando fluxos de caminho feliz (execução regular das rotinas), validações de robustez frente a dados inconsistentes e operações críticas em banco de dados e sensores nativos. Dessa forma, atesta-se a cobertura de 100\% dos 46 requisitos funcionais do aplicativo, cuja rastreabilidade individual completa frente às necessidades diagnosticadas na pesquisa de campo encontra-se catalogada no Apêndice D.
 
-O Quadro~\ref{quadro:testes} consolida a matriz integral dos 24 casos de testes funcionais executados sobre a versão estável da aplicação.
+O Quadro~\ref{quadro:testes} consolida a matriz integral dos 25 casos de testes funcionais executados sobre a versão estável da aplicação.
 \fi
 
 \vspace{0.3cm}
@@ -32,12 +32,12 @@ O Quadro~\ref{quadro:testes} consolida a matriz integral dos 24 casos de testes 
 \renewcommand{\arraystretch}{1.18}
 \begin{longtable}{|>{\centering\arraybackslash}p{1.0cm}|>{\centering\arraybackslash}p{2.1cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.7cm}|>{\raggedright\arraybackslash}p{3.3cm}|>{\centering\arraybackslash}p{1.7cm}|}
 \hline
-\multicolumn{6}{|c|}{\textbf{Quadro 5: Matriz de Testes Funcionais do Sistema WeFIND}} \\ \hline
+\multicolumn{6}{|c|}{\textbf{Quadro 6: Matriz de Testes Funcionais do Sistema WeFIND}} \\ \hline
 \textbf{ID} & \textbf{Requisitos} & \textbf{Cenário de Teste} & \textbf{Procedimento Executado} & \textbf{Resultado Esperado} & \textbf{Situação} \\ \hline
 \endfirsthead
 
 \hline
-\multicolumn{6}{|c|}{\textbf{Quadro 5: Matriz de Testes Funcionais do Sistema WeFIND (Continuação)}} \\ \hline
+\multicolumn{6}{|c|}{\textbf{Quadro 6: Matriz de Testes Funcionais do Sistema WeFIND (Continuação)}} \\ \hline
 \textbf{ID} & \textbf{Requisitos} & \textbf{Cenário de Teste} & \textbf{Procedimento Executado} & \textbf{Resultado Esperado} & \textbf{Situação} \\ \hline
 \endhead
 
@@ -73,11 +73,12 @@ O Quadro~\ref{quadro:testes} consolida a matriz integral dos 24 casos de testes 
 \textbf{CT22} & RF42, RF43 & Denúncias Comunitárias e Governança & Envio de denúncia de publicação suspeita e avaliação por estrelas de membros & Registro do reporte para auditoria e exibição de reputação média no perfil do membro & \statusTeste \\ \hline
 \textbf{CT23} & RF44 & Apuração e Exibição do Ranking Semanal & Registro de ações com pontuação e consulta do ranking municipal na tela de perfil & Cálculo em tempo real dos pontos, ordenação do pódio e exibição da colocação do usuário & \statusTeste \\ \hline
 \textbf{CT24} & RF45 & Cadastro e Busca de Lares Temporários & Ativação de perfil de acolhedor com critérios de moradia e envio de solicitação de lar & Persistência segura no banco, exibição com selo verificado e envio de pedido direto & \statusTeste \\ \hline
+\textbf{CT25} & RF46 & Processamento do Algoritmo de Matching Multicritério & Cadastrar publicação de animal encontrado com atributos e localização compatíveis com animal perdido prévio (teste positivo) e com atributos opostos (teste negativo com espécies e sexos distintos) & Descarte imediato (0\% de semelhança) para casos com deal breakers; cálculo correto do percentual ponderado ($\ge 85\%$) para casos compatíveis; exibição no mural de correspondências e disparo automático de alertas bidirecionais via notificação e WhatsApp & \statusTeste \\ \hline
 \end{longtable}
 }
 
 \ifversaoorientadora
-A especificação dos 24 casos de teste estruturados contempla a verificação detalhada das regras de negócio concebidas para os 45 requisitos funcionais do WeFIND. O planejamento abrange rotinas de validação no cliente para impedir submissões com campos em branco ou formatos de dados inconsistentes, operações no banco relacional para preservar restrições de integridade referencial, isolamento por políticas RLS para garantir acesso estritamente autorizado aos registros e canais em tempo real para sustentar a comunicação imediata entre os membros da comunidade durante a homologação prática.
+A especificação dos 25 casos de teste estruturados contempla a verificação detalhada das regras de negócio concebidas para os 46 requisitos funcionais do WeFIND. O planejamento abrange rotinas de validação no cliente para impedir submissões com campos em branco ou formatos de dados inconsistentes, operações no banco relacional para preservar restrições de integridade referencial, isolamento por políticas RLS para garantir acesso estritamente autorizado aos registros e canais em tempo real para sustentar a comunicação imediata entre os membros da comunidade durante a homologação prática.
 
 \clearpage
 
@@ -105,11 +106,11 @@ Outro ponto considerado nos ensaios é o comportamento da aplicação diante de 
 
 A realização desses ensaios em aparelhos físicos de padrão intermediário visa aproximar a avaliação técnica das condições reais de uso da população. Em vez de limitar as verificações a computadores de alto desempenho ou emuladores virtuais, os testes em smartphones equipados com quatro gigabytes de memória RAM permitem observar o comportamento real de consumo de bateria, aquecimento do aparelho, fluidez da rolagem de telas e velocidade de resposta ao toque dos dedos.
 
-A integração equilibrada desses três eixos (os vinte e quatro casos de teste funcionais, o planejamento de usabilidade com a escala SUS e os ensaios de desempenho em campo) assegura uma base sólida para certificar o funcionamento do WeFIND perante os quarenta e cinco requisitos funcionais do projeto. O Capítulo 9 finaliza a monografia com as considerações finais, a síntese dos resultados alcançados e as sugestões para a evolução futura da plataforma.
+A integração equilibrada desses três eixos (os vinte e cinco casos de teste funcionais, o planejamento de usabilidade com a escala SUS e os ensaios de desempenho em campo) assegura uma base sólida para certificar o funcionamento do WeFIND perante os quarenta e seis requisitos funcionais do projeto. O Capítulo 9 finaliza a monografia com as considerações finais, a síntese dos resultados alcançados e as sugestões para a evolução futura da plataforma.
 
 \else
 
-A execução dos 24 casos de teste atestou a conformidade integral das regras de negócio implementadas para os 45 requisitos funcionais do WeFIND. As rotinas de validação no cliente impediram submissões com campos em branco ou formatos de dados inconsistentes, as operações no banco relacional preservaram as restrições de integridade referencial, o isolamento por políticas RLS assegurou o acesso estritamente autorizado aos registros e os canais em tempo real sustentaram a comunicação imediata entre os membros da comunidade.
+A execução dos 25 casos de teste atestou a conformidade integral das regras de negócio implementadas para os 46 requisitos funcionais do WeFIND. As rotinas de validação no cliente impediram submissões com campos em branco ou formatos de dados inconsistentes, as operações no banco relacional preservaram as restrições de integridade referencial, o isolamento por políticas RLS assegurou o acesso estritamente autorizado aos registros e os canais em tempo real sustentaram a comunicação imediata entre os membros da comunidade.
 
 \clearpage
 
