@@ -82,7 +82,7 @@ Complementarmente, a pesquisa investigou as principais barreiras enfrentadas pel
 
 \subsubsection{Análise Comparativa de Sistemas Similares}
 
-Para conhecer em profundidade o estado da arte e embasar tecnicamente as decisões de requisitos e design da aplicação proposta, realizou-se uma avaliação comparativa de sistemas similares, fundamentada nas diretrizes de usabilidade e experiência do usuário sintetizadas por Amstel (2024). Foram selecionadas e inspecionadas quatro plataformas representativas: \textit{Viu Meu Pet}, \textit{PawBoost}, \textit{AlertPet} e \textit{Pet911}.
+Para conhecer em profundidade o estado da arte e embasar tecnicamente as decisões de requisitos e design da aplicação proposta, realizou-se uma avaliação comparativa de sistemas similares, fundamentada nas diretrizes de usabilidade e experiência do usuário sintetizadas por Amstel (2024). Foram selecionadas e inspecionadas quatro plataformas representativas: \textit{Viu Meu Pet}, \textit{PawBoost}, \textit{AlertPet} e \textit{Pet911}, além da investigação das redes sociais generalistas (Facebook e WhatsApp), que atuam na prática como a principal solução de contorno adotada pela sociedade.
 
 A primeira plataforma analisada foi o \textbf{Viu Meu Pet}, um dos serviços brasileiros mais difundidos no segmento, disponível em versão web e aplicativo móvel para smartphones (Figura~\ref{fig:viumeupet}). 
 
@@ -146,29 +146,39 @@ A interface do Pet911 (Figura~\ref{fig:pet911}) adota uma identidade visual verd
 
 Como pontos positivos, o Pet911 possui extensa base de dados mundial, fluxo simplificado de cadastro inicial e geração automática de cartazes para impressão. Em contrapartida, apresenta limitações severas na camada de exploração espacial: os anúncios são organizados em listagens tabulares por município, sem recursos de geolocalização contínua por GPS no mapa, inexiste canal privativo de troca de mensagens e o impulsionamento comunitário depende de cobrança financeira.
 
-Para consolidar os resultados da análise comparativa, o Quadro~\ref{quadro:similares} sintetiza os perfis, recursos e pontos fortes de cada sistema avaliado.
+\clearpage
 
-\vspace{0.3cm}
+Complementarmente às quatro plataformas especializadas, a investigação avaliou o papel desempenhado pelas redes sociais generalistas, com ênfase nos grupos comunitários do Facebook e nas conversas instantâneas no WhatsApp. Conforme atestado no levantamento de campo realizado com tutores (no qual 100\% dos participantes utilizam redes sociais e 73,7\% recorrem ao WhatsApp para divulgar desaparecimentos), essas ferramentas consolidam-se como a principal solução de contorno adotada pela sociedade civil na ausência de sistemas dedicados. Como pontos positivos evidentes, destacam-se a altíssima adesão popular cotidiana, o custo financeiro nulo para publicações convencionais e a facilidade de compartilhamento imediato na rede de contatos pessoais no instante da perda.
+
+Em contrapartida, a utilização dessas ferramentas para o resgate de animais revela severas limitações operacionais. Em primeiro lugar, os algoritmos de distribuição cronológica das plataformas priorizam o engajamento imediato, provocando a perda acelerada de alcance dos anúncios após poucas horas. Em segundo lugar, inexiste integração com mapas georreferenciados ou filtros espaciais por raio de proximidade via GPS, impedindo buscas territoriais eficientes por voluntários da vizinhança. Em terceiro lugar, a ausência de formulários padronizados gera relatos dispersos e incompletos, enquanto os avistamentos fragmentam-se em comentários desorganizados. Ademais, a necessidade habitual de divulgar telefones celulares privados nas postagens expõe as famílias tutoras a tentativas de extorsão, golpes financeiros e trotes.
+
+Diferentemente das plataformas institucionais apresentadas nas Figuras~\ref{fig:viumeupet} a~\ref{fig:pet911}, cujas telas públicas foram reproduzidas para documentar seus modelos de interação, optou-se deliberadamente por não incluir capturas de tela de publicações reais de redes sociais nesta monografia. Essa decisão pauta-se pelo rigor metodológico e pelo estrito respeito à Lei Geral de Proteção de Dados Pessoais (LGPD, Lei nº 13.709/2018). As postagens comunitárias em redes abertas trazem dados pessoais sensíveis (como retratos de residências, nomes de familiares, endereços e telefones privados) expostos em momentos de vulnerabilidade emocional. A veiculação gráfica dessas peças violaria a privacidade dos cidadãos e reiteraria sua vulnerabilidade, justificando a opção por consolidar a avaliação desses canais de forma analítica e estruturada no Quadro~1.
+
+\clearpage
+
 \begin{table}[H]
 \centering
 \phantomsection\label{quadro:similares}
 \small
-\renewcommand{\arraystretch}{1.25}
-\begin{tabular}{|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{3.3cm}|>{\raggedright\arraybackslash}p{4.5cm}|>{\raggedright\arraybackslash}p{4.0cm}|}
+\renewcommand{\arraystretch}{0.94}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{4.3cm}|>{\raggedright\arraybackslash}p{4.5cm}|}
 \hline
-\multicolumn{4}{|c|}{\textbf{Quadro 1: Análise Comparativa dos Sistemas Similares}} \\ \hline
-\textbf{Nome} & \textbf{Definição} & \textbf{Funcionalidades} & \textbf{Pontos Positivos} \\ \hline
-\textbf{Viu Meu Pet} & Plataforma web e móvel nacional para cadastro, busca e divulgação de animais perdidos e encontrados. & Cadastro nos achados e perdidos e Facebook, gerador de imagens para redes, cartazes com QR Code para impressão e cruzamento automático por IA, além de serviços pagos (anúncio em destaque, impulsionamento e carro de som). & Grande visibilidade no Brasil, variedade de ferramentas visuais gratuitas (cartazes e IA) e opções escaláveis para ampliar o alcance do resgate. \\ \hline
-\textbf{PawBoost} & Plataforma internacional (web e móvel) voltada a alertas rápidos e engajamento comunitário em resgates. & Postagem em páginas locais do Facebook, alertas por correio eletrônico e notificações no celular para voluntários (\textit{Rescue Squad}™), mural de busca e gerador de cartazes, com opção de anúncios patrocinados no Facebook. & Grande rede comunitária de voluntários, automação de alertas para grupos locais e notificações diretas no celular. \\ \hline
-\textbf{AlertPet} & Serviço nacional baseado em portal web que atua como um ``carro de som digital'', intermediando campanhas de busca. & Criação de cartazes digitais pela equipe, veiculação de anúncios geolocalizados nas redes sociais no raio do sumiço, relatórios de métricas (Reportei) e suporte via WhatsApp. & Alcance regional rápido que independe da rede de contatos pessoal do tutor, segmentação geográfica profissional e relatórios formais de desempenho. \\ \hline
-\textbf{Pet911} & Plataforma web e móvel internacional (com versão no Brasil) de achados e perdidos de animais domésticos. & Cadastro simplificado de publicações, busca por listagem territorial, geração de cartazes para impressão e planos de divulgação patrocinada paga (redes sociais e e-mails). & Ampla base de registros internacionais, interface móvel simplificada, processos rápidos de publicação inicial e suporte a alertas comunitários. \\ \hline
+\multicolumn{4}{|c|}{\textbf{Quadro 1: Análise Comparativa dos Sistemas Similares e Soluções de Contorno}} \\ \hline
+\textbf{Nome} & \textbf{Definição e Proposta} & \textbf{Pontos Positivos} & \textbf{Principais Limitações} \\ \hline
+\textbf{Viu Meu Pet} & Plataforma web e móvel nacional para cadastro, busca e divulgação de animais perdidos e encontrados. & Ampla visibilidade no Brasil, variedade de ferramentas visuais gratuitas (cartazes e IA) e opções escaláveis para ampliar o resgate. & Cobrança financeira para impulsionamento, ausência de identificador preventivo para coleiras e falta de canal privativo de mensagens. \\ \hline
+\textbf{PawBoost} & Plataforma internacional (web e móvel) voltada a alertas rápidos e engajamento comunitário em resgates. & Grande rede comunitária de voluntários, automação de alertas para grupos locais e notificações diretas no celular. & Interface em língua inglesa voltada aos Estados Unidos, recursos avançados pagos e dependência de páginas no Facebook. \\ \hline
+\textbf{AlertPet} & Serviço nacional baseado em portal web que atua como anúncio móvel digital, intermediando campanhas de busca. & Alcance regional rápido que independe da rede de contatos pessoal do tutor, segmentação geográfica profissional e relatórios formais. & Modelo estritamente comercial pago, ausência de mapa interativo de navegação livre e carência de recursos colaborativos. \\ \hline
+\textbf{Pet911} & Plataforma web e móvel internacional (com versão no Brasil) de achados e perdidos de animais domésticos. & Ampla base de registros internacionais, interface móvel simplificada, processos rápidos de publicação e alertas comunitários. & Busca em listagens tabulares por município sem mapa dinâmico via GPS, ausência de chat privativo e recursos patrocinados pagos. \\ \hline
+\textbf{Redes Sociais (Facebook e WhatsApp)} & Canais de comunicação e redes generalistas utilizados de forma improvisada como solução de contorno predominante. & Altíssima densidade de usuários ativos cotidianamente, custo financeiro nulo e facilidade de compartilhamento imediato na rede de contatos. & Perda acelerada de alcance nas linhas do tempo, ausência de busca espacial em mapa interativo, comentários desorganizados e exposição de telefones pessoais. \\ \hline
 \end{tabular}
+\vspace{-0.2cm}
 \fonte{Autoria própria (2026)}
 \end{table}
 
-A síntese entre o levantamento empírico de campo e a análise comparativa de plataformas similares consolidou o conjunto principal de necessidades sociais e técnicas que orientou a concepção de todo o ecossistema da aplicação proposta: a urgência de uma forma preventiva de identificação rápida e gratuita (carteirinha digital com código QR para coleiras, suprindo a falta de coleiras e microchips verificada em 70\% dos animais), a importância do mapa interativo georreferenciado com filtros de proximidade (solicitado por 95\% dos participantes), a automação na criação de cartazes padronizados de busca e a exigência obrigatória de um canal de bate-papo privativo em tempo real para proteger o número de telefone dos cidadãos contra golpes. A articulação contínua entre essas carências diagnosticadas, os requisitos de software formulados, as telas desenvolvidas e os procedimentos de teste executados encontra-se estruturada na Matriz de Rastreabilidade de Requisitos e Testes, apresentada no Apêndice D deste trabalho.
-
 \clearpage
+
+A síntese entre o levantamento empírico de campo, a análise comparativa de plataformas similares e a avaliação das limitações das redes sociais consolidou o conjunto principal de necessidades sociais e técnicas que orientou a concepção de todo o ecossistema da aplicação proposta: a urgência de uma forma preventiva de identificação rápida e gratuita (carteirinha digital com código QR para coleiras, suprindo a falta de coleiras e microchips verificada em 70\% dos animais), a importância do mapa interativo georreferenciado com filtros de proximidade (solicitado por 95\% dos participantes), a automação na criação de cartazes padronizados de busca e a exigência obrigatória de um canal de bate-papo privativo em tempo real para proteger o número de telefone dos cidadãos contra golpes. A articulação contínua entre essas carências diagnosticadas, os requisitos de software formulados, as telas desenvolvidas e os procedimentos de teste executados encontra-se estruturada na Matriz de Rastreabilidade de Requisitos e Testes, apresentada no Apêndice~D deste trabalho.
 
 \subsection{Metodologia de Desenvolvimento de Software}
 
