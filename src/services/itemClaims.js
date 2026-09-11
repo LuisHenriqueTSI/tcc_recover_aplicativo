@@ -207,6 +207,29 @@ export const getPendingClaimsForItem = async (itemId) => {
   }
 };
 
+// Buscar o histórico completo de solicitações de um item
+export const getClaimsForItem = async (itemId) => {
+  if (!itemId) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('item_claims')
+      .select('*, profiles!claimant_id(name, email)')
+      .eq('item_id', itemId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[itemClaims] Erro ao buscar histórico de reivindicações:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('[itemClaims] Exceção ao buscar histórico de reivindicações:', err);
+    return [];
+  }
+};
+
 // Buscar todas as reivindicações de um usuário (como claimant)
 export const getMyItemClaims = async (userId) => {
   if (!userId) return [];

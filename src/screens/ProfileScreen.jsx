@@ -308,12 +308,7 @@ const ProfileScreen = ({ navigation }) => {
           <MaterialIcons name="badge" size={24} color="#15803D" />
         </View>
         <View style={styles.postsTextBox}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text style={[styles.postsTitle, { color: colors.text }]}>Animais Tutelados & Carteira</Text>
-            <View style={{ backgroundColor: '#16A34A', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 4 }}>
-              <Text style={{ fontSize: 9, fontWeight: '900', color: '#FFFFFF' }}>NOVO</Text>
-            </View>
-          </View>
+          <Text style={[styles.postsTitle, { color: colors.text }]}>Meus Pets & Carteirinhas</Text>
           <Text style={[styles.postsSubtitle, { color: colors.textSecondary }]}>
             Carteirinha digital, dados de saúde e alerta de desaparecimento
           </Text>
@@ -339,6 +334,24 @@ const ProfileScreen = ({ navigation }) => {
         <View style={[styles.postsBadge, { backgroundColor: colors.primary }]}>
           <Text style={styles.postsBadgeText}>
             {userItems.length}
+          </Text>
+        </View>
+        <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ marginLeft: 4 }} />
+      </TouchableOpacity>
+
+      {/* 3.5 ACESSO DIRETO: SOLICITAÇÕES DE DEVOLUÇÃO */}
+      <TouchableOpacity
+        style={[styles.postsCard, { backgroundColor: isDark ? '#11221C' : '#F0FDF4', borderColor: isDark ? '#2E5634' : '#BBF7D0' }]}
+        onPress={() => navigation.navigate('ClaimsManagement')}
+        activeOpacity={0.85}
+      >
+        <View style={[styles.postsIconBox, { backgroundColor: isDark ? 'rgba(52, 211, 153, 0.2)' : '#DCFCE7' }]}>
+          <MaterialIcons name="assignment-turned-in" size={23} color="#15803D" />
+        </View>
+        <View style={styles.postsTextBox}>
+          <Text style={[styles.postsTitle, { color: colors.text }]}>Solicitações de devolução</Text>
+          <Text style={[styles.postsSubtitle, { color: colors.textSecondary }]}>
+            Revise comprovações de pessoas que reconheceram um animal publicado por você
           </Text>
         </View>
         <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ marginLeft: 4 }} />

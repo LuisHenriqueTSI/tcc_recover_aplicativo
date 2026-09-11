@@ -201,10 +201,29 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
   const IMAGE_HEIGHT = 215;
 
   const isOwner = Boolean(user && item.owner_id === user.id);
-  const ownerAvatar = (isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || item.profiles?.avatar_url || item.profiles?.avatarUrl || item.owner_avatar || null;
+  const parsedExtraFields = (() => {
+    if (!item?.extra_fields) return {};
+    if (typeof item.extra_fields === 'object') return item.extra_fields;
+    try {
+      const parsed = JSON.parse(item.extra_fields);
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+      console.warn('Não foi possível interpretar os dados extras do card:', error);
+      return {};
+    }
+  })();
+  const anonymousValue = parsedExtraFields.help_network?.anonymous;
+  const isAnonymousReport = [true, 1, 'true', '1', 'yes', 'sim'].includes(
+    typeof anonymousValue === 'string' ? anonymousValue.toLowerCase() : anonymousValue
+  );
+  const ownerAvatar = isAnonymousReport
+    ? null
+    : (isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || item.profiles?.avatar_url || item.profiles?.avatarUrl || item.owner_avatar || null;
   const safeTitle = item.title != null ? String(item.title) : (animalSpecies || 'Animal');
   const safeDescription = item.description != null ? String(item.description) : '';
-  const safeOwnerName = (isOwner && userProfile?.name) ? userProfile.name : (item.owner_name != null ? String(item.owner_name) : (item.profiles?.name || 'Tutor'));
+  const safeOwnerName = isAnonymousReport
+    ? 'Relato anônimo da comunidade'
+    : (isOwner && userProfile?.name) ? userProfile.name : (item.owner_name != null ? String(item.owner_name) : (item.profiles?.name || 'Tutor'));
   const activeReward = Array.isArray(item.rewards)
     ? item.rewards.find(reward => reward?.status === 'active')
     : null;
@@ -669,7 +688,7 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
           <TouchableOpacity
             onPress={() => {
-              if (onPressOwner && item.owner_id) {
+              if (!isAnonymousReport && onPressOwner && item.owner_id) {
                 onPressOwner(item.owner_id, safeOwnerName, ownerAvatar);
               }
             }}
@@ -691,14 +710,16 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
               {ownerAvatar ? (
                 <Image source={{ uri: ownerAvatar }} style={{ width: 28, height: 28, borderRadius: 14 }} />
               ) : (
-                <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 12 }}>
-                  {safeOwnerName.trim()[0]?.toUpperCase() || 'U'}
-                </Text>
+                <MaterialIcons
+                  name={isAnonymousReport ? 'visibility-off' : 'person'}
+                  size={15}
+                  color={isAnonymousReport ? colors.textMuted : colors.primary}
+                />
               )}
             </View>
             <View style={{ flexShrink: 1 }}>
               <Text style={{ fontSize: 10.5, color: colors.textMuted }}>Publicado por</Text>
-              <Text style={{ fontSize: 12.5, color: colors.primary, fontWeight: '700' }} numberOfLines={1}>
+              <Text style={{ fontSize: 12.5, color: isAnonymousReport ? colors.textMuted : colors.primary, fontWeight: '700' }} numberOfLines={1}>
                 {safeOwnerName}
               </Text>
             </View>

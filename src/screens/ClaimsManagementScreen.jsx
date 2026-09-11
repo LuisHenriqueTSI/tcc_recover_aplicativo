@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,9 @@ import {
   Modal,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
-import { getPendingClaimsForItem, approveClaim, rejectClaim } from '../services/itemClaims';
+import { useFocusEffect } from '@react-navigation/native';
+import { getClaimsForItem } from '../services/itemClaims';
+import { approveVerification, rejectVerification } from '../services/proofVerification';
 import { listItems } from '../services/items';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -20,17 +22,11 @@ import COLORS from '../constants/theme';
 export default function ClaimsManagementScreen({ navigation }) {
   const { user } = useAuth();
   const [myFoundItems, setMyFoundItems] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
   const [claims, setClaims] = useState([]);
+  const [historyClaims, setHistoryClaims] = useState([]);
   const [loading, setLoading] = useState(false);
   const [processingClaimId, setProcessingClaimId] = useState(null);
   const [expandedClaimId, setExpandedClaimId] = useState(null);
-
-  useEffect(() => {
-    if (user) {
-      loadFoundItems();
-    }
-  }, [user]);
 
   const loadFoundItems = async () => {
     setLoading(true);
@@ -39,24 +35,23 @@ export default function ClaimsManagementScreen({ navigation }) {
       setMyFoundItems(items || []);
 
       if (items && items.length > 0) {
-        const pendingClaimsForAll = [];
+        const claimsForAll = [];
         for (const item of items) {
-          const pendingClaims = await getPendingClaimsForItem(item.id);
-          pendingClaimsForAll.push(...(pendingClaims || []).map(claim => ({
+          const itemClaims = await getClaimsForItem(item.id);
+          claimsForAll.push(...(itemClaims || []).map(claim => ({
             ...claim,
             itemId: item.id,
             itemTitle: item.title,
           })));
         }
 
-        setClaims(pendingClaimsForAll || []);
+        setClaims(claimsForAll.filter(claim => claim.status === 'pending'));
+        setHistoryClaims(claimsForAll.filter(claim => claim.status !== 'pending'));
 
-        const firstItemWithClaims = items.find(item => pendingClaimsForAll.some(claim => claim.itemId === item.id)) || items[0];
-        setSelectedItem(firstItemWithClaims);
         setExpandedClaimId(null);
       } else {
         setClaims([]);
-        setSelectedItem(null);
+        setHistoryClaims([]);
       }
     } catch (err) {
       console.error('[ClaimsManagement] Erro ao carregar pets encontrados:', err);
@@ -66,34 +61,29 @@ export default function ClaimsManagementScreen({ navigation }) {
     }
   };
 
-  const loadClaimsForItem = async (itemId) => {
-    try {
-      const pendingClaims = await getPendingClaimsForItem(itemId);
-      setClaims((pendingClaims || []).map(claim => ({
-        ...claim,
-        itemId,
-        itemTitle: myFoundItems.find(item => item.id === itemId)?.title || 'Pet',
-      })));
-    } catch (err) {
-      console.error('[ClaimsManagement] Erro ao carregar reivindicações:', err);
-    }
-  };
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        loadFoundItems();
+      }
+    }, [user])
+  );
 
-  const handleSelectItem = (item) => {
-    setSelectedItem(item);
-    setExpandedClaimId(null);
-    loadClaimsForItem(item.id);
-  };
-
-  const handleApproveClaim = async (claimId) => {
+  const handleApproveClaim = async (claim) => {
+    const claimId = claim.id;
     setProcessingClaimId(claimId);
     try {
-      await approveClaim(claimId);
+      await approveVerification(claimId, {
+        itemId: claim.itemId,
+        claimantId: claim.claimant_id,
+        itemTitle: claim.itemTitle || 'o pet',
+      });
       Alert.alert(
         'Reivindicação aprovada!',
         'O usuário pode agora entrar em contato com você. Vocês podem combinar a devolução do pet.',
         [{ text: 'OK', onPress: () => {
           setClaims(claims.filter(c => c.id !== claimId));
+          setHistoryClaims([{ ...claim, status: 'approved' }, ...historyClaims.filter(c => c.id !== claimId)]);
           setExpandedClaimId(null);
         }}]
       );
@@ -104,7 +94,8 @@ export default function ClaimsManagementScreen({ navigation }) {
     }
   };
 
-  const handleRejectClaim = async (claimId) => {
+  const handleRejectClaim = async (claim) => {
+    const claimId = claim.id;
     Alert.alert(
       'Rejeitar reivindicação?',
       'O usuário será notificado que sua reivindicação foi rejeitada.',
@@ -116,8 +107,13 @@ export default function ClaimsManagementScreen({ navigation }) {
           onPress: async () => {
             setProcessingClaimId(claimId);
             try {
-              await rejectClaim(claimId, 'Rejeitado pelo tutor da publicação');
+              await rejectVerification(claimId, 'Rejeitado pelo tutor da publicação', {
+                itemId: claim.itemId,
+                claimantId: claim.claimant_id,
+                itemTitle: claim.itemTitle || 'o pet',
+              });
               setClaims(claims.filter(c => c.id !== claimId));
+              setHistoryClaims([{ ...claim, status: 'rejected' }, ...historyClaims.filter(c => c.id !== claimId)]);
               setExpandedClaimId(null);
               Alert.alert('Reivindicação rejeitada', 'O usuário foi notificado.');
             } catch (err) {
@@ -164,54 +160,28 @@ export default function ClaimsManagementScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Abas com pets encontrados */}
-      <View style={styles.itemTabs}>
-        <FlatList
-          data={myFoundItems}
-          keyExtractor={item => item.id.toString()}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.itemTab,
-                selectedItem?.id === item.id && styles.itemTabActive,
-              ]}
-              onPress={() => handleSelectItem(item)}
-            >
-              <Text
-                style={[
-                  styles.itemTabText,
-                  selectedItem?.id === item.id && styles.itemTabTextActive,
-                ]}
-                numberOfLines={1}
-              >
-                {item.title}
-              </Text>
-              {((claims || []).filter(claim => claim.itemId === item.id).length > 0) && selectedItem?.id === item.id && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{(claims || []).filter(claim => claim.itemId === item.id).length}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          )}
-          contentContainerStyle={styles.itemTabsContent}
-        />
-      </View>
-
-      {/* Lista de reivindicações */}
-      {claims.length === 0 ? (
+      {/* Solicitações pendentes */}
+      {claims.length === 0 && historyClaims.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>Nenhuma reivindicação pendente</Text>
+          <Text style={styles.emptyText}>Nenhuma solicitação encontrada</Text>
           <Text style={styles.emptySubtext}>
-            Quando alguém reivindicar este pet, aparecerá aqui.
+            As solicitações de devolução dos seus animais aparecerão aqui.
           </Text>
         </View>
       ) : (
         <FlatList
-          data={claims}
-          keyExtractor={claim => claim.id.toString()}
+          data={[...claims, ...historyClaims]}
+          keyExtractor={claim => `${claim.id}_${claim.status}`}
           contentContainerStyle={styles.claimsList}
+          ListHeaderComponent={() => (
+            <View style={styles.listHeader}>
+              {claims.length > 0 && (
+                <View style={styles.pendingSummary}>
+                  <Text style={styles.pendingSummaryText}>{claims.length} aguardando sua análise</Text>
+                </View>
+              )}
+            </View>
+          )}
           renderItem={({ item: claim }) => (
             <View key={claim.id} style={styles.claimCard}>
               <TouchableOpacity
@@ -222,13 +192,17 @@ export default function ClaimsManagementScreen({ navigation }) {
                   <Text style={styles.claimantName}>
                     {claim.profiles?.name || 'Usuário'}
                   </Text>
+                  <Text style={styles.claimItemTitle}>{claim.itemTitle || 'Animal publicado'}</Text>
                   <Text style={styles.claimTime}>
                     {new Date(claim.created_at).toLocaleDateString('pt-BR')}
                   </Text>
                 </View>
-                <Text style={styles.expandIcon}>
-                  {expandedClaimId === claim.id ? '▼' : '▶'}
-                </Text>
+                <View style={styles.statusColumn}>
+                  <View style={[styles.statusPill, claim.status === 'pending' ? styles.pendingPill : claim.status === 'approved' ? styles.approvedPill : styles.rejectedPill]}>
+                    <Text style={styles.statusPillText}>{claim.status === 'pending' ? 'Pendente' : claim.status === 'approved' ? 'Aprovada' : 'Rejeitada'}</Text>
+                  </View>
+                  <Text style={styles.expandIcon}>{expandedClaimId === claim.id ? '▲' : '▼'}</Text>
+                </View>
               </TouchableOpacity>
 
               {expandedClaimId === claim.id && (
@@ -251,21 +225,28 @@ export default function ClaimsManagementScreen({ navigation }) {
                     </View>
                   )}
 
-                  <View style={styles.actions}>
+                  {claim.rejection_reason && claim.status === 'rejected' && (
+                    <View style={styles.rejectionBox}>
+                      <Text style={styles.sectionTitle}>Motivo da rejeição:</Text>
+                      <Text style={styles.rejectionText}>{claim.rejection_reason}</Text>
+                    </View>
+                  )}
+
+                  {claim.status === 'pending' && <View style={styles.actions}>
                     <Button
                       title={processingClaimId === claim.id ? 'Processando...' : 'Rejeitar'}
                       variant="secondary"
-                      onPress={() => handleRejectClaim(claim.id)}
+                      onPress={() => handleRejectClaim(claim)}
                       disabled={processingClaimId === claim.id}
                       style={{ flex: 1 }}
                     />
                     <Button
                       title={processingClaimId === claim.id ? 'Processando...' : 'Aprovar'}
-                      onPress={() => handleApproveClaim(claim.id)}
+                      onPress={() => handleApproveClaim(claim)}
                       disabled={processingClaimId === claim.id}
                       style={{ flex: 1, marginLeft: 8 }}
                     />
-                  </View>
+                  </View>}
                 </View>
               )}
             </View>
@@ -296,48 +277,6 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     lineHeight: 20,
   },
-  itemTabs: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    paddingVertical: 8,
-  },
-  itemTabsContent: {
-    paddingHorizontal: 16,
-  },
-  itemTab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  itemTabActive: {
-    backgroundColor: COLORS.primary,
-  },
-  itemTabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-    maxWidth: 150,
-  },
-  itemTabTextActive: {
-    color: '#FFFFFF',
-  },
-  badge: {
-    marginLeft: 8,
-    backgroundColor: '#DC2626',
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '700',
-  },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
@@ -358,6 +297,22 @@ const styles = StyleSheet.create({
   claimsList: {
     paddingHorizontal: 16,
     paddingVertical: 16,
+  },
+  listHeader: {
+    marginBottom: 2,
+  },
+  pendingSummary: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FEF3C7',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginTop: 10,
+  },
+  pendingSummaryText: {
+    color: '#92400E',
+    fontSize: 12,
+    fontWeight: '800',
   },
   claimCard: {
     backgroundColor: '#FFFFFF',
@@ -382,6 +337,12 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     marginBottom: 4,
   },
+  claimItemTitle: {
+    fontSize: 13,
+    color: COLORS.primary,
+    fontWeight: '700',
+    marginBottom: 3,
+  },
   claimTime: {
     fontSize: 12,
     color: '#9CA3AF',
@@ -389,6 +350,31 @@ const styles = StyleSheet.create({
   expandIcon: {
     fontSize: 14,
     color: '#6B7280',
+    textAlign: 'right',
+    marginTop: 6,
+  },
+  statusColumn: {
+    alignItems: 'flex-end',
+    marginLeft: 8,
+  },
+  statusPill: {
+    borderRadius: 12,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+  },
+  pendingPill: {
+    backgroundColor: '#FEF3C7',
+  },
+  approvedPill: {
+    backgroundColor: '#DCFCE7',
+  },
+  rejectedPill: {
+    backgroundColor: '#FEE2E2',
+  },
+  statusPillText: {
+    color: '#374151',
+    fontSize: 11,
+    fontWeight: '800',
   },
   claimDetails: {
     borderTopWidth: 1,
@@ -422,6 +408,17 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 150,
     borderRadius: 8,
+  },
+  rejectionBox: {
+    backgroundColor: '#FEF2F2',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 16,
+  },
+  rejectionText: {
+    color: '#991B1B',
+    fontSize: 13,
+    lineHeight: 18,
   },
   actions: {
     flexDirection: 'row',

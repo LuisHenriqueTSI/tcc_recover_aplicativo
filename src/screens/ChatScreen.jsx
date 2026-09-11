@@ -19,7 +19,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMessages, sendMessage, markMessagesAsRead, uploadMessagePhoto, getOrCreateConversation, closeConversation } from '../services/messages';
-import { submitOwnershipProof } from '../services/proofVerification';
+import { submitOwnershipProof, getVerificationStatus } from '../services/proofVerification';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -61,6 +61,7 @@ const ChatScreen = (props) => {
   const [proofText, setProofText] = useState('');
   const [proofPhoto, setProofPhoto] = useState(null);
   const [submittingProof, setSubmittingProof] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState(null);
 
   // Estados para o Resgatista compartilhar o local de entrega / encontro
   const [showShareLocationModal, setShowShareLocationModal] = useState(false);
@@ -204,8 +205,32 @@ const ChatScreen = (props) => {
   const isMeFinder = itemData ? itemData.owner_id === user?.id : conversation?.itemOwnerId === user?.id;
   const hasUserSentMessage = messages.some(m => m.sender_id === user?.id);
 
-  // Visitante precisa comprovar posse se o pet foi encontrado e ainda não mandou nada
-  const requiresInitialProof = Boolean(itemId && !isItemDeleted && isFoundPet && !isMeFinder && !hasUserSentMessage && !loading);
+  useEffect(() => {
+    if (!itemId || !user?.id || isMeFinder || !isFoundPet) return;
+    getVerificationStatus(itemId, user.id)
+      .then((result) => setVerificationStatus(result?.status || null))
+      .catch((statusError) => console.warn('[ChatScreen] Erro ao carregar comprovação:', statusError.message));
+  }, [itemId, user?.id, isMeFinder, isFoundPet]);
+
+  const refreshVerificationStatus = async () => {
+    if (!itemId || !user?.id || isMeFinder || !isFoundPet) return;
+    const result = await getVerificationStatus(itemId, user.id);
+    setVerificationStatus(result?.status || null);
+  };
+
+  useEffect(() => {
+    if (!itemId || !user?.id || isMeFinder || !isFoundPet || verificationStatus !== 'pending') return;
+    const interval = setInterval(() => {
+      refreshVerificationStatus().catch((statusError) => {
+        console.warn('[ChatScreen] Erro ao atualizar status da comprovação:', statusError.message);
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [itemId, user?.id, isMeFinder, isFoundPet, verificationStatus]);
+
+  // O chat de um animal encontrado só é liberado após a aprovação do tutor.
+  const requiresInitialProof = Boolean(itemId && !isItemDeleted && isFoundPet && !isMeFinder && verificationStatus !== 'approved' && !loading);
+  const verificationPending = verificationStatus === 'pending';
 
   // Resgatista pode confirmar o tutor e liberar o local de retirada
   const canShareLocation = Boolean(itemId && !isItemDeleted && isFoundPet && isMeFinder);
@@ -377,10 +402,11 @@ const ChatScreen = (props) => {
         submitOwnershipProof({
           itemId,
           claimantId: user.id,
-          photoUris: photoUrl ? [photoUrl] : [],
+          proofPhotos: proofPhoto ? [proofPhoto] : [],
           message: proofText.trim() || 'Comprovação enviada via Chat.',
           itemTitle: petTitle || 'o pet',
           finderId: otherId,
+          sendDirectMessage: false,
         }).catch((err) => console.log('[ChatScreen] Erro no submitOwnershipProof background:', err));
       }
 
@@ -393,7 +419,8 @@ const ChatScreen = (props) => {
       setProofText('');
       setProofPhoto(null);
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
-      Alert.alert('Comprovação Enviada! 🎉', 'Sua identificação foi enviada para o protetor/resgatista. O chat agora está liberado para mensagens!');
+      setVerificationStatus('pending');
+      Alert.alert('Solicitação enviada! 🛡️', 'Sua comprovação foi enviada ao dono da publicação. O chat será liberado assim que ele aprovar a devolução.');
     } catch (err) {
       Alert.alert('Erro ao enviar comprovação', err.message || 'Tente novamente.');
     } finally {
@@ -768,7 +795,10 @@ const ChatScreen = (props) => {
         }}>
           <MaterialIcons name="security" size={17} color="#2E5634" />
           <Text style={{ flex: 1, fontSize: 11.5, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 15 }}>
-            <Text style={{ fontWeight: '800' }}>Dica de Segurança:</Text> Só combine locais de entrega após o tutor apresentar fotos antigas ou características que comprovem que é o dono.
+            <Text style={{ fontWeight: '800' }}>Dica de Segurança:</Text>{' '}
+            {verificationPending
+              ? 'Sua solicitação está em análise. O chat será liberado assim que o dono da publicação aprovar a devolução.'
+              : 'Só combine locais de entrega após o tutor apresentar fotos antigas ou características que comprovem que é o dono.'}
           </Text>
         </View>
       )}
@@ -785,6 +815,19 @@ const ChatScreen = (props) => {
         onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
         keyboardShouldPersistTaps="handled"
         style={{ flex: 1 }}
+        ListHeaderComponent={verificationPending ? (
+          <View style={[styles.proofCard, { backgroundColor: colors.surface, borderColor: '#FDE68A', marginBottom: 8 }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <MaterialIcons name="hourglass-top" size={20} color="#D97706" />
+              <Text style={{ color: isDark ? '#FBBF24' : '#B45309', fontWeight: '800', fontSize: 14 }}>
+                Solicitação enviada e em análise
+              </Text>
+            </View>
+            <Text style={{ color: colors.textSecondary, fontSize: 12, lineHeight: 18, marginTop: 8 }}>
+              O dono da publicação precisa revisar sua comprovação. Assim que ele aceitar a devolução, este chat será liberado automaticamente.
+            </Text>
+          </View>
+        ) : null}
         ListEmptyComponent={
           requiresInitialProof ? (
             <View style={[styles.proofCard, { backgroundColor: colors.surface, borderColor: isDark ? colors.primary : COLORS.primaryBorder }]}>

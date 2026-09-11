@@ -106,12 +106,13 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
     const renewalAlerts = buildRenewalAlerts(items);
 
     const mappedSystemAlerts = [...renewalAlerts, ...(systemAlertsData || [])]
-      .filter((alert) => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed' || alert.type === 'nearby_lost_pet' || alert.type === 'match' || alert.type === 'pet_match' || alert.type === 'sighting'))
+      .filter((alert) => alert && (alert.type === 'renewal_reminder' || alert.type === 'item_removed' || alert.type === 'nearby_lost_pet' || alert.type === 'match' || alert.type === 'pet_match' || alert.type === 'sighting' || alert.type === 'claim_received' || alert.type === 'claim_approved' || alert.type === 'claim_rejected'))
       .map((alert) => {
         const isRenewal = alert.type === 'renewal_reminder';
         const isNearby = alert.type === 'nearby_lost_pet';
         const isMatch = alert.type === 'match' || alert.type === 'pet_match';
         const isSighting = alert.type === 'sighting';
+        const isClaim = alert.type === 'claim_received' || alert.type === 'claim_approved' || alert.type === 'claim_rejected';
 
         let iconName = 'notifications';
         let prefix = '📌 Aviso do Sistema:';
@@ -127,6 +128,9 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
         } else if (isSighting) {
           iconName = 'visibility';
           prefix = '👁️ Novo Avistamento:';
+        } else if (isClaim) {
+          iconName = alert.type === 'claim_received' ? 'assignment-turned-in' : (alert.type === 'claim_approved' ? 'verified' : 'cancel');
+          prefix = alert.type === 'claim_received' ? '🛡️ Nova solicitação:' : '🛡️ Atualização da solicitação:';
         }
 
         return {
@@ -135,7 +139,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
           icon: iconName,
           time: getTikTokRelativeTime(alert.created_at),
           timestamp: new Date(alert.created_at || Date.now()).getTime(),
-          isCritical: isNearby || isRenewal || isMatch || !alert.read,
+          isCritical: isNearby || isRenewal || isMatch || isClaim || !alert.read,
         };
       });
 
@@ -224,6 +228,15 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
           otherName: notification.title,
         },
       });
+      return;
+    }
+
+    if (notification.type === 'claim_received') {
+      const normalizedId = String(notification.id).replace('system_', '');
+      if (/^\d+$/.test(normalizedId)) {
+        await markNotificationRead(normalizedId);
+      }
+      navigation.navigate('ClaimsManagement');
       return;
     }
 

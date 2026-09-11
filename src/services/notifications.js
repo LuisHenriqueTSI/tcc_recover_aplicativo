@@ -302,18 +302,6 @@ export async function createNotification({ user_id, type, title, message, item_i
     itemId: item_id,
   });
 
-  // Sempre dispara a notificação para o WhatsApp (se o usuário deu consentimento)
-  try {
-    await dispatchSystemNotificationToWhatsApp({
-      userId: user_id,
-      title,
-      message,
-      type,
-    });
-  } catch (whatsappError) {
-    console.warn('[notifications.createNotification] Falha ao enviar para WhatsApp:', whatsappError);
-  }
-
   try {
     const { error } = await supabase
       .from('notifications')
@@ -324,6 +312,17 @@ export async function createNotification({ user_id, type, title, message, item_i
     } else {
       console.log('[notifications.createNotification] ✓ Notificação salva no banco com sucesso');
     }
+
+    // O WhatsApp é um canal complementar e não pode bloquear a notificação no app.
+    dispatchSystemNotificationToWhatsApp({
+      userId: user_id,
+      title,
+      message,
+      type,
+    }).catch((whatsappError) => {
+      console.warn('[notifications.createNotification] Falha ao enviar para WhatsApp:', whatsappError);
+    });
+
     return payload;
   } catch (err) {
     console.warn('[notifications.createNotification] Exceção ao salvar no banco:', err.message);

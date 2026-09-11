@@ -1213,22 +1213,7 @@ export const isPetAvailableForAdoption = (item) => {
   if (item.status === 'adoption' || item.extra_fields?.is_direct_adoption) {
     return true;
   }
-  if (item.extra_fields?.available_for_adoption) {
-    return true;
-  }
-  if (
-    item.status === 'found' &&
-    item.extra_fields?.adoption_intent &&
-    item.created_at
-  ) {
-    const created = new Date(item.created_at).getTime();
-    const now = Date.now();
-    const daysPassed = (now - created) / (1000 * 60 * 60 * 24);
-    if (daysPassed >= 7) {
-      return true;
-    }
-  }
-  return false;
+  return Boolean(item.extra_fields?.available_for_adoption);
 };
 
 export const getAdoptionWaitingDays = (item) => {
@@ -1236,10 +1221,12 @@ export const getAdoptionWaitingDays = (item) => {
   if (item.status === 'adoption' || item.extra_fields?.is_direct_adoption) return 0;
   if (!item.extra_fields?.adoption_intent || !item.created_at) return 0;
 
-  const created = new Date(item.created_at).getTime();
+  const startedAt = item.extra_fields?.recovery_search?.started_at || item.created_at;
+  const created = new Date(startedAt).getTime();
   const now = Date.now();
+  const minimumDays = Number(item.extra_fields?.recovery_search?.minimum_days) || 7;
   const daysPassed = (now - created) / (1000 * 60 * 60 * 24);
-  const remaining = Math.ceil(7 - daysPassed);
+  const remaining = Math.ceil(minimumDays - daysPassed);
   return remaining > 0 ? remaining : 0;
 };
 
@@ -1248,6 +1235,12 @@ export const toggleItemAdoption = async (itemId, currentExtraFields = {}, availa
     const updatedExtraFields = {
       ...(currentExtraFields || {}),
       available_for_adoption: Boolean(availableForAdoption),
+      recovery_search: currentExtraFields?.recovery_search
+        ? {
+          ...currentExtraFields.recovery_search,
+          status: availableForAdoption ? 'adoption_eligible' : 'searching',
+        }
+        : currentExtraFields?.recovery_search,
     };
     const { data, error } = await supabase
       .from('items')
@@ -1262,4 +1255,3 @@ export const toggleItemAdoption = async (itemId, currentExtraFields = {}, availa
     throw error;
   }
 };
-

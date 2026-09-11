@@ -24,6 +24,7 @@ import ChatScreen from '../screens/ChatScreen';
 import InboxScreen from '../screens/InboxScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
+import ClaimsManagementScreen from '../screens/ClaimsManagementScreen';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import MapScreen from '../screens/MapScreen';
@@ -620,6 +621,11 @@ const MainStack = () => {
         name="MeusAnuncios"
         component={MeusAnunciosScreen}
         options={{ title: 'Minhas Publicações' }}
+      />
+      <Stack.Screen
+        name="ClaimsManagement"
+        component={ClaimsManagementScreen}
+        options={{ title: 'Solicitações de devolução' }}
       />
       <Stack.Screen
         name="Config"

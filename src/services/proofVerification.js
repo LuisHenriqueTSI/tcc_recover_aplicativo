@@ -2,6 +2,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase, SUPABASE_URL } from '../lib/supabase';
 import { createNotification } from './notifications';
+import { sendMessage } from './messages';
 
 const VERIFICATION_CACHE_PREFIX = '@wefind_proof_verification_';
 
@@ -59,6 +60,7 @@ export const submitOwnershipProof = async ({
   proofPhotos = [],
   itemTitle = 'Animal',
   finderId = null,
+  sendDirectMessage = true,
 }) => {
   if (!itemId || !claimantId) {
     throw new Error('Identificação do pet e do usuário são obrigatórias.');
@@ -123,18 +125,31 @@ export const submitOwnershipProof = async ({
       JSON.stringify(localVerification)
     );
 
-    // 3. Dispara notificação ao protetor/resgatista informando sobre a comprovação
+    // 3. Informa o dono da publicação por notificação e mensagem direta
     if (finderId && finderId !== claimantId) {
       try {
         await createNotification({
           user_id: finderId,
           type: 'claim_received',
-          title: `🛡️ Comprovação de posse para ${itemTitle}`,
-          message: `Um usuário enviou fotos e justificativa para comprovar ser tutor de ${itemTitle}. Acesse a moderação para revisar.`,
+          title: `🛡️ Nova solicitação de devolução`,
+          message: `Um usuário enviou uma solicitação de devolução de ${itemTitle}. Toque para revisar a comprovação.`,
           item_id: itemId,
         });
       } catch (notifErr) {
         console.warn('[proofVerification] Falha ao enviar notificação de claim:', notifErr.message);
+      }
+
+      if (sendDirectMessage) {
+        try {
+          await sendMessage({
+            sender_id: claimantId,
+            receiver_id: finderId,
+            item_id: itemId,
+            content: `Olá! Enviei uma solicitação de devolução para ${itemTitle}. Compartilhei fotos e informações para comprovar que sou o tutor. Você pode revisar a solicitação na área "Solicitações de devolução".`,
+          });
+        } catch (messageErr) {
+          console.warn('[proofVerification] Falha ao enviar mensagem sobre claim:', messageErr.message);
+        }
       }
     }
 
@@ -240,15 +255,15 @@ export const approveVerification = async (claimId, { itemId, claimantId, itemTit
 
     // Notifica o tutor que a comprovação foi aceita
     if (claimantId) {
-      try {
-        await createNotification({
-          user_id: claimantId,
-          type: 'claim_approved',
-          title: `✅ Comprovação de Tutor Aprovada!`,
-          message: `Sua comprovação de posse para ${itemTitle} foi analisada e aprovada com sucesso. O endereço exato foi liberado para você!`,
-          item_id: itemId,
-        });
-      } catch {}
+      createNotification({
+        user_id: claimantId,
+        type: 'claim_approved',
+        title: `✅ Comprovação de Tutor Aprovada!`,
+        message: `Sua comprovação de posse para ${itemTitle} foi analisada e aprovada com sucesso. O endereço exato foi liberado para você!`,
+        item_id: itemId,
+      }).catch((notificationError) => {
+        console.warn('[proofVerification] Falha ao notificar aprovação:', notificationError.message);
+      });
     }
 
     return data;
@@ -284,15 +299,15 @@ export const rejectVerification = async (claimId, reason = '', { itemId, claiman
 
     // Notifica o requerente
     if (claimantId) {
-      try {
-        await createNotification({
-          user_id: claimantId,
-          type: 'claim_rejected',
-          title: `❌ Comprovação não aprovada`,
-          message: `Sua solicitação de comprovação de tutor para ${itemTitle} não pôde ser aprovada.${reason ? ` Motivo: ${reason}` : ''}`,
-          item_id: itemId,
-        });
-      } catch {}
+      createNotification({
+        user_id: claimantId,
+        type: 'claim_rejected',
+        title: `❌ Comprovação não aprovada`,
+        message: `Sua solicitação de comprovação de tutor para ${itemTitle} não pôde ser aprovada.${reason ? ` Motivo: ${reason}` : ''}`,
+        item_id: itemId,
+      }).catch((notificationError) => {
+        console.warn('[proofVerification] Falha ao notificar rejeição:', notificationError.message);
+      });
     }
 
     return data;

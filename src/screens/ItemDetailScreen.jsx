@@ -137,6 +137,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
   const [fullScreenIndex, setFullScreenIndex] = useState(0);
   const [expandedAdoptionInfo, setExpandedAdoptionInfo] = useState(false);
   const [expandedCustodyInfo, setExpandedCustodyInfo] = useState(false);
+  const [expandedHelpNetwork, setExpandedHelpNetwork] = useState(false);
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [potentialMatches, setPotentialMatches] = useState([]);
@@ -539,13 +540,9 @@ const ItemDetailScreen = ({ route, navigation }) => {
     if (!isCurrentlyAdoption && waitingDays > 0) {
       Alert.alert(
         'Período Prioritário de Busca',
-        `Este animal foi encontrado na rua e está no período de busca pelo tutor. Faltam ${waitingDays} dia(s) para liberação oficial. Deseja liberar a adoção agora?`,
+        `Este animal ainda está no período de busca pelo tutor. Faltam ${waitingDays} dia(s) para solicitar a adoção responsável. A publicação continuará ativa durante esse período.`,
         [
-          { text: 'Aguardar Prazo', style: 'cancel' },
-          {
-            text: 'Liberar Adoção',
-            onPress: () => confirmAdoptionChange(false),
-          },
+          { text: 'Entendi', style: 'cancel' },
         ]
       );
       return;
@@ -731,6 +728,23 @@ const ItemDetailScreen = ({ route, navigation }) => {
   };
 
   const isOwner = user && item && item.owner_id === user.id;
+  const parsedExtraFields = (() => {
+    if (!item?.extra_fields) return {};
+    if (typeof item.extra_fields === 'object') return item.extra_fields;
+    try {
+      const parsed = JSON.parse(item.extra_fields);
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+      console.warn('Não foi possível interpretar os dados extras da publicação:', error);
+      return {};
+    }
+  })();
+  const helpNetwork = parsedExtraFields.help_network;
+  const isAnonymousReport = [true, 1, 'true', '1', 'yes', 'sim'].includes(
+    typeof helpNetwork?.anonymous === 'string'
+      ? helpNetwork.anonymous.toLowerCase()
+      : helpNetwork?.anonymous
+  );
 
   // Botão de ações (⋮) no header — apenas para visitantes
   useEffect(() => {
@@ -1257,13 +1271,61 @@ const ItemDetailScreen = ({ route, navigation }) => {
                 }}>
                   <MaterialIcons name="gavel" size={20} color={isDark ? '#34D399' : '#059669'} style={{ marginRight: 8 }} />
                   <Text style={{ flex: 1, fontSize: 12, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 16 }}>
-                    O autor declarou atuar legalmente como <Text style={{ fontWeight: 'bold' }}>Fiel Depositário (Guarda Provisória)</Text> deste animal, garantindo sua segurança pelo prazo de 15 dias para localização do tutor oficial.
+                    O autor registrou interesse em continuar com o animal caso o tutor não seja localizado. A publicação permanece ativa durante a busca e essa intenção não garante a adoção.
                   </Text>
                 </View>
               )}
             </View>
           )}
         </TouchableOpacity>
+      )}
+
+      {item.status === 'found' && helpNetwork && (
+        <View style={[styles.cardSection, {
+          backgroundColor: isDark ? '#101C32' : '#EFF6FF',
+          borderColor: isDark ? '#1E40AF' : '#BFDBFE',
+        }]}>
+          <TouchableOpacity
+            style={styles.sectionHeaderRow}
+            onPress={() => setExpandedHelpNetwork((current) => !current)}
+            activeOpacity={0.8}
+            accessibilityLabel={expandedHelpNetwork ? 'Ocultar necessidades do caso' : 'Mostrar necessidades do caso'}
+          >
+            <View style={[styles.sectionIconWrap, { backgroundColor: isDark ? '#172554' : '#DBEAFE' }]}>
+              <MaterialIcons name="volunteer-activism" size={20} color={isDark ? '#60A5FA' : '#2563EB'} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Rede de Ajuda</Text>
+              <Text style={{ color: colors.textSecondary, fontSize: 11.5, marginTop: 2 }}>
+                Necessidades deste caso
+              </Text>
+            </View>
+            <MaterialIcons
+              name={expandedHelpNetwork ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+              size={22}
+              color={colors.textMuted}
+            />
+          </TouchableOpacity>
+
+          {expandedHelpNetwork && Array.isArray(helpNetwork.needs) && helpNetwork.needs.length > 0 && (
+            <View style={{ marginTop: 12 }}>
+              <Text style={{ color: colors.text, fontSize: 12.5, fontWeight: '800', marginBottom: 6 }}>Precisa de:</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                {helpNetwork.needs.map((need) => (
+                  <View key={`detail-need-${need}`} style={{ backgroundColor: isDark ? '#1E3A8A' : '#DBEAFE', borderRadius: 14, paddingHorizontal: 9, paddingVertical: 5 }}>
+                    <Text style={{ color: isDark ? '#BFDBFE' : '#1D4ED8', fontSize: 11.5, fontWeight: '700' }}>{need}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {expandedHelpNetwork && (
+            <Text style={{ color: colors.textSecondary, fontSize: 11, lineHeight: 16, marginTop: 12 }}>
+              Você pode entrar em contato pelo chat para oferecer ajuda.
+            </Text>
+          )}
+        </View>
       )}
 
       {/* 4. CARD DE LOCALIZAÇÃO E DATA COM ROTA GPS */}
@@ -1462,7 +1524,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   >
                     <MaterialIcons name="verified-user" size={17} color={isDark ? '#34D399' : '#065F46'} style={{ marginRight: 6 }} />
                     <Text style={{ color: isDark ? '#34D399' : '#065F46', fontWeight: '800', fontSize: 12.5 }}>
-                      Solicitar Endereço Exato (Comprovar Posse)
+                      Solicitar Devolução
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -1502,26 +1564,27 @@ const ItemDetailScreen = ({ route, navigation }) => {
       </View>
 
       {/* 5. CARD DO TUTOR / QUEM PUBLICOU */}
-      {owner && (
+      {owner && !isAnonymousReport && (
         <>
         <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <TouchableOpacity
             style={styles.ownerHeader}
             onPress={() => {
+              if (isAnonymousReport) return;
               const targetId = item.owner_id || owner.id;
               if (targetId) {
                 navigation.navigate('UserProfile', {
                   userId: targetId,
-                  userName: (isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário'),
-                  avatarUrl: (isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || owner.avatar_url || owner.avatarUrl || null,
+                  userName: isAnonymousReport ? 'Relato anônimo da comunidade' : ((isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário')),
+                  avatarUrl: isAnonymousReport ? null : ((isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || owner.avatar_url || owner.avatarUrl || null),
                 });
               }
             }}
             activeOpacity={0.75}
           >
             {(() => {
-              const ownerAvatar = (isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || owner.avatar_url || owner.avatarUrl || null;
-              const ownerDisplayName = (isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário');
+              const ownerAvatar = isAnonymousReport ? null : ((isOwner ? (userProfile?.avatar_url || userProfile?.avatarUrl) : null) || owner.avatar_url || owner.avatarUrl || null);
+              const ownerDisplayName = isAnonymousReport ? 'Relato anônimo da comunidade' : ((isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário'));
               const ownerInitial = ownerDisplayName.trim()[0]?.toUpperCase() || 'U';
 
               if (ownerAvatar) {
@@ -1540,7 +1603,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
             <View style={styles.ownerInfoTextContainer}>
               <Text style={[styles.ownerLabel, { color: colors.textMuted }]}>Publicado por</Text>
               <Text style={[styles.ownerName, { color: colors.primary }]} numberOfLines={1}>
-                {(isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário')}
+                {isAnonymousReport ? 'Relato anônimo da comunidade' : ((isOwner && userProfile?.name) ? userProfile.name : (owner.name || 'Usuário'))}
               </Text>
               {owner.created_at && formatarDataMembro(owner.created_at) && formatarDataMembro(owner.created_at) !== 'não informado' ? (
                 <Text style={[styles.ownerMeta, { color: colors.textMuted }]}>
@@ -1762,6 +1825,21 @@ const ItemDetailScreen = ({ route, navigation }) => {
             </View>
           )}
         </>
+      )}
+
+      {owner && isAnonymousReport && (
+        <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.ownerHeader}>
+            <View style={[styles.ownerAvatarFallback, { backgroundColor: isDark ? '#334155' : '#E2E8F0' }]}>
+              <MaterialIcons name="visibility-off" size={22} color={isDark ? '#CBD5E1' : '#64748B'} />
+            </View>
+            <View style={styles.ownerInfoTextContainer}>
+              <Text style={[styles.ownerLabel, { color: colors.textMuted }]}>Publicado por</Text>
+              <Text style={[styles.ownerName, { color: colors.text }]}>Relato anônimo da comunidade</Text>
+              <Text style={[styles.ownerMeta, { color: colors.textMuted }]}>Perfil protegido pelo autor</Text>
+            </View>
+          </View>
+        </View>
       )}
 
       {/* 6. COMENTÁRIOS E PISTAS DA COMUNIDADE */}
