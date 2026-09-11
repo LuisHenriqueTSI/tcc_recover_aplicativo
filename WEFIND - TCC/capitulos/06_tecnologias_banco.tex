@@ -76,9 +76,9 @@ A segurança e a integridade do banco de dados relacional são asseguradas por p
 
 Para solucionar a permanência de postagens antigas nas redes sociais, nas quais animais já resgatados continuam sendo compartilhados por meses, o WeFIND adota uma lógica ativa de controle do ciclo de vida das publicações.
 
-Cada anúncio possui um período determinado de vigência ativa. Conforme o prazo expira, o aplicativo notifica o tutor para confirmar se o pet continua desaparecido; se a busca prosseguir, a prorrogação é feita com um toque no botão ``Renovar'' no painel de gestão. Sem a confirmação do usuário, a publicação é automaticamente ocultada das buscas públicas, deixando de aparecer no mural de publicações e no mapa interativo para não mobilizar a comunidade em torno de casos já resolvidos.
+Cada anúncio possui um período determinado de vigência ativa. Conforme o prazo expira, o aplicativo notifica o tutor para verificar se o animal continua desaparecido. Caso a busca prossiga, a prorrogação é realizada com um toque no botão ``Renovar'' no painel de gestão. Sem a confirmação do usuário, a publicação é automaticamente ocultada das buscas públicas, deixando de aparecer no mural de publicações e no mapa interativo para não mobilizar a comunidade em torno de casos já resolvidos.
 
-Para impedir o inchaço do banco de dados e evitar o acúmulo de arquivos em nuvem, o sistema adota uma rotina periódica de limpeza definitiva. Caso a publicação permaneça inativa após um período de carência (30 a 60 dias), ela é apagada em definitivo da base PostgreSQL. Essa exclusão ocorre em cascata (\textit{CASCADE}), removendo os registros vinculados na tabela \textit{fotos\_publicacoes} e apagando as imagens hospedadas no Supabase Storage, assegurando alta performance e sustentabilidade da infraestrutura.
+Para prevenir a sobrecarga do banco de dados e evitar o acúmulo de arquivos obsoletos na nuvem, o sistema adota uma rotina periódica de limpeza definitiva. Caso a publicação permaneça inativa após um período de carência (30 a 60 dias), ela é apagada em definitivo da base PostgreSQL. Essa exclusão ocorre em cascata (\textit{CASCADE}), removendo os registros vinculados na tabela \textit{fotos\_publicacoes} e apagando as imagens hospedadas no Supabase Storage, assegurando alta performance e sustentabilidade da infraestrutura.
 
 \clearpage
 
