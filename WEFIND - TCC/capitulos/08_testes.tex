@@ -50,7 +50,7 @@ O Quadro~\ref{quadro:testes} consolida a matriz integral dos 22 casos de testes 
 \endlastfoot
 
 \textbf{CT01} & RF01, RF02 & Cadastro e Autenticação de Usuário & Preenchimento de dados válidos e autenticação com e-mail e senha & Criação da conta no Supabase Auth, emissão de token JWT e sessão persistente & \statusTeste \\ \hline
-\textbf{CT02} & RF03 & Recuperação de Senha via WhatsApp & Solicitação de código de redefinição para o telefone cadastrado & Envio do código OTP de 6 dígitos via WhatsApp e atualização segura da nova senha & \statusTeste \\ \hline
+\textbf{CT02} & RF03 & Recuperação de Senha via WhatsApp & Solicitação de código de redefinição para o telefone cadastrado & Envio do código OTP de 6 dígitos via Evolution API no WhatsApp e atualização segura da nova senha & \statusTeste \\ \hline
 \textbf{CT03} & RF04, RF05 & Manutenção de Cadastro e Perfil & Edição de nome, telefone, biografia e envio de nova foto de perfil & Atualização no banco de dados e reflexo imediato nos cartões e mensagens & \statusTeste \\ \hline
 \textbf{CT04} & RF06 & Encerramento Seguro de Sessão & Acionamento do comando de encerramento de sessão na tela de configurações & Invalidação do token JWT, limpeza do armazenamento local e retorno à tela inicial de acesso & \statusTeste \\ \hline
 \textbf{CT05} & RF07 & Central de Notificações e Alertas & Disparo de alerta de avistamento e filtragem na central de avisos & Apresentação cronológica dos avisos com ordenação por tipo e marcação de leitura & \statusTeste \\ \hline

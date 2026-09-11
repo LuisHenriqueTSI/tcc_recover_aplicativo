@@ -18,7 +18,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Identificador} & UC01 \\ \hline
 \textbf{Nome do Caso de Uso} & Efetuar Login \\ \hline
 \textbf{Ator Principal} & Usuário Visitante \\ \hline
-\textbf{Atores Secundários} & Serviço de Autenticação (Supabase Auth) e API do WhatsApp \\ \hline
+\textbf{Atores Secundários} & Serviço de Autenticação (Supabase Auth) e Gateway de Mensageria (Evolution API / WhatsApp) \\ \hline
 \textbf{Resumo} & Permite ao usuário autenticar-se na plataforma mediante e-mail e senha, gerando token JWT de sessão persistente. \\ \hline
 \textbf{Pré-Condições} & Possuir cadastro ativo no WeFIND. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
@@ -33,7 +33,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos Alternativos:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
-3a. Esquecimento de credenciais (\textit{<<extend>>}): o usuário aciona a opção \textbf{Redefinir Senha}, recebendo código OTP de 6 dígitos no WhatsApp para cadastro de nova senha.\par
+3a. Esquecimento de credenciais (\textit{<<extend>>}): o usuário aciona a opção \textbf{Redefinir Senha}, recebendo código OTP de 6 dígitos via Evolution API no WhatsApp para cadastro de nova senha.\par
 1a. Exploração sem cadastro: o usuário opta por ``Continuar explorando como visitante'', acessando a visualização de publicações e do mapa em modo somente leitura.
 } \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxos de Exceção:}} \\
@@ -57,7 +57,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Identificador} & UC02 \\ \hline
 \textbf{Nome do Caso de Uso} & Realizar Cadastro \\ \hline
 \textbf{Ator Principal} & Usuário Visitante \\ \hline
-\textbf{Atores Secundários} & Supabase Auth e Serviço de Mensageria (WhatsApp) \\ \hline
+\textbf{Atores Secundários} & Supabase Auth e Gateway de Mensageria (Evolution API / WhatsApp) \\ \hline
 \textbf{Resumo} & Permite a novos membros criarem uma conta informando dados cadastrais e realizando a verificação por código de segurança no WhatsApp. \\ \hline
 \textbf{Pré-Condições} & Dispositivo conectado à internet. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
@@ -65,7 +65,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 1. O usuário toca na opção ``Cadastre-se'' na tela de autenticação.\par
 2. O sistema abre o formulário de registro solicitando nome completo, e-mail, telefone WhatsApp e senha.\par
 3. O usuário preenche as informações e confirma o cadastro.\par
-4. O sistema valida os campos, cria o registro no Supabase Auth e aciona por inclusão (\textit{«include»}) o caso de uso \textbf{Verificar Código}, disparando um código OTP de 6 dígitos para o WhatsApp informado.\par
+4. O sistema valida os campos, cria o registro no Supabase Auth e aciona por inclusão (\textit{«include»}) o caso de uso \textbf{Verificar Código}, disparando um código OTP de 6 dígitos via Evolution API para o WhatsApp informado.\par
 5. O sistema exibe a tela de confirmação de telefone com 6 campos numéricos.\par
 6. O usuário digita o código recebido no WhatsApp.\par
 7. O caso de uso \textbf{Verificar Código} valida a sequência numérica e ativa a conta de usuário permanentemente.
@@ -768,7 +768,7 @@ A Tabela~D1 consolida a matriz segundo a estrutura de quatro eixos: \textbf{Nece
 
 Pesquisa apontou 55\% de dependência de redes sociais abertas; necessidade de controle de autenticidade comunitária para coibir perfis falsos e fraudes. & \textbf{RF01} & Tela de cadastro de novos usuários com higienização sintática de entradas, validação de campos obrigatórios e persistência criptografada no Supabase Auth. & CT01 \\ \hline
 Necessidade de ambiente seguro com sessão contínua para acesso imediato a publicações e mensagens sem requisições repetitivas de credenciais. & \textbf{RF02} & Módulo de autenticação com validação de e-mail e senha no Supabase Auth, gerando token JWT com armazenamento seguro em cache local (\textit{AsyncStorage}). & CT01 \\ \hline
-Garantir recuperação autônoma de conta em situações de esquecimento de senha ou perda de acesso rápido. & \textbf{RF03} & Rotina de recuperação de credenciais com geração e despacho de código numérico OTP de uso único via API do WhatsApp, viabilizando redefinição segura. & CT02 \\ \hline
+Garantir recuperação autônoma de conta em situações de esquecimento de senha ou perda de acesso rápido. & \textbf{RF03} & Rotina de recuperação de credenciais com geração e despacho de código numérico OTP de uso único via Evolution API no WhatsApp, viabilizando redefinição segura. & CT02 \\ \hline
 Manutenção e atualização contínua de dados de contato e foto do tutor para identificação confiável pela comunidade. & \textbf{RF04} & Painel de perfil permitindo edição de nome completo, telefone, biografia e envio de foto de perfil armazenada em bucket no Supabase Storage. & CT03 \\ \hline
 Conferência da reputação, histórico comunitário e publicações ativas de outros membros antes de iniciar contatos de resgate. & \textbf{RF05} & Tela pública de perfil do membro exibindo foto, tempo de plataforma, histórico de animais cadastrados, reputação por estrelas e anúncios ativos. & CT03 \\ \hline
 Preservação da privacidade e segurança dos dados pessoais em aparelhos compartilhados ou trocas de dispositivo. & \textbf{RF06} & Botão de saída segura no perfil que revoga o token de sessão ativa no Supabase Auth e expurga dados de cache persistidos no \textit{AsyncStorage}. & CT04 \\ \hline

@@ -36,13 +36,17 @@ Para proteger o tráfego de rede e a integridade das consultas, foram inseridas 
 
 \clearpage
 
-\subsection{Serviços em Nuvem e Banco de Dados PostgreSQL}
+\subsection{Serviços em Nuvem, Mensageria Externa e Banco de Dados PostgreSQL}
 
 Na camada de persistência e serviços em nuvem, selecionou-se a plataforma Supabase (SUPABASE, 2026). O Supabase atua no modelo de computação em nuvem integrado Backend-as-a-Service (BaaS), fornecendo serviço de autenticação de usuários (Supabase Auth), armazenamento seguro de arquivos multimídia (Supabase Storage) e banco de dados relacional baseado em PostgreSQL, dispensando a complexidade de contratação, configuração e manutenção de servidores dedicados locais.
 
 A integração entre o aplicativo cliente React Native e a infraestrutura em nuvem é realizada pela biblioteca oficial \textit{@supabase/supabase-js}. Para suprir a necessidade de sincronização imediata no canal de bate-papo privativo e na emissão de alertas de novos avistamentos comunitários, utilizou-se o módulo \textit{@supabase/realtime-js}. Esse componente estabelece canais de comunicação bidirecionais contínuos baseados no protocolo WebSockets, transmitindo dados em tempo real com tempos de propagação inferiores a 300 milissegundos sem necessidade de recarregamento manual pelo usuário.
 
-O módulo Supabase Auth gerencia os fluxos de autenticação, persistência de sessões e emissão de tokens criptografados em formato JWT (JSON Web Token) no dispositivo móvel. Os fluxos de validação cadastral e recuperação de credenciais operam por meio do envio e conferência de códigos de segurança temporários via WhatsApp, assegurando a autenticidade do número telefônico informado e protegendo a integridade das contas de usuário. Já o serviço Supabase Storage é responsável por hospedar os arquivos de imagem dos animais e dos perfis de usuário, servindo as fotografias por meio de links de distribuição pública de alta disponibilidade provisionados sobre redes de entrega de conteúdo (CDN).
+O módulo Supabase Auth gerencia os fluxos de autenticação, persistência de sessões e emissão de tokens criptografados em formato JWT (JSON Web Token) no dispositivo móvel. Já o serviço Supabase Storage é responsável por hospedar os arquivos de imagem dos animais e dos perfis de usuário, servindo as fotografias por meio de links de distribuição pública de alta disponibilidade provisionados sobre redes de entrega de conteúdo (CDN).
+
+Para viabilizar a comunicação programática com o aplicativo WhatsApp, o projeto integrou a Evolution API (EVOLUTION API, 2026), um gateway de mensageria de código aberto construído sobre arquitetura REST. A instância da Evolution API foi hospedada na plataforma de computação em nuvem Render (RENDER, 2026), estabelecendo uma ponte segura entre o aplicativo WeFIND e o mensageiro instantâneo. A comunicação entre o smartphone e o servidor de mensageria opera por meio de requisições HTTPS protegidas por chave de autenticação (API Key): quando uma ação crítica é acionada, o aplicativo cliente dispara uma chamada com método POST transmitindo o número telefônico e o conteúdo da mensagem, e a Evolution API entrega o texto de forma instantânea na conta do destinatário.
+
+Esse mecanismo cumpre dois papéis estratégicos no ecossistema WeFIND. O primeiro consiste no envio automatizado de códigos de segurança de uso único (senhas descartáveis OTP, de seis dígitos) para validação cadastral de novos membros e para o fluxo autônomo de recuperação de senha, assegurando que o telefone cadastrado pertence de fato ao usuário. O segundo papel envolve o envio de notificações críticas de avistamento e pistas sobre animais perdidos, alertando o tutor no WhatsApp mesmo quando o aplicativo móvel estiver fechado em segundo plano.
 
 A persistência estruturada dos dados é realizada no sistema gerenciador de banco de dados relacional PostgreSQL. Para organizar de forma consistente as entidades, atributos e relacionamentos da plataforma, desenvolveu-se o modelo lógico relacional apresentado na Figura~\ref{fig:modelo_logico_banco}.
 
@@ -144,6 +148,8 @@ Persistência Local & async-storage & 2.2.0 & Armazenamento seguro de chaves de 
 Serviços em Nuvem & Supabase Client & 2.87.3 & Biblioteca cliente para autenticação, consultas relacionais e envio de fotos no Supabase. \\ \hline
 Comunicação em Tempo Real & Supabase Realtime & 2.87.3 & Sincronização contínua via WebSockets para bate-papo privativo e relatos de avistamento. \\ \hline
 Banco de Dados & PostgreSQL & 15.0 & Sistema gerenciador de banco de dados relacional com suporte a regras de segurança RLS. \\ \hline
+Mensageria Externa & Evolution API & 2.2.3 & Gateway REST para integração automatizada com o WhatsApp no envio de códigos OTP e notificações. \\ \hline
+Hospedagem da API & Render & Nuvem & Plataforma PaaS em nuvem utilizada para hospedagem da instância gerenciada da Evolution API. \\ \hline
 Linguagem de Código & TypeScript & 5.9.2 & Linguagem com tipagem estática que adiciona segurança e previsibilidade ao JavaScript. \\ \hline
 Linguagem de Código & JavaScript & ES2023 & Linguagem interpretada que executa a lógica operacional do aplicativo móvel. \\ \hline
 Ambiente de Execução & Node.js & 24.15.0 & Plataforma de execução JavaScript utilizada na máquina de desenvolvimento e compilação. \\ \hline
