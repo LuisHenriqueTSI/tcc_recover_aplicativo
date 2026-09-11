@@ -419,13 +419,54 @@ export const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
 /**
  * Busca por possíveis animais já cadastrados e avistados na mesma região (raio de 3 a 5 km)
  */
-export const findNearbyPotentialMatches = async ({ latitude, longitude, species, maxRadiusKm = 5, currentItemId = null }) => {
+const normalizeMatchValue = (value) => String(value || '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .trim();
+
+const calculateNearbyMatchScore = (item, reference) => {
+  const itemSpecies = normalizeMatchValue(item.species);
+  const expectedSpecies = normalizeMatchValue(reference?.species);
+  const itemExtra = item.extra_fields || {};
+  let score = expectedSpecies && itemSpecies === expectedSpecies ? 35 : 25;
+
+  const comparableFields = [
+    ['breed', 20],
+    ['color', 20],
+    ['gender', 15],
+    ['size', 10],
+  ];
+
+  comparableFields.forEach(([field, points]) => {
+    const expected = normalizeMatchValue(reference?.[field]);
+    const candidate = normalizeMatchValue(item[field] || itemExtra[field]);
+    if (expected && candidate && (expected === candidate || expected.includes(candidate) || candidate.includes(expected))) {
+      score += points;
+    }
+  });
+
+  return Math.min(score, 100);
+};
+
+export const findNearbyPotentialMatches = async ({
+  latitude,
+  longitude,
+  species,
+  maxRadiusKm = 5,
+  currentItemId = null,
+  ownerId = null,
+  breed = '',
+  color = '',
+  gender = '',
+  size = '',
+}) => {
   try {
     if (latitude == null || longitude == null) return [];
     
     let query = supabase
       .from('items')
-      .select('id, title, description, status, species, breed, photo_urls, latitude, longitude, address, neighborhood, city, state, created_at, extra_fields')
+      .select('id, owner_id, title, description, status, species, breed, color, gender, size, photo_urls, latitude, longitude, address, neighborhood, city, state, created_at, extra_fields')
       .eq('resolved', false)
       .not('latitude', 'is', null)
       .not('longitude', 'is', null);
@@ -436,6 +477,9 @@ export const findNearbyPotentialMatches = async ({ latitude, longitude, species,
 
     if (currentItemId) {
       query = query.neq('id', currentItemId);
+    }
+    if (ownerId) {
+      query = query.neq('owner_id', ownerId);
     }
 
     const { data: items, error } = await query;
@@ -449,14 +493,16 @@ export const findNearbyPotentialMatches = async ({ latitude, longitude, species,
         
         // Prioriza animais vistos na rua ou perdidos
         const isSpotted = item.extra_fields?.found_custody === 'spotted' || item.status === 'lost';
+        const matchPercentage = calculateNearbyMatchScore(item, { species, breed, color, gender, size });
         return {
           ...item,
           distanceKm,
           isSpotted,
+          matchPercentage,
         };
       })
-      .filter(item => item.distanceKm != null && item.distanceKm <= maxRadiusKm && item.isSpotted)
-      .sort((a, b) => a.distanceKm - b.distanceKm);
+      .filter(item => item.distanceKm != null && item.distanceKm <= maxRadiusKm && item.isSpotted && item.matchPercentage >= 35)
+      .sort((a, b) => b.matchPercentage - a.matchPercentage || a.distanceKm - b.distanceKm);
 
     return matches.slice(0, 4);
   } catch (err) {
@@ -606,6 +652,7 @@ export const recordSightingAndUpdateItemLocation = async ({ itemId, userId, loca
 
     if (updateError) {
       console.warn('[recordSightingAndUpdateItemLocation] Erro ao atualizar item:', updateError.message);
+      throw new Error(`O avistamento foi registrado, mas a localização da publicação não pôde ser atualizada: ${updateError.message}`);
     } else {
       console.log('[recordSightingAndUpdateItemLocation] Localização do item atualizada com sucesso no banco!');
     }

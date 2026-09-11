@@ -82,8 +82,6 @@ Cada anúncio possui um período determinado de vigência ativa. Conforme o praz
 
 Para prevenir a sobrecarga do banco de dados e evitar o acúmulo de arquivos obsoletos na nuvem, o sistema adota uma rotina periódica de limpeza definitiva. Caso a publicação permaneça inativa após um período de carência (30 dias), ela é apagada em definitivo da base PostgreSQL. Essa exclusão ocorre em cascata, removendo os registros vinculados na tabela \textit{fotos\_publicacoes} e apagando as imagens hospedadas no Supabase Storage, assegurando alta performance e sustentabilidade da infraestrutura.
 
-\clearpage
-
 \subsection{Motor Heurístico de Correspondência Inteligente (Matching Multicritério)}
 
 O sucesso na localização de um animal doméstico depende diretamente da velocidade com que informações complementares são conectadas. Em plataformas convencionais e grupos de redes sociais, tutores aflitos precisam revisar manualmente dezenas de postagens todos os dias para tentar reconhecer seu pet em fotos tiradas por terceiros. Para superar essa limitação e agir de forma proativa, o WeFIND incorpora em sua camada de serviços o motor de correspondência inteligente (\textit{petMatching.js}), que realiza o cruzamento automatizado entre publicações ativas com status complementares (animais Perdidos versus animais Encontrados).
@@ -92,13 +90,9 @@ O motor opera em duas etapas sequenciais: a triagem eliminatória imediata e o c
 
 \subsubsection{Critérios de Eliminação Estrita (\textit{Deal Breakers})}
 
-Para evitar o envio de alertas enganosos e não gerar falsas expectativas na comunidade, o algoritmo executa primeiramente uma checagem de viabilidade biológica e física. Três critérios possuem poder de veto absoluto (\textit{deal breakers}); caso qualquer um deles seja violado, o sistema atribui pontuação nula (0\%) imediatamente, encerrando o cálculo sem necessidade de avaliações adicionais:
+Para evitar o envio de alertas enganosos e não gerar falsas expectativas na comunidade, o algoritmo executa primeiramente uma checagem de viabilidade biológica e física. Três critérios possuem poder de veto absoluto (\textit{deal breakers}); caso qualquer um deles seja violado, o sistema atribui pontuação nula (0\%) imediatamente, encerrando o cálculo sem necessidade de avaliações adicionais.
 
-\begin{itemize}
-    \item \textbf{Espécies Incompatíveis}: registros pertencentes a categorias zoológicas distintas (como cão e gato, ou equino e ave) são descartados sumariamente;
-    \item \textbf{Sexo Oposto Comprovado}: quando ambos os anúncios informam com precisão o sexo do animal e estes divergem formalmente (macho versus fêmea), a possibilidade de equivalência é anulada;
-    \item \textbf{Portes Extremos Antagônicos}: animais classificados com portes nos extremos da escala (como porte pequeno ou mini confrontado com porte grande ou gigante) são considerados mutuamente exclusivos.
-\end{itemize}
+O primeiro critério corresponde à incompatibilidade de espécies, em que registros pertencentes a categorias zoológicas distintas (como cão e gato, ou equino e ave) são descartados sumariamente. O segundo critério avalia a divergência de sexo comprovado, invalidando a equivalência quando ambos os anúncios informam com certeza o gênero do animal e estes divergem formalmente entre macho e fêmea. Por fim, o terceiro critério trata dos portes físicos antagônicos, considerando mutuamente exclusivos os casos em que um animal classificado nos extremos inferiores da escala (porte mini ou pequeno) é confrontado com outro registrado nos limites superiores (porte grande ou gigante).
 
 \subsubsection{Sistema de Ponderação, Penalidades e Proximidade por Haversine}
 
@@ -153,16 +147,11 @@ Ultrapassada a barreira dos critérios eliminatórios, os anúncios são submeti
 
 \subsubsection{Classificação Semântica e Disparo Automatizado de Notificações}
 
-O total de pontos obtido é normalizado em uma escala percentual de 0\% a 100\%, associando-se a categorias intuitivas de probabilidade visual:
+O total de pontos obtido é normalizado em uma escala percentual contínua de 0\% a 100\%, associando-se a quatro faixas semânticas de probabilidade visual que orientam a tomada de decisão do usuário.
 
-\begin{itemize}
-    \item \textbf{Altíssima Probabilidade ($\ge$ 85\%)}: indicada pelo selo semântico verde, sinaliza forte compatibilidade em múltiplos atributos físicos e proximidade geográfica quase idêntica;
-    \item \textbf{Grande Chance (70\% a 84\%)}: representada pelo tom verde floresta, indica animais com mesma raça e pelagem avistados na mesma região urbana;
-    \item \textbf{Possível Semelhança (55\% a 69\%)}: sinalizada com selo amarelo dourado, sugere verificação preventiva de animais com porte e cores similares;
-    \item \textbf{Descarte Automático ($<$ 55\%)}: registros abaixo do limiar mínimo são filtrados e não geram alertas, mantendo o ecossistema livre de poluição informativa.
-\end{itemize}
+A faixa de altíssima probabilidade (índices iguais ou superiores a 85\%) é identificada pelo selo semântico verde, sinalizando forte compatibilidade em múltiplos atributos físicos e proximidade geográfica quase idêntica entre o ponto de fuga e o local de resgate. Em seguida, a faixa de grande chance (situada entre 70\% e 84\%), representada pelo tom verde floresta, indica animais com mesma raça e padrão de pelagem coincidentes avistados na mesma região urbana. Por sua vez, a faixa de possível semelhança (compreendida entre 55\% e 69\%) recebe a sinalização em amarelo dourado, sugerindo a verificação preventiva de animais que compartilham porte e coloração aproximados. Abaixo do limiar mínimo de 55\%, os registros são descartados automaticamente pelo sistema e não geram avisos, prevenindo sobrecarga informativa e mantendo o canal focado em pistas consistentes.
 
-Sempre que uma nova publicação atinge compatibilidade de no mínimo 60\% com algum animal ativo no banco de dados, o WeFIND aciona a rotina \textit{processAndNotifyPetMatches}. Esse serviço notifica em tempo real ambas as partes envolvidas: tanto o usuário recém-cadastrado quanto o tutor da publicação preexistente recebem notificações internas na aplicação, alertas sonoros por \textit{Push Notification} nativo no smartphone e mensagens ativas no WhatsApp viabilizadas pela Evolution API, apresentando atalhos imediatos para a tela de comparação minuciosa de fotografias e dados.
+Sempre que uma nova publicação atinge compatibilidade de no mínimo 60\% com algum animal ativo no banco de dados, o WeFIND aciona a rotina \textit{processAndNotifyPetMatches}. Esse serviço notifica em tempo real ambas as partes envolvidas: tanto o usuário que cadastrou o relato quanto o tutor preexistente recebem notificações internas, alertas nativos no smartphone e mensagens no WhatsApp via Evolution API, com acesso direto à comparação detalhada dos animais.
 
 \clearpage
 

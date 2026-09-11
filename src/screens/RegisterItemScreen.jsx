@@ -1427,7 +1427,12 @@ const RegisterItemScreen = ({ navigation, route }) => {
           latitude: Number(mapLocation.latitude),
           longitude: Number(mapLocation.longitude),
           species: effectiveSpecies,
+          breed: animalBreed,
+          color,
+          gender: animalGender,
+          size: animalSize,
           maxRadiusKm: 5,
+          ownerId: user?.id,
         });
 
         if (matches && matches.length > 0) {
@@ -1778,7 +1783,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               Animal Semelhante por Perto!
             </Text>
             <Text style={{ fontSize: 12.5, color: colors.textSecondary, textAlign: 'center', lineHeight: 17 }}>
-              Encontramos este(s) pet(s) parecido(s) registrado(s) nessa mesma região. Você está vendo este mesmo animal?
+              Encontramos publicação(ões) compatível(is) nesta região. Confirme somente se você tem certeza de que é o mesmo animal.
             </Text>
           </View>
 
@@ -1820,6 +1825,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       <MaterialIcons name="place" size={13} color={COLORS.primary} style={{ marginRight: 2 }} />
                       <Text style={{ fontSize: 11.5, fontWeight: '700', color: colors.primary }}>
                         {distText}
+                      </Text>
+                      <Text style={{ fontSize: 11.5, fontWeight: '800', color: COLORS.secondaryDark, marginLeft: 8 }}>
+                        {match.matchPercentage}% compatível
                       </Text>
                     </View>
                   </View>
