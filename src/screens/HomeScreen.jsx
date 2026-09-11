@@ -182,9 +182,9 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
   const isFound = !isAdoption && item.status === 'found';
   const isLost = !isAdoption && item.status === 'lost';
 
-  const statusBg = isAdoption ? (isDark ? 'rgba(190, 24, 93, 0.2)' : '#FDF2F8') : isFound ? (isDark ? 'rgba(4, 120, 87, 0.2)' : '#ECFDF5') : (isDark ? 'rgba(220, 38, 38, 0.2)' : '#FEF2F2');
-  const statusBorder = isAdoption ? '#F472B6' : isFound ? '#A7F3D0' : '#FECACA';
-  const statusTextColor = isAdoption ? '#DB2777' : isFound ? '#2E5634' : '#DC2626';
+  const statusBg = isAdoption ? (isDark ? COLORS.secondaryLight : COLORS.secondaryLight) : isFound ? (isDark ? 'rgba(4, 120, 87, 0.2)' : '#ECFDF5') : (isDark ? 'rgba(220, 38, 38, 0.2)' : '#FEF2F2');
+  const statusBorder = isAdoption ? COLORS.secondaryBorder : isFound ? '#A7D8B0' : '#FECACA';
+  const statusTextColor = isAdoption ? COLORS.secondaryDark : isFound ? '#2E5634' : '#DC2626';
   const statusIcon = isAdoption ? 'favorite' : isFound ? 'check-circle' : 'error-outline';
   const statusLabel = isAdoption ? 'Para Adoção' : isFound ? 'Encontrado' : 'Perdido';
 
@@ -1225,6 +1225,7 @@ const HomeScreen = ({ navigation, route }) => {
       // Sincronização em background sem travar a interface
       if (user?.id) {
         notificationsService.syncRenewalNotifications(user.id, allItems).catch(() => {});
+        notificationsService.syncFoundPetFollowUpNotifications(user.id, allItems).catch(() => {});
       }
     } catch (error) {
       console.error('[HomeScreen] Erro ao carregar itens:', error);

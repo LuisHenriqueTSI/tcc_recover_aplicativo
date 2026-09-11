@@ -22,6 +22,7 @@ const GamificationCard = ({ gamificationData, onRefresh }) => {
   const currentRank = rank?.currentRank || RANKS[0];
   const nextRank = rank?.nextRank;
   const progressPercent = Math.round((rank?.progress || 0) * 100);
+  const nextBadge = allBadges.find((badge) => !badge.isUnlocked);
 
   return (
     <View style={styles.wrapper}>
@@ -84,7 +85,21 @@ const GamificationCard = ({ gamificationData, onRefresh }) => {
         ) : (
           <View style={styles.maxRankBadge}>
             <MaterialIcons name="workspace-premium" size={16} color="#D97706" />
-            <Text style={styles.maxRankText}>Patente Máxima de Guardião Lendário Conquistada! 👑</Text>
+            <Text style={styles.maxRankText}>Patente máxima conquistada</Text>
+          </View>
+        )}
+
+        {nextBadge && (
+          <View style={[styles.nextGoal, { backgroundColor: isDark ? 'rgba(177, 115, 74, 0.18)' : COLORS.secondaryLight, borderColor: isDark ? COLORS.secondaryDark : COLORS.secondaryBorder }]}>
+            <MaterialIcons name="flag" size={18} color={isDark ? COLORS.secondaryMedium : COLORS.secondaryDark} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.nextGoalTitle, { color: isDark ? COLORS.secondaryMedium : COLORS.secondaryDark }]}>
+                Próxima conquista: {nextBadge.title}
+              </Text>
+              <Text style={[styles.nextGoalText, { color: colors.textSecondary }]}>
+                +{nextBadge.xpReward} XP quando você {nextBadge.description.toLowerCase().replace(/\.$/, '')}.
+              </Text>
+            </View>
           </View>
         )}
 
@@ -161,7 +176,7 @@ const GamificationCard = ({ gamificationData, onRefresh }) => {
               <Text style={[styles.sectionHeading, { color: colors.text }]}>Como Ganhar Pontos (XP)</Text>
               <View style={[styles.rulesList, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: colors.border }]}>
                 <View style={styles.ruleItem}>
-                  <Text style={styles.ruleEmoji}>🎉</Text>
+                  <MaterialIcons name="celebration" size={21} color={COLORS.secondary} style={styles.ruleIcon} />
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.ruleTitle, { color: colors.text }]}>Reencontro Confirmado</Text>
                     <Text style={[styles.ruleSub, { color: colors.textSecondary }]}>Pet perdido de volta para casa</Text>
@@ -170,7 +185,7 @@ const GamificationCard = ({ gamificationData, onRefresh }) => {
                 </View>
 
                 <View style={styles.ruleItem}>
-                  <Text style={styles.ruleEmoji}>🏡</Text>
+                  <MaterialIcons name="home-work" size={21} color={COLORS.secondary} style={styles.ruleIcon} />
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.ruleTitle, { color: colors.text }]}>Lar Temporário Ativo</Text>
                     <Text style={[styles.ruleSub, { color: colors.textSecondary }]}>Oferecer abrigo solidário</Text>
@@ -179,7 +194,7 @@ const GamificationCard = ({ gamificationData, onRefresh }) => {
                 </View>
 
                 <View style={styles.ruleItem}>
-                  <Text style={styles.ruleEmoji}>🪪</Text>
+                  <MaterialIcons name="badge" size={21} color={COLORS.secondary} style={styles.ruleIcon} />
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.ruleTitle, { color: colors.text }]}>Cadastrar Pet no RG</Text>
                     <Text style={[styles.ruleSub, { color: colors.textSecondary }]}>Documentar animais de casa</Text>
@@ -188,7 +203,7 @@ const GamificationCard = ({ gamificationData, onRefresh }) => {
                 </View>
 
                 <View style={styles.ruleItem}>
-                  <Text style={styles.ruleEmoji}>👁️</Text>
+                  <MaterialIcons name="location-on" size={21} color={COLORS.secondary} style={styles.ruleIcon} />
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.ruleTitle, { color: colors.text }]}>Publicação / Avistamento</Text>
                     <Text style={[styles.ruleSub, { color: colors.textSecondary }]}>Avisar animal visto ou perdido</Text>
@@ -197,7 +212,7 @@ const GamificationCard = ({ gamificationData, onRefresh }) => {
                 </View>
 
                 <View style={[styles.ruleItem, { borderBottomWidth: 0 }]}>
-                  <Text style={styles.ruleEmoji}>📢</Text>
+                  <MaterialIcons name="campaign" size={21} color={COLORS.secondary} style={styles.ruleIcon} />
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.ruleTitle, { color: colors.text }]}>Divulgar Cartaz / Stories</Text>
                     <Text style={[styles.ruleSub, { color: colors.textSecondary }]}>Compartilhar com QR Code</Text>
@@ -246,7 +261,7 @@ const GamificationCard = ({ gamificationData, onRefresh }) => {
                           <Text style={[styles.badgeTitle, { color: colors.text }]}>{badge.title}</Text>
                           {isUnlocked ? (
                             <View style={styles.unlockedTag}>
-                              <Text style={styles.unlockedTagText}>CONQUISTADA ✓</Text>
+                              <Text style={styles.unlockedTagText}>CONQUISTADA</Text>
                             </View>
                           ) : (
                             <Text style={[styles.badgeXpReward, { color: colors.textMuted }]}>+{badge.xpReward} XP</Text>
@@ -463,8 +478,9 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(226, 232, 240, 0.6)',
     gap: 10,
   },
-  ruleEmoji: {
-    fontSize: 20,
+  ruleIcon: {
+    width: 30,
+    textAlign: 'center',
   },
   ruleTitle: {
     fontSize: 13,
@@ -477,6 +493,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '900',
     color: '#16A34A',
+  },
+  nextGoal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  nextGoalTitle: {
+    fontSize: 11.5,
+    fontWeight: '800',
+  },
+  nextGoalText: {
+    fontSize: 10.5,
+    lineHeight: 14,
+    marginTop: 2,
   },
   allBadgesList: {
     gap: 8,

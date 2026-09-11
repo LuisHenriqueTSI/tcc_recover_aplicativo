@@ -6,7 +6,7 @@ const GAMIFICATION_STORAGE_KEY = '@wefind/gamification_data';
 export const RANKS = [
   {
     level: 1,
-    title: 'Amigo dos Animais 🐾',
+    title: 'Amigo dos Animais',
     minXp: 0,
     maxXp: 149,
     color: '#64748B',
@@ -16,7 +16,7 @@ export const RANKS = [
   },
   {
     level: 2,
-    title: 'Protetor Local 🛡️',
+    title: 'Protetor Local',
     minXp: 150,
     maxXp: 399,
     color: '#0284C7',
@@ -26,17 +26,17 @@ export const RANKS = [
   },
   {
     level: 3,
-    title: 'Olhos Atentos 👁️',
+    title: 'Observador da Comunidade',
     minXp: 400,
     maxXp: 799,
     color: '#15803D',
     badgeBg: '#DCFCE7',
-    icon: 'visibility',
-    description: 'Sentinela da vizinhança que apoia avistamentos e lares temporários.',
+    icon: 'location-on',
+    description: 'Ajuda a registrar avistamentos e conectar a comunidade.',
   },
   {
     level: 4,
-    title: 'Anjo da Guarda 👼',
+    title: 'Anjo da Guarda',
     minXp: 800,
     maxXp: 1499,
     color: '#7C3AED',
@@ -46,7 +46,7 @@ export const RANKS = [
   },
   {
     level: 5,
-    title: 'Guardião Lendário 👑',
+    title: 'Guardião Lendário',
     minXp: 1500,
     maxXp: 999999,
     color: '#D97706',
@@ -59,7 +59,7 @@ export const RANKS = [
 export const ALL_BADGES = [
   {
     id: 'welcome',
-    title: 'Primeiro Passo 🌟',
+    title: 'Primeiro Passo',
     description: 'Criou sua conta e ingressou na rede de proteção WeFIND',
     icon: 'star',
     category: 'community',
@@ -67,7 +67,7 @@ export const ALL_BADGES = [
   },
   {
     id: 'pet_rg',
-    title: 'Tutor Exemplar 🪪',
+    title: 'Tutor Exemplar',
     description: 'Cadastrou seus pets domésticos na carteirinha digital',
     icon: 'badge',
     category: 'pets',
@@ -75,7 +75,7 @@ export const ALL_BADGES = [
   },
   {
     id: 'foster_volunteer',
-    title: 'Portas Abertas 🏡',
+    title: 'Portas Abertas',
     description: 'Disponibilizou seu lar como Lar Temporário Solidário',
     icon: 'home-work',
     category: 'foster',
@@ -83,15 +83,15 @@ export const ALL_BADGES = [
   },
   {
     id: 'sighting_active',
-    title: 'Sentinela da Rua 👁️',
+    title: 'Apoio nas Ruas',
     description: 'Registrou ou acompanhou avistamentos de animais nas ruas',
-    icon: 'remove-red-eye',
+    icon: 'location-on',
     category: 'sightings',
     xpReward: 75,
   },
   {
     id: 'pet_resolved',
-    title: 'Herói do Reencontro 🎉',
+    title: 'Herói do Reencontro',
     description: 'Ajudou a trazer um pet perdido de volta para sua família',
     icon: 'celebration',
     category: 'hero',
@@ -99,7 +99,7 @@ export const ALL_BADGES = [
   },
   {
     id: 'sharer',
-    title: 'Megafone Solidário 📢',
+    title: 'Divulgação Solidária',
     description: 'Gerou e compartilhou cartazes de pets com QR Code nas redes',
     icon: 'campaign',
     category: 'share',
@@ -107,7 +107,7 @@ export const ALL_BADGES = [
   },
   {
     id: 'legendary',
-    title: 'Guardião Supremo 👑',
+    title: 'Guardião Supremo',
     description: 'Atingiu a patente máxima de proteção animal na comunidade',
     icon: 'military-tech',
     category: 'rank',

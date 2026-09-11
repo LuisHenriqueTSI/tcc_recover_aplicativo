@@ -55,7 +55,7 @@ export const listSuccessStories = async () => {
 export const getStoryLikeState = async (stories, userId) => {
   const storyIds = (stories || [])
     .map((story) => String(story.id || ''))
-    .filter((id) => id && !id.startsWith('local-story-'));
+    .filter(Boolean);
 
   if (storyIds.length === 0) return {};
 
@@ -78,9 +78,6 @@ export const getStoryLikeState = async (stories, userId) => {
 
 export const toggleStoryLike = async (storyId, userId, likedByUser) => {
   if (!storyId || !userId) throw new Error('É necessário estar logado para curtir uma história.');
-  if (String(storyId).startsWith('local-story-')) {
-    throw new Error('Esta história ainda não está disponível para curtidas.');
-  }
 
   if (likedByUser) {
     const { error } = await supabase
@@ -121,9 +118,11 @@ export const submitSuccessStory = async ({
       itemId,
     };
 
-    // Tenta salvar no Supabase
+    let remoteStory = null;
+
+    // Salva no Supabase e usa o ID remoto para habilitar curtidas e interações.
     try {
-      await supabase.from('success_stories').insert({
+      const { data, error } = await supabase.from('success_stories').insert({
         pet_name: newStory.petName,
         tutor_name: newStory.author,
         location: newStory.location,
@@ -132,22 +131,29 @@ export const submitSuccessStory = async ({
         rating: newStory.rating,
         user_id: userId,
         item_id: itemId,
-      });
+      }).select('id, created_at').single();
+
+      if (error) throw error;
+      remoteStory = data;
     } catch (remoteError) {
-      console.log('[stories] Aviso ao salvar história remota no Supabase:', remoteError.message);
+      console.warn('[stories] Não foi possível salvar a história no Supabase:', remoteError.message);
     }
 
-    // Salva no AsyncStorage local
+    const savedStory = remoteStory
+      ? { ...newStory, id: String(remoteStory.id), createdAt: remoteStory.created_at || newStory.createdAt }
+      : newStory;
+
+    // Mantém uma cópia local para o mural funcionar mesmo offline.
     try {
       const raw = await AsyncStorage.getItem(LOCAL_STORIES_KEY);
       const existing = raw ? JSON.parse(raw) : [];
-      const updated = [newStory, ...existing];
+      const updated = [savedStory, ...existing];
       await AsyncStorage.setItem(LOCAL_STORIES_KEY, JSON.stringify(updated));
     } catch (storageError) {
       console.log('[stories] Erro ao salvar história localmente:', storageError.message);
     }
 
-    return newStory;
+    return savedStory;
   } catch (error) {
     console.error('[stories] Erro ao submeter história:', error.message);
     throw error;

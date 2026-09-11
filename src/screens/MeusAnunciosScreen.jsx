@@ -131,8 +131,8 @@ const MeusAnunciosScreen = ({ navigation }) => {
           <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 5, marginTop: 6 }}>
             {/* Pill de Categoria */}
             {isAdoption ? (
-              <View style={[styles.tagPill, { backgroundColor: '#FCE7F3' }]}>
-                <Text style={{ color: '#BE185D', fontSize: 10.5, fontWeight: '800' }}>🐾 Para Adoção</Text>
+              <View style={[styles.tagPill, { backgroundColor: COLORS.secondaryLight }]}>
+                <Text style={{ color: COLORS.secondaryDark, fontSize: 10.5, fontWeight: '800' }}>🐾 Para Adoção</Text>
               </View>
             ) : item.status === 'lost' ? (
               <View style={[styles.tagPill, { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEF2F2' }]}>

@@ -1258,23 +1258,6 @@ const ItemDetailScreen = ({ route, navigation }) => {
                   : 'O animal foi acolhido com segurança enquanto a comunidade busca pelo seu tutor original.'}
               </Text>
 
-              {item.extra_fields?.legal_custody_agreed && item.extra_fields?.found_custody === 'with_me' && (
-                <View style={{
-                  flexDirection: 'row',
-                  marginTop: 12,
-                  padding: 10,
-                  backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : '#ECFDF5',
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0',
-                  alignItems: 'center'
-                }}>
-                  <MaterialIcons name="gavel" size={20} color={isDark ? '#34D399' : '#059669'} style={{ marginRight: 8 }} />
-                  <Text style={{ flex: 1, fontSize: 12, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 16 }}>
-                    O autor registrou interesse em continuar com o animal caso o tutor não seja localizado. A publicação permanece ativa durante a busca e essa intenção não garante a adoção.
-                  </Text>
-                </View>
-              )}
             </View>
           )}
         </TouchableOpacity>
@@ -1782,17 +1765,17 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
               {isOwner && item.status === 'found' && item.extra_fields?.found_custody !== 'spotted' && !isAdmin && (
                 <TouchableOpacity
-                  style={[styles.ownerActionBtn, { backgroundColor: item.extra_fields?.available_for_adoption ? '#FDF2F8' : '#ECFDF5', borderColor: item.extra_fields?.available_for_adoption ? '#F472B6' : '#A7F3D0' }]}
+                  style={[styles.ownerActionBtn, { backgroundColor: item.extra_fields?.available_for_adoption ? COLORS.secondaryLight : '#ECFDF5', borderColor: item.extra_fields?.available_for_adoption ? COLORS.secondaryMedium : '#A7F3D0' }]}
                   onPress={handleToggleAdoption}
                   disabled={togglingAdoption}
                 >
                   <MaterialIcons
                     name="favorite"
                     size={17}
-                    color={item.extra_fields?.available_for_adoption ? '#DB2777' : '#2E5634'}
+                    color={item.extra_fields?.available_for_adoption ? COLORS.secondaryDark : '#2E5634'}
                   />
                   <Text
-                    style={[styles.ownerActionText, { color: item.extra_fields?.available_for_adoption ? '#DB2777' : '#2E5634' }]}
+                    style={[styles.ownerActionText, { color: item.extra_fields?.available_for_adoption ? COLORS.secondaryDark : '#2E5634' }]}
                   >
                     {togglingAdoption ? 'Salvando...' : item.extra_fields?.available_for_adoption ? 'Pausar Adoção' : 'P/ Adoção'}
                   </Text>

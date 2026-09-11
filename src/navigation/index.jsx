@@ -42,6 +42,7 @@ import UserProfileScreen from '../screens/UserProfileScreen';
 import FosterVolunteersScreen from '../screens/FosterVolunteersScreen';
 import MyPetsScreen from '../screens/MyPetsScreen';
 import AddEditPetScreen from '../screens/AddEditPetScreen';
+import RankingScreen from '../screens/RankingScreen';
 import { listItems } from '../services/items';
 import { buildRenewalAlerts } from '../services/notifications';
 import { WeFindText } from '../components/WeFindBrand';
@@ -611,6 +612,11 @@ const MainStack = () => {
         name="Dashboard"
         component={DashboardScreen}
         options={{ title: 'Dashboard' }}
+      />
+      <Stack.Screen
+        name="Ranking"
+        component={RankingScreen}
+        options={{ title: 'Ranking da Comunidade' }}
       />
       <Stack.Screen
         name="Admin"

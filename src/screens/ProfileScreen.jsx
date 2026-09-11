@@ -133,6 +133,14 @@ const ProfileScreen = ({ navigation }) => {
 
   const communityLinks = [
     {
+      label: 'Ranking da Comunidade',
+      description: 'Veja quem mais está ajudando nesta semana',
+      icon: 'leaderboard',
+      iconColor: colors.secondary,
+      bgColor: colors.secondaryLight,
+      route: 'Ranking',
+    },
+    {
       label: 'Rede de Lares Temporários',
       description: 'Encontre voluntários disponíveis para abrigar pets',
       icon: 'groups',

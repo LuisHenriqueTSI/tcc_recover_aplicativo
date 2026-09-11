@@ -48,7 +48,7 @@ const PET_GENDER_OPTIONS = ['Macho', 'Fêmea', 'Não informado'];
 const PET_AGE_OPTIONS = ['Filhote', 'Adulto', 'Idoso', 'Não informado'];
 const PET_BREED_OPTIONS = ['Sem raça definida'];
 const HELP_NEED_OPTIONS = ['Resgate', 'Lar temporário', 'Transporte', 'Ração', 'Veterinário', 'Adoção'];
-const RECOVERY_SEARCH_DAYS = 7;
+const RECOVERY_SEARCH_DAYS = 21;
 const PET_TEMPERAMENT_OPTIONS = [
   '😇 Dócil',
   '🎾 Brincalhão',
@@ -371,13 +371,10 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const [foundCustody, setFoundCustody] = useState(
     editItem?.extra_fields?.found_custody || 'with_me' // 'with_me' | 'spotted'
   );
-  const [adoptionIntent, setAdoptionIntent] = useState(
-    Boolean(editItem?.extra_fields?.adoption_intent)
-  );
-  const [legalCustodyAgreed, setLegalCustodyAgreed] = useState(
-    Boolean(editItem?.extra_fields?.legal_custody_agreed)
-  );
   const [helpNeeds, setHelpNeeds] = useState(editItem?.extra_fields?.help_network?.needs || []);
+  const [helpNetworkExpanded, setHelpNetworkExpanded] = useState(
+    Boolean(editItem?.extra_fields?.help_network?.needs?.length)
+  );
   const [anonymousReport, setAnonymousReport] = useState(
     [true, 1, 'true', '1', 'yes', 'sim'].includes(
       typeof editItem?.extra_fields?.help_network?.anonymous === 'string'
@@ -438,7 +435,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const renderLocationAndRewardSection = () => {
     const isLost = status === 'lost';
     const isSpotted = status === 'found' && foundCustody === 'spotted';
-    const isSheltered = status === 'found' && foundCustody === 'with_me';
 
     return (
       <View>
@@ -470,30 +466,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
               </Text>
               <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#334155', lineHeight: 17 }}>
                 O número da sua residência <Text style={{ fontWeight: '800' }}>NÃO é divulgado</Text>. Usamos a coordenada marcada apenas como <Text style={{ fontWeight: '800' }}>epicentro geográfico</Text> para enviar notificações automáticas a voluntários e lares temporários no raio do desaparecimento.
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {isSheltered && (
-          <View style={{
-            backgroundColor: isDark ? '#064E3B' : '#F0FDF4',
-            borderColor: isDark ? '#1E3E24' : '#BBF7D0',
-            borderWidth: 1,
-            borderRadius: 12,
-            padding: 12,
-            marginBottom: 12,
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            gap: 10,
-          }}>
-            <MaterialIcons name="home" size={22} color="#16A34A" style={{ marginTop: 2 }} />
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 13, fontWeight: '800', color: isDark ? '#86EFAC' : '#15803D', marginBottom: 3 }}>
-                🔒 Acolhimento Seguro
-              </Text>
-              <Text style={{ fontSize: 11.5, color: isDark ? '#D1FAE5' : '#166534', lineHeight: 17 }}>
-                O endereço do seu lar permanece em sigilo. O tutor verá apenas o bairro e a cidade onde o animal foi resgatado, entrando em contato através do chat seguro.
               </Text>
             </View>
           </View>
@@ -653,6 +625,26 @@ const RegisterItemScreen = ({ navigation, route }) => {
             </View>
           )}
         </View>
+
+        {status === 'found' && (
+          <View style={[styles.thirdPartySection, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <TouchableOpacity
+              style={styles.checkboxContainer}
+              onPress={() => setAnonymousReport((currentValue) => !currentValue)}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.checkbox, { borderColor: colors.border }, anonymousReport && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
+                {anonymousReport && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <Text style={[styles.checkboxLabel, { color: colors.text }]}>
+                Publicar este relato anonimamente
+              </Text>
+            </TouchableOpacity>
+            <Text style={{ color: colors.textSecondary, fontSize: 10.5, lineHeight: 14, marginLeft: 28, marginTop: 2 }}>
+              Seu nome não será exibido na publicação.
+            </Text>
+          </View>
+        )}
       </View>
     );
   };
@@ -660,6 +652,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
   const renderMapLocationButton = () => {
     const isLost = status === 'lost';
     const isSpotted = status === 'found' && foundCustody === 'spotted';
+    const isFoundWithMe = status === 'found' && foundCustody === 'with_me';
 
     return (
       <>
@@ -673,6 +666,11 @@ const RegisterItemScreen = ({ navigation, route }) => {
               : (isLost ? '📍 Marcar Região de Desaparecimento no Mapa' : '🗺️ Escolher localização no mapa')}
           </Text>
         </TouchableOpacity>
+        {isFoundWithMe && (
+          <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 6 }}>
+            Privacidade: o endereço exato não será exibido; apenas uma área aproximada.
+          </Text>
+        )}
         {mapLocation && (
           <Text style={[styles.mapSelectedText, { color: colors.textSecondary }]}>
             Epicentro GPS: {mapLocation.latitude.toFixed(5)}, {mapLocation.longitude.toFixed(5)}
@@ -1268,13 +1266,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
       return false;
     }
 
-    if (status === 'found' && foundCustody === 'with_me' && !legalCustodyAgreed) {
-      const msg = 'Confirme que você manterá a publicação ativa e colaborará na busca pelo tutor.';
-      setError(msg);
-      Alert.alert('Termo Obrigatório', msg);
-      return false;
-    }
-
     if (isThirdPartyOwner) {
       if (!thirdPartyName || !thirdPartyName.trim()) {
         const msg = 'Informe o nome do tutor/responsável';
@@ -1519,11 +1510,9 @@ const RegisterItemScreen = ({ navigation, route }) => {
           age: toNull(animalAge),
           collar: toNull(animalCollar),
           neutered: toNull(animalNeutered),
-          temperament: (status === 'adoption' || (status === 'found' && Boolean(adoptionIntent))) ? (animalTemperament || []) : [],
+          temperament: status === 'adoption' ? (animalTemperament || []) : [],
           is_direct_adoption: isDirectAdoption,
           found_custody: status === 'found' ? foundCustody : (isDirectAdoption ? 'with_me' : null),
-          adoption_intent: status === 'found' && foundCustody === 'with_me' ? Boolean(adoptionIntent) : false,
-          legal_custody_agreed: status === 'found' && foundCustody === 'with_me' ? Boolean(legalCustodyAgreed) : false,
           recovery_search: status === 'found' && foundCustody === 'with_me' ? {
             ...(editItem?.extra_fields?.recovery_search || {}),
             started_at: editItem?.extra_fields?.recovery_search?.started_at || new Date().toISOString(),
@@ -1993,7 +1982,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     style={[
                       styles.statusButton,
                       { backgroundColor: isDark ? '#1E293B' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' },
-                      status === 'lost' && { backgroundColor: isDark ? '#991B1B' : '#DC2626', borderColor: isDark ? '#F87171' : '#DC2626' },
+                      status === 'lost' && { backgroundColor: isDark ? COLORS.secondaryDark : COLORS.secondary, borderColor: isDark ? COLORS.secondaryMedium : COLORS.secondary },
                     ]}
                     onPress={() => setStatus('lost')}
                   >
@@ -2009,7 +1998,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     style={[
                       styles.statusButton,
                       { backgroundColor: isDark ? '#1E293B' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' },
-                      status === 'found' && { backgroundColor: isDark ? '#166534' : '#15803D', borderColor: isDark ? '#4ADE80' : '#15803D' },
+                      status === 'found' && { backgroundColor: isDark ? COLORS.primaryDark : COLORS.primary, borderColor: isDark ? COLORS.primaryMedium : COLORS.primary },
                     ]}
                     onPress={() => {
                       setStatus('found');
@@ -2029,7 +2018,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     style={[
                       styles.statusButton,
                       { backgroundColor: isDark ? '#1E293B' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' },
-                      status === 'adoption' && { backgroundColor: isDark ? '#9D174D' : '#DB2777', borderColor: isDark ? '#F472B6' : '#DB2777' },
+                      status === 'adoption' && { backgroundColor: isDark ? COLORS.secondaryDark : COLORS.secondary, borderColor: isDark ? COLORS.secondaryMedium : COLORS.secondary },
                     ]}
                     onPress={() => {
                       setStatus('adoption');
@@ -2050,20 +2039,20 @@ const RegisterItemScreen = ({ navigation, route }) => {
 
               {/* Informação sobre Publicação Direta para Adoção */}
               {status === 'adoption' && (
-                <View style={{ backgroundColor: isDark ? 'rgba(219, 39, 119, 0.15)' : '#FDF2F8', borderWidth: 1.5, borderColor: isDark ? 'rgba(219, 39, 119, 0.4)' : '#F472B6', borderRadius: 12, padding: 14, marginBottom: 20 }}>
+                <View style={{ backgroundColor: isDark ? COLORS.secondaryLight : COLORS.secondaryLight, borderWidth: 1.5, borderColor: isDark ? COLORS.secondaryMedium : COLORS.secondaryBorder, borderRadius: 12, padding: 14, marginBottom: 20 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 }}>
-                    <MaterialIcons name="favorite" size={18} color="#DB2777" />
-                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: isDark ? '#F472B6' : '#9D174D' }}>
+                    <MaterialIcons name="favorite" size={18} color={COLORS.secondary} />
+                    <Text style={{ fontSize: 13.5, fontWeight: '800', color: isDark ? COLORS.secondaryMedium : COLORS.secondaryDark }}>
                       Adoção Imediata (Pet sem Tutor Conhecido)
                     </Text>
                   </View>
-                  <Text style={{ fontSize: 12, lineHeight: 16, color: isDark ? '#FDA4AF' : '#BE185D' }}>
+                  <Text style={{ fontSize: 12, lineHeight: 16, color: isDark ? '#E8C3AE' : COLORS.secondaryDark }}>
                     Utilize esta opção para doar ou cadastrar animais resgatados, ninhadas ou pets de abrigo que não possuem dono prévio. O anúncio entrará diretamente no feed de adoção.
                   </Text>
                 </View>
               )}
 
-              {/* Opções de Custódia e Adoção Futura para Pet Encontrado */}
+              {/* Opções de custódia para pet encontrado */}
               {status === 'found' && (
                 <View style={[styles.custodySection, { backgroundColor: isDark ? '#161F30' : '#F8FAFC', borderColor: isDark ? '#243248' : '#E2E8F0' }]}>
                   <Text style={[styles.label, { color: colors.text }]}>Onde o animal está agora? *</Text>
@@ -2100,13 +2089,12 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       ]}
                       onPress={() => {
                         setFoundCustody('spotted');
-                        setAdoptionIntent(false);
                       }}
                       activeOpacity={0.85}
                     >
                       <View style={[styles.custodyIconCircle, { backgroundColor: isDark ? 'rgba(217, 119, 6, 0.2)' : '#FEF3C7' }, foundCustody === 'spotted' && { backgroundColor: '#D97706' }]}>
                         <MaterialIcons
-                          name="visibility"
+                          name="location-on"
                           size={20}
                           color={foundCustody === 'spotted' ? '#FFFFFF' : '#D97706'}
                         />
@@ -2120,152 +2108,60 @@ const RegisterItemScreen = ({ navigation, route }) => {
                     </TouchableOpacity>
                   </View>
 
-                  {/* Aviso de Proteção e Privacidade do Protetor */}
-                  {foundCustody === 'with_me' && (
-                    <View style={{
-                      flexDirection: 'row',
-                      alignItems: 'flex-start',
-                      backgroundColor: isDark ? 'rgba(5, 150, 105, 0.12)' : '#ECFDF5',
-                      borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0',
-                      borderWidth: 1,
-                      borderRadius: 12,
-                      padding: 10,
+                  <View
+                    style={{
                       marginTop: 8,
-                      marginBottom: 4,
-                      gap: 8,
-                    }}>
-                      <MaterialIcons name="security" size={17} color="#2E5634" style={{ marginTop: 1 }} />
-                      <Text style={{ flex: 1, fontSize: 11.5, color: isDark ? '#D1FAE5' : '#065F46', lineHeight: 16 }}>
-                        <Text style={{ fontWeight: '800' }}>Privacidade protegida: </Text>
-                        seu endereço exato não aparece. Apenas uma localização aproximada será compartilhada.
-                      </Text>
-                    </View>
-                  )}
-
-                  {/* Confirmação de busca pelo tutor */}
-                  {foundCustody === 'with_me' && (
+                      padding: 12,
+                      borderRadius: 12,
+                      backgroundColor: helpNetworkExpanded ? (isDark ? 'rgba(30, 64, 175, 0.14)' : '#EFF6FF') : colors.card,
+                      borderWidth: 1,
+                      borderColor: helpNetworkExpanded ? (isDark ? 'rgba(96, 165, 250, 0.35)' : '#BFDBFE') : colors.cardBorder,
+                    }}
+                  >
                     <TouchableOpacity
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        marginTop: 4,
-                        marginBottom: 12,
-                        padding: 12,
-                        backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
-                        borderRadius: 12,
-                        borderWidth: 1,
-                        borderColor: legalCustodyAgreed ? colors.primary : (isDark ? '#334155' : '#CBD5E1'),
-                      }}
-                      onPress={() => setLegalCustodyAgreed(!legalCustodyAgreed)}
-                      activeOpacity={0.7}
-                    >
-                      <MaterialIcons
-                        name={legalCustodyAgreed ? "check-box" : "check-box-outline-blank"}
-                        size={22}
-                        color={legalCustodyAgreed ? colors.primary : colors.textSecondary}
-                      />
-                      <Text style={{ flex: 1, marginLeft: 10, fontSize: 13, color: colors.text, lineHeight: 18 }}>
-                        Confirmo que manterei este anúncio ativo e colaborarei na busca pelo tutor original durante o período mínimo de divulgação.
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Opção de intenção de adoção */}
-                  {foundCustody === 'with_me' && (
-                    <TouchableOpacity
-                      style={[
-                        styles.adoptionToggleCard,
-                        { backgroundColor: isDark ? 'rgba(219, 39, 119, 0.12)' : '#FFF1F2', borderColor: isDark ? 'rgba(219, 39, 119, 0.3)' : '#FECDD3' },
-                        adoptionIntent && [styles.adoptionToggleCardActive, { backgroundColor: isDark ? 'rgba(219, 39, 119, 0.22)' : '#FDF2F8', borderColor: '#DB2777' }],
-                      ]}
-                      onPress={() => setAdoptionIntent((prev) => !prev)}
-                      activeOpacity={0.85}
-                    >
-                      <View style={styles.adoptionToggleLeft}>
-                        <View style={[styles.adoptionIconBadge, { backgroundColor: isDark ? 'rgba(219, 39, 119, 0.25)' : '#FFE4E6' }, adoptionIntent && styles.adoptionIconBadgeActive]}>
-                          <MaterialIcons
-                            name="favorite"
-                            size={18}
-                            color={adoptionIntent ? '#FFFFFF' : '#E11D48'}
-                          />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.adoptionToggleTitle, { color: isDark ? '#F472B6' : '#9F1239' }]}>
-                            Considerar adoção após a busca
-                          </Text>
-                          <Text style={[styles.adoptionToggleSubtitle, { color: isDark ? '#FDA4AF' : '#BE123C' }]}>
-                            Se o tutor não for localizado após {RECOVERY_SEARCH_DAYS} dias, você poderá solicitar a adoção responsável. A publicação não muda automaticamente e a intenção não garante a permanência do animal.
-                          </Text>
-                        </View>
-                      </View>
-                      <View style={[styles.customCheckbox, { borderColor: isDark ? '#9F1239' : '#FDA4AF', backgroundColor: isDark ? '#0F172A' : '#FFFFFF' }, adoptionIntent && styles.customCheckboxChecked]}>
-                        {adoptionIntent && <MaterialIcons name="check" size={14} color="#FFFFFF" />}
-                      </View>
-                    </TouchableOpacity>
-                  )}
-
-                  <View style={{
-                    marginTop: 8,
-                    padding: 12,
-                    borderRadius: 12,
-                    backgroundColor: isDark ? 'rgba(30, 64, 175, 0.14)' : '#EFF6FF',
-                    borderWidth: 1,
-                    borderColor: isDark ? 'rgba(96, 165, 250, 0.35)' : '#BFDBFE',
-                  }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
-                      <MaterialIcons name="volunteer-activism" size={19} color={isDark ? '#60A5FA' : '#2563EB'} />
-                      <Text style={{ color: isDark ? '#93C5FD' : '#1D4ED8', fontSize: 14, fontWeight: '800' }}>
-                        Rede de Ajuda
-                      </Text>
-                    </View>
-                    <Text style={{ color: isDark ? '#BFDBFE' : '#1E40AF', fontSize: 11.5, lineHeight: 16, marginTop: 5 }}>
-                      Registre o caso e indique como a comunidade pode ajudar.
-                    </Text>
-
-                    <Text style={[styles.label, { color: colors.text, marginTop: 12, marginBottom: 6 }]}>
-                      O que este caso precisa?
-                    </Text>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                      {HELP_NEED_OPTIONS.map((option) => {
-                        const selected = helpNeeds.includes(option);
-                        return (
-                          <TouchableOpacity
-                            key={`need-${option}`}
-                            onPress={() => toggleHelpOption(setHelpNeeds, helpNeeds, option)}
-                            style={{
-                              borderRadius: 16,
-                              paddingHorizontal: 10,
-                              paddingVertical: 7,
-                              backgroundColor: selected ? (isDark ? '#1D4ED8' : '#2563EB') : (isDark ? '#172554' : '#FFFFFF'),
-                              borderWidth: 1,
-                              borderColor: selected ? (isDark ? '#60A5FA' : '#2563EB') : (isDark ? '#1E40AF' : '#BFDBFE'),
-                            }}
-                          >
-                            <Text style={{ color: selected ? '#FFFFFF' : (isDark ? '#BFDBFE' : '#1D4ED8'), fontSize: 11.5, fontWeight: '700' }}>
-                              {option}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-
-                    <TouchableOpacity
-                      onPress={() => setAnonymousReport((currentValue) => !currentValue)}
-                      style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}
+                      onPress={() => setHelpNetworkExpanded((currentValue) => !currentValue)}
                       activeOpacity={0.8}
                     >
-                      <MaterialIcons
-                        name={anonymousReport ? 'check-box' : 'check-box-outline-blank'}
-                        size={21}
-                        color={anonymousReport ? (isDark ? '#60A5FA' : '#2563EB') : colors.textSecondary}
-                      />
-                      <Text style={{ flex: 1, marginLeft: 7, color: colors.text, fontSize: 12.5 }}>
-                        Publicar como relato anônimo
+                      <MaterialIcons name="volunteer-activism" size={19} color={colors.primary} />
+                      <Text style={{ color: colors.text, fontSize: 14, fontWeight: '800', flex: 1 }}>
+                        Necessita de ajuda?
                       </Text>
+                      <MaterialIcons name={helpNetworkExpanded ? 'expand-less' : 'expand-more'} size={21} color={colors.textSecondary} />
                     </TouchableOpacity>
-                    <Text style={{ color: colors.textSecondary, fontSize: 10.5, lineHeight: 14, marginLeft: 28, marginTop: 2 }}>
-                      Seu nome fica protegido na publicação, mas a plataforma mantém o registro da conta para segurança.
-                    </Text>
+                    {helpNetworkExpanded && (
+                      <>
+                        <Text style={{ color: colors.textSecondary, fontSize: 11.5, lineHeight: 16, marginTop: 5 }}>
+                          Selecione como a comunidade pode ajudar neste caso.
+                        </Text>
+                        <Text style={[styles.label, { color: colors.text, marginTop: 12, marginBottom: 6 }]}>
+                          O que este caso precisa?
+                        </Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                          {HELP_NEED_OPTIONS.map((option) => {
+                            const selected = helpNeeds.includes(option);
+                            return (
+                              <TouchableOpacity
+                                key={`need-${option}`}
+                                onPress={() => toggleHelpOption(setHelpNeeds, helpNeeds, option)}
+                                style={{
+                                  borderRadius: 16,
+                                  paddingHorizontal: 10,
+                                  paddingVertical: 7,
+                                  backgroundColor: selected ? colors.primary : colors.card,
+                                  borderWidth: 1,
+                                  borderColor: selected ? colors.primary : colors.border,
+                                }}
+                              >
+                                <Text style={{ color: selected ? '#FFFFFF' : colors.text, fontSize: 11.5, fontWeight: '700' }}>
+                                  {option}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      </>
+                    )}
                   </View>
                 </View>
               )}
@@ -2405,7 +2301,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
               <SelectionChips label="Estava com coleira?" options={['Sim', 'Não', 'Não sei']} value={animalCollar} onChange={setAnimalCollar} />
 
               {/* Seleção de Personalidade & Cuidados (Exclusivo para o fluxo de Adoção) */}
-              {(status === 'adoption' || (status === 'found' && foundCustody === 'with_me' && Boolean(adoptionIntent))) && (
+              {status === 'adoption' && (
                 <View style={styles.selectionGroup}>
                   <Text style={[styles.label, { color: colors.text }]}>
                     Personalidade & Cuidados *(Incentiva a Adoção)*
@@ -2509,7 +2405,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   style={[
                     styles.statusButton,
                     { backgroundColor: isDark ? '#1E293B' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' },
-                    status === 'lost' && styles.statusButtonActive,
+                    status === 'lost' && { backgroundColor: isDark ? COLORS.secondaryDark : COLORS.secondary, borderColor: isDark ? COLORS.secondaryMedium : COLORS.secondary },
                   ]}
                   onPress={() => setStatus('lost')}
                 >
@@ -2525,7 +2421,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
                   style={[
                     styles.statusButton,
                     { backgroundColor: isDark ? '#1E293B' : '#F9FAFB', borderColor: isDark ? '#334155' : '#E5E7EB' },
-                    status === 'found' && styles.statusButtonActive,
+                    status === 'found' && { backgroundColor: isDark ? COLORS.primaryDark : COLORS.primary, borderColor: isDark ? COLORS.primaryMedium : COLORS.primary },
                   ]}
                   onPress={() => {
                     setStatus('found');

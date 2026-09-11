@@ -203,6 +203,54 @@ export async function createRenewalReminderNotification(item, userId) {
   return data;
 }
 
+export async function createFoundPetFollowUpNotification(item, userId) {
+  if (!item || !userId || item.status !== 'found') return null;
+  if (item.extra_fields?.found_custody !== 'with_me' || item.extra_fields?.available_for_adoption) return null;
+
+  const recoverySearch = item.extra_fields?.recovery_search;
+  const startedAt = recoverySearch?.started_at || item.created_at;
+  if (!startedAt) return null;
+
+  const minimumDays = Number(recoverySearch?.minimum_days) || 21;
+  const elapsedDays = (Date.now() - new Date(startedAt).getTime()) / (1000 * 60 * 60 * 24);
+  if (elapsedDays < minimumDays) return null;
+
+  const supabase = await getSupabaseClient();
+  if (!supabase) return null;
+  const existing = await supabase
+    .from('notifications')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('type', 'found_pet_follow_up')
+    .eq('item_id', item.id)
+    .limit(1);
+
+  if (!existing.error && existing.data && existing.data.length > 0) {
+    return existing.data[0];
+  }
+
+  const { data, error } = await supabase
+    .from('notifications')
+    .insert(buildSystemNotificationPayload({
+      userId,
+      type: 'found_pet_follow_up',
+      title: 'Como está o animal que você encontrou?',
+      message: `Já se passaram ${minimumDays} dias desde o registro de "${item.title || 'este animal'}". Se o tutor ainda não apareceu, você pode continuar cuidando dele ou abrir a publicação para adoção responsável. Se o tutor foi localizado, encerre a publicação.`,
+      itemId: item.id,
+    }))
+    .select()
+    .single();
+
+  if (error) {
+    if (!shouldIgnoreNotificationError(error)) {
+      console.error('[notifications] Erro ao criar lembrete de acompanhamento:', error);
+    }
+    return null;
+  }
+
+  return data;
+}
+
 export async function createItemRemovedNotification(item, userId) {
   if (!item || !userId) return null;
 
@@ -386,6 +434,18 @@ export async function syncRenewalNotifications(userId, items = []) {
       const result = await createRenewalReminderNotification(item, userId);
       if (result) created.push(result);
     }
+  }
+  return created;
+}
+
+export async function syncFoundPetFollowUpNotifications(userId, items = []) {
+  if (!userId || !Array.isArray(items)) return [];
+
+  const created = [];
+  for (const item of items) {
+    if (!item || item.owner_id !== userId) continue;
+    const result = await createFoundPetFollowUpNotification(item, userId);
+    if (result) created.push(result);
   }
   return created;
 }

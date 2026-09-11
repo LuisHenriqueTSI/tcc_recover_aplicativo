@@ -1,12 +1,12 @@
 \section{DESIGN DE INTERFACE E TELAS DO SISTEMA WeFIND}
 
-O design de interface de uma aplicação móvel de utilidade pública desempenha papel determinante em sua eficácia prática, especialmente em cenários de emergência e estresse provocados pelo desaparecimento de um animal de estimação. Como ensinam Rogers, Sharp e Preece (2023), o projeto de interação humano-computador (IHC) deve priorizar a redução da carga cognitiva, construindo fluxos intuitivos, acolhedores e objetivos que permitam ao usuário executar ações críticas com o mínimo de esforço mental e sem barreiras de navegação.
+O design de interface de um aplicativo móvel voltado à utilidade pública é fundamental para que ele funcione bem na prática. Essa importância cresce ainda mais em momentos de emergência e estresse, como na perda de um animal de estimação, quando o tutor se encontra abalado emocionalmente e precisa agir com rapidez. Como destacam Rogers, Sharp e Preece (2023), o projeto de interação humano-computador (IHC) deve ter como foco diminuir a carga cognitiva do usuário. Isso significa criar telas diretas, organizadas e com navegação intuitiva, permitindo que a pessoa encontre o que precisa e execute ações importantes sem se sentir confusa ou perdida no aplicativo.
 
-No contexto do WeFIND, a concepção das interfaces visuais foi orientada pelos padrões consolidados da literatura de IHC, com ênfase nas dez heurísticas de usabilidade de Nielsen (1994) adaptadas para dispositivos móveis, e pelas diretrizes técnicas da norma ABNT NBR ISO 9241-11 (ABNT, 2021), que define usabilidade a partir da tríade de eficácia, eficiência e satisfação do usuário. A aplicação dessas diretrizes buscou assegurar que qualquer cidadão, independentemente de sua familiaridade com smartphones, consiga registrar um alerta ou consultar publicações com agilidade.
+No WeFIND, a construção das telas seguiu critérios consolidados de usabilidade, com destaque para as dez heurísticas de Nielsen (1994) adaptadas ao contexto dos smartphones, além das orientações da norma ABNT NBR ISO 9241-11 (ABNT, 2021). Essa norma define usabilidade a partir de três pilares: a eficácia (o usuário conseguir concluir o que deseja), a eficiência (fazer isso no menor tempo e com o menor esforço possível) e a satisfação (ter uma experiência agradável e confiável). A adoção desses princípios buscou garantir que qualquer pessoa, mesmo sem grande intimidade com a tecnologia, consiga navegar pelo mapa, registrar um pet desaparecido ou relatar um avistamento de maneira ágil e segura.
 
-Adicionalmente, o projeto gráfico incorporou os princípios universais de acessibilidade e contraste das diretrizes internacionais \textit{Web Content Accessibility Guidelines} (WCAG 2.1) em nível AA (W3C, 2023). A escolha tipográfica, a calibragem da paleta cromática e a ergonomia de toque foram rigorosamente planejadas para viabilizar o uso confortável do aplicativo em ambientes externos sob luz solar direta, situação cotidiana em buscas de rua por animais perdidos.
+Outro cuidado central foi a acessibilidade digital, orientada pelas diretrizes internacionais da \textit{Web Content Accessibility Guidelines} (WCAG 2.1), no nível recomendado AA (W3C, 2023). Na prática, a conformidade em nível AA assegura padrões de qualidade visual e funcional indispensáveis para o público geral: ela exige regras rígidas de contraste entre os textos e as cores de fundo (permitindo a leitura por pessoas com baixa visão ou daltonismo) e impõe dimensões mínimas para as áreas de toque dos botões. No WeFIND, essa calibração foi pensada para atender cenários reais de busca, nos quais voluntários e tutores utilizam o smartphone ao ar livre sob iluminação solar direta, situação em que o reflexo na tela costuma prejudicar a leitura de interfaces pouco contrastadas.
 
-As subseções seguintes descrevem a tipografia, a identidade visual e o logotipo concebido com apoio de inteligência artificial generativa, a paleta cromática oficial e o catálogo completo das principais telas desenvolvidas para a plataforma WeFIND.
+Dessa maneira, o projeto visual buscou harmonizar clareza de informações, ergonomia para uso confortável com apenas uma mão e acolhimento humano, transmitindo tranquilidade por meio das cores e firmeza nas ações principais. As subseções a seguir apresentam em detalhes as escolhas tipográficas, a identidade visual e o logotipo desenvolvido com apoio de ferramentas inteligentes, a paleta de cores oficial e o catálogo completo das telas desenvolvidas para a plataforma WeFIND.
 
 \clearpage
 
@@ -30,25 +30,35 @@ Adotou-se a família tipográfica sem serifa Roboto (GOOGLE FONTS, 2024), consag
 
 A identidade visual do WeFIND foi projetada para transmitir sentimentos de solidariedade comunitária, segurança, afeto e esperança. A própria denominação da plataforma une o pronome coletivo em língua inglesa ``We'' (Nós) ao verbo ``Find'' (Encontrar), expressando a premissa de que o resgate de um animal de estimação não é um drama individual, mas uma missão compartilhada entre toda a vizinhança.
 
-Para a concepção do ícone e símbolo gráfico oficial, utilizou-se a ferramenta de inteligência artificial generativa Flow Labs (FLOW LABS, 2026), explorada por meio de engenharia de prompt iterativa no Figma. Os critérios solicitados ao modelo incluíram estilo visual minimalista e plano apropriado para ícones móveis, integração harmoniosa de silhuetas representativas do universo pet por meio das formas estilizadas de um cão e de um gato como símbolos universais de afeto animal, presença centralizada do marcador clássico de mapa como representação da busca espacial ativa por GPS, e predomínio das cores institucionais verde floresta e terracota sobre fundo branco puro.
+Para fortalecer esse elo comunitário, a identidade visual do WeFIND priorizou uma atmosfera que transmite afeto, acolhimento e esperança. O objetivo foi criar uma marca que despertasse empatia imediata e incentivasse a colaboração espontânea da vizinhança, mostrando que a união de pessoas apoiada pela tecnologia pode ser uma aliada calorosa e confiável em momentos delicados.
 
-O prompt textual que convergiu de maneira satisfatória para esses requisitos visuais foi estruturado nos seguintes termos:
+A inclusão conjunta do cão e do gato no símbolo gráfico reflete a realidade do convívio familiar brasileiro. Embora muitas campanhas de proteção animal concentrem-se historicamente apenas em cães, a perda e o abandono de felinos representam ocorrências igualmente frequentes e dolorosas no ambiente urbano. Ao reunir as duas espécies em harmonia visual, a marca consolida desde o primeiro contato que a plataforma foi concebida para acolher tutores de ambos os animais com o mesmo nível de atenção.
+
+Para a concepção do ícone oficial, utilizou-se a ferramenta de inteligência artificial generativa Flow Labs (FLOW LABS, 2026), integrada ao processo de design no Figma. O uso de inteligência artificial generativa permitiu explorar variadas composições visuais em poucos minutos, auxiliando na definição de um conceito moderno e equilibrado.
+
+Os critérios solicitados incluíram estilo minimalista e plano (\textit{flat design}), adequado para ícones em telas móveis de diversos tamanhos. Buscou-se a integração harmoniosa de silhuetas representativas do universo doméstico: o perfil amigável de um cão e de um gato, simbolizando as principais espécies acolhidas pelas famílias. No centro, posicionou-se o marcador de mapa, representando a busca ativa por satélite, com as cores terracota e verde sobre fundo branco:
 
 \begin{quote}
 \small\textit{``Minimalist flat app icon for a lost and found pet mobile app, combining a friendly dog silhouette and a cat silhouette surrounding a central GPS location pin, solid colors forest green and terracotta, clean white background, modern vector logo design, no gradients, no photorealism.''}
 \end{quote}
 
-A partir do vetor gerado, realizou-se o refinamento geométrico e alinhamento no software Figma, estabelecendo a representação visual oficial apresentada na Figura~\ref{fig:logotipo}.
+A partir do vetor gerado, realizou-se o refinamento manual no Figma, ajustando curvas, espessuras e simetria para garantir nitidez em telas menores. O logotipo final resultante desse processo é apresentado na Figura~\ref{fig:logotipo}.
 
 \begin{figure}[H]
     \centering
     \caption{Logotipo Oficial e Ícone do Aplicativo WeFIND}
     \label{fig:logotipo}
-    \includegraphics[width=0.60\textwidth]{imagens/03_arquitetura_design/figura13_logotipo_wefind.png}
+    \includegraphics[width=0.42\textwidth]{imagens/03_arquitetura_design/figura13_logotipo_wefind.png}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 O símbolo gráfico reúne a silhueta de um cão à esquerda e de um gato à direita, circundando o marcador clássico de localização geográfica ao centro. Essa composição sintetiza a missão do sistema de atender às principais espécies domésticas, enquanto o marcador central enfatiza o recurso de geolocalização em mapa. As cores aplicadas reforçam a proposta: o tom Terracota acolhe as silhuetas dos animais e o Verde Esperança colore o pino de localização.
+
+A leitura do símbolo comunica com clareza o propósito da ferramenta. A forma circular vazada no centro do marcador geográfico atua como uma lente de foco, sugerindo a atenção comunitária voltada para avistar, localizar e reencontrar o animal desaparecido.
+
+O símbolo foi também preparado para atender às exigências técnicas dos sistemas móveis contemporâneos, como os ícones adaptativos do Android, que utilizam máscaras de corte circulares e quadradas com áreas de segurança bem definidas. O ícone também conta com versão monocromática para a barra de notificações do celular, facilitando o reconhecimento imediato de alertas e mensagens.
+
+Na interface do aplicativo, a marca é utilizada de maneira consistente na tela de apresentação (\textit{splash screen}), nos cartazes digitais de busca gerados para impressão e nas carteirinhas com código QR vinculadas às coleiras. Essa padronização transmite seriedade e acolhimento, assegurando aos tutores e voluntários que a plataforma é um ambiente seguro e dedicado ao bem-estar animal.
 
 \clearpage
 
@@ -84,25 +94,27 @@ O WeFIND organiza suas funcionalidades em fluxos de navegação diretos e objeti
     \centering
     \caption{Telas Iniciais do Aplicativo WeFIND}
     \label{fig:telas_autenticacao}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-autenticacao-login.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-autenticacao-login.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 17.a) Tela de Autenticação}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-apresentacao-conhecer.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-apresentacao-conhecer.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 17.b) Apresentação (Modo Conhecer)}
     \end{minipage}
-    \par\vspace{0.2cm}
+    \par\vspace{0.15cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:telas_autenticacao}.a, visualiza-se a Tela de Autenticação, contendo o logotipo institucional, campos de e-mail e senha com botão de máscara para visibilidade, atalho para recuperação de credenciais esquecidas e a opção de acesso sem cadastro prévio. Já na Figura~\ref{fig:telas_autenticacao}.b, exibe-se a Tela de Apresentação (Modo Conhecer), concebida para ambientar novos usuários que optam por explorar o aplicativo como visitantes, destacando as ferramentas de busca por código QR, o alerta para a vizinhança e depoimentos de casos resolvidos.
+
+\clearpage
 
 Para usufruir plenamente dos recursos colaborativos, os novos participantes realizam o cadastro no aplicativo, ao passo que membros cadastrados que tenham esquecido suas credenciais dispõem de um fluxo seguro de redefinição de senha, conforme apresentado na Figura~\ref{fig:tela_cadastro_recuperacao}.
 
@@ -110,25 +122,27 @@ Para usufruir plenamente dos recursos colaborativos, os novos participantes real
     \centering
     \caption{Cadastro de Usuário e Recuperação de Conta}
     \label{fig:tela_cadastro_recuperacao}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-criar-conta.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-criar-conta.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 18.a) Tela de Cadastro de Novo Usuário}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-recuperar-senha.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-recuperar-senha.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 18.b) Tela de Recuperação de Senha}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_cadastro_recuperacao}.a, apresenta-se o formulário de cadastro de usuário, onde o cidadão informa nome completo, endereço eletrônico, telefone celular para contato e senha de acesso, iniciando a verificação de segurança em duas etapas por código OTP. Já na Figura~\ref{fig:tela_cadastro_recuperacao}.b, exibe-se a tela de recuperação de conta, que possibilita solicitar o envio de código de segurança para redefinição rápida da senha, assegurando que o tutor retome o acesso à sua conta a qualquer momento.
+
+\clearpage
 
 Mesmo sem realizar autenticação imediata, a plataforma garante acesso democrático para que qualquer pessoa possa consultar animais perdidos ou encontrados em sua região por meio do modo visitante, como demonstrado na Figura~\ref{fig:tela_visitante_feed_mapa}.
 
@@ -136,25 +150,27 @@ Mesmo sem realizar autenticação imediata, a plataforma garante acesso democrá
     \centering
     \caption{Navegação no Modo Visitante em Mural e Mapa}
     \label{fig:tela_visitante_feed_mapa}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-feed.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-feed.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 19.a) Mural de Publicações no Modo Visitante}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-mapa.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-mapa.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 19.b) Mapa de Publicações no Modo Visitante}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_visitante_feed_mapa}.a, observa-se a aba Explorar disponibilizada para o visitante, contendo a listagem pública de animais perdidos e encontrados com fotos e bairros de publicação. Já na Figura~\ref{fig:tela_visitante_feed_mapa}.b, apresenta-se o mapa interativo em modo somente leitura, permitindo ao visitante visualizar os pontos geográficos onde animais foram vistos na cidade, sem a exigência de cadastro prévio para consultas humanitárias.
+
+\clearpage
 
 Ao consultar uma publicação específica, o visitante visualiza todas as características do pet, sendo orientado a se autenticar caso deseje interagir ativamente ou enviar comentários, conforme demonstrado na Figura~\ref{fig:tela_visitante_detalhes_alerta}.
 
@@ -162,25 +178,27 @@ Ao consultar uma publicação específica, o visitante visualiza todas as caract
     \centering
     \caption{Detalhes do Animal e Incentivo à Autenticação no Modo Visitante}
     \label{fig:tela_visitante_detalhes_alerta}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-detalhes.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-detalhes.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 20.a) Ficha do Animal no Modo Visitante}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-alerta-login-comentario.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-visitante-alerta-login-comentario.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 20.b) Alerta de Ação Restrita e Incentivo à Autenticação}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_visitante_detalhes_alerta}.a, exibe-se a tela de detalhes acessada pelo visitante, contendo fotografias, descrição física e referências de localização. Já na Figura~\ref{fig:tela_visitante_detalhes_alerta}.b, exibe-se o alerta visual amigável disparado quando o visitante tenta comentar, enviar mensagens ou registrar avistamentos: o modal esclarece que a ação requer identificação do autor para segurança da comunidade, oferecendo botões diretos para entrar na conta ou realizar cadastro.
+
+\clearpage
 
 Uma vez autenticado, o usuário tem acesso irrestrito ao painel principal do aplicativo, apresentado na Figura~\ref{fig:tela_feed}.
 
@@ -188,13 +206,15 @@ Uma vez autenticado, o usuário tem acesso irrestrito ao painel principal do apl
     \centering
     \caption{Tela Inicial e Mural de Publicações Ativas}
     \label{fig:tela_feed}
-    \vspace{0.2cm}
-    \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-inicial-feed.jpeg}
+    \vspace{0.15cm}
+    \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-inicial-feed.jpeg}
     \vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 A interface do mural inicial (Figura~\ref{fig:tela_feed}) concentra o cabeçalho superior com barra de busca contextual, botão de notificações e atalhos rápidos de filtragem por categoria (Encontrados, Para Adoção e Minhas Publicações). Os cartões verticais destacam a fotografia do animal em alta resolução, selo colorido indicativo do status, nome, espécie, porte, sexo, tempo de publicação e a distância exata em quilômetros calculada dinamicamente a partir do ponto geográfico do dispositivo móvel. Na base da tela, a barra de navegação permanente oferece acesso rápido ao início, mapa, chat, perfil e ao botão destacado central para nova publicação.
+
+\clearpage
 
 Para que as listagens reflitam com precisão o raio geográfico de interesse do guardião e permitam alternar entre diferentes bairros ou cidades de busca, o aplicativo incorpora os controles apresentados na Figura~\ref{fig:tela_ajuste_localidade}.
 
@@ -202,25 +222,27 @@ Para que as listagens reflitam com precisão o raio geográfico de interesse do 
     \centering
     \caption{Ajuste de Raio de Busca e Atualização de Localidade}
     \label{fig:tela_ajuste_localidade}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-ajuste-raio-feed.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-ajuste-raio-feed.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 22.a) Ajuste de Raio de Proximidade}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-atualizar-localidade-pela-tela-inicial-com-ajuste-raios.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-atualizar-localidade-pela-tela-inicial-com-ajuste-raios.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 22.b) Atualização de Localidade e Endereço}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_ajuste_localidade}.a, observa-se o modal de ajuste rápido do raio de busca, que permite ao usuário limitar ou expandir o alcance da exibição entre 5 km e 80 km com apenas um toque. Já na Figura~\ref{fig:tela_ajuste_localidade}.b, exibe-se a tela de atualização de localidade, na qual o participante pode selecionar uma nova cidade de referência ou tocar na opção de escolha direta no mapa para reposicionar seu endereço central, recalculando todas as distâncias apresentadas no mural de publicações.
+
+\clearpage
 
 Enquanto a consulta em lista no mural organiza as publicações de forma cronológica e por distância linear, a identificação territorial dos animais é potencializada pela navegação espacial sobre o mapa interativo, demonstrada na Figura~\ref{fig:tela_mapa_permissao_navegacao}.
 
@@ -228,25 +250,27 @@ Enquanto a consulta em lista no mural organiza as publicações de forma cronol�
     \centering
     \caption{Permissão de Localização GPS e Navegação no Mapa Interativo}
     \label{fig:tela_mapa_permissao_navegacao}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-permissao-localizacao.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-permissao-localizacao.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 23.a) Solicitação de Permissão de Acesso ao GPS}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-principal.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-principal.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 23.b) Navegação Espacial no Mapa Principal}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_mapa_permissao_navegacao}.a, apresenta-se a caixa de diálogo nativa de permissão de geolocalização do dispositivo móvel, solicitando autorização para uso durante o uso do aplicativo, etapa indispensável para centralizar a visualização cartográfica no ponto exato do usuário e calcular distâncias dinâmicas. Já na Figura~\ref{fig:tela_mapa_permissao_navegacao}.b, apresenta-se o mapa interativo em tela cheia baseado em Google Maps, destacando marcadores circulares com fotos reais dos animais nas imediações, botão flutuante para recentralizar o GPS e chave superior de alternância rápida para a exibição em lista no mural.
+
+\clearpage
 
 A interação direta com os elementos cartográficos permite consultar informações resumidas de cada ponto e acionar o cálculo imediato de rotas de deslocamento, conforme exibido na Figura~\ref{fig:tela_mapa_card_rota}.
 
@@ -254,25 +278,27 @@ A interação direta com os elementos cartográficos permite consultar informaç
     \centering
     \caption{Identificação do Marcador e Traçado de Rota até o Animal}
     \label{fig:tela_mapa_card_rota}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-card-avistamento.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-card-avistamento.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 24.a) Cartão Informativo do Marcador Selecionado}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-rota-animal.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mapa-rota-animal.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 24.b) Traçado de Rota em Tempo Real até o Animal}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_mapa_card_rota}.a, observa-se a abertura instantânea do cartão inferior de pré-visualização ao tocar em um marcador do mapa: o componente destaca a foto do animal, o selo semântico amarelo ``Visto na Rua'', a localização descritiva, a distância linear em relação ao usuário e os botões de ação para abrir os detalhes completos ou traçar a rota de resgate. Já na Figura~\ref{fig:tela_mapa_card_rota}.b, demonstra-se a funcionalidade de navegação por rotas ativas da Google Directions API, que traça a linha viária em azul diretamente sobre as ruas da cidade até o ponto de avistamento, indicando a previsão em tempo real (1 minuto e 0,3 km de percurso) para acelerar a chegada do tutor ou voluntário ao local.
+
+\clearpage
 
 Ao avistar um animal perdido em via pública, o cidadão pode relatar imediatamente a publicação à comunidade por meio do formulário de avistamento apresentado na Figura~\ref{fig:tela_registro_avistamento}.
 
@@ -280,13 +306,15 @@ Ao avistar um animal perdido em via pública, o cidadão pode relatar imediatame
     \centering
     \caption{Registro Comunitário de Avistamento (``Vi o Pet'')}
     \label{fig:tela_registro_avistamento}
-    \vspace{0.2cm}
-    \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-registro-avistamento.jpeg}
+    \vspace{0.15cm}
+    \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-registro-avistamento.jpeg}
     \vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 A interface de registro de avistamento (Figura~\ref{fig:tela_registro_avistamento}) viabiliza o envio rápido de pistas. O voluntário captura uma fotografia do animal no local em que ele foi visto, relata o comportamento do pet (por exemplo, se parecia assustado ou ferido) e confirma as coordenadas do ponto geográfico. O sistema atualiza a linha do tempo da publicação e alerta o tutor instantaneamente por notificação no celular, acelerando o cerco de buscas na região.
+
+\clearpage
 
 Além de registrar avistamentos rápidos, o usuário pode acessar a ficha descritiva completa de qualquer publicação ou gerenciar seus próprios anúncios, como exibido na Figura~\ref{fig:tela_detalhes}.
 
@@ -294,25 +322,27 @@ Além de registrar avistamentos rápidos, o usuário pode acessar a ficha descri
     \centering
     \caption{Detalhes da Publicação e Painel de Gestão do Autor}
     \label{fig:tela_detalhes}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-detalhes-do-animal.jpeg}
+        \includegraphics[height=10.8cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-detalhes-do-animal.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 26.a) Visualização Pública da Publicação}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-detalhes-do-animal-minha-publicacao-botoes-renovacao-publicacao-editar-excluir-marcar-reencontro.jpeg}
+        \includegraphics[height=10.8cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-detalhes-do-animal-minha-publicacao-botoes-renovacao-publicacao-editar-excluir-marcar-reencontro.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 26.b) Painel de Gestão Exclusivo do Autor}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-Na Figura~\ref{fig:tela_detalhes}.a, apresenta-se a tela de detalhes públicos contendo galeria fotográfica, status operacional, características físicas, marcas características, minimapa interativo com o ponto exato do avistamento e botões para envio de pistas comunitárias e início de conversa pelo chat. Já na Figura~\ref{fig:tela_detalhes}.b, observa-se a visualização diferenciada exibida exclusivamente para o autor do anúncio, que incorpora botões de controle para editar dados, renovar a publicação ativa na comunidade, excluir a postagem ou encerrar o caso marcando o animal como reencontrado. O botão ``Renovar'' desempenha papel estratégico na plataforma: ao receber o alerta periódico do aplicativo, o tutor confirma que o pet continua desaparecido e mantém a publicação em destaque no mural e no mapa; caso contrário, o anúncio é desativado para não poluir as buscas com animais já resolvidos e, após um período sem manifestação, é apagado em definitivo do banco de dados.
+Na Figura~\ref{fig:tela_detalhes}.a, visualiza-se a tela de detalhes públicos contendo fotografias, características físicas, minimapa com o ponto de avistamento e botões para envio de pistas e chat. Já na Figura~\ref{fig:tela_detalhes}.b, exibe-se a visão exclusiva do autor com botões para editar dados, excluir a postagem ou encerrar o caso marcando o reencontro. O botão ``Renovar'' permite confirmar periodicamente se a busca continua ativa, mantendo o anúncio em destaque; sem a confirmação, a publicação é ocultada para evitar buscas por animais já encontrados e, após carência, é apagada da base de dados.
+
+\clearpage
 
 Nos episódios em que um animal acolhido temporariamente é reconhecido por um tutor, o processo de devolução exige a apresentação de comprovação idônea de posse para evitar apropriações indevidas, conforme demonstrado na Figura~\ref{fig:tela_comprovacao_tutela}.
 
@@ -320,13 +350,15 @@ Nos episódios em que um animal acolhido temporariamente é reconhecido por um t
     \centering
     \caption{Solicitação de Devolução com Comprovação de Tutela}
     \label{fig:tela_comprovacao_tutela}
-    \vspace{0.2cm}
-    \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-comprovacao-tutela.jpeg}
+    \vspace{0.15cm}
+    \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-comprovacao-tutela.jpeg}
     \vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 A interface de solicitação de devolução (Figura~\ref{fig:tela_comprovacao_tutela}) estabelece um protocolo seguro de reivindicação. O requerente preenche uma justificativa detalhada e anexa fotografias históricas ao lado do animal, carteira de vacinação ou comprovantes veterinários que atestem sua guarda prévia. Esses documentos são encaminhados de forma privativa ao acolhedor, assegurando que o reencontro ocorra sob respaldo mútuo.
+
+\clearpage
 
 Uma vez iniciada a interação entre o tutor e a pessoa que avistou ou resgatou o pet, a comunicação prossegue de maneira instantânea pelo canal de mensageria da plataforma, exibido na Figura~\ref{fig:tela_chat}.
 
@@ -334,25 +366,27 @@ Uma vez iniciada a interação entre o tutor e a pessoa que avistou ou resgatou 
     \centering
     \caption{Mensageria Privativa em Tempo Real e Histórico de Conversas}
     \label{fig:tela_chat}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mensagens.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-mensagens.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 28.a) Caixa de Entrada e Mensagens Ativas}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-conversa.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-conversa.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 28.b) Conversa Privativa em Tempo Real}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_chat}.a, exibe-se a caixa de entrada do usuário, que lista todas as salas de bate-papo ativas ordenadas pela mensagem mais recente, com indicador visual de mensagens não lidas e identificação do animal em negociação. Já na Figura~\ref{fig:tela_chat}.b, visualiza-se a interface de chat em tempo real sustentada por WebSockets no Supabase, permitindo envio imediato de mensagens de texto, troca de fotografias para conferência de pelagem e carimbos de envio e leitura sem a necessidade de fornecer números telefônicos particulares.
+
+\clearpage
 
 Além de interagir em publicações existentes, qualquer guardião autenticado pode cadastrar uma nova publicação de animal perdido, encontrado ou para adoção. O fluxo estruturado para registro de um animal avistado na rua é conduzido por etapas intuitivas, apresentadas sequencialmente a partir da Figura~\ref{fig:tela_cadastrar_encontrado_1_2}.
 
@@ -360,25 +394,27 @@ Além de interagir em publicações existentes, qualquer guardião autenticado p
     \centering
     \caption{Cadastro de Publicação: Modalidade de Avistamento e Morfologia}
     \label{fig:tela_cadastrar_encontrado_1_2}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-1.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-1.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 29.a) Modalidade de Avistamento e Fotografia}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-2.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-2.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 29.b) Atributos e Características Físicas}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_cadastrar_encontrado_1_2}.a, observa-se a primeira etapa do fluxo de cadastro sob a categoria ``Encontrei um Pet'': o usuário seleciona a opção ``Apenas vi o animal (está na rua)'', insere a fotografia capturada da cena (com indicador de progresso de envio 1/6) e seleciona a espécie correspondente (neste caso, a espécie felina). Já na Figura~\ref{fig:tela_cadastrar_encontrado_1_2}.b, apresenta-se o formulário de características físicas padronizadas, onde o informante define rapidamente a cor predominante da pelagem (amarelo), sexo (macho), porte físico (médio), faixa etária aproximada (adulto), ausência de coleira e raça Sem Raça Definida (SRD), reduzindo ambiguidades visuais para a comunidade.
+
+\clearpage
 
 Com as características físicas preenchidas, o sistema solicita a definição precisa da localização geográfica do animal, demonstrada na Figura~\ref{fig:tela_cadastrar_encontrado_3_4}.
 
@@ -386,25 +422,27 @@ Com as características físicas preenchidas, o sistema solicita a definição p
     \centering
     \caption{Cadastro de Publicação: Georreferenciamento e Endereço}
     \label{fig:tela_cadastrar_encontrado_3_4}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-3.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-3.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 30.a) Fixação Interativa do Ponto no Mapa}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-4.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-4.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 30.b) Geocodificação Reversa e Confirmação de Endereço}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_cadastrar_encontrado_3_4}.a, visualiza-se a interface de escolha interativa do ponto no mapa georreferenciado: o usuário pode arrastar o marcador vermelho ou tocar diretamente no ponto da via pública onde o pet se encontra (neste exemplo, na Avenida Doutor Guilherme Minssen). Já na Figura~\ref{fig:tela_cadastrar_encontrado_3_4}.b, demonstra-se a integração automática com a API de geocodificação reversa, que converte as coordenadas de latitude e longitude no endereço textual correspondente, aplicando a etiqueta informativa ``Visto na Rua / Via Pública'' e permitindo ajustes manuais caso necessário.
+
+\clearpage
 
 Definido o local geográfico, o guardião finaliza o processo registrando a data e submetendo os dados, conforme apresentado na Figura~\ref{fig:tela_cadastrar_encontrado_5_6}.
 
@@ -412,25 +450,27 @@ Definido o local geográfico, o guardião finaliza o processo registrando a data
     \centering
     \caption{Cadastro de Publicação: Submissão e Confirmação de Sucesso}
     \label{fig:tela_cadastrar_encontrado_5_6}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-5.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-5.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 31.a) Data do Evento e Botão de Publicar}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-6.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-encontrado-6.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 31.b) Modal de Publicação Criada com Sucesso}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_cadastrar_encontrado_5_6}.a, exibe-se a etapa final de submissão, contendo a data do avistamento (10/09/2026), a opção de assinalar publicação em nome de terceiros e o botão principal em terracota ``Publicar Animal''. Já na Figura~\ref{fig:tela_cadastrar_encontrado_5_6}.b, demonstra-se o modal de confirmação imediata: o sistema valida os dados no banco Supabase, grava as fotografias no armazenamento seguro e notifica o participante com a mensagem ``Publicação Criada com Sucesso!'', disponibilizando o atalho direto para visualizar o anúncio ativo.
+
+\clearpage
 
 Assim que a confirmação é concluída, a nova publicação passa a compor imediatamente o mural principal de notícias geolocalizadas da comunidade, conforme registrado na Figura~\ref{fig:tela_feed_card_encontrado_rua}.
 
@@ -438,13 +478,15 @@ Assim que a confirmação é concluída, a nova publicação passa a compor imed
     \centering
     \caption{Exibição da Nova Publicação Cadastrada no Mural Comunitário}
     \label{fig:tela_feed_card_encontrado_rua}
-    \vspace{0.2cm}
-    \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-feed-card-encontrado-rua.jpeg}
+    \vspace{0.15cm}
+    \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-feed-card-encontrado-rua.jpeg}
     \vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 A Figura~\ref{fig:tela_feed_card_encontrado_rua} comprova a integração em tempo real do ecossistema: o anúncio recém-criado passa a ser exibido no mural da vizinhança encabeçado pelo selo semântico amarelo ``Visto na Rua'', destacando a foto do gato, a identificação da via pública (Avenida Doutor Guilherme Minssen), a distância exata calculada em tempo real (a 6,0 km do usuário) e o botão direto ``Como Chegar'' para acionamento de rotas.
+
+\clearpage
 
 Imediatamente após a confirmação da publicação, a plataforma oferece recursos gráficos automáticos de divulgação externa para alcançar cidadãos que não utilizam smartphones, conforme exibido na Figura~\ref{fig:tela_cartaz}.
 
@@ -452,13 +494,15 @@ Imediatamente após a confirmação da publicação, a plataforma oferece recurs
     \centering
     \caption{Cartaz Digital de Busca com Código QR Dinâmico}
     \label{fig:tela_cartaz}
-    \vspace{0.2cm}
-    \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/figura21_tela_cartaz.jpeg}
+    \vspace{0.15cm}
+    \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/figura21_tela_cartaz.jpeg}
     \vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 O cartaz digital gerado na Figura~\ref{fig:tela_cartaz} adota diagramação gráfica de alto contraste inspirada em materiais de utilidade pública. Em sua área central, exibe a foto ampliada do pet, características de identificação e o ponto de sumiço. Na base, incorpora um código QR dinâmico gerado exclusivamente para a publicação: qualquer pessoa pode apontar a câmera do celular para o código e abrir instantaneamente a ficha do animal no WeFIND, visualizando novos relatos e enviando pistas sem expor o telefone pessoal do tutor em postes ou muros públicos.
+
+\clearpage
 
 Contudo, a proteção animal mais eficiente está na prevenção, razão pela qual o aplicativo disponibiliza o fluxo de cadastro preventivo de animais domésticos apresentado na Figura~\ref{fig:tela_cadastrar_pet}.
 
@@ -466,13 +510,15 @@ Contudo, a proteção animal mais eficiente está na prevenção, razão pela qu
     \centering
     \caption{Formulário de Cadastro Preventivo de Animal Tutelado}
     \label{fig:tela_cadastrar_pet}
-    \vspace{0.2cm}
-    \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-meu-pet.jpeg}
+    \vspace{0.15cm}
+    \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-cadastrar-meu-pet.jpeg}
     \vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 A interface de cadastro preventivo (Figura~\ref{fig:tela_cadastrar_pet}) incentiva o guardião a registrar seus pets com calma em momentos de normalidade. São inseridos dados como nome, espécie, raça, peso, porte, data de nascimento, histórico veterinário e fotografias recentes sob variados ângulos, criando um prontuário digital permanente para cada animal da residência.
+
+\clearpage
 
 Os animais tutelados ficam reunidos no painel de carteirinhas do usuário, que conta com ferramentas de emissão de identidade e um botão de emergência para casos de fuga acidental, como apresentado na Figura~\ref{fig:tela_meus_pets_rg}.
 
@@ -480,25 +526,27 @@ Os animais tutelados ficam reunidos no painel de carteirinhas do usuário, que c
     \centering
     \caption{Gestão Preventiva de Pets e Carteirinha Digital}
     \label{fig:tela_meus_pets_rg}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-meus-pets-carteirinha-digital.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-meus-pets-carteirinha-digital.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 35.a) Painel Meus Pets com Alerta Imediato}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/figura25_tela_rg_pet.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/figura25_tela_rg_pet.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 35.b) Carteirinha Digital com Código QR}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_meus_pets_rg}.a, visualiza-se o painel Meus Pets \& Carteirinhas, onde cada animal tutelado conta com botões de edição, visualização de carteirinha e o botão vermelho de emergência ``MEU PET FUGIU! (ACIONAR ALERTA)''. Ao ser acionado, esse botão converte o registro preventivo em uma publicação ativa de desaparecimento no mapa com apenas um clique, evitando o preenchimento de formulários durante a aflição da fuga. Já na Figura~\ref{fig:tela_meus_pets_rg}.b, exibe-se a Carteirinha Digital (RG Pet), que gera um código QR permanente para impressão em medalhas ou plaquinhas de coleira, permitindo a identificação imediata do animal por qualquer pessoa na rua.
+
+\clearpage
 
 Quando as buscas comunitárias resultam no regresso seguro do animal para casa, a plataforma promove o compartilhamento público da vitória solidária no mural de reencontros, demonstrado na Figura~\ref{fig:tela_mural_reencontros}.
 
@@ -506,25 +554,27 @@ Quando as buscas comunitárias resultam no regresso seguro do animal para casa, 
     \centering
     \caption{Mural Comunitário de Reencontros e Envio de Histórias Felizes}
     \label{fig:tela_mural_reencontros}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-animais-reencontrados.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-animais-reencontrados.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 36.a) Mural de Animais Reencontrados}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-enviar-historia-reencontro.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-enviar-historia-reencontro.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 36.b) Envio de História Feliz e Depoimento}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_mural_reencontros}.a, apresenta-se o mural comunitário com a relação de animais que retornaram aos seus lares, exibindo contagem do tempo de busca (como o registro de reencontro após 6 dias e 18 horas) e filtros por espécie. Já na Figura~\ref{fig:tela_mural_reencontros}.b, exibe-se a tela de envio de história feliz, onde o tutor relata os detalhes do resgate, envia fotos da reunião familiar e expressa agradecimento público aos voluntários da comunidade que ajudaram nas buscas.
+
+\clearpage
 
 Para manter os participantes continuamente atualizados sobre avistamentos de seus pets, mensagens privadas e alertas de animais perdidos nas proximidades, o aplicativo incorpora a central de notificações apresentada na Figura~\ref{fig:tela_notificacoes}.
 
@@ -532,25 +582,27 @@ Para manter os participantes continuamente atualizados sobre avistamentos de seu
     \centering
     \caption{Central de Notificações e Filtragem de Alertas do Sistema}
     \label{fig:tela_notificacoes}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-notificacoes.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-notificacoes.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 37.a) Central de Notificações do Aplicativo}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-notificacao-filtrar-notificacoes.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-notificacao-filtrar-notificacoes.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 37.b) Modal de Filtragem por Tipo de Alerta}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_notificacoes}.a, visualiza-se a listagem cronológica de notificações recebidas pelo usuário, indicando novos comentários, alertas de proximidade e confirmações de avistamento. Já na Figura~\ref{fig:tela_notificacoes}.b, apresenta-se o modal de filtragem de notificações, que possibilita ao guardião selecionar as categorias de interesse que deseja visualizar ou silenciar momentaneamente.
+
+\clearpage
 
 Além das notificações de comentários e alertas de proximidade, a plataforma dispõe de um recurso inteligente de cruzamento entre anúncios de animais perdidos e animais encontrados, apresentado na Figura~\ref{fig:tela_correspondencias}.
 
@@ -558,25 +610,27 @@ Além das notificações de comentários e alertas de proximidade, a plataforma 
     \centering
     \caption{Sistema de Correspondências Inteligentes entre Publicações}
     \label{fig:tela_correspondencias}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-correspondencias.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-correspondencias.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 38.a) Lista de Correspondências Sugeridas}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-correspondencias2.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-correspondencias2.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 38.b) Comparação de Atributos e Similaridade}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_correspondencias}.a, exibe-se a funcionalidade de sugestões inteligentes de compatibilidade com a listagem ordenada de animais semelhantes. Já na Figura~\ref{fig:tela_correspondencias}.b, detalha-se a comparação minuciosa de atributos morfológicos e o percentual estimado de similaridade para que os tutores comparem fotos e detalhes rapidamente.
+
+\clearpage
 
 A identidade individual do cidadão na plataforma, seu histórico de contribuições solidárias e as medalhas obtidas no aplicativo são reunidos na tela de perfil (Figura~\ref{fig:tela_perfil}).
 
@@ -584,25 +638,27 @@ A identidade individual do cidadão na plataforma, seu histórico de contribuiç
     \centering
     \caption{Tela de Perfil do Usuário e Conquistas de Guardião}
     \label{fig:tela_perfil}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-perfil.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-perfil.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 39.a) Identificação e Conquistas de Guardião}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-perfil-continuacao.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-perfil-continuacao.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 39.b) Continuação com Estatísticas e Atalhos}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_perfil}.a, exibe-se o topo do perfil contendo avatar, nome, e-mail cadastrado, botão para edição cadastral e a seção de gamificação ``Conquistas de Guardião'', que premia o voluntário com selos e medalhas por avistamentos confirmados e participações em resgates. Já na Figura~\ref{fig:tela_perfil}.b, apresenta-se a continuação inferior da tela com indicadores numéricos de participação, atalhos para carteirinhas de pets, publicações salvas e encerramento de sessão.
+
+\clearpage
 
 Para manter seus dados pessoais e canais de contato rigorosamente em dia, o usuário acessa o fluxo de edição de perfil apresentado na Figura~\ref{fig:tela_editar_perfil}.
 
@@ -610,25 +666,27 @@ Para manter seus dados pessoais e canais de contato rigorosamente em dia, o usu�
     \centering
     \caption{Edição de Perfil Cadastral e Preferências do Usuário}
     \label{fig:tela_editar_perfil}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-editar-perfil.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-editar-perfil.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 40.a) Atualização de Dados e Fotografia}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-editar-perfil-continuacao.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-editar-perfil-continuacao.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 40.b) Preferências de Notificação e Endereço Base}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_editar_perfil}.a, observa-se a tela de edição de informações básicas com envio de nova foto de perfil, alteração de nome completo e telefone WhatsApp. Já na Figura~\ref{fig:tela_editar_perfil}.b, exibe-se a continuação da tela voltada à definição do endereço base residencial e ajustes de preferências de notificação para avisos de animais perdidos na vizinhança.
+
+\clearpage
 
 Além de gerenciar seus dados cadastrais, o guardião pode acompanhar centralizadamente o andamento de todos os seus anúncios por meio do painel exibido na Figura~\ref{fig:tela_minhas_publicacoes}.
 
@@ -636,13 +694,15 @@ Além de gerenciar seus dados cadastrais, o guardião pode acompanhar centraliza
     \centering
     \caption{Painel de Gerenciamento das Minhas Publicações}
     \label{fig:tela_minhas_publicacoes}
-    \vspace{0.2cm}
-    \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-minhas-publicacoes.jpeg}
+    \vspace{0.15cm}
+    \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-minhas-publicacoes.jpeg}
     \vspace{0.1cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 No painel de gerenciamento (Figura~\ref{fig:tela_minhas_publicacoes}), o usuário visualiza em abas organizadas todas as suas publicações ativas, pausadas ou concluídas, acompanhando o número de avistamentos recebidos e acionando atalhos imediatos para editar informações ou marcar o caso como resolvido.
+
+\clearpage
 
 Para garantir a transparência e a segurança nas negociações comunitárias de resgate e adoção, os participantes podem consultar o perfil público de outros membros e registrar avaliações mútuas, como demonstrado na Figura~\ref{fig:tela_perfil_membro}.
 
@@ -650,25 +710,27 @@ Para garantir a transparência e a segurança nas negociações comunitárias de
     \centering
     \caption{Perfil Público de Membro e Avaliação Comunitária por Estrelas}
     \label{fig:tela_perfil_membro}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-perfil-membro.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-perfil-membro.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 42.a) Ficha Pública do Membro da Comunidade}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-perfil-membro-classificacao.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-perfil-membro-classificacao.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 42.b) Modal de Avaliação por Estrelas}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 Na Figura~\ref{fig:tela_perfil_membro}.a, exibe-se a ficha pública de um participante, apresentando seu histórico de resgates, data de adesão e reputação média calculada pela vizinhança. Já na Figura~\ref{fig:tela_perfil_membro}.b, visualiza-se o modal de classificação comunitária por estrelas (de 1 a 5), liberado para avaliação após a ocorrência de troca de mensagens entre os membros, fortalecendo a rede de confiança mútua.
+
+\clearpage
 
 Por fim, a sustentação operacional do aplicativo é garantida pelas opções de configuração da aplicação e pela central de suporte ao usuário, exibidas na Figura~\ref{fig:tela_suporte}.
 
@@ -676,21 +738,21 @@ Por fim, a sustentação operacional do aplicativo é garantida pelas opções d
     \centering
     \caption{Configurações Gerais da Aplicação e Central de Ajuda e Suporte}
     \label{fig:tela_suporte}
-    \vspace{0.2cm}
+    \vspace{0.15cm}
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-configuracao.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-configuracao.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 43.a) Configurações Gerais e Privacidade}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
         \centering
-        \includegraphics[height=12.5cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-ajuda-e-suporte.jpeg}
+        \includegraphics[height=11.6cm,keepaspectratio]{imagens/04_telas_aplicativo/tela-ajuda-e-suporte.jpeg}
         \par\vspace{0.15cm}
         {\small Figura 43.b) Central de Ajuda, FAQ e Canais de Suporte}
     \end{minipage}
-    \par\vspace{0.1cm}
+    \par\vspace{0.12cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
@@ -699,3 +761,4 @@ Na Figura~\ref{fig:tela_suporte}.a, apresentam-se as configurações operacionai
 A consolidação de todas essas telas e componentes materializa a versão integral executável da plataforma WeFIND, cobrindo o ciclo completo de prevenção, alerta emergencial, busca georreferenciada e reencontro comunitário. O Capítulo~8 a seguir descreve o planejamento, a execução e os resultados das rodadas de testes funcionais e da avaliação de usabilidade conduzidas com usuários reais sobre a aplicação.
 
 \clearpage
+

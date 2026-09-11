@@ -110,7 +110,7 @@ Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitá
 - **Nomenclatura Universal de Animais:** Plataforma expandida para todo tipo de animal (cães, gatos, bovinos, cavalos, aves e outros).
 - **Custódia de Animais Encontrados:** Opção clara para indicar se o animal foi **"Apenas visto na rua"** (sem recolhimento) ou se **"Está comigo (Lar Temporário)"**.
 - **Sistema de Adoção Responsável e Janela de Busca:**
-  - Animais resgatados acolhidos contam com janela obrigatória de 7 dias de busca pelo tutor original antes da liberação oficial para adoção.
+  - Animais resgatados acolhidos contam com janela de 21 dias de busca pelo tutor original. Após esse período, o responsável recebe uma notificação para decidir entre continuar com o animal ou disponibilizá-lo para adoção responsável.
   - Suporte a **Adoção Direta** imediata para animais de abrigo ou ninhadas sem dono prévio.
   - Filtro dedicado **"Para Adoção"** no topo do feed com contadores e badges coloridos.
 - **Design Minimalista de Atributos com Emojis:**
@@ -364,8 +364,6 @@ O **WeFIND** implementa uma arquitetura completa de notificações móveis push 
 - **Medidor Visual de Força de Senha (`PasswordStrengthIndicator.jsx`):**
   - Barra de progresso colorida em tempo real com nível: Fraca / Média / Forte / Excelente.
   - Checklist de requisitos com ícones: mínimo 8 caracteres, maiúscula, minúscula e número.
-- **Termo e Declaração de Guarda Provisória Responsável:**
-  - Validação obrigatória de responsabilidade e guarda provisória no cadastro de pets acolhidos (`RegisterItemScreen.jsx`) e exibição de selo oficial nos detalhes do pet (`ItemDetailScreen.jsx`).
 - **Tradução Amigável de Erros de Autenticação (`src/utils/authErrors.js`):**
   - Credenciais incorretas, usuário não encontrado, e-mail não confirmado, conta já existente, senha fraca, rate limit e erros de rede — todos com mensagens claras e humanizadas em português.
 

@@ -1219,7 +1219,7 @@ export const isPetAvailableForAdoption = (item) => {
 export const getAdoptionWaitingDays = (item) => {
   if (!item) return 0;
   if (item.status === 'adoption' || item.extra_fields?.is_direct_adoption) return 0;
-  if (!item.extra_fields?.adoption_intent || !item.created_at) return 0;
+  if (item.status !== 'found' || item.extra_fields?.found_custody !== 'with_me' || !item.created_at) return 0;
 
   const startedAt = item.extra_fields?.recovery_search?.started_at || item.created_at;
   const created = new Date(startedAt).getTime();
