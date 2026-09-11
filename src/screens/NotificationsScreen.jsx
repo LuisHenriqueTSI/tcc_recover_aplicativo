@@ -207,7 +207,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
         if (typeof onNotificationsUpdated === 'function') {
           onNotificationsUpdated();
         }
-        Alert.alert('Publicação Renovada', 'Seu anúncio foi renovado com sucesso e continua ativo por mais 15 dias!');
+        Alert.alert('Publicação Renovada', 'Seu anúncio foi renovado com sucesso e continua ativo por mais 30 dias!');
       } catch (err) {
         Alert.alert('Erro', err?.message || 'Falha ao renovar publicação.');
       } finally {
@@ -325,8 +325,8 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
         {
           user_id: user.id,
           type: 'renewal_reminder',
-          title: '⏳ Lembrete de Renovação (15 Dias)',
-          message: 'Sua publicação do pet "Mel" está próxima do período de renovação de 15 dias. Toque para mantê-la ativa.',
+          title: '⏳ Lembrete de Renovação (30 Dias)',
+          message: 'Sua publicação do pet "Mel" está próxima do período de renovação de 30 dias. Toque para mantê-la ativa.',
           read: false,
         },
         {

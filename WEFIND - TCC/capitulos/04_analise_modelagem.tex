@@ -12,9 +12,9 @@ As seções a seguir detalham a engenharia de requisitos, a organização modula
 
 \subsection{Engenharia e Levantamento de Requisitos}
 
-A engenharia de requisitos constitui a espinha dorsal de qualquer projeto de tecnologia, pois formaliza exatamente o que a aplicação deve realizar e sob quais restrições e qualidades operacionais deve funcionar (SOMMERVILLE, 2019). A elicitação de requisitos do WeFIND decorreu da triangulação metodológica descrita no Capítulo 3: as dores manifestadas pelos 20 tutores entrevistados no levantamento de campo evidenciaram a carência de um mapa interativo e de canais de comunicação privativos, enquanto a análise comparativa de plataformas similares revelou a ausência de recursos preventivos acessíveis e gratuitos.
+A engenharia de requisitos constitui a espinha dorsal de qualquer projeto de tecnologia, pois formaliza o que a aplicação deve realizar e sob quais restrições e qualidades operacionais deve funcionar (SOMMERVILLE, 2019). A elicitação de requisitos do WeFIND decorreu da triangulação metodológica descrita no Capítulo 3: as necessidades relatadas pelos participantes do levantamento de campo indicaram a relevância de um mapa interativo e de canais de comunicação privativos, enquanto a análise comparativa de plataformas similares contribuiu para identificar oportunidades de recursos preventivos acessíveis.
 
-Para garantir rigor acadêmico e governança no ciclo de vida do software, estabeleceu-se uma cadeia formal de rastreabilidade bidirecional conectando a pesquisa empírica, as necessidades diagnosticadas, os requisitos funcionais, as funcionalidades implementadas no aplicativo e os respectivos casos de testes funcionais. Essa correlação integral encontra-se consolidada na Matriz de Rastreabilidade de Requisitos e Testes (Apêndice D), atestando que 100\% dos 46 requisitos funcionais levantados foram efetivamente implementados no código-fonte e validados em baterias de teste com aprovação total (Capítulo 8).
+Para garantir rigor acadêmico e governança no ciclo de vida do software, estabeleceu-se uma cadeia de rastreabilidade conectando a pesquisa empírica, as necessidades diagnosticadas, os requisitos funcionais, as funcionalidades previstas no aplicativo e os respectivos casos de teste. Essa relação encontra-se organizada na Matriz de Rastreabilidade de Requisitos e Testes (Apêndice D). A confirmação da implementação e da validação de cada requisito será realizada após a execução dos testes planejados no Capítulo 8.
 
 Para estruturar o desenvolvimento de maneira modular e garantir a rastreabilidade direta entre cada funcionalidade e seu respectivo objetivo operacional, os 46 Requisitos Funcionais (RF) estabelecidos foram organizados em nove módulos sistêmicos integrados.
 
@@ -75,7 +75,7 @@ O Quadro~\ref{quadro:funcionais} consolida a especificação integral dos 46 req
 \textbf{RF17} & Excluir Publicação & Permitir ao autor remover permanentemente o anúncio cadastrado da base de dados e do mapa. \\ \hline
 \textbf{RF18} & Visualizar Animais no Mapa & Apresentar mapa interativo com marcadores coloridos identificando animais perdidos, encontrados e disponíveis para adoção. \\ \hline
 \textbf{RF19} & Pesquisar Marcadores no Mapa & Filtrar em tempo real os marcadores exibidos no mapa de acordo com termos de busca e atributos do pet. \\ \hline
-\textbf{RF20} & Ajustar Raio de Proximidade & Permitir configurar a distância de abrangência da busca geográfica no mapa (de 5 km até todo o território nacional). \\ \hline
+\textbf{RF20} & Ajustar Raio de Proximidade & Permitir configurar a distância de abrangência da busca geográfica no mapa, desde um raio local de 5 km até a consulta em escala nacional. \\ \hline
 \textbf{RF21} & Traçar rota até o animal & Calcular e desenhar no mapa o trajeto viário e estimativa de deslocamento até o local onde o animal foi visto. \\ \hline
 \textbf{RF22} & Registrar Avistamento & Permitir relatar o avistamento de um pet perdido, anexando foto opcional, coordenadas e descrição do local. \\ \hline
 \textbf{RF23} & Selecionar Local do Avistamento & Abrir o mapa interativo para posicionar o marcador no local exato onde o animal foi avistado em via pública. \\ \hline
@@ -137,30 +137,30 @@ O Quadro~\ref{quadro:nao_funcionais} sintetiza os 14 requisitos não funcionais 
 \multicolumn{3}{|c|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
 \endlastfoot
 
-\textbf{RNF01} & Desempenho de Inicialização & O aplicativo deve carregar sua interface inicial e exibir os anúncios em tempo inferior a 2,0 segundos sob conexões de rede 4G. \\ \hline
-\textbf{RNF02} & Latência de Mensagens no Chat & A transmissão e exibição de mensagens de texto entre usuários no chat em tempo real deve ocorrer em menos de 500 ms via WebSockets. \\ \hline
-\textbf{RNF03} & Compressão Local de Imagens & Todas as fotografias selecionadas para anúncios devem passar por compressão algorítmica no próprio aparelho, limitando o arquivo a no máximo 500 KB antes do envio ao servidor. \\ \hline
-\textbf{RNF04} & Precisão de Geolocalização & A captura de localização do dispositivo móvel via GPS nativo deve operar com margem de precisão horizontal inferior a 15 metros. \\ \hline
+\textbf{RNF01} & Desempenho de Inicialização & O aplicativo deve ser avaliado quanto ao tempo de carregamento da interface inicial e dos anúncios em condições de rede 4G previamente registradas. \\ \hline
+\textbf{RNF02} & Latência de Mensagens no Chat & A transmissão e exibição de mensagens de texto entre usuários no chat em tempo real deve ser medida via WebSockets em condições de rede documentadas. \\ \hline
+\textbf{RNF03} & Compressão Local de Imagens & As fotografias selecionadas para anúncios devem passar por compressão algorítmica no próprio aparelho, buscando reduzir o tamanho dos arquivos antes do envio ao servidor. \\ \hline
+\textbf{RNF04} & Precisão de Geolocalização & A captura de localização do dispositivo móvel deve utilizar o serviço de localização disponível e registrar a margem de precisão retornada pelo aparelho. \\ \hline
 \textbf{RNF05} & Proteção de Dados e Anonimização & O sistema não deve exibir em mapa público o endereço residencial exato do usuário, aplicando máscara de aproximação territorial por bairro. \\ \hline
 \textbf{RNF06} & Anonimato de Lares Temporários & A localização física de voluntários cadastrados para acolhimento de lar temporário deve ser estritamente preservada, mantendo oculto o endereço exato. \\ \hline
 \textbf{RNF07} & Segurança de Autenticação & A infraestrutura de autenticação do Supabase Auth deve armazenar credenciais com hash criptográfico seguro (bcrypt) e emitir tokens JWT válidos. \\ \hline
 \textbf{RNF08} & Isolamento de Dados via RLS & As operações no banco de dados PostgreSQL devem impor políticas de segurança em nível de linha (RLS), impedindo acessos ou exclusões indevidas entre contas. \\ \hline
-\textbf{RNF09} & Criptografia em Trânsito & Todo o tráfego de dados entre o aplicativo cliente móvel e a infraestrutura em nuvem deve ser obrigatoriamente cifrado via protocolo HTTPS e TLS 1.3. \\ \hline
-\textbf{RNF10} & Acessibilidade e Contraste & As telas devem oferecer suporte a Modo Claro e Modo Escuro com contraste visual mínimo de 4.5:1 para conformidade com a norma WCAG nível AA. \\ \hline
+\textbf{RNF09} & Criptografia em Trânsito & O tráfego de dados entre o aplicativo cliente móvel e os serviços em nuvem deve utilizar HTTPS/TLS, conforme a configuração dos serviços empregados. \\ \hline
+\textbf{RNF10} & Acessibilidade e Contraste & As telas devem ser avaliadas quanto ao contraste visual e ao suporte aos modos Claro e Escuro, tomando a WCAG nível AA como referência de projeto. \\ \hline
 \textbf{RNF11} & Compatibilidade Móvel & O aplicativo deve ser compilado e executado nativamente em dispositivos móveis Android (versão 7.0 ou superior) e iOS (versão 13 ou superior) via React Native. \\ \hline
 \textbf{RNF12} & Design Responsivo de Telas & A interface deve adaptar-se dinamicamente a diferentes resoluções e densidades de pixels de smartphones, sem corte de texto ou sobreposição de botões. \\ \hline
-\textbf{RNF13} & Disponibilidade da Nuvem & O backend em nuvem provido pelo Supabase deve assegurar taxa de disponibilidade de serviço mínima de 99,5\% com rotinas automatizadas de backup diário. \\ \hline
-\textbf{RNF14} & Janela Ética de Adoção & O sistema deve aplicar regra de negócio bloqueando a alteração de status de um animal encontrado para adoção definitiva antes de decorridos 7 dias de busca ativa. \\ \hline
+\textbf{RNF13} & Confiabilidade da Nuvem & A disponibilidade e as políticas de backup dos serviços em nuvem devem ser verificadas conforme o plano contratado e as configurações efetivamente utilizadas. \\ \hline
+\textbf{RNF14} & Lembrete de Adoção Responsável & Após 21 dias de uma publicação de animal encontrado ainda ativa, o sistema deve enviar uma notificação ao responsável para verificar se o tutor foi localizado e oferecer as opções de manter a busca, encaminhar o animal para adoção ou informar que o próprio responsável deseja adotá-lo. A notificação não bloqueia a publicação nem altera seu status automaticamente. \\ \hline
 \end{longtable}
 }
 
-Em termos de engenharia, os requisitos não funcionais dividem-se em quatro pilares fundamentais. No primeiro pilar (eficiência e desempenho), o sistema assegura tempos de resposta céleres para carregamento inicial (RNF01) e propagação instantânea de mensagens (RNF02), associando mecanismos de compressão fotográfica prévia no dispositivo (RNF03) e calibração de GPS (RNF04).
+Em termos de engenharia, os requisitos não funcionais dividem-se em quatro pilares fundamentais. No primeiro pilar (eficiência e desempenho), o projeto estabelece critérios de medição para o carregamento inicial (RNF01) e a propagação de mensagens (RNF02), associando mecanismos de compressão fotográfica prévia no dispositivo (RNF03) e registro da precisão retornada pelo serviço de localização (RNF04).
 
-No segundo pilar (segurança, criptografia e conformidade com a LGPD), o aplicativo assegura a supressão de endereços residenciais exatos nos mapas públicos (RNF05), proteção de localização para lares temporários de acolhimento (RNF06), autenticação segura de contas (RNF07), isolamento estrito de permissões no PostgreSQL por políticas de segurança em nível de linha (RNF08) e criptografia de ponta a ponta nas comunicações de rede via HTTPS e TLS (RNF09).
+No segundo pilar (segurança, criptografia e conformidade com a LGPD), o projeto estabelece a não exibição de endereços residenciais exatos nos mapas públicos (RNF05), a proteção da localização de lares temporários (RNF06), a autenticação por serviço especializado (RNF07), o isolamento de permissões no PostgreSQL por políticas de segurança em nível de linha (RNF08) e a proteção do tráfego em trânsito por HTTPS/TLS (RNF09). HTTPS/TLS não é apresentado como criptografia ponta a ponta do conteúdo armazenado.
 
-No terceiro pilar (usabilidade, acessibilidade e portabilidade), a aplicação oferece alternância entre modo claro e modo escuro com contraste estrito para uso sob luz solar direta (RNF10), compatibilidade multiplataforma entre sistemas operacionais Android e iOS via React Native (RNF11) e design responsivo com adaptação dinâmica a telas de diversas resoluções (RNF12).
+No terceiro pilar (usabilidade, acessibilidade e portabilidade), a aplicação prevê alternância entre modo claro e modo escuro e avaliação de contraste com referência à WCAG (RNF10), compatibilidade multiplataforma entre sistemas operacionais Android e iOS via React Native (RNF11) e design responsivo com adaptação dinâmica a telas de diversas resoluções (RNF12).
 
-Por fim, no quarto pilar (confiabilidade e regras éticas de negócio), a infraestrutura em nuvem assegura disponibilidade contínua mínima de 99,5\% com rotinas automatizadas de backup (RNF13) e impõe a janela de segurança de busca mínima de 7 dias antes de permitir a alteração de status de um animal resgatado para adoção definitiva (RNF14).
+Por fim, no quarto pilar (confiabilidade e regras de negócio), a infraestrutura em nuvem deverá ser avaliada segundo as políticas de disponibilidade e backup efetivamente contratadas (RNF13), enquanto o lembrete de adoção responsável deverá ser enviado após 21 dias sem bloquear a busca ou alterar automaticamente a publicação (RNF14).
 
 \clearpage
 

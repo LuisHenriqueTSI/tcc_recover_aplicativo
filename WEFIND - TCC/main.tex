@@ -52,13 +52,13 @@
 % ============================================================
 \usepackage{graphicx}
 \graphicspath{
-    {.}{imagens/}{imagens/}
-    {imagens/00_institucional/}{imagens/00_institucional/}
-    {imagens/01_pesquisa/}{imagens/01_pesquisa/}
-    {imagens/02_modelagem/}{imagens/02_modelagem/}
-    {imagens/03_arquitetura_design/}{imagens/03_arquitetura_design/}
-    {imagens/04_telas_aplicativo/}{imagens/04_telas_aplicativo/}
-    {imagens/05_manual_usuario/}{imagens/05_manual_usuario/}
+    {.}{imagens/}
+    {imagens/00_institucional/}
+    {imagens/01_pesquisa/}
+    {imagens/02_modelagem/}
+    {imagens/03_arquitetura_design/}
+    {imagens/04_telas_aplicativo/}
+    {imagens/05_manual_usuario/}
 }
 
 % INTERCEPTADOR SEGURO DE IMAGENS (BLINDADO CONTRA UNDERLINE E ARQUIVO FALTANTE):
@@ -69,9 +69,7 @@
     {\origincludegraphics[#1]{#2}}%
     {\IfFileExists{imagens/#2}%
       {\origincludegraphics[#1]{imagens/#2}}%
-      {\IfFileExists{imagens/#2}%
-        {\origincludegraphics[#1]{imagens/#2}}%
-        {\fbox{\parbox[c][3.5cm][c]{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{\centering\footnotesize\bfseries [Espaço reservado para a Imagem: \detokenize{#2}]}}}}}%
+      {\fbox{\parbox[c][3.5cm][c]{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{\centering\footnotesize\bfseries [Espaço reservado para a Imagem: \detokenize{#2}]}}}}%
 }
 \makeatother
 

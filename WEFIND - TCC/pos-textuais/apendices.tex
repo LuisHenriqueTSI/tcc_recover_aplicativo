@@ -97,7 +97,7 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \textbf{Nome do Caso de Uso} & Manter Publicação \\ \hline
 \textbf{Ator Principal} & Usuário (Autenticado) \\ \hline
 \textbf{Atores Secundários} & Banco de Dados (PostgreSQL) e Supabase Storage \\ \hline
-\textbf{Resumo} & Permite cadastrar, editar, alterar status (localizado/adotado) ou excluir anúncios de animais perdidos, encontrados ou para adoção. \\ \hline
+\textbf{Resumo} & Permite cadastrar, editar, encerrar como reencontrado ou adotado, ou excluir anúncios de animais perdidos, encontrados ou para adoção. \\ \hline
 \textbf{Pré-Condições} & Usuário autenticado e com permissão de localização ativa. \\ \hline
 \multicolumn{2}{|l|}{\textbf{Fluxo Principal:}} \\
 \multicolumn{2}{|>{\raggedright\arraybackslash}p{15.4cm}|}{
@@ -316,11 +316,11 @@ Esta seção apresenta a especificação textual detalhada dos oito casos de uso
 \section*{APÊNDICE B: INSTRUMENTOS DE PESQUISA (QUESTIONÁRIO DE CAMPO E ESCALA SUS)}
 \addcontentsline{toc}{section}{APÊNDICE B: INSTRUMENTOS DE PESQUISA (QUESTIONÁRIO DE CAMPO E ESCALA SUS)}
 
-Este apêndice documenta os instrumentos de coleta de dados primários aplicados durante a pesquisa prática inicial com tutores (Google Forms) e durante os testes práticos de validação da aplicação (Escala SUS).
+Este apêndice documenta o instrumento de coleta de dados primários aplicado durante o diagnóstico exploratório (Google Forms) e apresenta o protocolo SUS planejado para a avaliação posterior da aplicação.
 
 \subsection*{B.1 Levantamento de Campo com Tutores (Gráficos Consolidados e Instrumento de Pesquisa)}
 
-Esta seção documenta os resultados consolidados da pesquisa de campo aplicada aos participantes voluntários na plataforma Google Forms durante a etapa de diagnóstico empírico e levantamento de requisitos (Capítulo~3). As Figuras~B1 a B14 apresentam as distribuições percentuais completas das respostas obtidas em cada uma das dimensões investigadas.
+Esta seção documenta os resultados consolidados da pesquisa de campo aplicada entre 1º e 11 de setembro de 2026 aos participantes voluntários na plataforma Google Forms, durante a etapa de diagnóstico empírico e levantamento de requisitos (Capítulo~3). A divulgação ocorreu em um grupo do Facebook relacionado à proteção animal. Até 11 de setembro, 20 pessoas haviam respondido ao formulário, que continha cerca de 18 perguntas. Quando indicado no texto ou nas figuras, uma questão incluída posteriormente possui 19 respostas válidas. As Figuras~B1 a B14 apresentam as distribuições percentuais das respostas obtidas nas dimensões investigadas.
 
 % Configuração da numeração de figuras do Apêndice B (Figura B1, B2, ...)
 \renewcommand{\thefigure}{B\arabic{figure}}
@@ -337,7 +337,7 @@ Para mapear o perfil do público participante e compreender a convivência diret
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
 
-Conforme demonstrado na Figura~\ref{fig:forms_relacao_animais} (pergunta de múltipla escolha), 80\% dos respondentes (16 voluntários) são tutores de cães e 70\% (14 voluntários) tutelam gatos, com outros 20\% (4 voluntários) cuidando de espécies adicionais como aves e equinos. Não houve registro de participantes sem animais ou de protetores de ONGs na amostra, evidenciando que a base consultada reflete prioritariamente a vivência cotidiana de famílias com cães e gatos.
+Conforme demonstrado na Figura~\ref{fig:forms_relacao_animais} (pergunta de múltipla escolha), 80\% dos respondentes (16 voluntários) são tutores de cães e 70\% (14 voluntários) tutelam gatos, com outros 20\% (4 voluntários) cuidando de espécies adicionais como aves e equinos. Como a questão foi incluída posteriormente e não continha a opção ``não possuo animal'', seus resultados devem ser interpretados apenas como um retrato das respostas válidas obtidas nessa pergunta, sem permitir concluir sobre a totalidade da amostra.
 
 \clearpage
 
@@ -529,7 +529,7 @@ Instrumento padronizado de avaliação de usabilidade aplicado aos 20 voluntári
 
 \vspace{0.3cm}
 \noindent
-\textbf{Instruções ao participante:} Para cada uma das afirmações a seguir, assinale com um ``X'' o nível de concordância que melhor representa sua experiência prática com o aplicativo WeFIND, em uma escala de 1 (\textbf{Discordo Totalmente}, DT) a 5 (\textbf{Concordo Totalmente}, CT):
+\textbf{Instruções ao participante:} Para cada uma das afirmações a seguir, assinale com um ``X'' o nível de concordância que melhor representa sua experiência prática com o aplicativo WeFIND, em uma escala de 1 (\textbf{Discordo Totalmente}) a 5 (\textbf{Concordo Totalmente}):
 
 \vspace{0.5cm}
 \begin{table}[H]
@@ -537,7 +537,7 @@ Instrumento padronizado de avaliação de usabilidade aplicado aos 20 voluntári
 \small
 \begin{tabular}{|c|>{\raggedright\arraybackslash}p{8.8cm}|c|c|c|c|c|}
 \hline
-\textbf{Nº} & \textbf{Afirmação Avaliada} & \textbf{1 (DT)} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5 (CT)} \\ \hline
+\textbf{Nº} & \textbf{Afirmação Avaliada} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} \\ \hline
 1 & Eu acho que gostaria de utilizar o WeFIND com frequência em situações de busca. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
 2 & Eu achei o aplicativo desnecessariamente complexo. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
 3 & Eu achei o sistema fácil e intuitivo de utilizar. & [ ] & [ ] & [ ] & [ ] & [ ] \\ \hline
@@ -763,9 +763,9 @@ A gestão preventiva reúne recursos para manter os animais da família devidame
 \addcontentsline{toc}{section}{APÊNDICE D: MATRIZ DE RASTREABILIDADE DE REQUISITOS E TESTES}
 
 \ifversaoorientadora
-Este apêndice formaliza a cadeia integral de rastreabilidade bidirecional do projeto WeFIND, articulando as necessidades empíricas e oportunidades da análise comparativa diagnosticadas no Capítulo~3 com os 46 requisitos funcionais elicitados (Capítulo~4), as funcionalidades operacionais ativas desenvolvidas no aplicativo móvel (Capítulo~7) e os procedimentos experimentais de validação planejados (Capítulo~8).
+Este apêndice formaliza a cadeia de rastreabilidade do projeto WeFIND, articulando as necessidades empíricas e oportunidades da análise comparativa diagnosticadas no Capítulo~3 com os 46 requisitos funcionais elicitados (Capítulo~4), as funcionalidades associadas ao aplicativo móvel (Capítulo~7) e os procedimentos experimentais de validação planejados (Capítulo~8).
 
-A Tabela~D1 consolida a matriz segundo a estrutura de quatro eixos: \textbf{Necessidade Identificada} $\rightarrow$ \textbf{Requisito Funcional} $\rightarrow$ \textbf{Funcionalidade Implementada} $\rightarrow$ \textbf{Caso de Teste Associado}, demonstrando que 100\% dos 46 requisitos funcionais contam com funcionalidades ativas implementadas no código-fonte e casos de teste formalmente planejados para a etapa de homologação prática.
+A Tabela~D1 consolida a matriz segundo a estrutura de quatro eixos: \textbf{Necessidade Identificada} $\rightarrow$ \textbf{Requisito Funcional} $\rightarrow$ \textbf{Funcionalidade Associada} $\rightarrow$ \textbf{Caso de Teste Associado}. A matriz relaciona os requisitos às funcionalidades previstas ou implementadas e aos casos de teste planejados para a etapa de homologação prática; a cobertura efetiva deverá ser confirmada após a execução dos testes.
 \else
 Este apêndice formaliza a cadeia integral de rastreabilidade bidirecional do projeto WeFIND, articulando as necessidades empíricas e oportunidades da análise comparativa diagnosticadas no Capítulo~3 com os 46 requisitos funcionais elicitados (Capítulo~4), as funcionalidades operacionais ativas desenvolvidas no aplicativo móvel (Capítulo~7) e os procedimentos experimentais de validação executados (Capítulo~8).
 
@@ -798,8 +798,8 @@ A Tabela~D1 consolida a matriz segundo a estrutura de quatro eixos: \textbf{Nece
 \multicolumn{4}{|c|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
 \endlastfoot
 
-Pesquisa apontou 55\% de dependência de redes sociais abertas; necessidade de controle de autenticidade comunitária para coibir perfis falsos e fraudes. & \textbf{RF01} & Tela de cadastro de novos usuários com higienização sintática de entradas, validação de campos obrigatórios e persistência criptografada no Supabase Auth. & CT01 \\ \hline
-Necessidade de ambiente seguro com sessão contínua para acesso imediato a publicações e mensagens sem requisições repetitivas de credenciais. & \textbf{RF02} & Módulo de autenticação com validação de e-mail e senha no Supabase Auth, gerando token JWT com armazenamento seguro em cache local (\textit{AsyncStorage}). & CT01 \\ \hline
+Pesquisa apontou 55\% de dependência de redes sociais abertas; necessidade de controle de autenticidade comunitária para coibir perfis falsos e fraudes. & \textbf{RF01} & Tela de cadastro de novos usuários com higienização sintática de entradas, validação de campos obrigatórios e persistência das credenciais gerenciada pelo Supabase Auth. & CT01 \\ \hline
+Necessidade de ambiente seguro com sessão contínua para acesso imediato a publicações e mensagens sem requisições repetitivas de credenciais. & \textbf{RF02} & Módulo de autenticação com validação de e-mail e senha no Supabase Auth, gerando token JWT e mantendo dados de sessão no armazenamento local (\textit{AsyncStorage}). & CT01 \\ \hline
 Garantir recuperação autônoma de conta em situações de esquecimento de senha ou perda de acesso rápido. & \textbf{RF03} & Rotina de recuperação de credenciais com geração e despacho de código numérico OTP de uso único via Evolution API no WhatsApp, viabilizando redefinição segura. & CT02 \\ \hline
 Manutenção e atualização contínua de dados de contato e foto do tutor para identificação confiável pela comunidade. & \textbf{RF04} & Painel de perfil permitindo edição de nome completo, telefone, biografia e envio de foto de perfil armazenada em bucket no Supabase Storage. & CT03 \\ \hline
 Conferência da reputação, histórico comunitário e publicações ativas de outros membros antes de iniciar contatos de resgate. & \textbf{RF05} & Tela pública de perfil do membro exibindo foto, tempo de plataforma, histórico de animais cadastrados, reputação por estrelas e anúncios ativos. & CT03 \\ \hline
@@ -810,14 +810,14 @@ Diagnóstico de dispersão de avisos: 55\% dos tutores dependem de redes sociais
 Pesquisa revelou que 85\% dos respondentes consideram indispensável o mapa interativo com geolocalização precisa do local do sumiço ou encontro. & \textbf{RF10} & Componente de mapa interativo no fluxo de cadastro permitindo captura automática via GPS (\textit{expo-location}) ou fixação manual de pin georreferenciado. & CT08 \\ \hline
 Apoio a protetores e cidadãos que encontram animais na rua e desejam intermediar a busca para vizinhos ou idosos sem aplicativo instalado. & \textbf{RF11} & Chave seletora no cadastro que habilita campos complementares de identificação e contato do tutor real ou responsável temporário pelo animal. & CT07 \\ \hline
 Centralização dos animais cadastrados em ordem lógica de relevância geográfica para mobilização prioritária da vizinhança. & \textbf{RF12} & Listagem em cartão com paginação infinita, cálculo dinâmico de distância em quilômetros em relação ao usuário e \textit{badges} coloridos de status. & CT09 \\ \hline
-Dificuldade de filtrar animais por espécie e raio em redes sociais genéricas relatada pelos participantes. & \textbf{RF13} & Gaveta de filtros multicritério combinando simultaneamente categoria (perdido/encontrado/adoção), espécie (cão, gato, ave, outros) e raio de busca. & CT10 \\ \hline
+Dificuldade de filtrar animais por espécie e raio em redes sociais genéricas relatada pelos participantes. & \textbf{RF13} & Gaveta de filtros multicritério combinando categoria (perdido/encontrado/adoção), espécie, porte, sexo, características físicas e termos de busca. & CT10 \\ \hline
 Consulta completa das características físicas e marcas particulares essenciais para a identificação do animal resgatado. & \textbf{RF14} & Tela de detalhes contendo carrossel de fotos em alta resolução, características do animal, mini-mapa com localização aproximada e atalhos de ação. & CT11 \\ \hline
 Possibilidade de atualizar dados físicos, novas fotos ou informações complementares fornecidas por informantes. & \textbf{RF15} & Formulário de atualização exclusivo do autor, com validação de permissão via RLS no banco relacional e sincronização imediata no mural de publicações. & CT12 \\ \hline
 Evitar buscas inúteis por animais que já foram reencontrados ou adotados com sucesso. & \textbf{RF16} & Botão de alternância para encerramento de anúncio (``Reencontrado'' ou ``Adotado''), arquivando o marcador no mapa e alimentando o mural de reencontros. & CT12 \\ \hline
 Controle e direito do tutor de remover postagens duplicadas, errôneas ou expiradas. & \textbf{RF17} & Ação de exclusão com diálogo modal de confirmação, exclusão em cascata das mídias associadas no storage e expurgo do banco de dados. & CT12 \\ \hline
 95\% de aprovação na pesquisa diagnóstica quanto à necessidade de visualização espacial direta sobre mapa interativo. & \textbf{RF18} & Tela de mapa em tela cheia com \textit{react-native-maps}, plotando marcadores com ícones e cores padronizados por espécie de animal (cão, gato, ave, outros). & CT13 \\ \hline
 Localização imediata de animais em bairros específicos ou por palavras-chave (nome do pet, raça). & \textbf{RF19} & Barra de pesquisa superior integrada ao mapa que filtra marcadores em tempo real por nome, raça ou endereço, reposicionando a câmera do mapa. & CT10 \\ \hline
-Concentrar a exploração no perímetro de caminhada comum de animais perdidos (evitando alertas fora da região). & \textbf{RF20} & Controle deslizante (\textit{slider}) dinâmico para seleção do raio em quilômetros (1~km a 50~km), redesenhando círculo semitransparente na tela. & CT14 \\ \hline
+Concentrar a exploração no perímetro de caminhada comum de animais perdidos (evitando alertas fora da região). & \textbf{RF20} & Controle deslizante (\textit{slider}) dinâmico para seleção do raio a partir de 5~km até a escala nacional, redesenhando a abrangência exibida na tela. & CT14 \\ \hline
 Agilizar o deslocamento físico do voluntário ou tutor até o último ponto onde o animal foi visto. & \textbf{RF21} & Integração com APIs de mapas e navegação nativa do dispositivo, traçando rota viária com cálculo de distância e tempo estimado de percurso. & CT15 \\ \hline
 Relatos comunitários informais em redes sociais perdem-se rapidamente e não fornecem coordenadas do avistamento em tempo real. & \textbf{RF22} & Botão ``Vi o Pet'' na tela de detalhes do animal, abrindo modal com captura de foto comprobatória, descrição e coordenadas geográficas no mapa. & CT16 \\ \hline
 Visualização da trajetória percorrida pelo animal solto para orientar buscas em campo. & \textbf{RF23} & Visualização no mini-mapa da publicação com marcadores secundários interligados indicando a sequência espacial de avistamentos registrados. & CT16 \\ \hline
@@ -840,7 +840,7 @@ Verificação visual segura de marcas e cicatrizes particulares para atestar a l
 Prova social e incentivo ao engajamento voluntário da comunidade através da celebração de desfechos felizes. & \textbf{RF40} & Formulário pós-reencontro convidando o tutor a compartilhar fotos do pet reunido com a família e depoimento de agradecimento. & CT21 \\ \hline
 Inspiração e fortalecimento da esperança comunitária em desfechos positivos. & \textbf{RF41} & Mural comemorativo de histórias felizes acessível publicamente no aplicativo com contagem de reencontros e fotos da família. & CT21 \\ \hline
 Prevenção de golpes financeiros (exigência de falsos resgates), comércio clandestino e publicação de conteúdos impróprios. & \textbf{RF42} & Ação de denúncia no menu da publicação permitindo selecionar categorias de infração (fraude, violência, trote, duplicidade) com justificativa. & CT22 \\ \hline
-Mecanismo contínuo de governança e confiabilidade para manter o ambiente comunitário íntegro e seguro. & \textbf{RF43} & Avaliação por estrelas (1 a 5) concedida entre tutores e informantes após conclusão de contatos, refletida na média de reputação do perfil. & CT22 \\ \hline
+Mecanismo contínuo de governança e confiabilidade para manter o ambiente comunitário íntegro e seguro. & \textbf{RF43} & Painel administrativo protegido para listar denúncias, analisar publicações reportadas, remover conteúdos impróprios e suspender contas conforme as permissões atribuídas. & CT22 \\ \hline
 Necessidade de engajamento voluntário contínuo para evitar desmobilização após momentos de crise pessoal, promovendo o reconhecimento social de condutas corretas. & \textbf{RF44} & Placar semanal dinâmico na tela de perfil computando ações de impacto (publicações, acolhimento e reencontros), pódio dos três primeiros colocados e posição individual do usuário. & CT23 \\ \hline
 Carência de abrigos transitórios para animais resgatados nas ruas até o reencontro familiar ou adoção responsável definitiva. & \textbf{RF45} & Módulo de lares temporários solidários com filtros por espécie, validação de infraestrutura de moradia do acolhedor e envio direto de solicitação de abrigo. & CT24 \\ \hline
 Dificuldade na conferência manual de centenas de publicações de animais perdidos e encontrados & \textbf{RF46} & Motor heurístico de matching multicritério (compatibilidade morfológica e Haversine), tela de comparação analítica e disparo de alertas de alta similaridade. & CT25 \\ \hline

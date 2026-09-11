@@ -886,7 +886,7 @@ const cleanupExpiredItemsClientSide = async () => {
     // No cliente, apenas busca e remove os itens pertencentes ao usuário logado
     const { data, error } = await supabase
       .from('items')
-      .select('id, owner_id, title, created_at, resolved')
+      .select('id, owner_id, title, created_at, expires_at, resolved')
       .eq('owner_id', currentUser.id)
       .lte('created_at', cutoffDate);
 

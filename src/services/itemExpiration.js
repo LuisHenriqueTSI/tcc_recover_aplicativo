@@ -1,4 +1,4 @@
-const DEFAULT_EXPIRATION_DAYS = 7;
+const DEFAULT_EXPIRATION_DAYS = 30;
 const DEFAULT_PERMANENT_DELETE_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -32,13 +32,12 @@ export const getItemExpirationDate = (item) => {
 };
 
 export const getRenewalInfo = (item = {}) => {
-  const createdAt = normalizeDate(item?.created_at) || new Date();
   const expiresAt = getItemExpirationDate(item);
   const canRenew = item?.resolved !== true;
 
   const now = Date.now();
   const daysRemaining = Math.ceil((expiresAt.getTime() - now) / DAY_MS);
-  const permanentDeleteDate = new Date(createdAt.getTime() + getPermanentDeleteDays() * DAY_MS);
+  const permanentDeleteDate = new Date(expiresAt.getTime() + getPermanentDeleteDays() * DAY_MS);
   const deleteDaysRemaining = Math.ceil((permanentDeleteDate.getTime() - now) / DAY_MS);
 
   const expired = daysRemaining <= 0;
@@ -76,9 +75,9 @@ export const getExpiredItemIds = (items = []) => {
 
 export const shouldDeletePermanently = (item = {}) => {
   if (!item?.id) return false;
-  const createdAt = normalizeDate(item.created_at);
-  if (!createdAt) return false;
+  const expiresAt = getItemExpirationDate(item);
+  if (!expiresAt) return false;
 
-  const deletionDate = new Date(createdAt.getTime() + getPermanentDeleteDays() * DAY_MS);
+  const deletionDate = new Date(expiresAt.getTime() + getPermanentDeleteDays() * DAY_MS);
   return deletionDate.getTime() <= Date.now();
 };

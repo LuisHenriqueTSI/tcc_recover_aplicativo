@@ -78,7 +78,7 @@ A segurança e a integridade do banco de dados relacional são asseguradas por p
 
 Para solucionar a permanência de postagens antigas nas redes sociais, nas quais animais já resgatados continuam sendo compartilhados por meses, o WeFIND adota uma lógica ativa de controle do ciclo de vida das publicações.
 
-Cada anúncio possui um período determinado de vigência ativa. Conforme o prazo expira, o aplicativo notifica o tutor para verificar se o animal continua desaparecido. Caso a busca prossiga, a prorrogação é realizada com um toque no botão ``Renovar'' no painel de gestão. Sem a confirmação do usuário, a publicação é automaticamente ocultada das buscas públicas, deixando de aparecer no mural de publicações e no mapa interativo para não mobilizar a comunidade em torno de casos já resolvidos.
+Cada anúncio possui um período inicial de 30 dias de vigência ativa. Três dias antes do vencimento, o aplicativo envia um aviso para que o responsável possa renovar a publicação. Caso a busca prossiga, a prorrogação é realizada com um toque no botão ``Renovar'' no painel de gestão. Sem a renovação, a publicação fica inativa e deixa de aparecer no mural e no mapa público, mas ainda pode ser renovada durante o período de carência.
 
 Para prevenir a sobrecarga do banco de dados e evitar o acúmulo de arquivos obsoletos na nuvem, o sistema adota uma rotina periódica de limpeza definitiva. Caso a publicação permaneça inativa após um período de carência (30 dias), ela é apagada em definitivo da base PostgreSQL. Essa exclusão ocorre em cascata, removendo os registros vinculados na tabela \textit{fotos\_publicacoes} e apagando as imagens hospedadas no Supabase Storage, assegurando alta performance e sustentabilidade da infraestrutura.
 
@@ -86,17 +86,17 @@ Para prevenir a sobrecarga do banco de dados e evitar o acúmulo de arquivos obs
 
 O sucesso na localização de um animal doméstico depende diretamente da velocidade com que informações complementares são conectadas. Em plataformas convencionais e grupos de redes sociais, tutores aflitos precisam revisar manualmente dezenas de postagens todos os dias para tentar reconhecer seu pet em fotos tiradas por terceiros. Para superar essa limitação e agir de forma proativa, o WeFIND incorpora em sua camada de serviços o motor de correspondência inteligente (\textit{petMatching.js}), que realiza o cruzamento automatizado entre publicações ativas com status complementares (animais Perdidos versus animais Encontrados).
 
-O motor opera em duas etapas sequenciais: a triagem eliminatória imediata e o cômputo ponderado de similaridade morfológica e espacial.
+O motor opera em duas etapas sequenciais: a triagem eliminatória imediata e o cômputo ponderado de similaridade morfológica e espacial. Seu resultado é uma sugestão de correspondência entre publicações; o motor não registra automaticamente um avistamento nem altera a localização de uma publicação.
 
 \subsubsection{Critérios de Eliminação Estrita (\textit{Deal Breakers})}
 
-Para evitar o envio de alertas enganosos e não gerar falsas expectativas na comunidade, o algoritmo executa primeiramente uma checagem de viabilidade biológica e física. Três critérios possuem poder de veto absoluto (\textit{deal breakers}); caso qualquer um deles seja violado, o sistema atribui pontuação nula (0\%) imediatamente, encerrando o cálculo sem necessidade de avaliações adicionais.
+Para reduzir o envio de alertas pouco relevantes, o algoritmo executa primeiramente uma checagem de viabilidade biológica e física. Três critérios possuem poder de veto absoluto (\textit{deal breakers}); caso qualquer um deles seja violado, o sistema atribui escore nulo (0 pontos) imediatamente, encerrando o cálculo sem necessidade de avaliações adicionais.
 
 O primeiro critério corresponde à incompatibilidade de espécies, em que registros pertencentes a categorias zoológicas distintas (como cão e gato, ou equino e ave) são descartados sumariamente. O segundo critério avalia a divergência de sexo comprovado, invalidando a equivalência quando ambos os anúncios informam com certeza o gênero do animal e estes divergem formalmente entre macho e fêmea. Por fim, o terceiro critério trata dos portes físicos antagônicos, considerando mutuamente exclusivos os casos em que um animal classificado nos extremos inferiores da escala (porte mini ou pequeno) é confrontado com outro registrado nos limites superiores (porte grande ou gigante).
 
 \subsubsection{Sistema de Ponderação, Penalidades e Proximidade por Haversine}
 
-Ultrapassada a barreira dos critérios eliminatórios, os anúncios são submetidos a uma matriz de pontuação cumulativa calibrada entre 0 e 100 pontos. Cada atributo físico coincidente adiciona valor ao índice de compatibilidade, ao passo que divergências relevantes em raça, pelagem ou distância geográfica aplicam penalidades matemáticas para mitigar falsos positivos. O Quadro~\ref{quadro:matching} consolida os critérios, as condições de pontuação e os pesos implementados no algoritmo.
+Ultrapassada a barreira dos critérios eliminatórios, os anúncios são submetidos a uma matriz de pontuação cumulativa projetada para produzir um escore heurístico entre 0 e 100 pontos. Cada atributo físico coincidente adiciona valor ao índice de compatibilidade, ao passo que divergências relevantes em raça, pelagem ou distância geográfica aplicam penalidades. Esses pesos constituem uma decisão de projeto e ainda não representam uma probabilidade estatística calibrada. O Quadro~\ref{quadro:matching} consolida os critérios, as condições de pontuação e os pesos implementados no algoritmo.
 
 \vspace{0.3cm}
 {
@@ -147,11 +147,17 @@ Ultrapassada a barreira dos critérios eliminatórios, os anúncios são submeti
 
 \subsubsection{Classificação Semântica e Disparo Automatizado de Notificações}
 
-O total de pontos obtido é normalizado em uma escala percentual contínua de 0\% a 100\%, associando-se a quatro faixas semânticas de probabilidade visual que orientam a tomada de decisão do usuário.
+O total de pontos obtido é convertido em um índice heurístico de compatibilidade apresentado em uma escala de 0\% a 100\%. Essa escala é utilizada apenas para ordenar e comunicar o grau relativo de semelhança entre os registros; não representa a probabilidade estatística de que os dois anúncios correspondam ao mesmo animal.
 
-A faixa de altíssima probabilidade (índices iguais ou superiores a 85\%) é identificada pelo selo semântico verde, sinalizando forte compatibilidade em múltiplos atributos físicos e proximidade geográfica quase idêntica entre o ponto de fuga e o local de resgate. Em seguida, a faixa de grande chance (situada entre 70\% e 84\%), representada pelo tom verde floresta, indica animais com mesma raça e padrão de pelagem coincidentes avistados na mesma região urbana. Por sua vez, a faixa de possível semelhança (compreendida entre 55\% e 69\%) recebe a sinalização em amarelo dourado, sugerindo a verificação preventiva de animais que compartilham porte e coloração aproximados. Abaixo do limiar mínimo de 55\%, os registros são descartados automaticamente pelo sistema e não geram avisos, prevenindo sobrecarga informativa e mantendo o canal focado em pistas consistentes.
+A faixa de compatibilidade muito alta, com índices iguais ou superiores a 85\%, sinaliza convergência em vários atributos físicos e proximidade geográfica. A faixa de compatibilidade alta, situada entre 70\% e 84\%, indica um conjunto relevante de características coincidentes. A faixa de compatibilidade possível, compreendida entre 60\% e 69\%, recomenda conferência manual dos registros. Escores inferiores a 60\% não atingem o limiar definido para notificação automática.
 
-Sempre que uma nova publicação atinge compatibilidade de no mínimo 60\% com algum animal ativo no banco de dados, o WeFIND aciona a rotina \textit{processAndNotifyPetMatches}. Esse serviço notifica em tempo real ambas as partes envolvidas: tanto o usuário que cadastrou o relato quanto o tutor preexistente recebem notificações internas, alertas nativos no smartphone e mensagens no WhatsApp via Evolution API, com acesso direto à comparação detalhada dos animais.
+Sempre que uma nova publicação atinge compatibilidade de no mínimo 60\% com algum animal ativo no banco de dados, o WeFIND aciona a rotina \textit{processAndNotifyPetMatches}. Esse serviço notifica em tempo real ambas as partes envolvidas: tanto o usuário que cadastrou a nova publicação quanto o autor da publicação preexistente recebem notificações internas, alertas nativos no smartphone e mensagens no WhatsApp via Evolution API, com acesso direto à comparação detalhada dos animais. A confirmação da identidade e eventual atualização de localização pertencem a fluxos posteriores e dependem de ação humana.
+
+\subsubsection{Distinção entre Matching e Registro de Avistamento}
+
+O matching automático e o registro de avistamento utilizam informações semelhantes, mas possuem finalidades e efeitos distintos. O matching compara duas publicações ativas de status oposto, Perdido e Encontrado, para identificar uma possível relação entre o animal perdido por um usuário e o animal encontrado por outro. Seu produto é um escore heurístico e uma notificação, sem alteração automática das publicações.
+
+O registro de avistamento parte de uma publicação já existente e acrescenta uma nova ocorrência observada em outro momento ou local. Depois que o informante confirma que o animal visualizado corresponde ao caso sugerido, o serviço de avistamentos grava o relato na tabela correspondente, atualiza a localização mais recente da publicação principal e preserva os registros anteriores para compor a linha do tempo. Portanto, o matching auxilia a descoberta de possíveis correspondências, enquanto o avistamento confirmado atualiza o acompanhamento espacial do caso.
 
 \clearpage
 
@@ -215,7 +221,7 @@ Georreferenciamento & react-native-maps & 1.20.1 & Renderização do mapa intera
 Compartilhamento & react-native-view-shot & 4.0.3 & Captura gráfica de componentes visuais para renderização de cartazes digitais com código QR. \\ \hline
 Compartilhamento & expo-sharing & 14.0.8 & Integração com o painel nativo de compartilhamento externo do sistema operacional. \\ \hline
 Notificações Móveis & expo-notifications & 0.32.15 & Módulo para recebimento e gerenciamento de alertas sonoros e notificações instantâneas. \\ \hline
-Persistência Local & async-storage & 2.2.0 & Armazenamento seguro de chaves de autenticação JWT e preferências locais no aparelho. \\ \hline
+Persistência Local & async-storage & 2.2.0 & Persistência local de dados de sessão e preferências; o mecanismo não é tratado, por si só, como armazenamento criptografado. \\ \hline
 Serviços em Nuvem & Supabase Client & 2.87.3 & Biblioteca cliente para autenticação, consultas relacionais e envio de fotos no Supabase. \\ \hline
 Comunicação em Tempo Real & Supabase Realtime & 2.87.3 & Sincronização contínua via WebSockets para bate-papo privativo e relatos de avistamento. \\ \hline
 Banco de Dados & PostgreSQL & 15.0 & Sistema gerenciador de banco de dados relacional com suporte a regras de segurança RLS. \\ \hline
