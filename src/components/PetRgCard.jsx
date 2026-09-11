@@ -70,12 +70,12 @@ const PetRgCard = ({ pet, userProfile, onClose }) => {
         {/* Cabeçalho da carteirinha */}
         <View style={styles.rgHeader}>
           <View style={styles.brasaoRow}>
-            <MaterialIcons name="pets" size={24} color="#FBBF24" />
+            <MaterialIcons name="pets" size={24} color={COLORS.secondary} />
             <View style={{ alignItems: 'center' }}>
               <Text style={styles.rgHeaderCountry}>IDENTIFICAÇÃO DO PET</Text>
               <Text style={styles.rgHeaderApp}>CARTEIRINHA DIGITAL • WEFIND</Text>
             </View>
-            <MaterialIcons name="verified" size={24} color="#FBBF24" />
+            <MaterialIcons name="verified" size={24} color={COLORS.secondary} />
           </View>
           <View style={styles.rgaNumberBadge}>
             <Text style={styles.rgaNumberText}>MICROCHIP / REGISTRO: {petIdentifier}</Text>
@@ -94,10 +94,6 @@ const PetRgCard = ({ pet, userProfile, onClose }) => {
                   <MaterialIcons name="pets" size={36} color="#9CA3AF" />
                 </View>
               )}
-              {/* Carimbo Digital */}
-              <View style={styles.stampBadge}>
-                <Text style={styles.stampBadgeText}>DADOS INFORMADOS</Text>
-              </View>
             </View>
 
             {/* Microchip / Porte */}
@@ -174,7 +170,7 @@ const PetRgCard = ({ pet, userProfile, onClose }) => {
       {/* Botões de Ação */}
       <View style={styles.actionButtonsRow}>
         <TouchableOpacity
-          style={[styles.shareBtn, { backgroundColor: COLORS.primary }]}
+          style={styles.shareBtn}
           onPress={handleShareRg}
           disabled={sharing}
           activeOpacity={0.85}
@@ -183,14 +179,21 @@ const PetRgCard = ({ pet, userProfile, onClose }) => {
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
             <>
-              <MaterialIcons name="share" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+              <MaterialIcons name="share" size={18} color="#FFFFFF" style={{ marginRight: 7 }} />
               <Text style={styles.shareBtnText}>Salvar / Compartilhar Carteirinha</Text>
             </>
           )}
         </TouchableOpacity>
 
         {typeof onClose === 'function' && (
-          <TouchableOpacity style={styles.closeModalBtn} onPress={onClose} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.closeModalBtn}
+            onPress={onClose}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Fechar carteirinha digital"
+          >
+            <MaterialIcons name="close" size={18} color={COLORS.secondaryDark} />
             <Text style={styles.closeModalBtnText}>Fechar</Text>
           </TouchableOpacity>
         )}
@@ -230,7 +233,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   rgHeaderCountry: {
-    color: '#FBBF24',
+    color: COLORS.secondary,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1,
@@ -409,7 +412,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 14,
-    paddingVertical: 12,
+    paddingVertical: 13,
+    backgroundColor: COLORS.secondaryDark,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    shadowColor: COLORS.secondaryDark,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 5,
+    elevation: 3,
   },
   shareBtnText: {
     color: '#FFFFFF',
@@ -417,13 +428,20 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   closeModalBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1.5,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.secondaryLight,
+    borderRadius: 12,
+    paddingVertical: 11,
   },
   closeModalBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#64748B',
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: COLORS.secondaryDark,
   },
 });
 
