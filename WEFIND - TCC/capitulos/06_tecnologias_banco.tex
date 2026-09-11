@@ -2,7 +2,7 @@
 
 A concretização dos pilares conceituais e operacionais da plataforma WeFIND exigiu a escolha criteriosa de um conjunto de tecnologias modernas, maduras e escaláveis. Como ensinam Pressman e Maxim (2021) e Valente (2023), a arquitetura de software de um sistema móvel atual deve conciliar alta produtividade no ciclo de desenvolvimento, baixo acoplamento entre camadas e robustez na persistência e distribuição dos dados em nuvem.
 
-O projeto adotou o padrão arquitetural cliente-servidor distribuído, segmentado em duas camadas fundamentais e independentes: a camada cliente móvel (executada nos smartphones dos usuários) e a camada de serviços em nuvem (hospedada na infraestrutura do Supabase). Essa abordagem desacoplada assegura que a lógica de interface e renderização gráfica ocorra localmente no processador do celular, ao passo que as operações de autenticação, persistência relacional, upload de arquivos multimídia e sincronização de mensagens em tempo real são delegadas a serviços gerenciados em nuvem de alta disponibilidade (BaaS, sigla para \textit{Backend-as-a-Service}).
+O projeto adotou o padrão arquitetural cliente-servidor distribuído, segmentado em duas camadas fundamentais e independentes: a camada cliente móvel (executada nos smartphones dos usuários) e a camada de serviços em nuvem (hospedada na infraestrutura do Supabase). Essa abordagem desacoplada assegura que a lógica de interface e renderização gráfica ocorra localmente no processador do celular, ao passo que as operações de autenticação, persistência relacional, armazenamento de arquivos multimídia e sincronização de mensagens em tempo real são delegadas a serviços gerenciados em nuvem de alta disponibilidade (BaaS, sigla para \textit{Backend-as-a-Service}).
 
 A integridade do ecossistema é garantida pela integração com o banco de dados relacional PostgreSQL, estruturado com políticas de segurança em nível de linha (\textit{Row Level Security}, ou RLS). Esse mecanismo transfere o controle de acesso e isolamento de permissões para o próprio motor do banco de dados, impedindo que requisições não autorizadas alterem ou excluam dados alheios, mesmo em eventuais falhas na camada de apresentação móvel.
 
@@ -30,7 +30,7 @@ Para a obtenção das coordenadas geográficas em tempo real com suporte a saté
 
 A camada de exploração geográfica e renderização cartográfica baseia-se na biblioteca \textit{react-native-maps}, responsável pela plotagem dinâmica de marcadores coloridos representativos de cães, gatos, aves e outras espécies cadastradas de animais domésticos, desenho de polígonos de raio de busca e traçado de rotas viárias até o animal. Para a geração sob demanda dos cartazes de busca diagramados com código QR, recorreu-se à biblioteca \textit{react-native-view-shot}, que converte a visualização do componente em arquivo rasterizado de imagem de alta definição, complementada pelo módulo \textit{expo-sharing} para compartilhamento direto com mensageiros instantâneos e redes sociais externas.
 
-A estruturação dos fluxos de navegação e transições de tela foi construída com a coleção de pacotes do React Navigation, englobando o pacote central para rotas, módulos de abas inferiores fixas e pilhas de navegação. A retenção local de credenciais e tokens de sessão no aparelho utiliza o pacote \textit{@react-native-async-storage/async-storage}. Por fim, a estilização visual dos elementos de interface foi agilizada com o framework utilitário NativeWind, operando em conformidade com o TailwindCSS, viabilizando a aplicação consistente de estilos CSS modernos sobre componentes móveis.
+A estruturação dos fluxos de navegação e transições de tela foi construída com a coleção de pacotes do React Navigation, englobando o pacote central para rotas, módulos de abas inferiores fixas e pilhas de navegação. A retenção local de credenciais e tokens de sessão no aparelho utiliza o pacote \textit{@react-native-async-storage/async-storage}. Por fim, a estilização visual dos elementos de interface foi agilizada com a biblioteca utilitária NativeWind, operando em conformidade com o TailwindCSS, viabilizando a aplicação consistente de estilos CSS modernos sobre componentes móveis.
 
 Para proteger o tráfego de rede e a integridade das consultas, foram inseridas regras de validação no próprio aplicativo cliente. Os formulários executam verificações em tempo real sobre campos de preenchimento obrigatório, validam a consistência sintática de endereços de e-mail e realizam a formatação padronizada de números telefônicos antes do envio à nuvem.
 
@@ -74,7 +74,7 @@ A segurança e a integridade do banco de dados relacional são asseguradas por p
 
 Para solucionar a permanência de postagens antigas nas redes sociais, nas quais animais já resgatados continuam sendo compartilhados por meses, o WeFIND adota uma lógica ativa de controle do ciclo de vida das publicações.
 
-Cada anúncio possui um período determinado de vigência ativa. Conforme o prazo expira, o aplicativo notifica o tutor para confirmar se o pet continua desaparecido; se a busca prosseguir, a prorrogação é feita com um toque no botão ``Renovar'' no painel de gestão. Sem a confirmação do usuário, a publicação é automaticamente ocultada das buscas públicas, deixando de aparecer no feed e no mapa interativo para não mobilizar a comunidade em torno de casos já resolvidos.
+Cada anúncio possui um período determinado de vigência ativa. Conforme o prazo expira, o aplicativo notifica o tutor para confirmar se o pet continua desaparecido; se a busca prosseguir, a prorrogação é feita com um toque no botão ``Renovar'' no painel de gestão. Sem a confirmação do usuário, a publicação é automaticamente ocultada das buscas públicas, deixando de aparecer no mural de publicações e no mapa interativo para não mobilizar a comunidade em torno de casos já resolvidos.
 
 Para impedir o inchaço do banco de dados e evitar o acúmulo de arquivos em nuvem, o sistema adota uma rotina periódica de limpeza definitiva. Caso a publicação permaneça inativa após um período de carência (30 a 60 dias), ela é apagada em definitivo da base PostgreSQL. Essa exclusão ocorre em cascata (\textit{CASCADE}), removendo os registros vinculados na tabela \textit{fotos\_publicacoes} e apagando as imagens hospedadas no Supabase Storage, assegurando alta performance e sustentabilidade da infraestrutura.
 
@@ -127,12 +127,12 @@ Para sintetizar de maneira clara e estruturada todo o conjunto de ferramentas, b
 \multicolumn{4}{|c|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
 \endlastfoot
 
-Interface Móvel & React Native & 0.81.5 & Framework principal para geração do aplicativo nativo multiplataforma Android e iOS. \\ \hline
+Interface Móvel & React Native & 0.81.5 & Estrutura principal para geração do aplicativo nativo multiplataforma Android e iOS. \\ \hline
 Interface Móvel & React & 19.1.0 & Biblioteca declarativa para criação da arquitetura baseada em componentes reativos. \\ \hline
 Plataforma Móvel & Expo SDK & 54.0.29 & Conjunto de ferramentas gerenciadas e bibliotecas de acesso a recursos do smartphone. \\ \hline
 Navegação Móvel & React Navigation & 7.1.25 & Gerenciamento de rotas, pilhas de navegação e abas inferiores de telas da aplicação. \\ \hline
 Estilização Visual & NativeWind & 4.2.1 & Motor de classes utilitárias para estilização direta de componentes em React Native. \\ \hline
-Estilização Visual & TailwindCSS & 3.4.19 & Framework CSS base para definição dos padrões visuais e responsividade da interface. \\ \hline
+Estilização Visual & TailwindCSS & 3.4.19 & Conjunto de estilos utilitários base para definição dos padrões visuais e responsividade da interface. \\ \hline
 Hardware / Satélite & expo-location & 19.0.8 & Captura precisa das coordenadas de latitude e longitude do dispositivo via GPS nativo. \\ \hline
 Hardware / Câmera & expo-image-picker & 17.0.10 & Acesso à câmera do celular e à galeria de fotos para anexar imagens aos anúncios. \\ \hline
 Processamento Local & expo-image-manipulator & 14.0.8 & Redimensionamento e compressão algorítmica de fotos antes do envio ao servidor em nuvem. \\ \hline
@@ -141,8 +141,8 @@ Compartilhamento & react-native-view-shot & 4.0.3 & Captura gráfica de componen
 Compartilhamento & expo-sharing & 14.0.8 & Integração com o painel nativo de compartilhamento externo do sistema operacional. \\ \hline
 Notificações Móveis & expo-notifications & 0.32.15 & Módulo para recebimento e gerenciamento de alertas sonoros e notificações instantâneas. \\ \hline
 Persistência Local & async-storage & 2.2.0 & Armazenamento seguro de chaves de autenticação JWT e preferências locais no aparelho. \\ \hline
-Serviços em Nuvem & Supabase Client & 2.87.3 & Biblioteca cliente para autenticação, consultas relacionais e upload de fotos no Supabase. \\ \hline
-Comunicação Realtime & Supabase Realtime & 2.87.3 & Sincronização contínua via WebSockets para bate-papo privativo e relatos de avistamento. \\ \hline
+Serviços em Nuvem & Supabase Client & 2.87.3 & Biblioteca cliente para autenticação, consultas relacionais e envio de fotos no Supabase. \\ \hline
+Comunicação em Tempo Real & Supabase Realtime & 2.87.3 & Sincronização contínua via WebSockets para bate-papo privativo e relatos de avistamento. \\ \hline
 Banco de Dados & PostgreSQL & 15.0 & Sistema gerenciador de banco de dados relacional com suporte a regras de segurança RLS. \\ \hline
 Linguagem de Código & TypeScript & 5.9.2 & Linguagem com tipagem estática que adiciona segurança e previsibilidade ao JavaScript. \\ \hline
 Linguagem de Código & JavaScript & ES2023 & Linguagem interpretada que executa a lógica operacional do aplicativo móvel. \\ \hline
