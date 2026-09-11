@@ -320,7 +320,7 @@ Este apêndice documenta os instrumentos de coleta de dados primários aplicados
 
 \subsection*{B.1 Levantamento de Campo com Tutores (Gráficos Consolidados e Instrumento de Pesquisa)}
 
-Esta seção documenta os resultados consolidados e o instrumento de coleta de dados primários aplicado aos 20 participantes voluntários na plataforma Google Forms durante a etapa de diagnóstico empírico e levantamento de requisitos (Capítulo~3). As Figuras~B1 a B6 apresentam as distribuições percentuais de respostas obtidas nas questões centrais da pesquisa.
+Esta seção documenta os resultados consolidados da pesquisa de campo aplicada aos participantes voluntários na plataforma Google Forms durante a etapa de diagnóstico empírico e levantamento de requisitos (Capítulo~3). As Figuras~B1 a B14 apresentam as distribuições percentuais completas das respostas obtidas em cada uma das dimensões investigadas.
 
 % Configuração da numeração de figuras do Apêndice B (Figura B1, B2, ...)
 \renewcommand{\thefigure}{B\arabic{figure}}
@@ -399,33 +399,100 @@ A Figura~B6 demonstra a percepção dos tutores quanto à geração dinâmica de
 
 \clearpage
 
-As Figuras~B7 a B9 reproduzem as telas estruturadas do instrumento de pesquisa aplicado:
-
 \begin{figure}[H]
     \centering
-    \caption{Questionário no Google Forms: Recursos de Resgate, Chat Privativo e Segurança}
-    \label{fig:forms_parte3}
-    \includegraphics[width=0.72\textwidth]{imagens/01_pesquisa/questionario_forms_parte3.png}
+    \caption{Avaliação da comunicação por chat privativo em tempo real sem expor telefone}
+    \label{fig:forms_chat_tempo_real}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/forms_chat_tempo_real.png}
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
+
+A Figura~B7 analisa a receptividade dos voluntários à inclusão de um módulo de mensagens instantâneas privativo dentro do próprio aplicativo. Os dados apontam expressiva aprovação: 75\% dos respondentes (15 participantes) atribuíram a nota máxima 5 e 20\% (4 participantes) concederam nota 4 à possibilidade de dialogar diretamente com quem localizou o animal sem a necessidade de expor seu número de telefone pessoal publicamente na internet. Apenas 5\% (1 participante) avaliou com nota 3, não havendo nenhuma avaliação desfavorável (notas 1 ou 2), o que consolida 95\% de avaliações amplamente positivas e valida a decisão arquitetural de incorporar um chat com WebSockets no sistema.
+
 \clearpage
 
 \begin{figure}[H]
     \centering
-    \caption{Questionário no Google Forms: Recompensa, Filtros de Busca e Tempo de Publicação}
-    \label{fig:forms_parte4}
-    \includegraphics[width=0.72\textwidth]{imagens/01_pesquisa/questionario_forms_parte4.png}
+    \caption{Preferência sobre a ocultação do endereço residencial exato ao acolher animal}
+    \label{fig:forms_ocultacao_endereco}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/forms_ocultacao_endereco.png}
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
+
+No que tange à segurança dos lares temporários voluntários (Figura~B8), 80\% dos participantes (16 respostas) manifestaram preferência expressa por manter o endereço exato e o número da residência ocultos do público geral até que o tutor comprove documentalmente a legitimidade da posse, justificando essa cautela como medida de proteção à integridade e privacidade familiar. Entre os demais participantes, 10\% (2 respostas) declararam não se importar com a visibilidade do endereço e outros 10\% (2 respostas) mostraram-se indiferentes, confirmando a necessidade de mecanismos de salvaguarda de dados territoriais na plataforma.
+
 \clearpage
 
 \begin{figure}[H]
     \centering
-    \caption{Questionário no Google Forms: Diferenciais do WeFIND e Finalização}
-    \label{fig:forms_parte5}
-    \includegraphics[width=0.72\textwidth]{imagens/01_pesquisa/questionario_forms_parte5.png}
+    \caption{Validação da exigência de comprovação de tutela para resgate e prevenção de fraudes}
+    \label{fig:forms_comprovacao_tutela}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/forms_comprovacao_tutela.png}
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
+
+A investigação sobre procedimentos antifraude (Figura~B9) revelou que a ampla maioria dos respondentes (70\%, somando 45\% e 25\%) apoia a exigência de envio de evidências prévias (como fotografias antigas ou carteirinha de vacinação) para atestar a posse legítima antes da devolução do animal. Especificamente, 45\% (9 respostas) destacaram que a medida impede a apropriação indevida de animais de raça ou de terceiros por oportunistas, enquanto 25\% (5 respostas) concordaram com a exigência sob a condição de que o processo de submissão seja simples e ágil. Por outro lado, 25\% (5 respostas) ponderaram receio de burocratização do resgate e 5\% (1 resposta) declarou não possuir opinião formada, orientando o projeto a adotar um fluxo de comprovação de tutela desburocratizado e intuitivo.
+
+\clearpage
+
+\begin{figure}[H]
+    \centering
+    \caption{Interesse na utilização de seção dedicada para adoção e cadastro de lar temporário}
+    \label{fig:forms_adocao_lar_temporario}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/forms_adocao_lar_temporario.png}
+    \fonte{Dados da pesquisa (Google Forms, 2026)}
+\end{figure}
+
+Em relação ao acolhimento continuado e à destinação responsável (Figura~B10), a pesquisa constatou forte engajamento: 70\% dos participantes (14 respostas) afirmaram que utilizariam uma seção específica tanto para adotar animais resgatados quanto para se cadastrar voluntariamente como provedores de lar temporário. Adicionalmente, 20\% (4 respostas) demonstraram interesse focado na visualização de animais disponíveis para adoção, totalizando 90\% de intenção positiva de uso. Apenas 10\% (2 participantes) declararam não possuir interesse imediato no recurso, corroborando a relevância da integração entre as modalidades de busca e adoção dentro do mesmo ambiente tecnológico.
+
+\clearpage
+
+\begin{figure}[H]
+    \centering
+    \caption{Receptividade à inclusão de recompensa pelo resgate diretamente no anúncio}
+    \label{fig:forms_recompensa_resgate}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/forms_recompensa_resgate.png}
+    \fonte{Dados da pesquisa (Google Forms, 2026)}
+\end{figure}
+
+A Figura~B11 avalia a oferta opcional de incentivos ao resgate em casos de desaparecimento. Quase a totalidade dos voluntários (95\%, 19 respostas) afirmou desejar a possibilidade de cadastrar uma gratificação financeira ou simbólica diretamente no anúncio de busca, argumentando que a medida amplia o engajamento e a mobilização comunitária durante as buscas. Os restantes 5\% (1 resposta) assinalaram que talvez utilizassem a funcionalidade conforme as circunstâncias da ocorrência, sem qualquer registro de rejeição à ferramenta (0\% para a opção não acho necessário).
+
+\clearpage
+
+\begin{figure}[H]
+    \centering
+    \caption{Expectativa de tempo para criação e publicação de um alerta de busca}
+    \label{fig:forms_tempo_publicacao_alerta}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/forms_tempo_publicacao_alerta.png}
+    \fonte{Dados da pesquisa (Google Forms, 2026)}
+\end{figure}
+
+No quesito referente ao tempo de resposta operacional (Figura~B12), 85\% dos respondentes (17 participantes) apontaram esperar concluir a criação e publicação de um alerta em menos de 2 minutos, mediante um fluxo supersimplificado. Os demais 15\% (3 participantes) indicaram uma tolerância de 2 a 5 minutos para o preenchimento de todos os dados descritivos, enquanto nenhum respondente (0\%) considerou o tempo irrelevante. Esse achado estabeleceu um critério de usabilidade crítico para a interface do sistema: priorizar formulários enxutos e cadastros em etapas rápidas, garantindo que o alerta entre em circulação imediata.
+
+\clearpage
+
+\begin{figure}[H]
+    \centering
+    \caption{Disposição dos participantes para instalar o aplicativo no smartphone}
+    \label{fig:forms_intencao_instalacao}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/forms_intencao_instalacao.png}
+    \fonte{Dados da pesquisa (Google Forms, 2026)}
+\end{figure}
+
+A Figura~B13 comprova a aceitação comunitária prévia da proposta tecnológica: a totalidade dos participantes que responderam à questão (100\%, 19 respostas) declarou de forma categórica (\textit{Sim, com certeza}) que instalaria o aplicativo em seu smartphone tanto para prestar auxílio nas buscas locais em sua cidade quanto para solicitar assistência caso seu próprio animal desaparecesse. Nenhuma resposta neutra, condicional ou contrária foi computada, atestando a demanda social pela consolidação de uma plataforma móvel cooperativa voltada à proteção e resgate animal.
+
+\clearpage
+
+\begin{figure}[H]
+    \centering
+    \caption{Funcionalidade apontada como maior diferencial em relação às redes sociais}
+    \label{fig:forms_diferencial_plataforma}
+    \includegraphics[width=0.75\textwidth]{imagens/01_pesquisa/forms_diferencial_plataforma.png}
+    \fonte{Dados da pesquisa (Google Forms, 2026)}
+\end{figure}
+
+Por fim, a apuração da Figura~B14 elucida quais atributos da solução são percebidos pela comunidade como seus maiores diferenciais competitivos perante redes sociais generalistas e mensageiros (como Facebook e WhatsApp). A centralização temática exclusiva da plataforma (evitando a diluição das publicações entre postagens de cunho comercial ou pessoal) liderou a preferência com 45\% dos votos (9 respostas), seguida pelo mapa interativo em tempo real por proximidade (20\%, 4 respostas), pela geração automática de cartazes padronizados prontos para impressão e redes sociais (15\%, 3 respostas), pela facilidade de registrar avistamentos rápidos no GPS (10\%, 2 respostas) e pela privacidade assegurada pelo chat nativo sem exposição de dados pessoais (10\%, 2 respostas). Esses percentuais confirmam que a proposta de valor do ecossistema responde exatamente às principais deficiências dos canais tradicionais.
+
 \clearpage
 
 \subsection*{B.2 Questionário de Avaliação de Usabilidade (Escala SUS)}
