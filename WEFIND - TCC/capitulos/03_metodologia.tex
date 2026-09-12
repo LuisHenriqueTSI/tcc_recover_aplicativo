@@ -6,11 +6,9 @@ A primeira vertente compreendeu a realização de um diagnóstico empírico com 
 
 A segunda vertente estabeleceu a estrutura de engenharia de software orientada ao desenvolvimento da aplicação móvel. Definiu-se um ciclo de vida ágil, incremental e iterativo, associado ao método visual Kanban para a governança contínua das atividades, permitindo que os requisitos elicitados na pesquisa de campo fossem progressivamente transformados em componentes de software testáveis e funcionais. As práticas adotadas priorizaram a entrega contínua de valor, o desacoplamento arquitetural e a validação técnica precoce de cada recurso antes da integração com o subsistema seguinte (PRESSMAN; MAXIM, 2021).
 
-Em relação aos princípios éticos e de proteção de dados, a pesquisa orientou-se pelo respeito à privacidade e pelo consentimento livre e esclarecido dos participantes, em conformidade com as diretrizes da Lei Geral de Proteção de Dados Pessoais (LGPD, Lei Federal nº 13.709/2018). Todos os dados coletados no questionário de campo e nos testes práticos de usabilidade foram tratados sob rigoroso anonimato, sendo agregados exclusivamente para fins estatísticos e acadêmicos, sem a retenção ou divulgação de elementos que permitissem a identificação individual dos respondentes voluntários.
+Em relação aos princípios éticos e de proteção de dados, a pesquisa orientou-se pelo respeito à privacidade e pelo consentimento dos participantes, em conformidade com as diretrizes da Lei Geral de Proteção de Dados Pessoais (LGPD, Lei Federal nº 13.709/2018). Antes do preenchimento, o formulário apresentava uma explicação sobre a pesquisa e solicitava a concordância voluntária. As respostas do questionário eram anônimas e foram mantidas no Google Forms e no Google Sheets, com acesso restrito ao autor e à orientação, sendo utilizadas de forma agregada para fins acadêmicos. A pesquisa não foi submetida a Comitê de Ética em Pesquisa; por isso, seus resultados são tratados como diagnóstico exploratório de baixo risco, e não como aprovação ética institucional ou validação generalizável.
 
 A integração entre essas etapas deu solidez ao trabalho. A seguir, são apresentados em detalhes os passos de coleta de dados com a comunidade, a avaliação das plataformas similares e as etapas de desenvolvimento do software.
-
-\clearpage
 
 \subsection{Metodologia e Procedimentos da Pesquisa}
 
@@ -22,11 +20,9 @@ Quanto aos objetivos, a pesquisa é exploratória e descritiva. O lado explorat�
 
 Quanto aos procedimentos técnicos, o estudo foi dividido em três etapas principais. A primeira etapa foi a pesquisa bibliográfica e documental, com a consulta a livros, artigos e normas técnicas (como as normas de usabilidade da ABNT e as diretrizes de acessibilidade digital), servindo de base teórica para o projeto. A segunda etapa foi o levantamento de campo, realizado por meio de um questionário digital com tutores e protetores, para mapear as reais dificuldades enfrentadas quando um animal se perde. Por fim, a terceira etapa foi a análise comparativa de sistemas similares, na qual foram examinadas quatro plataformas existentes no mercado, avaliando suas principais funções, pontos positivos e limitações técnicas.
 
-\clearpage
-
 \subsection{Pesquisa de Campo com Tutores}
 
-A coleta primária de dados empíricos foi realizada por meio de um questionário estruturado digital, hospedado na plataforma Google Forms, cujo instrumento detalhado com todas as questões e opções encontra-se documentado no Apêndice B (Seção B.1). O instrumento foi disponibilizado a uma amostra de 20 participantes voluntários, composta por tutores de animais domésticos (abrangendo cães, gatos, aves e outros animais de companhia), protetores independentes e simpatizantes engajados em causas de proteção e bem-estar animal.
+A coleta primária de dados empíricos foi realizada entre 1º e 11 de setembro de 2026, por meio de um questionário estruturado digital hospedado na plataforma Google Forms. O convite foi divulgado em um grupo do Facebook relacionado à proteção animal. A participação era aberta a qualquer pessoa interessada no tema, sem exigência de posse ou experiência prévia com animais. Até 11 de setembro, 20 pessoas haviam respondido ao formulário, que continha cerca de 18 perguntas. Uma questão incluída posteriormente teve 19 respostas válidas, pois não foi apresentada a todos os participantes. O instrumento detalhado com suas questões e opções encontra-se documentado no Apêndice B (Seção B.1). Por se tratar de uma amostra não probabilística e de pequeno porte, os resultados são interpretados como indicativos do grupo consultado, sem generalização estatística para a população brasileira.
 
 O objetivo do levantamento foi traçar o perfil preventivo da comunidade em relação à posse responsável e mapear o que as pessoas costumam fazer quando perdem um animal. A primeira questão investigou o uso de métodos eletrônicos internos de identificação, consultando os voluntários sobre a implantação de microchips subcutâneos em seus animais de estimação, conforme apresentado na Figura~\ref{fig:adocao_microchip}.
 
@@ -38,11 +34,10 @@ O objetivo do levantamento foi traçar o perfil preventivo da comunidade em rela
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
 
-Os dados da Figura~\ref{fig:adocao_microchip} revelam que a expressiva maioria dos animais (70\%, totalizando 14 respostas) não possui microchip de identificação eletrônica, somando-se a 10\% (2 respostas) de participantes que declararam não saber informar. Apenas 20\% dos respondentes (4 participantes) afirmaram que seus animais possuem o dispositivo. Esse índice evidencia que, embora o microchip seja o padrão tecnológico mais seguro para comprovação definitiva de tutela, sua adesão permanece restrita no contexto brasileiro, seja em virtude dos custos veterinários para implantação, seja pela indisponibilidade de leitores universais na rotina da população em geral.
+Os dados da Figura~\ref{fig:adocao_microchip} indicam que 70\% dos participantes (14 respostas) declararam que seus animais não possuem microchip de identificação eletrônica, enquanto 10\% (2 respostas) afirmaram não saber informar. Apenas 20\% dos respondentes (4 participantes) relataram possuir o dispositivo. No grupo consultado, esse resultado aponta baixa adesão à identificação eletrônica. A pesquisa, entretanto, não investigou diretamente as razões dessa adesão, de modo que fatores como custo e disponibilidade de leitores devem ser tratados como possibilidades, e não como conclusões derivadas do questionário.
 
-\clearpage
 
-Diante do baixo índice de identificação eletrônica interna, o questionário investigou os recursos externos e visuais mantidos pelos tutores no cotidiano. Consultou-se os voluntários sobre a utilização rotineira de coleiras de identificação e dispositivos de rastreamento em seus animais domésticos, conforme apresentado na Figura~\ref{fig:uso_coleira}.
+Diante do baixo índice de identificação eletrônica interna, o questionário investigou os recursos externos e visuais mantidos pelos tutores. Consultou-se os voluntários sobre a utilização rotineira de coleiras de identificação e dispositivos de rastreamento em seus animais domésticos, conforme apresentado na Figura~\ref{fig:uso_coleira}.
 
 \begin{figure}[H]
     \centering
@@ -52,11 +47,10 @@ Diante do baixo índice de identificação eletrônica interna, o questionário 
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
 
-Conforme evidenciado no gráfico da Figura~\ref{fig:uso_coleira}, 75\% dos entrevistados (15 respostas) indicaram que seus animais domésticos não utilizam nenhum tipo de coleira no dia a dia. Entre a parcela que adota algum cuidado, 15\% (3 respostas) utilizam coleira com plaquinha de identificação visual contendo nome e telefone, e apenas 10\% (2 respostas) contam com coleiras equipadas com dispositivo GPS ou rastreamento eletrônico. A constatação de que três quartos dos animais circulam sem qualquer identificação imediata reforça a necessidade de soluções de identificação preventiva e de baixo custo, como o cadastro de animais tutelados com emissão de carteirinha digital.
+Conforme evidenciado no gráfico da Figura~\ref{fig:uso_coleira}, 75\% dos participantes (15 respostas) indicaram que seus animais domésticos não utilizam nenhum tipo de coleira no dia a dia. Entre os demais, 15\% (3 respostas) relataram utilizar coleira com plaquinha de identificação visual contendo nome e telefone, e 10\% (2 respostas) informaram utilizar coleiras equipadas com dispositivo GPS ou rastreamento eletrônico. No grupo consultado, o resultado reforça a pertinência de investigar soluções de identificação preventiva e de baixo custo, como o cadastro de animais tutelados com emissão de carteirinha digital.
 
-\clearpage
 
-Na sequência da investigação, mapeou-se o comportamento prático dos participantes durante episódios reais de desaparecimento. O objetivo foi identificar quais canais de comunicação, tanto analógicos quanto digitais, são prioritariamente mobilizados pelas pessoas no momento do sumiço, como demonstrado na Figura~\ref{fig:pesquisa_meios}.
+Em seguida, investigou-se o comportamento dos participantes em episódios de desaparecimento, identificando os canais usados no momento do sumiço, conforme demonstrado na Figura~\ref{fig:pesquisa_meios}.
 
 \begin{figure}[H]
     \centering
@@ -66,9 +60,8 @@ Na sequência da investigação, mapeou-se o comportamento prático dos particip
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
 
-Os resultados da Figura~\ref{fig:pesquisa_meios} (na qual era permitida a seleção de múltiplos canais simultâneos) demonstram que a totalidade dos respondentes (100\%, 19 respostas) recorre a redes sociais generalistas (Instagram e Facebook) para divulgar animais perdidos, seguida por grupos de troca de mensagens no WhatsApp (73,7\%, 14 respostas). Os métodos analógicos tradicionais ainda mantêm grande presença, com 57,9\% (11 respostas) mencionando a afixação de cartazes impressos em postes e comércios e 42,1\% (8 respostas) recorrendo ao contato presencial com vizinhos da localidade. Por fim, 26,3\% (5 respostas) indicaram a comunicação direta a clínicas veterinárias locais. Nenhum participante assinalou a opção de nunca ter precisado utilizar tais canais.
+Os resultados da Figura~\ref{fig:pesquisa_meios}, na qual era permitida a seleção de múltiplos canais simultâneos, foram calculados sobre 19 respostas válidas. Nesse grupo, 100\% (19 respostas) relataram recorrer a redes sociais generalistas, como Instagram e Facebook, para divulgar animais perdidos. Em seguida, apareceram os grupos de troca de mensagens no WhatsApp, com 73,7\% (14 respostas), a afixação de cartazes impressos em postes e comércios, com 57,9\% (11 respostas), o contato presencial com vizinhos, com 42,1\% (8 respostas), e a comunicação direta com clínicas veterinárias, com 26,3\% (5 respostas). A diferença entre o total da amostra e o número de respostas válidas deve ser conferida no instrumento original e registrada como resposta ausente, caso aplicável.
 
-\clearpage
 
 Para compreender a vivência prática da comunidade frente à problemática dos desaparecimentos, consultou-se os voluntários sobre experiências prévias de perda ou localização de animais desorientados nas ruas, conforme exibido na Figura~\ref{fig:experiencia_perda}.
 
@@ -80,17 +73,15 @@ Para compreender a vivência prática da comunidade frente à problemática dos 
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{figure}
 
-A apuração dos dados da Figura~\ref{fig:experiencia_perda} revela a gravidade e o alcance do problema: 90\% dos participantes relataram já ter vivenciado a perda de um animal de estimação pessoal, sendo que 65\% (13 voluntários) conseguiram reencontrar o pet e expressivos 25\% (5 voluntários) infelizmente nunca mais o encontraram. Além disso, 5\% (1 participante) declarou já ter encontrado ou resgatado um animal desorientado e procurado seu tutor, e outros 5\% (1 participante) afirmaram nunca ter passado pela situação pessoalmente, mas já terem auxiliado amigos e conhecidos em buscas. Nenhum dos 20 voluntários declarou total ausência de contato com a situação (0\%), comprovando que o desaparecimento de animais é uma realidade próxima e recorrente no cotidiano urbano, o que justifica a criação de uma rede tecnológica e ágil de auxílio comunitário orientada a dispositivos móveis.
+A apuração dos dados da Figura~\ref{fig:experiencia_perda} indica que 90\% dos participantes relataram já ter vivenciado a perda de um animal de estimação pessoal. Desse total, 65\% (13 participantes) afirmaram ter reencontrado o animal e 25\% (5 participantes) declararam não tê-lo encontrado. Além disso, 5\% (1 participante) relataram já ter encontrado ou resgatado um animal desorientado e procurado seu tutor, enquanto outros 5\% (1 participante) afirmaram nunca ter passado pela situação pessoalmente, mas já ter auxiliado amigos e conhecidos em buscas. No grupo consultado, esses dados demonstram familiaridade dos participantes com a situação investigada, mas não permitem estimar sua frequência na população urbana em geral.
 
-\clearpage
 
-Complementarmente, a pesquisa investigou as principais barreiras enfrentadas pela comunidade nos meios atuais e avaliou o interesse comunitário nas funcionalidades projetadas para a solução proposta. Os respondentes apontaram como maiores dificuldades a perda acelerada de alcance das postagens nas redes sociais após algumas horas (100\%), a carência de mapas interativos (89,5\%), a insuficiência de informações detalhadas (89,5\%) e a insegurança na exposição de telefones pessoais (73,7\%). Em contrapartida, os recursos propostos obtiveram expressiva aprovação: a utilidade do mapa geolocalizado alcançou 100\% de avaliações positivas (notas 4 e 5), o recebimento de alertas no celular foi considerado indispensável por 90\% dos participantes, a disposição para registrar avistamentos rápidos no mapa (``Vi o Pet'') atingiu 100\% de adesão, a geração automática de cartazes padronizados obteve 100\% de concordância (notas 4 e 5), o chat privativo sem expor telefones alcançou 95\% de aprovação e a centralização exclusiva de anúncios foi considerada o maior diferencial frente a redes sociais por 45\% dos tutores, conforme documentado nos gráficos consolidados das Figuras~B2 a B14 do Apêndice~B.
+Complementarmente, a pesquisa investigou as principais barreiras percebidas pelos participantes nos meios atuais e avaliou a receptividade às funcionalidades projetadas para a solução proposta. Foram relatadas como dificuldades a perda acelerada de alcance das postagens nas redes sociais após algumas horas (100\%), a carência de mapas interativos (89,5\%), a insuficiência de informações detalhadas (89,5\%) e a insegurança na exposição de telefones pessoais (73,7\%). Entre as funcionalidades apresentadas, a utilidade do mapa geolocalizado recebeu 100\% de avaliações positivas (notas 4 e 5), o recebimento de alertas no celular foi considerado indispensável por 90\% dos participantes, a disposição para registrar avistamentos rápidos no mapa (``Vi o Pet'') alcançou 100\% de concordância, a geração automática de cartazes padronizados obteve 100\% de avaliações positivas (notas 4 e 5), o chat privativo sem expor telefones alcançou 95\% de avaliações positivas e a centralização exclusiva de anúncios foi apontada como principal diferencial frente às redes sociais por 45\% dos participantes, conforme documentado nos gráficos consolidados das Figuras~B2 a B14 do Apêndice~B. Esses resultados expressam percepção e intenção declaradas, não constituindo prova de usabilidade ou eficácia do aplicativo, que serão avaliadas posteriormente.
 
 \subsubsection{Análise Comparativa de Sistemas Similares}
 
 Para conhecer em profundidade o estado da arte e embasar tecnicamente as decisões de requisitos e design da aplicação proposta, realizou-se uma avaliação comparativa de sistemas similares, fundamentada nas diretrizes de usabilidade e experiência do usuário sintetizadas por Amstel (2024). Foram selecionadas e inspecionadas quatro plataformas representativas: \textit{Viu Meu Pet}, \textit{PawBoost}, \textit{AlertPet} e \textit{Pet911}, além da investigação das redes sociais generalistas (Facebook e WhatsApp), que atuam na prática como a principal solução de contorno adotada pela sociedade.
 
-\clearpage
 
 A primeira plataforma analisada foi o \textbf{Viu Meu Pet}, um dos serviços brasileiros mais difundidos no segmento, disponível em versão web e aplicativo móvel para smartphones, cuja interface inicial é exibida na Figura~\ref{fig:viumeupet}.
 
@@ -104,7 +95,6 @@ A primeira plataforma analisada foi o \textbf{Viu Meu Pet}, um dos serviços bra
 
 A interface inicial da plataforma (Figura~\ref{fig:viumeupet}) prioriza botões de triagem para perda ou resgate e apresenta métricas de reencontros. Como pontos fortes, o \textit{Viu Meu Pet} possui ampla penetração nacional, ferramentas gratuitas para cartazes com código QR e cruzamento automatizado por inteligência artificial. Em contrapartida, apoia-se em listagens estáticas organizadas por município, sem mapa georreferenciado contínuo via GPS, e não dispõe de chat privativo, obrigando os tutores a divulgar números de telefone pessoais nos anúncios públicos.
 
-\clearpage
 
 A segunda solução examinada foi o \textbf{PawBoost}, plataforma de alcance internacional que reúne mais de sete milhões de membros voluntários cadastrados em sua rede comunitária (\textit{Rescue Squad}™), acessível por portal web e aplicativos para sistemas operacionais Android e iOS (Figura~\ref{fig:pawboost}).
 
@@ -120,7 +110,6 @@ A interface principal do PawBoost (Figura~\ref{fig:pawboost}) exibe uma barra su
 
 Entre suas principais vantagens operacionais, destacam-se a automação de postagens em páginas parceiras do Facebook, o envio acelerado de alertas por e-mail e notificações móveis para voluntários cadastrados na região da publicação. Apesar de sua excelência técnica, a plataforma apresenta limitações importantes para o contexto brasileiro: sua indexação territorial baseia-se prioritariamente no sistema postal norte-americano (Zip Codes) e os planos de impulsionamento patrocinado exigem pagamentos em moeda estrangeira (dólar americano), restringindo o acesso amplo da população brasileira.
 
-\clearpage
 
 A terceira plataforma inspecionada foi o \textbf{AlertPet}, iniciativa brasileira estruturada no formato de portal web que opera sob o conceito de ``carro de som digital'', intermediando campanhas patrocinadas de busca geográfica regional (Figura~\ref{fig:alertpet}).
 
@@ -136,7 +125,6 @@ A composição visual da página inicial do AlertPet (Figura~\ref{fig:alertpet})
 
 O ponto forte do \textit{AlertPet} está na elaboração profissional de peças gráficas de busca e na distribuição de anúncios patrocinados direcionados por raio de distância nas redes sociais, com posterior envio de relatórios de resultados (Reportei) aos tutores. Porém, a solução opera como um serviço estritamente comercial de mídia paga, não oferecendo aplicativo móvel nativo, não dispondo de mapa interativo público gratuito e vinculando a visibilidade da publicação ao pagamento financeiro de pacotes.
 
-\clearpage
 
 A quarta plataforma avaliada foi o \textbf{Pet911}, serviço de abrangência internacional com versão localizada para o Brasil, centrado no agrupamento de anúncios de animais perdidos e encontrados (Figura~\ref{fig:pet911}).
 
@@ -152,7 +140,6 @@ A interface do Pet911 (Figura~\ref{fig:pet911}) adota uma identidade visual verd
 
 Como pontos positivos, o Pet911 possui extensa base de dados mundial, fluxo simplificado de cadastro inicial e geração automática de cartazes para impressão. Em contrapartida, apresenta limitações severas na camada de exploração espacial: os anúncios são organizados em listagens tabulares por município, sem recursos de geolocalização contínua por GPS no mapa, inexiste canal privativo de troca de mensagens e o impulsionamento comunitário depende de cobrança financeira.
 
-\clearpage
 
 Complementarmente às quatro plataformas especializadas, a investigação avaliou o papel desempenhado pelas redes sociais generalistas, com ênfase nos grupos comunitários do Facebook e nas conversas instantâneas no WhatsApp. Conforme atestado no levantamento de campo realizado com tutores (no qual 100\% dos participantes utilizam redes sociais e 73,7\% recorrem ao WhatsApp para divulgar desaparecimentos), essas ferramentas consolidam-se como a principal solução de contorno adotada pela sociedade civil na ausência de sistemas dedicados. Como pontos positivos evidentes, destacam-se a altíssima adesão popular cotidiana, o custo financeiro nulo para publicações convencionais e a facilidade de compartilhamento imediato na rede de contatos pessoais no instante da perda.
 
@@ -160,7 +147,6 @@ Em contrapartida, a utilização dessas ferramentas para o resgate de animais re
 
 Diferentemente das plataformas institucionais apresentadas nas Figuras~\ref{fig:viumeupet} a~\ref{fig:pet911}, cujas telas públicas foram reproduzidas para documentar seus modelos de interação, optou-se deliberadamente por não incluir capturas de tela de publicações reais de redes sociais nesta monografia. Essa decisão pauta-se pelo rigor metodológico e pelo estrito respeito à Lei Geral de Proteção de Dados Pessoais (LGPD, Lei nº 13.709/2018). As postagens comunitárias em redes abertas trazem dados pessoais sensíveis (como retratos de residências, nomes de familiares, endereços e telefones privados) expostos em momentos de vulnerabilidade emocional. A veiculação gráfica dessas peças violaria a privacidade dos cidadãos e reiteraria sua vulnerabilidade, justificando a opção por consolidar a avaliação desses canais de forma analítica e estruturada no Quadro~1.
 
-\clearpage
 
 \begin{table}[H]
 \centering
@@ -182,7 +168,6 @@ Diferentemente das plataformas institucionais apresentadas nas Figuras~\ref{fig:
 \fonte{Autoria própria (2026)}
 \end{table}
 
-\clearpage
 
 A síntese entre o levantamento empírico de campo, a análise comparativa de plataformas similares e a avaliação das limitações das redes sociais consolidou o conjunto principal de necessidades sociais e técnicas que orientou a concepção de todo o ecossistema da aplicação proposta: a urgência de uma forma preventiva de identificação rápida e gratuita (carteirinha digital com código QR para coleiras, suprindo a falta de coleiras e microchips verificada em 70\% dos animais), a importância do mapa interativo georreferenciado com filtros de proximidade (solicitado por 95\% dos participantes), a automação na criação de cartazes padronizados de busca e a exigência obrigatória de um canal de bate-papo privativo em tempo real para proteger o número de telefone dos cidadãos contra golpes. A articulação contínua entre essas carências diagnosticadas, os requisitos de software formulados, as telas desenvolvidas e os procedimentos de teste executados encontra-se estruturada na Matriz de Rastreabilidade de Requisitos e Testes, apresentada no Apêndice~D deste trabalho.
 
@@ -192,9 +177,8 @@ A construção de um aplicativo móvel moderno exige métodos flexíveis, capaze
 
 Dessa forma, optou-se pela aplicação de princípios do desenvolvimento ágil de software, fundamentados no Manifesto Ágil e consolidados nas práticas de engenharia de software moderna. A metodologia priorizou pessoas e interações sobre processos rígidos, software funcional sobre documentação excessiva e a capacidade de resposta contínua a mudanças sobre o seguimento cego de planos estáticos.
 
-Para materializar essas premissas no ciclo prático de trabalho, combinou-se o modelo de ciclo de vida iterativo e incremental com o método visual de gerenciamento de tarefas Kanban, operacionalizado sobre a plataforma em nuvem Trello (TRELLO, 2026), articulando a evolução das funcionalidades desde a concepção de requisitos até a bateria final de testes de usabilidade.
+Para materializar essas premissas no ciclo prático de trabalho, combinou-se o modelo de ciclo de vida iterativo e incremental com o método visual de gerenciamento de tarefas Kanban, operacionalizado em uma plataforma de gestão em nuvem, articulando a evolução das funcionalidades desde a concepção dos requisitos até os testes planejados.
 
-\clearpage
 
 \subsubsection{Abordagem Ágil e Ciclo de Vida Incremental}
 
@@ -212,19 +196,17 @@ O quarto incremento concentrou-se na comunicação e colaboração, integrando a
 
 Por fim, o quinto incremento reuniu os recursos de prevenção e apoio comunitário, incluindo a criação automática de cartazes padronizados de busca com código QR para compartilhamento ou impressão, além da carteirinha preventiva do animal com dados do tutor.
 
-Essa organização permitiu testar e validar cada funcionalidade em aparelhos celulares reais ao final de cada ciclo, reduzindo falhas e garantindo que o aplicativo evoluísse de forma estável até a sua versão final.
+Essa organização favoreceu a identificação antecipada de falhas por meio de verificações incrementais em aparelhos celulares. A avaliação sistemática da cobertura dos requisitos permanece prevista no Capítulo 8.
 
-\clearpage
 
-\subsubsection{O Método Visual Kanban e a Gestão de Tarefas no Trello}
+\subsubsection{O Método Visual Kanban e a Gestão de Tarefas}
 
-Para assegurar disciplina, transparência e controle contínuo do fluxo produtivo ao longo dos incrementos, adotou-se o método de gestão visual Kanban, operacionalizado através da ferramenta Trello (TRELLO, 2026). O Kanban fundamenta-se no princípio de orientar a produção conforme a capacidade real do executor, eliminando gargalos e assegurando ritmo constante de entrega (VALENTE, 2023).
+Para assegurar disciplina, transparência e controle contínuo do fluxo produtivo ao longo dos incrementos, adotou-se o método de gestão visual Kanban. O método fundamenta-se no princípio de orientar a produção conforme a capacidade real do executor, eliminando gargalos e assegurando ritmo constante de entrega (VALENTE, 2023). No projeto, sua organização foi realizada na plataforma Trello (TRELLO, 2026).
 
-A rotina de gestão do projeto apoiou-se em três pilares operacionais essenciais da disciplina ágil. O primeiro pilar consistiu na visualização integral do fluxo de trabalho, em que todas as atividades requeridas para a materialização do sistema foram formalizadas na forma de cartões descritivos no Trello, explicitando critérios de aceitação e dependências técnicas. O segundo pilar pautou-se na limitação estrita do trabalho em andamento, restringindo o número de tarefas simultâneas na etapa de desenvolvimento ativo para evitar dispersão de foco e assegurar que nenhuma nova funcionalidade fosse iniciada antes da conclusão e validação do cartão corrente. O terceiro pilar fundamentou-se no gerenciamento contínuo do tempo de ciclo e entrega das atividades, viabilizado pelo monitoramento diário do avanço das tarefas pelo quadro, antecipando bloqueios técnicos e garantindo a estrita pontualidade das entregas acadêmicas.
+A rotina de gestão apoiou-se na visualização do fluxo de trabalho, na limitação das tarefas em andamento e no acompanhamento do tempo de execução. As atividades foram registradas em cartões com critérios de aceitação e dependências técnicas, passando pelas etapas de Repositório Geral de Tarefas, A Fazer, Em Andamento e Testes e Revisão. Essa organização reduziu a dispersão de foco, facilitou a identificação de bloqueios e permitiu acompanhar a evolução das entregas.
 
-O fluxo produtivo estruturou-se em cinco colunas sequenciais no quadro visual. Inicialmente, a coluna de Repositório Geral de Tarefas reuniu os 46 requisitos funcionais, os 14 requisitos não funcionais e as oportunidades de aprimoramento mapeadas a partir da pesquisa de campo e da análise comparativa. A partir desse repositório, as tarefas priorizadas para o ciclo imediato transitavam para a coluna A Fazer, de onde eram puxadas individualmente para a coluna Em Andamento à medida que o código-fonte ou artefato de modelagem entrava em fase ativa de confecção. Uma vez implementada, a funcionalidade avançava para a coluna de Testes e Revisão, na qual passava por inspeção visual, validação de regras de negócio em dispositivo físico e conferência de contraste e usabilidade. Somente após a aprovação em todos os critérios de aceitação o cartão era promovido para a coluna Concluído, assinalando que o código-fonte encontrava-se testado, documentado e integrado ao repositório central no GitHub.
+O quadro reuniu os 46 requisitos funcionais, os 14 requisitos não funcionais e as oportunidades de aprimoramento identificadas na pesquisa de campo e na análise comparativa. As tarefas priorizadas avançavam de A Fazer para Em Andamento e, depois da implementação, para Testes e Revisão, onde recebiam inspeção visual e verificações preliminares de regras de negócio, contraste e usabilidade. A aprovação formal dos critérios de aceitação permanece vinculada à etapa de testes planejada.
 
-\clearpage
 
 \subsubsection{Etapas do Processo de Desenvolvimento}
 
@@ -234,8 +216,6 @@ A segunda etapa envolveu a modelagem e o projeto de interface, compreendendo a c
 
 A terceira etapa consistiu na implementação e codificação modular do aplicativo móvel, em que as telas, regras de negócio e serviços de sincronização em nuvem foram programados e integrados com apoio do controle de versões no Git e GitHub (Capítulo 6).
 
-Por fim, a quarta etapa compreendeu os testes, validação técnica e avaliação de usabilidade, reunindo a execução de testes funcionais de caixa-preta para verificação das regras operacionais do aplicativo, medição de latência em conexões de rede móvel reais e a aplicação prática do protocolo System Usability Scale com 20 voluntários convidados, cujos procedimentos e resultados são analisados detalhadamente no Capítulo 8.
+Por fim, a quarta etapa corresponde ao planejamento dos testes, da validação técnica e da avaliação de usabilidade. Essa etapa reúne testes funcionais de caixa-preta para verificação das regras operacionais do aplicativo, medição de latência em conexões de rede móvel e aplicação do protocolo System Usability Scale com voluntários convidados. Os procedimentos previstos são apresentados no Capítulo 8, enquanto os resultados deverão ser registrados após a execução.
 
-A união consistente entre a pesquisa de campo, a governança visual pelo Kanban e os princípios de engenharia de software sustentou a construção de uma aplicação móvel confiável, segura e orientada às necessidades da sociedade. O Capítulo 4 apresenta a especificação completa dos requisitos e os modelos conceituais da plataforma proposta.
-
-\clearpage
+A pesquisa de campo, o Kanban e os princípios de engenharia de software orientaram a construção da aplicação. O Capítulo 4 apresenta seus requisitos e modelos conceituais.

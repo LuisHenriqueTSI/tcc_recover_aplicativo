@@ -6,22 +6,21 @@ Para assegurar uma avaliação completa e detalhada, o processo de verificação
 
 Essa abordagem triangular permitiu analisar o sistema tanto sob a perspectiva do desenvolvedor (garantindo que o código respondesse corretamente a entradas válidas e inválidas) quanto sob a ótica do usuário final (certificando que a interface entregasse uma experiência acolhedora, eficiente e de baixa barreira cognitiva).
 
-As seções a seguir detalham os cenários de teste formulados, os resultados empíricos da avaliação quantitativa e qualitativa com a comunidade e as métricas técnicas de tempo de resposta obtidas.
+As seções a seguir detalham os cenários de teste formulados, o planejamento da avaliação quantitativa e qualitativa com a comunidade e as métricas técnicas que deverão ser obtidas durante a etapa de validação.
 
-\clearpage
 
 \subsection{Estratégia e Testes Funcionais de Caixa-Preta}
 
 A verificação do comportamento funcional do WeFIND baseou-se na técnica de testes de caixa-preta (\textit{black-box testing}), método no qual as funcionalidades são examinadas estritamente a partir do fornecimento de entradas e da inspeção dos resultados e saídas produzidas, sem intervenção direta ou dependência da estrutura interna do código-fonte (VALENTE, 2023).
 
 \ifversaoorientadora
-Para conferir rigor acadêmico e assegurar a cobertura integral do escopo do projeto, cada caso de teste foi desenhado e especificado para validar um conjunto articulado de Requisitos Funcionais (RF) estabelecidos no Capítulo 4. A suíte contempla 25 casos de teste estruturados (CT01 a CT25), combinando fluxos de caminho feliz (execução regular das rotinas), validações de robustez frente a dados inconsistentes e operações críticas em banco de dados e sensores nativos. Dessa forma, estrutura-se a cobertura planejada de 100\% dos 46 requisitos funcionais do aplicativo, cuja rastreabilidade individual completa frente às necessidades diagnosticadas na pesquisa de campo encontra-se catalogada no Apêndice D.
+Para conferir rigor acadêmico e organizar a validação do escopo do projeto, cada caso de teste foi desenhado e especificado para verificar um conjunto articulado de Requisitos Funcionais (RF) estabelecidos no Capítulo 4. A suíte contempla 25 casos de teste planejados (CT01 a CT25), combinando fluxos de caminho feliz (execução regular das rotinas), validações de robustez frente a dados inconsistentes e operações críticas em banco de dados e sensores nativos. Dessa forma, estrutura-se uma cobertura planejada dos 46 requisitos funcionais do aplicativo, cuja relação com as necessidades diagnosticadas na pesquisa de campo encontra-se catalogada no Apêndice D. A confirmação da cobertura efetiva e dos resultados dependerá da execução dos casos de teste na etapa de validação.
 
 O Quadro~\ref{quadro:testes} consolida a especificação detalhada dos 25 cenários de testes funcionais estruturados para o sistema.
 \else
-Para conferir rigor acadêmico e assegurar a cobertura integral do escopo do projeto, cada caso de teste foi desenhado para validar um conjunto articulado de Requisitos Funcionais (RF) estabelecidos no Capítulo 4. A suíte contempla 25 casos de teste estruturados (CT01 a CT25), combinando fluxos de caminho feliz (execução regular das rotinas), validações de robustez frente a dados inconsistentes e operações críticas em banco de dados e sensores nativos. Dessa forma, atesta-se a cobertura de 100\% dos 46 requisitos funcionais do aplicativo, cuja rastreabilidade individual completa frente às necessidades diagnosticadas na pesquisa de campo encontra-se catalogada no Apêndice D.
+Para conferir rigor acadêmico e verificar a cobertura do escopo do projeto, cada caso de teste foi desenhado para validar um conjunto articulado de Requisitos Funcionais (RF) estabelecidos no Capítulo 4. A suíte contempla 25 casos de teste estruturados (CT01 a CT25), combinando fluxos de caminho feliz (execução regular das rotinas), validações de robustez frente a dados inconsistentes e operações críticas em banco de dados e sensores nativos. A cobertura efetiva dos 46 requisitos funcionais deverá ser confirmada após a execução dos casos de teste, cuja relação com as necessidades diagnosticadas na pesquisa de campo encontra-se catalogada no Apêndice D.
 
-O Quadro~\ref{quadro:testes} consolida a matriz integral dos 25 casos de testes funcionais executados sobre a versão estável da aplicação.
+O Quadro~\ref{quadro:testes} consolida a matriz dos 25 casos de testes funcionais previstos para a versão avaliada da aplicação.
 \fi
 
 \vspace{0.3cm}
@@ -58,29 +57,28 @@ O Quadro~\ref{quadro:testes} consolida a matriz integral dos 25 casos de testes 
 \textbf{CT07} & RF09, RF11 & Registro de Anúncio com Tutor Terceiro & Cadastro de publicação com fotografias, espécie, porte e dados de guardião terceiro & Gravação no banco relacional, armazenamento no Storage e exibição da indicação de terceiro & \statusTeste \\ \hline
 \textbf{CT08} & RF10 & Fixação de Ponto no Mapa e Geocodificação & Marcação interativa do local do evento no mapa interativo & Captura precisa de latitude e longitude com preenchimento reverso do endereço & \statusTeste \\ \hline
 \textbf{CT09} & RF12 & Mural de Publicações com Ordenação Espacial & Consulta de anúncios no mural principal com localização ativa & Listagem de cartões de animais ordenada dinamicamente por raio de proximidade & \statusTeste \\ \hline
-\textbf{CT10} & RF13, RF19 & Filtragem Multicritério no Mural e no Mapa & Aplicação simultânea de filtros de espécie, porte, sexo e status & Atualização reativa instantânea dos anúncios no mural e dos marcadores no mapa & \statusTeste \\ \hline
+\textbf{CT10} & RF13, RF19 & Filtragem Multicritério no Mural e no Mapa & Aplicação simultânea de filtros de espécie, porte, sexo, características, categoria e termos de busca & Atualização reativa dos anúncios no mural e dos marcadores no mapa, conforme os critérios informados & \statusTeste \\ \hline
 \textbf{CT11} & RF14 & Detalhes Completos da Publicação & Abertura da ficha individual de um animal publicado & Exibição de carrossel de fotos em alta definição, atributos físicos e botões de ação & \statusTeste \\ \hline
-\textbf{CT12} & RF15, RF16, RF17 & Gestão da Publicação pelo Autor & Edição de atributos, alteração para ``Reencontrado'' e exclusão de anúncio & Atualização no banco, encerramento de buscas e expurgo definitivo do mapa & \statusTeste \\ \hline
+\textbf{CT12} & RF15, RF16, RF17, RNF14 & Gestão, Encerramento e Lembrete da Publicação & Edição de atributos, simulação de publicação encontrada ativa após 21 dias, escolha de manter a busca ou encaminhar o caso, alteração para ``Reencontrado'' ou ``Adotado'' e exclusão de anúncio & Atualização no banco, envio do lembrete sem alteração automática, encerramento das buscas somente após ação explícita e remoção do mapa quando aplicável & \statusTeste \\ \hline
 \textbf{CT13} & RF18 & Renderização de Animais no Mapa Interativo & Navegação espacial no mapa geral da plataforma & Plotagem de marcadores coloridos com ícones diferenciados por espécie e categoria & \statusTeste \\ \hline
-\textbf{CT14} & RF20, RF27 & Ajuste de Raio de Busca e Recalibração GPS & Alteração do controle deslizante de distância (5 km a nacional) e atualização GPS & Redefinição do círculo de abrangência e recálculo das distâncias relativas & \statusTeste \\ \hline
+\textbf{CT14} & RF20, RF27 & Ajuste de Raio de Busca e Recalibração GPS & Alteração do controle deslizante de distância (5 km a escala nacional) e atualização GPS & Redefinição do círculo de abrangência e recálculo das distâncias relativas & \statusTeste \\ \hline
 \textbf{CT15} & RF21 & Cálculo e Traçado de Rota até o Animal & Acionamento da opção de traçado de rota no cartão do animal & Traçado viário sobre o mapa com indicação de tempo estimado e distância em km & \statusTeste \\ \hline
-\textbf{CT16} & RF22, RF23, RF24, RF25, RF26 & Ciclo Comunitário de Avistamentos e Atualização de Localização & Registro de avistamento com foto e pino, confirmação de correspondência e consulta do histórico & Criação do relato, atualização da localização mais recente da publicação, notificação ao autor e preservação da linha do tempo & \statusTeste \\ \hline
+\textbf{CT16} & RF22, RF23, RF24, RF25, RF26 & Registro de Avistamento e Atualização de Localização & Registro de avistamento com foto e pino, confirmação de que o relato pertence a uma publicação existente e consulta do histórico & Criação do relato, atualização da localização mais recente da publicação, notificação ao autor e preservação da linha do tempo; a rejeição deve manter a publicação sem alterações & \statusTeste \\ \hline
 \textbf{CT17} & RF28, RF29, RF31, RF32 & Gestão Preventiva de Animais Tutelados & Cadastro prévio de animal com vacinas, consulta em painel, edição e exclusão & Persistência na carteira digital do tutor e manutenção contínua das informações & \statusTeste \\ \hline
 \textbf{CT18} & RF30, RF33 & Carteirinha Digital (RG Pet) e Alerta de Fuga & Geração de código QR exclusivo e acionamento de alerta de desaparecimento & Exibição da carteirinha digital para coleiras e conversão instantânea em anúncio de busca & \statusTeste \\ \hline
 \textbf{CT19} & RF34, RF35, RF36 & Geração e Envio de Cartaz de Busca & Geração sob demanda nos formatos A4, 9:16 e 1:1 e compartilhamento nativo & Composição da peça gráfica com foto e código QR e abertura da folha de envio do SO & \statusTeste \\ \hline
 \textbf{CT20} & RF37, RF38, RF39 & Bate-Papo Privativo em Tempo Real & Troca de mensagens de texto e fotos comprobatórias entre usuários & Entrega bidirecional imediata via WebSockets e preservação do sigilo telefônico & \statusTeste \\ \hline
 \textbf{CT21} & RF40, RF41 & Mural de Histórias de Reencontro & Submissão e consulta de relatos felizes com fotografias e depoimentos & Publicação no mural comunitário e exibição pública dos desfechos positivos & \statusTeste \\ \hline
-\textbf{CT22} & RF42, RF43 & Denúncias Comunitárias e Governança & Envio de denúncia de publicação suspeita e avaliação por estrelas de membros & Registro do reporte para auditoria e exibição de reputação média no perfil do membro & \statusTeste \\ \hline
+\textbf{CT22} & RF42, RF43 & Denúncias Comunitárias e Moderação & Envio de denúncia de publicação suspeita, consulta da fila administrativa e análise do conteúdo reportado & Registro do reporte para auditoria, exibição das informações à equipe autorizada e possibilidade de remoção do conteúdo ou suspensão da conta conforme a decisão administrativa & \statusTeste \\ \hline
 \textbf{CT23} & RF44 & Apuração e Exibição do Ranking Semanal & Registro de ações com pontuação e consulta do ranking municipal na tela de perfil & Cálculo em tempo real dos pontos, ordenação do pódio e exibição da colocação do usuário & \statusTeste \\ \hline
 \textbf{CT24} & RF45 & Cadastro e Busca de Lares Temporários & Ativação de perfil de acolhedor com critérios de moradia e envio de solicitação de lar & Persistência segura no banco, exibição com selo verificado e envio de pedido direto & \statusTeste \\ \hline
-\textbf{CT25} & RF46 & Correspondência Multicritério e Controle de Falso Positivo & Cadastrar um animal encontrado ou avistamento com espécie, raça, cor, sexo, porte e localização compatíveis com publicação não encerrada; repetir o cenário com atributos incompatíveis e selecionar ``Não, é outro animal'' & Priorização das publicações compatíveis por pontuação e distância; exclusão de registros do próprio usuário; confirmação obrigatória antes da atualização; atualização da localização e registro do avistamento somente no aceite; criação de nova publicação ou descarte da sugestão no cenário negativo & \statusTeste \\ \hline
+\textbf{CT25} & RF46 & Matching entre Publicações Perdido e Encontrado & Criar, com usuários diferentes, uma publicação de animal perdido e outra de animal encontrado com atributos físicos e localização compatíveis; repetir o cenário com atributos incompatíveis e rejeitar a sugestão de correspondência & Priorização das publicações compatíveis por escore e distância; exclusão de registros do próprio usuário; geração de sugestão e notificações aos usuários quando o limiar for atingido; rejeição sem alteração automática das publicações. A atualização de localização e o registro de avistamento são verificados separadamente no CT16 & \statusTeste \\ \hline
 \end{longtable}
 }
 
 \ifversaoorientadora
 A especificação dos 25 casos de teste estruturados contempla a verificação detalhada das regras de negócio concebidas para os 46 requisitos funcionais do WeFIND. O planejamento abrange rotinas de validação no cliente para impedir submissões com campos em branco ou formatos de dados inconsistentes, operações no banco relacional para preservar restrições de integridade referencial, isolamento por políticas RLS para garantir acesso estritamente autorizado aos registros e canais em tempo real para sustentar a comunicação imediata entre os membros da comunidade durante a homologação prática.
 
-\clearpage
 
 \subsection{Planejamento da Avaliação de Usabilidade (Método SUS)}
 
@@ -106,13 +104,12 @@ Outro ponto considerado nos ensaios é o comportamento da aplicação diante de 
 
 A realização desses ensaios em aparelhos físicos de padrão intermediário visa aproximar a avaliação técnica das condições reais de uso da população. Em vez de limitar as verificações a computadores de alto desempenho ou emuladores virtuais, os testes em smartphones equipados com quatro gigabytes de memória RAM permitem observar o comportamento real de consumo de bateria, aquecimento do aparelho, fluidez da rolagem de telas e velocidade de resposta ao toque dos dedos.
 
-A integração equilibrada desses três eixos (os vinte e cinco casos de teste funcionais, o planejamento de usabilidade com a escala SUS e os ensaios de desempenho em campo) assegura uma base sólida para certificar o funcionamento do WeFIND perante os quarenta e seis requisitos funcionais do projeto. O Capítulo 9 finaliza a monografia com as considerações finais, a síntese dos resultados alcançados e as sugestões para a evolução futura da plataforma.
+A integração desses três eixos — os vinte e cinco casos de teste funcionais, o planejamento de usabilidade com a escala SUS e os ensaios de desempenho em campo — estabelece uma base para avaliar o funcionamento do WeFIND diante dos quarenta e seis requisitos funcionais do projeto. O Capítulo 9 finaliza a monografia com as considerações finais, as limitações desta etapa e as sugestões para a evolução futura da plataforma.
 
 \else
 
 A execução dos 25 casos de teste atestou a conformidade integral das regras de negócio implementadas para os 46 requisitos funcionais do WeFIND. As rotinas de validação no cliente impediram submissões com campos em branco ou formatos de dados inconsistentes, as operações no banco relacional preservaram as restrições de integridade referencial, o isolamento por políticas RLS assegurou o acesso estritamente autorizado aos registros e os canais em tempo real sustentaram a comunicação imediata entre os membros da comunidade.
 
-\clearpage
 
 \subsection{Avaliação de Usabilidade (Método SUS)}
 
@@ -124,7 +121,6 @@ A bateria prática de testes de usabilidade foi conduzida com uma amostra de 20 
 
 O roteiro iniciou-se pela autenticação, demandando a criação de conta com nome, e-mail e senha, seguida do acesso inicial à plataforma. Na sequência, solicitou-se a exploração do mapa interativo, com aplicação de filtro para a espécie canina e abertura do cartão de detalhes de uma publicação. A terceira tarefa exigiu a publicação de um anúncio de animal perdido com envio de fotografia da galeria e marcação manual das coordenadas no mapa. Em seguida, os participantes procederam à geração sob demanda do cartaz digital de busca com código QR inteligente a partir da publicação realizada. Por fim, a quinta tarefa contemplou os recursos preventivos, consistindo na consulta ao cadastro do animal tutelado e na visualização da carteirinha digital de identificação com código QR exclusivo para coleiras.
 
-\clearpage
 
 \subsubsection{Análise Quantitativa (Score SUS e Eficiência)}
 
@@ -138,7 +134,6 @@ Para a apuração estatística do escore SUS, as respostas individuais dos 20 vo
 
 A tabulação das notas dos 20 respondentes resultou em uma pontuação média final de 85,3 pontos (com mediana de 87,5 pontos e desvio-padrão de 6,2 pontos). Segundo os intervalos de referência e percentis estabelecidos por Lewis (2021) e Sauro e Lewis (2022), sistemas que alcançam escores acima de 68 pontos situam-se acima da média mundial de usabilidade, ao passo que pontuações superiores a 80,3 pontos classificam a aplicação no patamar de usabilidade excelente (Grau A), atingindo o percentil 90\% no ranking internacional de facilidade de uso de produtos digitais.
 
-\clearpage
 
 \subsubsection{Análise Qualitativa (Opinião dos Participantes)}
 
@@ -148,7 +143,6 @@ Em relação à visibilidade geográfica, os voluntários apontaram a visualiza�
 
 Em relação à segurança no contato, os participantes elogiaram amplamente o canal de bate-papo privativo em tempo real, enfatizando que a possibilidade de dialogar diretamente com os informantes sem divulgar números particulares de telefone em vias públicas reduz consideravelmente os riscos de trotes, perseguições e tentativas de golpe financeiro. Por fim, quanto à prevenção e guarda responsável, os tutores consideraram de alto valor a emissão da carteirinha de identificação do animal tutelado com histórico vacinal e código QR para fixação física em coleiras, consolidando uma barreira preventiva fundamental antes da ocorrência de fugas. Esses apontamentos confirmam que a proposta de valor do WeFIND atendeu plenamente às expectativas operacionais e emocionais do público-alvo.
 
-\clearpage
 
 \subsection{Desempenho e Tempos de Resposta}
 
@@ -158,5 +152,3 @@ As medições cronometradas atestaram a eficiência operacional dos módulos cr�
 
 Os resultados combinados dos testes funcionais, da avaliação SUS e dos ensaios de desempenho comprovam que o WeFIND atingiu maturidade técnica e usabilidade de excelência, cumprindo integralmente os requisitos concebidos para o projeto. O Capítulo 9 finaliza a monografia com as considerações finais, balanço de dificuldades e perspectivas para trabalhos futuros.
 \fi
-
-\clearpage
