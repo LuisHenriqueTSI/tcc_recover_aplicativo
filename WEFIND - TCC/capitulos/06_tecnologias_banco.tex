@@ -8,7 +8,6 @@ A integridade do ecossistema é garantida pela integração com o banco de dados
 
 Este capítulo detalha as decisões técnicas e as ferramentas que compõem o ecossistema móvel do WeFIND, descreve a infraestrutura de computação em nuvem provida pelo Supabase e pelo gateway de mensageria da Evolution API, apresenta a modelagem lógica relacional das entidades e tabelas no PostgreSQL e documenta as ferramentas auxiliares empregadas no projeto, finalizando com um quadro consolidado com a especificação e versão de todas as tecnologias utilizadas.
 
-\clearpage
 
 \subsection{Camada Cliente Móvel e Decisões Técnicas}
 
@@ -34,7 +33,6 @@ A camada cartográfica baseia-se na biblioteca \textit{react-native-maps}, respo
 
 Para proteger o tráfego de rede e a integridade das consultas, foram inseridas regras de validação no próprio aplicativo cliente. Os formulários executam verificações em tempo real sobre campos de preenchimento obrigatório, validam a consistência sintática de endereços de e-mail e realizam a formatação padronizada de números telefônicos antes do envio à nuvem.
 
-\clearpage
 
 \subsection{Serviços em Nuvem, Mensageria Externa e Banco de Dados PostgreSQL}
 
@@ -159,11 +157,12 @@ O matching automático e o registro de avistamento utilizam informações semelh
 
 O registro de avistamento parte de uma publicação já existente e acrescenta uma nova ocorrência observada em outro momento ou local. Depois que o informante confirma que o animal visualizado corresponde ao caso sugerido, o serviço de avistamentos grava o relato na tabela correspondente, atualiza a localização mais recente da publicação principal e preserva os registros anteriores para compor a linha do tempo. Portanto, o matching auxilia a descoberta de possíveis correspondências, enquanto o avistamento confirmado atualiza o acompanhamento espacial do caso.
 
-\clearpage
 
 \subsection{Ferramentas Auxiliares de Apoio}
 
 Durante as etapas de planejamento, especificação, escrita de código e desenho visual, recorreu-se a um conjunto de ferramentas auxiliares de apoio ao desenvolvimento, apresentadas na Figura~\ref{fig:ferramentas_auxiliares}.
+
+Esses recursos foram utilizados de forma complementar, acompanhando as diferentes necessidades do projeto. Enquanto algumas ferramentas apoiaram a organização das tarefas e o controle das versões, outras contribuíram para a modelagem do sistema, a criação das interfaces e a produção dos elementos visuais. A seleção conjunta buscou manter o processo de desenvolvimento organizado, rastreável e compatível com as características de uma aplicação móvel.
 
 \begin{figure}[H]
     \centering
@@ -177,7 +176,6 @@ A viabilização do projeto articulou um ecossistema produtivo integrado que cob
 
 Para o controle de versões do código e acompanhamento do cronograma, utilizaram-se o Git e a plataforma GitHub para versionamento distribuído, associados ao método Kanban no Trello. No suporte à modelagem e ao design, empregou-se o software Astah UML para diagramação conceitual, o Figma para concepção dos protótipos de alta fidelidade e a ferramenta Flow Labs para geração de ativos gráficos auxiliares e refinamento do logotipo, cujas especificações técnicas detalhadas encontram-se consolidadas no Quadro~\ref{quadro:tecnologias}.
 
-\clearpage
 
 \subsection{Especificação Consolidada das Tecnologias e Versões}
 
@@ -242,5 +240,3 @@ Gestão de Tarefas & Trello & Web & Ferramenta de acompanhamento de atividades b
 }
 
 Consolidadas as tecnologias e a estrutura do banco de dados no Quadro~\ref{quadro:tecnologias}, o Capítulo~7 apresenta o projeto de interface do WeFIND, detalhando a usabilidade, a identidade visual e as telas desenvolvidas.
-
-\clearpage

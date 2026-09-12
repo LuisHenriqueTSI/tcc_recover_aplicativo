@@ -8,7 +8,6 @@ Outro cuidado central foi a acessibilidade digital, orientada pelas diretrizes i
 
 Dessa maneira, o projeto visual buscou harmonizar clareza de informações, ergonomia e acolhimento. As subseções a seguir apresentam as escolhas tipográficas, a identidade visual, a paleta de cores e os principais fluxos de telas da plataforma WeFIND.
 
-\clearpage
 
 \subsection{Tipografia e Hierarquia Visual}
 
@@ -24,7 +23,6 @@ A definição tipográfica constitui a base fundamental do design de interface d
 
 Adotou-se a família tipográfica sem serifa Roboto (GOOGLE FONTS, 2024), consagrada no ecossistema móvel por suas proporções geométricas equilibradas, ampla abertura de glifos e excelente legibilidade em telas com variadas densidades de pixels. A hierarquia visual do WeFIND fundamenta-se no uso combinado de três pesos da fonte, em que o peso em negrito (\textit{bold}) é aplicado prioritariamente em títulos de tela, nomes de animais, valores de recompensa e marcadores de estado para conduzir a atenção primária do usuário. Por sua vez, o peso médio (\textit{medium}) é empregado em rótulos de botões de ação, elementos da barra de navegação inferior e etiquetas de atributos físicos como espécie, raça e porte, ao passo que o peso regular é destinado aos corpos de texto descritivos, relatos de avistamentos e orientações contextuais de preenchimento. O  espaçamento entrelinhas e as margens de toque mínimas de 48 por 48 pixels para áreas clicáveis foram calibrados em estrita conformidade com as diretrizes de ergonomia móvel, assegurando conforto visual e operabilidade eficiente com apenas uma mão.
 
-\clearpage
 
 \subsection{Identidade Visual e Conceito do Aplicativo}
 
@@ -60,7 +58,6 @@ O símbolo foi também preparado para atender às exigências técnicas dos sist
 
 Na interface do aplicativo, a marca é utilizada de maneira consistente na tela de apresentação (\textit{splash screen}), nos cartazes digitais de busca gerados para impressão e nas carteirinhas com código QR vinculadas às coleiras. Essa padronização transmite seriedade e acolhimento, assegurando aos tutores e voluntários que a plataforma é um ambiente seguro e dedicado ao bem-estar animal.
 
-\clearpage
 
 \subsection{Paleta Cromática Oficial}
 
@@ -84,12 +81,13 @@ Na Figura~\ref{fig:paleta_cores}.b, encontram-se as Cores Semânticas de Publica
 
 Na Figura~\ref{fig:paleta_cores}.c, reúnem-se as Cores de Interface e Elementos Neutros: a tonalidade cinza suave de Fundo (\#F6F8F6) evita fadiga ocular; o tom branco puro de Superfície (\#FFFFFF) destaca cartões e campos interativos; e a tipografia principal em tom Azul Noturno Escuro (\#0F172A) garante conformidade rigorosa com os níveis de contraste AA e AAA exigidos pelas diretrizes de acessibilidade WCAG.
 
-\clearpage
 
 
 \subsection{Funcionamento e Telas do Aplicativo}
 
 O WeFIND organiza suas funcionalidades em fluxos diretos, orientados pela jornada do tutor e apoiados por uma barra de navegação inferior. As telas principais de acesso são apresentadas nas Figuras~\ref{fig:telas_autenticacao} e~\ref{fig:tela_cadastro_recuperacao}.
+
+O fluxo de entrada foi planejado para atender tanto usuários que já possuem cadastro quanto pessoas que estão conhecendo a plataforma. A tela inicial concentra o acesso à conta e os recursos de recuperação, enquanto a apresentação do aplicativo oferece uma visão geral do serviço antes que o visitante decida realizar o cadastro.
 
 \begin{figure}[H]
     \centering
@@ -113,7 +111,9 @@ O WeFIND organiza suas funcionalidades em fluxos diretos, orientados pela jornad
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A tela de login reúne os campos de e-mail e senha, a recuperação de credenciais e a possibilidade de conhecer o aplicativo antes do cadastro. Essa organização reduz o número de decisões iniciais e orienta o usuário para as ações essenciais.
+A tela de login reúne os campos de e-mail e senha, a recuperação de credenciais e a possibilidade de conhecer o aplicativo antes do cadastro. A Figura~\ref{fig:telas_autenticacao}.b apresenta essa opção de apresentação, que permite ao visitante compreender a finalidade do WeFIND e consultar suas principais funções antes de criar uma conta. Assim, as duas telas formam um fluxo inicial simples: o usuário pode entrar com uma conta existente ou conhecer a proposta do aplicativo antes de prosseguir para o cadastro. Essa organização reduz o número de decisões iniciais e orienta o usuário para as ações essenciais.
+
+Quando o visitante decide continuar, o fluxo conduz ao cadastro ou à recuperação da conta, conforme sua situação. A Figura~\ref{fig:tela_cadastro_recuperacao} apresenta essas duas alternativas de acesso e mostra como o aplicativo mantém os procedimentos concentrados em telas simples.
 
 \begin{figure}[H]
     \centering
@@ -139,9 +139,11 @@ A tela de login reúne os campos de e-mail e senha, a recuperação de credencia
 
 O cadastro solicita os dados necessários para a identificação do participante, enquanto a recuperação de conta oferece um caminho específico para redefinir a senha. Os dois fluxos mantêm mensagens objetivas e campos compatíveis com o uso em dispositivos móveis.
 
+Na Figura~\ref{fig:tela_cadastro_recuperacao}.a, o usuário informa os dados necessários para criar o perfil. Na Figura~\ref{fig:tela_cadastro_recuperacao}.b, solicita a recuperação da senha para restabelecer o acesso. A separação evita misturar o cadastro inicial com uma situação de manutenção da conta.
+
 Mesmo sem autenticação imediata, o modo visitante permite consultar publicações e localizar informações básicas de animais perdidos ou encontrados. Para preservar a segurança das interações, ações como publicar, comentar ou enviar mensagens dependem de autenticação; essa alternativa de consulta não exige uma figura própria.
 
-A localização é um recurso central do sistema, pois permite relacionar publicações, avistamentos e distâncias. A Figura~\ref{fig:tela_mapa} reúne a solicitação de localização, o mapa interativo e a consulta de rota.
+A localização é um recurso central do sistema, pois permite relacionar publicações, avistamentos e distâncias. Antes de exibir os resultados, o aplicativo solicita a permissão necessária e, em seguida, oferece recursos para consultar os pontos registrados. A Figura~\ref{fig:tela_mapa} reúne essas etapas, incluindo a consulta de rota.
 
 \begin{figure}[H]
     \centering
@@ -172,9 +174,9 @@ A localização é um recurso central do sistema, pois permite relacionar public
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A interface cartográfica solicita a permissão de GPS, apresenta marcadores associados às publicações e permite consultar uma rota até o ponto selecionado. Esses elementos apoiam a busca sem substituir a avaliação do usuário sobre as condições do local.
+A Figura~\ref{fig:tela_mapa}.a mostra a solicitação de acesso à localização. A Figura~\ref{fig:tela_mapa}.b apresenta o mapa com os marcadores das publicações, enquanto a Figura~\ref{fig:tela_mapa}.c demonstra a rota até o animal selecionado. Esses elementos apoiam a busca sem substituir a avaliação do usuário sobre as condições do local.
 
-O formulário unificado de registro contempla as situações mais frequentes da plataforma: o tutor que perdeu o animal, a pessoa que encontrou um animal e o cidadão que apenas realizou um avistamento. A Figura~\ref{fig:tela_registro_perdi_encontrei} apresenta esses caminhos principais.
+O formulário unificado de registro contempla as situações mais frequentes da plataforma: o tutor que perdeu o animal, a pessoa que encontrou um animal e o cidadão que apenas realizou um avistamento. A separação inicial das modalidades ajuda o usuário a escolher o caminho correspondente ao seu caso. A Figura~\ref{fig:tela_registro_perdi_encontrei} apresenta esses caminhos principais.
 
 \begin{figure}[H]
     \centering
@@ -205,9 +207,9 @@ O formulário unificado de registro contempla as situações mais frequentes da 
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A escolha da modalidade define os campos exibidos no formulário. O registro de perda prioriza a identificação e as características do animal; o registro de encontro permite informar que o animal foi localizado; e o avistamento associa a observação a uma posição geográfica. A separação dos caminhos reduz ambiguidades no envio das informações.
+A Figura~\ref{fig:tela_registro_perdi_encontrei}.a representa o registro de um animal perdido, com foco nas características necessárias à busca. A Figura~\ref{fig:tela_registro_perdi_encontrei}.b corresponde ao cadastro de um animal encontrado, enquanto a Figura~\ref{fig:tela_registro_perdi_encontrei}.c registra um avistamento vinculado a uma localização. A escolha da modalidade define os campos exibidos e reduz ambiguidades no envio das informações.
 
-A ficha de cada publicação concentra as informações necessárias para consulta e acompanhamento do caso, conforme a Figura~\ref{fig:tela_detalhes}.
+A ficha de cada publicação concentra as informações necessárias para consulta e acompanhamento do caso. Além da visualização dos dados do animal, o sistema apresenta ações diferentes conforme a publicação pertença ou não ao usuário. Essa distinção é ilustrada na Figura~\ref{fig:tela_detalhes}.
 
 \begin{figure}[H]
     \centering
@@ -231,9 +233,9 @@ A ficha de cada publicação concentra as informações necessárias para consul
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A visualização pública exibe fotografias, características físicas, localização aproximada e meios de envio de pistas. Quando a publicação pertence ao usuário, a mesma área oferece ações de edição, renovação e encerramento do caso, mantendo distintos os níveis de acesso.
+A Figura~\ref{fig:tela_detalhes}.a exibe a visualização pública, com fotografias, características físicas, localização aproximada e meios de envio de pistas. A Figura~\ref{fig:tela_detalhes}.b mostra a área de gestão do autor, que oferece ações de edição, renovação e encerramento do caso. Dessa forma, são mantidos distintos os níveis de acesso.
 
-O sistema também cruza atributos de publicações para apresentar correspondências potenciais, como mostra a Figura~\ref{fig:tela_correspondencias}.
+O sistema também cruza atributos de publicações para apresentar correspondências potenciais. Esse recurso foi organizado em duas etapas: primeiro, a listagem dos candidatos e, depois, a consulta detalhada dos atributos considerados. A Figura~\ref{fig:tela_correspondencias} mostra esse fluxo.
 
 \begin{figure}[H]
     \centering
@@ -257,9 +259,9 @@ O sistema também cruza atributos de publicações para apresentar correspondên
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A área de matching organiza candidatos por similaridade e distância, permitindo comparar características antes do contato entre os participantes. O resultado é apresentado como apoio à decisão, sem substituir a confirmação humana da identidade do animal.
+A Figura~\ref{fig:tela_correspondencias}.a apresenta a lista de correspondências ordenada por similaridade e distância. A Figura~\ref{fig:tela_correspondencias}.b mostra a comparação dos atributos entre os registros selecionados. O resultado serve como apoio à decisão e não substitui a confirmação humana da identidade do animal.
 
-Por fim, os animais cadastrados pelo usuário podem ser consultados na carteirinha digital, apresentada na Figura~\ref{fig:tela_meus_pets_rg}.
+Por fim, os animais cadastrados pelo usuário podem ser consultados em um painel próprio e em uma carteirinha digital. Esse recurso concentra informações preventivas que podem ser acessadas mesmo quando ainda não existe uma publicação de animal perdido. A Figura~\ref{fig:tela_meus_pets_rg} apresenta essas duas telas.
 
 \begin{figure}[H]
     \centering
@@ -283,4 +285,4 @@ Por fim, os animais cadastrados pelo usuário podem ser consultados na carteirin
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A carteirinha digital reúne os dados essenciais do animal e um código QR para facilitar sua identificação. O painel de pets também permite acessar esses dados e acionar o fluxo de alerta quando necessário, fortalecendo a prevenção sem duplicar o cadastro de uma publicação.
+A Figura~\ref{fig:tela_meus_pets_rg}.a mostra o painel de pets cadastrados e o acesso aos respectivos dados. A Figura~\ref{fig:tela_meus_pets_rg}.b apresenta a carteirinha digital com os dados essenciais e o código QR para facilitar a identificação. O recurso fortalece a prevenção sem duplicar o cadastro de uma publicação.

@@ -8,7 +8,6 @@ No projeto WeFIND, o processo de análise apoiou-se na elicitação de 46 requis
 
 As seções a seguir detalham a engenharia de requisitos, a organização modular das funções do aplicativo e os modelos gráficos representativos do ecossistema WeFIND.
 
-\clearpage
 
 \subsection{Engenharia e Levantamento de Requisitos}
 
@@ -26,7 +25,6 @@ A prevenção e a guarda responsável consolidam-se no módulo de Cadastro de An
 
 Por sua vez, a comunicação direta e a integridade da comunidade são asseguradas por dois módulos essenciais. O módulo de canal privativo de comunicação e chat (RF37 a RF39) estrutura o diálogo direto e em tempo real entre quem perdeu e quem encontrou o pet, viabilizando a troca instantânea de mensagens de texto via WebSockets e o envio de fotografias comprobatórias de identidade física do animal, eliminando a exposição de telefones particulares em vias públicas. Simultaneamente, o módulo de governança comunitária, reencontros e moderação (RF40 a RF43) promove o engajamento comunitário por meio da publicação e consulta de histórias felizes de reencontro no mural colaborativo, garantindo a integridade da plataforma através de denúncias comunitárias de anúncios impróprios e rotinas administrativas de auditoria, moderação e suspensão de contas fraudulentas. Adicionalmente, o módulo de engajamento comunitário, gamificação e acolhimento solidário (RF44 e RF45) estrutura a motivação cívica da sociedade por meio do ranking semanal de ações de impacto e da gestão de lares temporários para abrigo provisório, enquanto o motor de inteligência e correspondências automáticas (RF46) executa o cruzamento proativo de publicações compatíveis de animais perdidos e encontrados.
 
-\clearpage
 
 \subsubsection{Requisitos Funcionais}
 
@@ -105,7 +103,6 @@ O Quadro~\ref{quadro:funcionais} consolida a especificação integral dos 46 req
 \end{longtable}
 }
 
-\clearpage
 
 \subsubsection{Requisitos Não Funcionais}
 
@@ -162,7 +159,6 @@ No terceiro pilar (usabilidade, acessibilidade e portabilidade), a aplicação p
 
 Por fim, no quarto pilar (confiabilidade e regras de negócio), a infraestrutura em nuvem deverá ser avaliada segundo as políticas de disponibilidade e backup efetivamente contratadas (RNF13), enquanto o lembrete de adoção responsável deverá ser enviado após 21 dias sem bloquear a busca ou alterar automaticamente a publicação (RNF14).
 
-\clearpage
 
 \subsection{Modelagem Conceitual e Estrutural do Sistema}
 
@@ -170,7 +166,6 @@ A modelagem de software é uma etapa fundamental no desenvolvimento de qualquer 
 
 No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeling Language} (UML) como padrão para documentar o sistema. A UML permite enxergar o aplicativo por duas perspectivas complementares: a comportamental, expressa nos diagramas de casos de uso que apresentam as ações disponibilizadas a cada perfil de usuário; e a estrutural, representada pelo diagrama de classes de domínio.
 
-\clearpage
 
 \subsubsection{Diagrama de Casos de Uso}
 
@@ -223,7 +218,6 @@ A proteção e a prevenção contra perdas são atendidas pelo \textit{Cadastro 
 
 Por fim, os relatos de sucesso são atendidos por \textit{Manter História Feliz} (RF40) e \textit{Visualizar Mural de Reencontros} (RF41), enquanto a fiscalização e a segurança da comunidade são garantidas pelo caso de uso \textit{Manter Moderação e Denúncias} (RF42 e RF43). A motivação cívica contínua e o amparo provisório a animais recolhidos são viabilizados por \textit{Visualizar Ranking Semanal} (RF44) e \textit{Gerenciar Lares Temporários} (RF45), enquanto o cruzamento proativo de pistas entre animais perdidos e encontrados é executado por \textit{Processar Correspondências Inteligentes} (RF46).
 
-\clearpage
 
 \subsubsection{Diagrama de Classes de Domínio}
 
@@ -251,5 +245,3 @@ A colaboração comunitária é viabilizada pela classe \textit{Avistamento}, qu
 A comunicação segura entre os cidadãos ocorre por meio da classe \textit{Conversa}, que reúne instâncias da classe \textit{Mensagem} para tráfego instantâneo de texto e fotografias em tempo real via WebSockets. Por fim, a integridade da plataforma é assegurada pela classe \textit{Denuncia}, que permite reportar anúncios suspeitos para moderação administrativa, enquanto a classe \textit{HistoriaFeliz} incentiva a celebração de reencontros no mural comunitário e a classe \textit{Notificacao} distribui alertas geolocalizados aos usuários.
 
 Com os requisitos funcionais formalizados e a modelagem de classes de domínio consolidada, o Capítulo 5 apresenta a solução proposta com o aplicativo WeFIND, detalhando sua proposta comunitária, a motivação do autor e a justificativa técnica para a abordagem móvel.
-
-\clearpage
