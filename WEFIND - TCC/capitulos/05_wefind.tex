@@ -1,51 +1,58 @@
 \section{A SOLUÇÃO PROPOSTA: APLICATIVO WeFIND}
 
-A ideia de criar a plataforma WeFIND surgiu a partir de um episódio real vivenciado no círculo pessoal do autor, no qual o desaparecimento de um animal de estimação evidenciou, na prática, as limitações dos métodos convencionais de busca. Durante os esforços de resgate, constatou-se a sobrecarga enfrentada pela tutora: a obrigação de realizar postagens diárias em múltiplos grupos virtuais, a constante necessidade de atualizar informações em publicações dispersas e o desgaste emocional de acompanhar dezenas de comentários sem qualquer ordenação geográfica. O animal infelizmente não foi localizado, comprovando que a desarticulação das informações diminui consideravelmente as chances de sucesso nos momentos mais críticos.
+A concepção da plataforma WeFIND fundamentou-se em uma experiência prática vivenciada pelo autor durante a busca por um animal doméstico desaparecido no círculo familiar. Naquela ocasião, evidenciaram-se as dificuldades inerentes ao uso exclusivo de redes sociais e canais informais: a dispersão das postagens em múltiplos grupos virtuais, a carência de filtros geográficos e a sobrecarga imposta ao tutor para atualizar e monitorar informações desencontradas. As limitações observadas naquele processo reforçaram a necessidade de uma ferramenta dedicada, capaz de centralizar as ocorrências e organizar o apoio comunitário de forma estruturada.
 
-Essa experiência motivou a concepção do WeFIND como uma plataforma colaborativa dedicada à divulgação e ao acompanhamento de ocorrências envolvendo animais. Para organizar a solução, foram definidos cinco pilares conceituais:
+Para estruturar a solução desenvolvida e contemplar os requisitos levantados, o aplicativo foi organizado em cinco eixos funcionais centrais:
 
-O primeiro pilar compreende a busca espacial georreferenciada, que organiza o mapa e o mural por proximidade das ocorrências cadastradas e oferece recursos de consulta territorial.
+O primeiro eixo compreende a busca espacial georreferenciada, organizando o mapa interativo e o mural de publicações por proximidade territorial e permitindo a delimitação de raios de busca.
 
-O segundo pilar estabelece o rastreamento colaborativo. Usuários podem registrar avistamentos com descrição, fotografia e localização, contribuindo para a composição do histórico do caso e para a comunicação com os envolvidos.
+O segundo eixo estabelece o registro colaborativo de avistamentos. Por meio desse recurso, os usuários relatam animais observados em vias públicas com fotografias e coordenadas, construindo uma linha do tempo vinculada ao caso.
 
-O terceiro pilar fundamenta-se na identificação preventiva. O cadastro de animais tutelados pode gerar uma carteirinha digital com código QR para uso em coleiras, permitindo consultar informações autorizadas por meio de um smartphone.
+O terceiro eixo fundamenta-se na prevenção e na identificação antecipada. O tutor cadastra preventivamente os animais domésticos da família e gera uma carteirinha digital com código QR para uso em coleiras, viabilizando a leitura de dados autorizados diretamente pelo celular.
 
-O quarto pilar trata da privacidade e da segurança comunitária. A proposta evita a exposição pública de telefones e endereços pessoais, priorizando canais privados para a troca de informações entre os usuários.
+O quarto eixo trata da privacidade e da proteção de dados dos usuários. O sistema resguarda informações sensíveis, omitindo endereços residenciais exatos e contatos telefônicos pessoais em áreas públicas, e disponibilizando um canal de mensagens privativo para a comunicação direta entre as partes.
 
-Por fim, o quinto pilar estrutura o engajamento comunitário por meio de pontuação, títulos e ranking semanal. Essas mecânicas foram projetadas para reconhecer ações de colaboração, como publicações, acolhimento temporário e reencontros confirmados, mantendo a participação dos usuários para além de uma ocorrência individual.
+Por fim, o quinto eixo estimula a colaboração comunitária por meio de um sistema de reconhecimento solidário e gestão de lares temporários, valorizando a participação contínua de voluntários na rede de acolhimento e proteção animal.
+
 
 \subsection{Justificativa da Escolha da Plataforma Móvel}
 
-A decisão de desenvolver o WeFIND como um aplicativo para celular fundamentou-se na necessidade de apoiar ações realizadas em deslocamento, nas quais o usuário pode precisar consultar uma ocorrência, registrar um avistamento ou receber um alerta diretamente no smartphone.
+A decisão de desenvolver o WeFIND como um aplicativo para celular fundamentou-se na necessidade de apoiar ações realizadas em deslocamento, nas quais o usuário precisa consultar ocorrências, registrar avistamentos ou receber alertas diretamente no smartphone.
 
-Essa exigência de mobilidade relaciona-se à dinâmica espacial das ocorrências. Conforme documentado no projeto \textit{FugaPet-Rotas} (SOUZA et al., 2022), animais desorientados em vias públicas podem se deslocar diariamente. Por isso, a resposta comunitária precisa acontecer no ambiente físico em que o evento ocorre, como calçadas, praças e vias de trânsito, onde cidadãos e voluntários circulam com smartphones conectados.
+Essa exigência de mobilidade relaciona-se à dinâmica espacial dos desaparecimentos. Conforme apontado por Souza et al. (2022), animais desorientados em vias públicas podem percorrer distâncias consideráveis diariamente. Por essa razão, a resposta comunitária precisa acontecer no ambiente físico em que o fato ocorre, como ruas, praças e calçadas, onde tutores e voluntários circulam com seus aparelhos conectados.
 
-Diante dessa dinâmica, a plataforma móvel foi escolhida por reunir recursos importantes para esse tipo de situação. As notificações do dispositivo permitem comunicar atualizações relevantes aos usuários. O acesso à localização e à câmera facilita o registro de fotografias, descrições e coordenadas de um avistamento. A integração entre o cadastro preventivo e a criação de uma publicação de desaparecimento reduz a necessidade de repetir as características do animal. Além disso, a geração de cartazes digitais com código QR permite compartilhar uma ocorrência fora do aplicativo e direcionar os interessados à publicação correspondente.
+A plataforma móvel reúne recursos nativos adequados para esse contexto operacional. As notificações do dispositivo comunicam atualizações relevantes em tempo hábil. O acesso integrado ao GPS e à câmera facilita a captura de fotos e das coordenadas exatas no momento do avistamento. A integração entre o cadastro preventivo e a criação do anúncio permite acionar a busca com agilidade, reaproveitando as características do animal. Além disso, a geração de cartazes digitais com código QR viabiliza a divulgação externa impressa e em redes sociais, direcionando os interessados de volta à publicação no aplicativo.
 
-\subsection{Correspondência de Animais e Rastreamento Colaborativo}
 
-O WeFIND possui duas formas diferentes de relacionar informações sobre animais. A primeira é o \textit{matching} entre publicações. A segunda é o registro de avistamento. Embora as duas funções usem características do animal e localização, elas começam em situações diferentes e produzem resultados diferentes.
+\subsection{Correspondência de Animais e Registro de Avistamentos}
 
-\subsubsection{Matching entre publicações}
+O WeFIND adota duas formas distintas e complementares para relacionar informações sobre animais: a correspondência automatizada (\textit{matching}) entre publicações e o registro comunitário de avistamentos. Embora ambas utilizem características físicas e dados de localização, operam com propósitos e fluxos distintos.
 
-O \textit{matching} compara duas publicações já cadastradas por usuários diferentes: uma publicação ``Perdido'' e uma publicação ``Encontrado''. O sistema analisa informações como espécie, raça, cor da pelagem, sexo, porte e distância entre os locais registrados. A partir desses dados, calcula um escore heurístico de compatibilidade e apresenta uma sugestão quando a pontuação atinge o limite definido no projeto.
 
-Essa função serve para aproximar duas pessoas que podem estar falando do mesmo animal. Ela não cria um novo registro, não confirma o reencontro e não altera automaticamente nenhuma publicação. O resultado é apenas uma recomendação para que os usuários comparem as fotografias, as características e as demais informações dos anúncios. A confirmação ou rejeição da correspondência depende da decisão humana.
+\subsubsection{Correspondência entre publicações (Matching)}
+
+A correspondência automática analisa duas publicações ativas cadastradas de forma independente: uma do tipo ``Perdido'' e outra do tipo ``Encontrado''. O sistema avalia a compatibilidade de atributos como espécie, porte, sexo, raça e pelagem, cruzando esses dados com a distância geográfica entre os pontos registrados. Quando o índice atinge o limiar mínimo de similaridade estabelecido no projeto ($\ge 60\%$), o aplicativo emite uma sugestão para ambos os usuários.
+
+A formulação matemática desse cálculo, a atribuição de pesos a cada atributo morfológico e a aplicação da fórmula de Haversine para a distância geográfica são detalhadas no Capítulo~6 (Seção~6.2 e Quadro~4). As interfaces do usuário e as notificações resultantes desse cruzamento são ilustradas no Capítulo~7 (Seção~7.5).
+
+Essa funcionalidade tem como objetivo aproximar tutores e resgatistas que possam estar tratando do mesmo animal. Ela não altera o status das publicações, não confirma reencontros e não substitui a validação humana: a ferramenta atua como um mecanismo de apoio para que as partes comparem fotos e características, cabendo exclusivamente aos envolvidos a confirmação do caso.
+
 
 \subsubsection{Registro de avistamento}
 
-O registro de avistamento começa de outra forma. Nesse fluxo, uma pessoa informa que viu um animal que pode estar relacionado a uma publicação já existente. O aplicativo utiliza o local informado para buscar casos ativos próximos. O raio inicial de 5 km é um parâmetro operacional para reduzir a quantidade de resultados apresentados ao usuário. Portanto, ele não representa o alcance total do aplicativo nem significa que um animal fora desse raio não possa ser localizado por outros meios de busca.
+O registro de avistamento opera a partir do relato de uma pessoa que visualizou um animal na rua, possivelmente associado a uma busca em andamento. O sistema utiliza as coordenadas do informante para consultar publicações ativas em um raio inicial de 5 km, parâmetro configurável que visa otimizar a visualização em tela.
 
-Depois da busca inicial, o sistema compara o animal observado com os casos encontrados usando espécie, raça, cor da pelagem, sexo, porte e distância. O usuário confere os resultados e confirma manualmente se o avistamento corresponde a uma publicação. Se confirmar, o aplicativo cria uma nova ocorrência vinculada ao caso original. Essa ocorrência guarda a descrição, a fotografia, a localização, a data e o usuário responsável pelo relato.
+Após a conferência dos dados e a confirmação do usuário de que o animal visto corresponde a um anúncio específico, o aplicativo registra uma nova ocorrência vinculada ao caso original. Essa ocorrência preserva descrição, fotografia, coordenadas e identificação do informante em uma linha do tempo cronológica. A publicação principal é atualizada com o último ponto geográfico conhecido, mantendo intacto o histórico de deslocamento do animal. Caso o usuário verifique que se trata de outro animal, nenhuma publicação é alterada, podendo o relato ser descartado ou convertido em um novo cadastro.
 
-O anúncio original é preservado. A publicação pode receber a localização mais recente e a data do último avistamento, enquanto a linha do tempo mantém os registros anteriores. Assim, o mapa apresenta o ponto mais recente conhecido e o histórico mostra a sequência de ocorrências. Se o usuário informar que se trata de outro animal, nenhuma publicação é alterada e o relato pode ser descartado ou usado para iniciar um novo cadastro.
+Dessa forma, o \textit{matching} atua comparando dois anúncios distintos, enquanto o avistamento acrescenta novos relatos a uma busca já acompanhada. Em ambos os fluxos, o sistema apenas organiza as informações, mantendo a autonomia de decisão com os usuários.
 
-As duas funções, portanto, não devem ser confundidas. O \textit{matching} compara dois anúncios e gera uma sugestão de compatibilidade. O avistamento registra uma nova observação de um caso já acompanhado. Em ambos os casos, o sistema apenas auxilia a comparação e a organização das informações. A decisão final continua com os usuários, e nenhuma publicação é marcada automaticamente como ``Reencontrado'' ou ``Adotado''.
 
-\subsection{Terminologia e Estados das Publicações}
+\subsection{Classificação e Estados das Publicações}
 
-Para evitar ambiguidade, o WeFIND diferencia a categoria da publicação, a modalidade do registro e o desfecho do caso. ``Perdido'', ``Encontrado'' e ``Adoção'' são categorias de publicação: a primeira é criada pelo tutor ou responsável que procura um animal desaparecido; a segunda é criada por quem encontrou ou avistou um animal; e a terceira reúne animais que podem ser encaminhados para adoção. Dentro da categoria ``Encontrado'', o informante pode registrar apenas um avistamento na rua, sem recolhimento, ou indicar que está com o animal em acolhimento temporário.
+Para assegurar clareza operacional, o WeFIND estabelece distinção formal entre as categorias de anúncio e os estados de encerramento da publicação.
 
-Já ``Reencontrado'' e ``Adotado'' não são categorias iniciais de cadastro, mas desfechos que encerram a busca ativa. O status ``Reencontrado'' deve ser usado quando o animal perdido volta ao tutor ou quando a correspondência entre as partes é confirmada. O status ``Adotado'' deve ser usado quando a destinação definitiva é formalizada. Enquanto nenhuma dessas situações ocorrer, a publicação permanece ativa, mesmo após o lembrete de adoção de 21 dias.
+As categorias iniciais de cadastro compreendem ``Perdido'' (publicação gerada pelo tutor à procura de seu animal), ``Encontrado'' (anúncio criado por quem localizou um animal, podendo indicar acolhimento temporário ou apenas registro em via pública) e ``Adoção'' (voltada a animais disponíveis para acolhimento definitivo).
 
-Um avistamento confirmado acrescenta uma ocorrência à linha do tempo e atualiza a localização mais recente, sem alterar automaticamente o estado da publicação. O encerramento depende de ação explícita do responsável. O Capítulo 6 apresenta a arquitetura, as tecnologias e a modelagem do banco de dados que sustentam a aplicação.
+Por sua vez, os termos ``Reencontrado'' e ``Adotado'' não constituem categorias iniciais, mas estados que representam a conclusão da busca ativa. O status ``Reencontrado'' é aplicado quando o animal retorna ao tutor ou a tutela é confirmada entre as partes. O status ``Adotado'' é utilizado quando a destinação definitiva do animal é concluída. Até que uma dessas ações seja formalizada pelo autor, a publicação permanece ativa no mapa e no mural, inclusive após o recebimento da notificação preventiva de adoção responsável emitida aos 21 dias.
+
+O Capítulo 6 apresenta a arquitetura do sistema, as tecnologias empregadas e o modelo de dados que sustentam essas funcionalidades.
