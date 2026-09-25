@@ -1,21 +1,21 @@
 \section{ARQUITETURA DE SOFTWARE E TECNOLOGIAS}
 
-A concretização dos pilares conceituais e operacionais da plataforma WeFIND exigiu a escolha criteriosa de um conjunto de tecnologias modernas, maduras e escaláveis. Como ensinam Pressman e Maxim (2021) e Valente (2023), a arquitetura de software de um sistema móvel atual deve conciliar alta produtividade no ciclo de desenvolvimento, baixo acoplamento entre camadas e robustez na persistência e distribuição dos dados em nuvem.
+A implementação da plataforma WeFIND envolveu a escolha de tecnologias para o desenvolvimento da aplicação móvel, o armazenamento dos dados e a comunicação entre os serviços. Como ensinam Pressman e Maxim (2021) e Valente (2023), a arquitetura de software de um sistema móvel deve conciliar produtividade no ciclo de desenvolvimento, baixo acoplamento entre camadas e robustez na persistência e distribuição dos dados em nuvem.
 
-O projeto adotou o padrão arquitetural cliente-servidor distribuído, segmentado em duas camadas fundamentais e independentes: a camada cliente móvel (executada nos smartphones dos usuários) e a camada de serviços em nuvem (hospedada na infraestrutura do Supabase e na plataforma Render). Essa abordagem desacoplada assegura que a lógica de interface e renderização gráfica ocorra localmente no processador do celular, ao passo que as operações de autenticação, persistência relacional, armazenamento de arquivos multimídia, mensageria externa e sincronização em tempo real são delegadas a serviços gerenciados em nuvem de alta disponibilidade (BaaS, sigla para \textit{Backend-as-a-Service}).
+O projeto adotou o padrão arquitetural cliente-servidor distribuído, segmentado em duas camadas independentes: a camada cliente móvel (executada nos smartphones dos usuários) e a camada de serviços em nuvem (hospedada na infraestrutura do Supabase e na plataforma Render). Essa abordagem desacoplada assegura que a lógica de interface e renderização gráfica ocorra localmente no processador do celular, ao passo que as operações de autenticação, persistência relacional, armazenamento de arquivos multimídia, mensageria externa e sincronização em tempo real são delegadas a serviços gerenciados em nuvem de alta disponibilidade (BaaS, sigla para \textit{Backend-as-a-Service}).
 
-A integridade do ecossistema é garantida pela integração com o banco de dados relacional PostgreSQL, estruturado com políticas de segurança em nível de linha (\textit{Row Level Security}, ou RLS). Esse mecanismo transfere o controle de acesso e isolamento de permissões para o próprio motor do banco de dados, impedindo que requisições não autorizadas alterem ou excluam dados alheios, mesmo em eventuais falhas na camada de apresentação móvel.
+A consistência dos dados e a segurança das operações são garantidas pela integração com o banco de dados relacional PostgreSQL, estruturado com políticas de segurança em nível de linha (\textit{Row Level Security}, ou RLS). Esse mecanismo transfere o controle de acesso e isolamento de permissões para o próprio motor do banco de dados, impedindo que requisições não autorizadas alterem ou excluam dados alheios, mesmo em eventuais falhas na camada de apresentação móvel.
 
-Este capítulo detalha as decisões técnicas e as ferramentas que compõem o ecossistema móvel do WeFIND, descreve a infraestrutura de computação em nuvem provida pelo Supabase e pelo gateway de mensageria da Evolution API, apresenta a modelagem lógica relacional das entidades e tabelas no PostgreSQL e documenta as ferramentas auxiliares empregadas no projeto, finalizando com um quadro consolidado com a especificação e versão de todas as tecnologias utilizadas.
+Este capítulo detalha as decisões técnicas e as ferramentas que compõem a arquitetura do WeFIND, descreve a infraestrutura de computação em nuvem provida pelo Supabase e pelo gateway de mensageria da Evolution API, apresenta a modelagem lógica relacional das entidades e tabelas no PostgreSQL e documenta as ferramentas auxiliares empregadas no projeto.
 
 
 \subsection{Camada Cliente Móvel e Decisões Técnicas}
 
-A construção do aplicativo móvel exigiu a integração de ferramentas voltadas à alta performance em smartphones, combinando compilação multiplataforma, baixo consumo de bateria em rotinas de GPS e suporte a estilização visual responsiva. A Figura~\ref{fig:principais_tecnologias} destaca as principais tecnologias adotadas no projeto.
+A construção do aplicativo móvel exigiu a integração de ferramentas voltadas ao bom desempenho em smartphones, combinando compilação multiplataforma, baixo consumo de bateria em rotinas de GPS e suporte a estilização visual responsiva. A Figura~\ref{fig:principais_tecnologias} destaca as principais tecnologias adotadas no projeto.
 
 \begin{figure}[H]
     \centering
-    \caption{Principais tecnologias que compõem o ecossistema WeFIND}
+    \caption{Principais tecnologias que compõem a plataforma WeFIND}
     \label{fig:principais_tecnologias}
     \includegraphics[width=0.82\textwidth]{imagens/03_arquitetura_design/figura11_principais_tecnologias.png}
     \fonte{Autoria própria (2026)}
@@ -25,7 +25,7 @@ A biblioteca React Native foi adotada como núcleo para a interface móvel, oper
 
 Em relação ao desenvolvimento puramente nativo (como construir separadamente uma aplicação em Kotlin para Android e outra em Swift para iOS), a abordagem isolada exigiria a manutenção de duas bases de código completamente distintas. Esse cenário duplicaria o tempo de codificação, os custos e a complexidade de manutenção corretiva para um projeto desenvolvido individualmente. O React Native superou essa barreira ao permitir compilar para ambas as plataformas a partir de uma base de código unificada em TypeScript, compartilhando cem por cento da lógica de negócio e da interface visual.
 
-Frente a tecnologias baseadas em navegadores embutidos (como \textit{Progressive Web Apps} convencionais ou plataformas baseadas em \textit{WebView}), o React Native destaca-se por compilar diretamente para os componentes de interface nativos do sistema operacional. Aplicações em \textit{WebView} costumam apresentar perdas de fluidez gráfica em mapas com muitos marcadores dinâmicos e enfrentam restrições no uso contínuo de sensores de satélite. Com o React Native, a aplicação atinge taxas de resposta de 60 quadros por segundo e comunicação direta com o hardware.
+Frente a tecnologias baseadas em navegadores embutidos (como \textit{Progressive Web Apps} convencionais ou plataformas baseadas em \textit{WebView}), o React Native compila para os componentes de interface nativos do sistema operacional. Essa abordagem favorece o desempenho gráfico na renderização de mapas com múltiplos marcadores e na resposta aos eventos de toque, além de facilitar a comunicação com os sensores do dispositivo.
 
 Em conjunto com o React Native, utilizou-se a plataforma Expo. O Expo foi escolhido por fornecer um conjunto estável de módulos nativos pré-configurados, eliminando a dependência de configurações manuais complexas em compiladores específicos de cada sistema operacional. No WeFIND, a integração com o aparelho apoiou-se em pacotes especializados do Expo: o módulo \textit{expo-location} para captura das coordenadas de satélite (GPS) com alta precisão; o \textit{expo-image-picker} para acesso à câmera fotográfica e à galeria do usuário; e o módulo \textit{expo-image-manipulator} para realizar a compressão local de fotos antes da transmissão pela rede celular.
 
@@ -68,7 +68,7 @@ A tabela \textit{avistamentos} organiza os relatos colaborativos fornecidos pela
 
 A tabela \textit{mensagens} dá suporte ao canal de comunicação privativo da aplicação. Ela reúne o identificador da publicação em discussão, o usuário remetente, o destinatário, o conteúdo textual da mensagem, anexo opcional de imagem, indicador booleano de confirmação de leitura e registro cronológico do envio.
 
-Complementarmente, a persistência dá suporte às entidades de engajamento comunitário: a tabela de voluntários de acolhimento (\textit{foster\_volunteers}) registra os membros dispostos a atuar como lar temporário, suas preferências de espécies e especificações da moradia; por sua vez, o serviço de pontuação e ranking (\textit{ranking.js}) agrega dinamicamente no cliente e na nuvem os registros da semana corrente, atribuindo pontuações auditáveis (10 pontos por publicação, 25 pontos por lar temporário ativo e 60 pontos por reencontro confirmado) e aplicando pseudonimização no nome dos membros (exibindo apenas o primeiro nome e a inicial do sobrenome) para preservar a privacidade perante a LGPD.
+Complementarmente, a persistência dá suporte às entidades de colaboração comunitária: a tabela de voluntários de acolhimento (\textit{foster\_volunteers}) registra os membros dispostos a atuar como lar temporário, suas preferências de espécies e especificações da moradia; por sua vez, o serviço de pontuação e ranking (\textit{ranking.js}) agrega dinamicamente no cliente e na nuvem os registros da semana corrente, atribuindo pontuações (10 pontos por publicação, 25 pontos por lar temporário ativo e 60 pontos por reencontro confirmado) e aplicando pseudonimização no nome dos membros (exibindo apenas o primeiro nome e a inicial do sobrenome) para preservar a privacidade perante a LGPD.
 
 A segurança e a integridade do banco de dados relacional são asseguradas por políticas de segurança em nível de linha. Por meio desse mecanismo, implementado diretamente no mecanismo do PostgreSQL, define-se que qualquer usuário autenticado ou visitante possui permissão de leitura sobre as publicações de animais ativos, porém apenas o usuário proprietário daquele registro detém privilégios para alterar ou excluir suas próprias publicações e dados de perfil, impedindo modificações não autorizadas.
 
@@ -78,17 +78,17 @@ Para solucionar a permanência de postagens antigas nas redes sociais, nas quais
 
 Cada anúncio possui um período inicial de 30 dias de vigência ativa. Três dias antes do vencimento, o aplicativo envia um aviso para que o responsável possa renovar a publicação. Caso a busca prossiga, a prorrogação é realizada com um toque no botão ``Renovar'' no painel de gestão. Sem a renovação, a publicação fica inativa e deixa de aparecer no mural e no mapa público, mas ainda pode ser renovada durante o período de carência.
 
-Para prevenir a sobrecarga do banco de dados e evitar o acúmulo de arquivos obsoletos na nuvem, o sistema adota uma rotina periódica de limpeza definitiva. Caso a publicação permaneça inativa após um período de carência (30 dias), ela é apagada em definitivo da base PostgreSQL. Essa exclusão ocorre em cascata, removendo os registros vinculados na tabela \textit{fotos\_publicacoes} e apagando as imagens hospedadas no Supabase Storage, assegurando alta performance e sustentabilidade da infraestrutura.
+Para prevenir a sobrecarga do banco de dados e evitar o acúmulo de arquivos obsoletos na nuvem, o sistema adota uma rotina periódica de limpeza definitiva. Caso a publicação permaneça inativa após um período de carência (30 dias), ela é apagada em definitivo da base PostgreSQL. Essa exclusão ocorre em cascata, removendo os registros vinculados na tabela \textit{fotos\_publicacoes} e apagando as imagens hospedadas no Supabase Storage, evitando consumo desnecessário de armazenamento e garantindo a eficiência das consultas na base de dados.
 
-\subsection{Motor Heurístico de Correspondência Inteligente (Matching Multicritério)}
+\subsection{Motor Heurístico de Correspondência (Matching Multicritério)}
 
-O sucesso na localização de um animal doméstico depende diretamente da velocidade com que informações complementares são conectadas. Em plataformas convencionais e grupos de redes sociais, tutores aflitos precisam revisar manualmente dezenas de postagens todos os dias para tentar reconhecer seu pet em fotos tiradas por terceiros. Para superar essa limitação e agir de forma proativa, o WeFIND incorpora em sua camada de serviços o motor de correspondência inteligente (\textit{petMatching.js}), que realiza o cruzamento automatizado entre publicações ativas com status complementares (animais Perdidos versus animais Encontrados).
+A localização de um animal doméstico depende da agilidade com que informações complementares são conectadas. Em redes sociais e canais informais, os usuários precisam revisar manualmente dezenas de postagens para tentar reconhecer seu animal em fotografias divulgadas por terceiros. Para automatizar essa verificação, o WeFIND incorpora o módulo de correspondência (\textit{petMatching.js}), que realiza o cruzamento sistemático entre publicações ativas de tipos complementares (animais Perdidos e animais Encontrados).
 
 O motor opera em duas etapas sequenciais: a triagem eliminatória imediata e o cômputo ponderado de similaridade morfológica e espacial. Seu resultado é uma sugestão de correspondência entre publicações; o motor não registra automaticamente um avistamento nem altera a localização de uma publicação.
 
-\subsubsection{Critérios de Eliminação Estrita (\textit{Deal Breakers})}
+\subsubsection{Critérios de Eliminação Imediata}
 
-Para reduzir o envio de alertas pouco relevantes, o algoritmo executa primeiramente uma checagem de viabilidade biológica e física. Três critérios possuem poder de veto absoluto (\textit{deal breakers}); caso qualquer um deles seja violado, o sistema atribui escore nulo (0 pontos) imediatamente, encerrando o cálculo sem necessidade de avaliações adicionais.
+Para reduzir o envio de alertas pouco relevantes, o algoritmo executa previamente uma checagem de viabilidade biológica e física. Três critérios funcionam como filtros eliminatórios imediatos: caso qualquer um deles seja violado, o sistema atribui escore nulo (0 pontos), encerrando o cálculo sem necessidade de avaliações adicionais.
 
 O primeiro critério corresponde à incompatibilidade de espécies, em que registros pertencentes a categorias zoológicas distintas (como cão e gato, ou equino e ave) são descartados sumariamente. O segundo critério avalia a divergência de sexo comprovado, invalidando a equivalência quando ambos os anúncios informam com certeza o gênero do animal e estes divergem formalmente entre macho e fêmea. Por fim, o terceiro critério trata dos portes físicos antagônicos, considerando mutuamente exclusivos os casos em que um animal classificado nos extremos inferiores da escala (porte mini ou pequeno) é confrontado com outro registrado nos limites superiores (porte grande ou gigante).
 
@@ -172,71 +172,8 @@ Esses recursos foram utilizados de forma complementar, acompanhando as diferente
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A viabilização do projeto articulou um ecossistema produtivo integrado que cobriu desde o versionamento de código e a gestão de atividades ágeis até a diagramação arquitetural e a prototipação de alta fidelidade das interfaces. A infraestrutura de desenvolvimento baseou-se na plataforma Node.js com o gerenciador npm para o gerenciamento de dependências externas, tendo o editor Visual Studio Code como ambiente central de escrita e depuração.
+O desenvolvimento do projeto apoiou-se em um conjunto de ferramentas integradas que cobriu desde o versionamento de código e a gestão de tarefas até a diagramação arquitetural e a prototipação das interfaces. A infraestrutura de desenvolvimento baseou-se na plataforma Node.js com o gerenciador npm para a administração de dependências, tendo o editor Visual Studio Code como ambiente de escrita e depuração.
 
-Para o controle de versões do código e acompanhamento do cronograma, utilizaram-se o Git e a plataforma GitHub para versionamento distribuído, associados ao método Kanban no Trello. No suporte à modelagem e ao design, empregou-se o software Astah UML para diagramação conceitual, o Figma para concepção dos protótipos de alta fidelidade e a ferramenta Flow Labs para geração de ativos gráficos auxiliares e refinamento do logotipo, cujas especificações técnicas detalhadas encontram-se consolidadas no Quadro~\ref{quadro:tecnologias}.
+Para o controle de versões do código e acompanhamento das atividades, utilizaram-se o Git e a plataforma GitHub para versionamento distribuído, associados ao método Kanban no Trello. No suporte à modelagem e ao design, empregou-se o software Astah UML para a diagramação conceitual, o Figma para a concepção dos protótipos e a ferramenta Flow Labs para a elaboração de ativos gráficos auxiliares e do logotipo.
 
-
-\subsection{Especificação Consolidada das Tecnologias e Versões}
-
-Para sintetizar de maneira clara e estruturada todo o conjunto de ferramentas, bibliotecas e ambientes de software empregados na materialização da plataforma WeFIND, o Quadro~\ref{quadro:tecnologias} organiza as tecnologias por camada funcional, relacionando o pacote, a versão exata adotada e sua respectiva função operacional no sistema.
-
-\vspace{0.3cm}
-{
-\phantomsection\label{quadro:tecnologias}
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.10}
-\begin{longtable}{|>{\raggedright\arraybackslash}p{3.7cm}|>{\raggedright\arraybackslash}p{3.1cm}|>{\centering\arraybackslash}p{1.6cm}|>{\raggedright\arraybackslash}p{6.1cm}|}
-\hline
-\multicolumn{4}{|c|}{\textbf{Quadro 5: Especificação e Versões das Tecnologias do Ecossistema WeFIND}} \\ \hline
-\textbf{Camada / Domínio} & \textbf{Tecnologia / Pacote} & \textbf{Versão} & \textbf{Função e Finalidade no Sistema} \\ \hline
-\endfirsthead
-
-\hline
-\multicolumn{4}{|c|}{\textbf{Quadro 5: Especificação e Versões das Tecnologias (Continuação)}} \\ \hline
-\textbf{Camada / Domínio} & \textbf{Tecnologia / Pacote} & \textbf{Versão} & \textbf{Função e Finalidade no Sistema} \\ \hline
-\endhead
-
-\hline
-\multicolumn{4}{|r|}{\textit{Continua na próxima página}} \\ \hline
-\endfoot
-
-\hline
-\multicolumn{4}{|c|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
-\endlastfoot
-
-Interface Móvel & React Native & 0.81.5 & Estrutura principal para geração do aplicativo nativo multiplataforma Android e iOS. \\ \hline
-Interface Móvel & React & 19.1.0 & Biblioteca declarativa para criação da arquitetura baseada em componentes reativos. \\ \hline
-Plataforma Móvel & Expo SDK & 54.0.29 & Conjunto de ferramentas gerenciadas e bibliotecas de acesso a recursos do smartphone. \\ \hline
-Navegação Móvel & React Navigation & 7.1.25 & Gerenciamento de rotas, pilhas de navegação e abas inferiores de telas da aplicação. \\ \hline
-Estilização Visual & NativeWind & 4.2.1 & Motor de classes utilitárias para estilização direta de componentes em React Native. \\ \hline
-Estilização Visual & TailwindCSS & 3.4.19 & Conjunto de estilos utilitários base para definição dos padrões visuais e responsividade da interface. \\ \hline
-Hardware / Satélite & expo-location & 19.0.8 & Captura precisa das coordenadas de latitude e longitude do dispositivo via GPS nativo. \\ \hline
-Hardware / Câmera & expo-image-picker & 17.0.10 & Acesso à câmera do celular e à galeria de fotos para anexar imagens aos anúncios. \\ \hline
-Processamento Local & expo-image-manipulator & 14.0.8 & Redimensionamento e compressão algorítmica de fotos antes do envio ao servidor em nuvem. \\ \hline
-Georreferenciamento & react-native-maps & 1.20.1 & Renderização do mapa interativo, marcação de pontos de publicação e traçado de rotas. \\ \hline
-Compartilhamento & react-native-view-shot & 4.0.3 & Captura gráfica de componentes visuais para renderização de cartazes digitais com código QR. \\ \hline
-Compartilhamento & expo-sharing & 14.0.8 & Integração com o painel nativo de compartilhamento externo do sistema operacional. \\ \hline
-Notificações Móveis & expo-notifications & 0.32.15 & Módulo para recebimento e gerenciamento de alertas sonoros e notificações instantâneas. \\ \hline
-Persistência Local & async-storage & 2.2.0 & Persistência local de dados de sessão e preferências; o mecanismo não é tratado, por si só, como armazenamento criptografado. \\ \hline
-Serviços em Nuvem & Supabase Client & 2.87.3 & Biblioteca cliente para autenticação, consultas relacionais e envio de fotos no Supabase. \\ \hline
-Comunicação em Tempo Real & Supabase Realtime & 2.87.3 & Sincronização contínua via WebSockets para bate-papo privativo e relatos de avistamento. \\ \hline
-Banco de Dados & PostgreSQL & 15.0 & Sistema gerenciador de banco de dados relacional com suporte a regras de segurança RLS. \\ \hline
-Mensageria Externa & Evolution API & 2.2.3 & Gateway REST para integração automatizada com o WhatsApp no envio de códigos OTP e notificações. \\ \hline
-Hospedagem da API & Render & Nuvem & Plataforma PaaS em nuvem utilizada para hospedagem da instância gerenciada da Evolution API. \\ \hline
-Linguagem de Código & TypeScript & 5.9.2 & Linguagem com tipagem estática que adiciona segurança e previsibilidade ao JavaScript. \\ \hline
-Linguagem de Código & JavaScript & ES2023 & Linguagem interpretada que executa a lógica operacional do aplicativo móvel. \\ \hline
-Ambiente de Execução & Node.js & 24.15.0 & Plataforma de execução JavaScript utilizada na máquina de desenvolvimento e compilação. \\ \hline
-Gerenciador Pacotes & npm & 11.12.1 & Ferramenta de gerenciamento de dependências e versionamento de pacotes do ecossistema. \\ \hline
-Editor de Código & Visual Studio Code & 1.96 & Ambiente de desenvolvimento integrado para escrita, teste e depuração do código-fonte. \\ \hline
-Controle de Versão & Git & 2.54.0 & Sistema distribuído de controle de versões utilizado no versionamento do projeto. \\ \hline
-Repositório Remoto & GitHub & Nuvem & Plataforma em nuvem para hospedagem do repositório remoto e controle do código. \\ \hline
-Modelagem Conceitual & Astah UML & 9.0 & Software gráfico utilizado na diagramação dos modelos de casos de uso e classes. \\ \hline
-Design de Interface & Figma & 2026 & Plataforma para elaboração dos protótipos de interface, identidade visual e telas. \\ \hline
-Geração de Imagens & Flow Labs & Web & Plataforma de inteligência artificial generativa utilizada na criação de ativos gráficos, ícones e logotipo. \\ \hline
-Gestão de Tarefas & Trello & Web & Ferramenta de acompanhamento de atividades baseado no fluxo visual Kanban. \\ \hline
-\end{longtable}
-}
-
-Consolidadas as tecnologias e a estrutura do banco de dados no Quadro~\ref{quadro:tecnologias}, o Capítulo~7 apresenta o projeto de interface do WeFIND, detalhando a usabilidade, a identidade visual e as telas desenvolvidas.
+Com a definição da arquitetura de software, a modelagem do banco de dados e as ferramentas de desenvolvimento estabelecidas, o Capítulo~7 apresenta o projeto de interface do WeFIND, detalhando os aspectos de usabilidade, a identidade visual e as telas desenvolvidas.
