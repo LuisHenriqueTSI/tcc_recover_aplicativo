@@ -108,12 +108,12 @@ O \hyperref[quadro:nao_funcionais]{Quadro 3} sintetiza os 14 requisitos não fun
 \begin{longtable}{|>{\centering\arraybackslash}p{1.4cm}|>{\raggedright\arraybackslash}p{3.8cm}|>{\raggedright\arraybackslash}p{9.2cm}|}
 \hline
 \multicolumn{3}{|c|}{\textbf{Quadro 3: Requisitos Não Funcionais do Sistema WeFIND}} \\ \hline
-\textbf{ID} & \textbf{Critério de Qualidade} & \textbf{Métrica Mensurável / Restrição Arquitetural} \\ \hline
+\textbf{ID} & \textbf{Requisito / Categoria} & \textbf{Critério Objetivo de Aceitação} \\ \hline
 \endfirsthead
 
 \hline
 \multicolumn{3}{|c|}{\textbf{Quadro 3: Requisitos Não Funcionais do Sistema WeFIND (Continuação)}} \\ \hline
-\textbf{ID} & \textbf{Critério de Qualidade} & \textbf{Métrica Mensurável / Restrição Arquitetural} \\ \hline
+\textbf{ID} & \textbf{Requisito / Categoria} & \textbf{Critério Objetivo de Aceitação} \\ \hline
 \endhead
 
 \hline
@@ -124,26 +124,26 @@ O \hyperref[quadro:nao_funcionais]{Quadro 3} sintetiza os 14 requisitos não fun
 \multicolumn{3}{|c|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
 \endlastfoot
 
-\textbf{RNF01} & Desempenho de Inicialização & O aplicativo deve ser avaliado quanto ao tempo de carregamento da interface inicial e dos anúncios em condições de rede 4G previamente registradas. \\ \hline
-\textbf{RNF02} & Latência de Mensagens no Chat & A transmissão e exibição de mensagens de texto entre usuários no chat em tempo real deve ser medida via WebSockets em condições de rede documentadas. \\ \hline
-\textbf{RNF03} & Compressão Local de Imagens & As fotografias selecionadas para anúncios devem passar por compressão algorítmica no próprio aparelho, buscando reduzir o tamanho dos arquivos antes do envio ao servidor. \\ \hline
-\textbf{RNF04} & Precisão de Geolocalização & A captura de localização do dispositivo móvel deve utilizar o serviço de localização disponível e registrar a margem de precisão retornada pelo aparelho. \\ \hline
-\textbf{RNF05} & Proteção de Dados e Anonimização & O sistema não deve exibir em mapa público o endereço residencial exato do usuário, aplicando máscara de aproximação territorial por bairro. \\ \hline
-\textbf{RNF06} & Anonimato de Lares Temporários & A localização física de voluntários cadastrados para acolhimento de lar temporário deve ser estritamente preservada, mantendo oculto o endereço exato. \\ \hline
-\textbf{RNF07} & Segurança de Autenticação & A infraestrutura de autenticação do Supabase Auth deve armazenar credenciais com hash criptográfico seguro (bcrypt) e emitir tokens JWT válidos. \\ \hline
-\textbf{RNF08} & Isolamento de Dados via RLS & As operações no banco de dados PostgreSQL devem impor políticas de segurança em nível de linha (RLS), impedindo acessos ou exclusões indevidas entre contas. \\ \hline
-\textbf{RNF09} & Criptografia em Trânsito & O tráfego de dados entre o aplicativo cliente móvel e os serviços em nuvem deve utilizar HTTPS/TLS, conforme a configuração dos serviços empregados. \\ \hline
-\textbf{RNF10} & Acessibilidade e Contraste & As telas devem ser avaliadas quanto ao contraste visual e ao suporte aos modos Claro e Escuro, tomando a WCAG nível AA como referência de projeto. \\ \hline
-\textbf{RNF11} & Compatibilidade Móvel & O aplicativo deve ser compilado e executado nativamente em dispositivos móveis Android (versão 7.0 ou superior) e iOS (versão 13 ou superior) via React Native. \\ \hline
-\textbf{RNF12} & Design Responsivo de Telas & A interface deve adaptar-se dinamicamente a diferentes resoluções e densidades de pixels de smartphones, sem corte de texto ou sobreposição de botões. \\ \hline
-\textbf{RNF13} & Confiabilidade da Nuvem & A disponibilidade e as políticas de backup dos serviços em nuvem devem ser verificadas conforme o plano contratado e as configurações efetivamente utilizadas. \\ \hline
-\textbf{RNF14} & Lembrete de Adoção Responsável & Após 21 dias de uma publicação de animal encontrado ainda ativa, o sistema deve enviar uma notificação ao responsável para verificar se o tutor foi localizado e oferecer as opções de manter a busca, encaminhar o animal para adoção ou informar que o próprio responsável deseja adotá-lo. A notificação não bloqueia a publicação nem altera seu status automaticamente. \\ \hline
+\textbf{RNF01} & Desempenho de Inicialização & O tempo de carregamento da interface inicial e dos anúncios no mural deve ser inferior a 3,0 segundos em conexões móveis 4G. \\ \hline
+\textbf{RNF02} & Latência de Mensagens no Chat & A entrega e exibição de mensagens de texto entre usuários no chat via WebSockets deve ocorrer em tempo inferior a 500 milissegundos. \\ \hline
+\textbf{RNF03} & Compressão Local de Imagens & As fotografias devem passar por compressão local no dispositivo antes do envio, gerando arquivos JPEG com tamanho inferior a 1,0 MB. \\ \hline
+\textbf{RNF04} & Precisão de Geolocalização & A captura de coordenadas geográficas via GPS deve apresentar margem de precisão igual ou inferior a 20 metros em áreas urbanas abertas. \\ \hline
+\textbf{RNF05} & Proteção de Dados e Privacidade & O sistema não deve exibir endereço residencial exato em mapas públicos, limitando a visualização territorial ao bairro ou raio aproximado. \\ \hline
+\textbf{RNF06} & Anonimato de Lares Temporários & O endereço físico e contatos de voluntários de lares temporários devem permanecer ocultos até a confirmação formal de acolhimento. \\ \hline
+\textbf{RNF07} & Segurança de Autenticação & As senhas devem ser armazenadas com hash criptográfico irreversível (bcrypt) e a comunicação autenticada deve exigir tokens JWT válidos. \\ \hline
+\textbf{RNF08} & Isolamento de Dados via RLS & As tabelas no PostgreSQL devem implementar políticas de segurança em nível de linha (RLS), impedindo alteração ou exclusão de registros por terceiros. \\ \hline
+\textbf{RNF09} & Criptografia em Trânsito & 100\% do tráfego de dados entre o aplicativo e os serviços em nuvem deve utilizar criptografia em trânsito com protocolo HTTPS/TLS 1.2 ou superior. \\ \hline
+\textbf{RNF10} & Acessibilidade e Contraste & A interface deve suportar modos Claro e Escuro com taxa de contraste mínima de 4,5:1 para textos normais, tomando como base a WCAG 2.1 nível AA. \\ \hline
+\textbf{RNF11} & Compatibilidade Móvel & O aplicativo deve ser compilado e executado de forma nativa em dispositivos móveis Android (versão 7.0 ou superior) e iOS (versão 13 ou superior). \\ \hline
+\textbf{RNF12} & Design Responsivo de Telas & A interface deve adaptar-se a telas de 4,7 a 6,7 polegadas sem sobreposição de botões, quebra indevida de componentes ou corte de texto. \\ \hline
+\textbf{RNF13} & Confiabilidade da Nuvem & A infraestrutura de serviços em nuvem deve manter disponibilidade mínima de 99,5\% com rotinas automatizadas diárias de cópia de segurança (backup). \\ \hline
+\textbf{RNF14} & Lembrete de Adoção Responsável & Publicações ativas de animais encontrados há mais de 21 dias devem gerar notificação sugerindo adoção responsável, sem alterar o status da busca de forma automática. \\ \hline
 \end{longtable}
 }
 
-Os requisitos não funcionais foram agrupados em quatro categorias principais de qualidade. No âmbito de desempenho e eficiência, destacam-se a avaliação dos tempos de carregamento (RNF01) e de transmissão de mensagens (RNF02), complementados pela compressão local de fotos para economia de dados móveis (RNF03) e pelo registro da precisão de localização GPS (RNF04).
+Os requisitos não funcionais estabelecem os critérios de aceitação técnica e conformidade operacional do sistema. No âmbito de desempenho e eficiência, definem-se limites mensuráveis para carregamento inicial (RNF01) e entrega de mensagens (RNF02), aliados à compressão local de imagens para redução do consumo de dados (RNF03) e controle de precisão métrica do GPS (RNF04).
 
-Em relação à segurança e privacidade, o sistema adota mascaramento geográfico de endereços residenciais (RNF05) e de lares temporários (RNF06), autenticação com criptografia segura (RNF07), controle de acesso por políticas de segurança em nível de linha (RLS) no banco de dados (RNF08) e comunicação em trânsito via HTTPS/TLS (RNF09). Por fim, os critérios de usabilidade, portabilidade e confiabilidade abrangem acessibilidade visual com modos claro e escuro (RNF10), suporte multiplataforma para Android e iOS (RNF11), interface responsiva (RNF12), políticas de disponibilidade dos serviços em nuvem (RNF13) e notificação periódica para estímulo à adoção responsável (RNF14).
+Na dimensão de segurança e privacidade, o sistema assegura a preservação de dados por meio do mascaramento territorial de endereços (RNF05), sigilo de voluntários de lares temporários (RNF06), armazenamento criptografado de credenciais com tokens JWT (RNF07), isolamento estrito de registros via políticas RLS no PostgreSQL (RNF08) e comunicação cifrada em trânsito via HTTPS/TLS (RNF09). Por fim, os critérios de usabilidade, portabilidade e confiabilidade abrangem acessibilidade visual com modos claro e escuro aderentes à WCAG (RNF10), suporte nativo para Android e iOS (RNF11), responsividade em diferentes dimensões de tela (RNF12), garantia de disponibilidade com rotinas de backup (RNF13) e notificação periódica orientada à adoção responsável (RNF14).
 
 
 \subsection{Modelagem Conceitual e Estrutural do Sistema}
