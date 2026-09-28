@@ -1,0 +1,13 @@
+# Ignore LaTeX e documentação do TCC
+WEFIND - TCC/
+docs/
+*.pdf
+*.log
+*.aux
+
+# Dependencies & build
+node_modules/
+.expo/
+dist/
+web-build/
+.git/

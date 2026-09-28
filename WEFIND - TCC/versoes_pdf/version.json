@@ -1,4 +1,4 @@
-{
+﻿{
     "history":  [
                     {
                         "version":  1,
@@ -159,11 +159,12 @@
                         "version":  32,
                         "filename":  "TCC_WeFIND_v32_11-09-2026-21h47.pdf",
                         "date":  "2026-09-11T21:47:00-03:00"
+                    },
+                    {
+                        "version":  33,
+                        "filename":  "TCC_WeFIND_v33_28-09-2026-10h26.pdf",
+                        "date":  "2026-09-28T10:26:30-03:00"
                     }
                 ],
-    "current_version":  32
+    "current_version":  33
 }
-
-
-
-

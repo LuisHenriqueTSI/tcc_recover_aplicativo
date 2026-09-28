@@ -7,6 +7,7 @@ import { AuthProvider } from './src/contexts/AuthContext';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import RootNavigator from './src/navigation';
 import { cleanupExpiredItems } from './src/services/items';
+import * as Clarity from '@microsoft/react-native-clarity';
 
 export const navigationRef = createNavigationContainerRef();
 
@@ -69,6 +70,12 @@ function MainAppContainer() {
 
 export default function App() {
   useEffect(() => {
+    try {
+      Clarity.initialize('ypdmkoaywd');
+    } catch (error) {
+      console.warn('[Clarity] Falha ao inicializar:', error);
+    }
+
     cleanupExpiredItems().catch((error) => {
       console.error('[App] cleanupExpiredItems falhou:', error);
     });

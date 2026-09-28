@@ -76,15 +76,11 @@
       "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvdWxicHhydnpnanp2aGJpc2JuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5NDUwMDksImV4cCI6MjA5OTUyMTAwOX0.YrgjNo8Fdt1GMkOtx2gJ1-UVzdILyXdCRhseDS-fkIs",
       "EXPO_PUBLIC_GEMINI_API_KEY": "",
       "EXPO_PUBLIC_GEMINI_MODEL": "gemini-2.0-flash",
+      "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyCnFJ5N9g3sAfUhdTQDLkqHqtiirs2fpJA",
       "eas": {
-        "projectId": "03ca9f4d-51b1-4a7b-b967-10f23f90d7a2"
+        "projectId": "63b36b6f-0196-4471-8c1e-9d96f840f737"
       }
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/03ca9f4d-51b1-4a7b-b967-10f23f90d7a2"
-    }
+    "owner": "luishenrique.tsi2"
   }
 }
