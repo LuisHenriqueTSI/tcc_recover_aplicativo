@@ -249,7 +249,12 @@
                         "version":  50,
                         "filename":  "TCC_WeFIND_v50_02-10-2026-17h28.pdf",
                         "date":  "2026-10-02T17:28:02-03:00"
+                    },
+                    {
+                        "version":  51,
+                        "filename":  "TCC_WeFIND_v51_02-10-2026-17h53.pdf",
+                        "date":  "2026-10-02T17:53:12-03:00"
                     }
                 ],
-    "current_version":  50
+    "current_version":  51
 }
