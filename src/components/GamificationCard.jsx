@@ -12,7 +12,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { RANKS } from '../services/gamification';
 import COLORS from '../constants/theme';
 
-const GamificationCard = ({ gamificationData, onRefresh }) => {
+const GamificationCard = ({ gamificationData }) => {
   const { colors, isDark } = useTheme();
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -40,7 +40,7 @@ const GamificationCard = ({ gamificationData, onRefresh }) => {
       >
         {/* Linha Superior: Ícone do Nível, Título e Total de XP */}
         <View style={styles.topRow}>
-          <View style={[styles.rankIconBox, { backgroundColor: currentRank.badgeBg || '#DCFCE7' }]}>
+          <View style={styles.rankIconBox}>
             <MaterialIcons name={currentRank.icon || 'shield'} size={24} color={currentRank.color || '#166534'} />
           </View>
 
@@ -288,23 +288,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cardContainer: {
-    borderRadius: 18,
-    borderWidth: 1.5,
+    borderRadius: 10,
+    borderWidth: 1,
     padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   rankIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -407,8 +401,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     maxHeight: '88%',
   },
   modalHeader: {
@@ -434,7 +428,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   modalStatusBox: {
-    borderRadius: 16,
+    borderRadius: 10,
     padding: 16,
     alignItems: 'center',
     marginBottom: 16,
@@ -519,13 +513,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    borderRadius: 14,
-    borderWidth: 1.5,
+    borderRadius: 10,
+    borderWidth: 1,
   },
   badgeIconCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },

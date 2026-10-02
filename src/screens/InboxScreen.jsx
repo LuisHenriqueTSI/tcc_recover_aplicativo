@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Image, View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, TextInput, Alert, RefreshControl } from 'react-native';
 import { getConversations, getCachedConversations, hideConversation, getMessages } from '../services/messages';
@@ -19,6 +19,7 @@ const InboxScreen = () => {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [selectedConversationKey, setSelectedConversationKey] = useState(null);
+  const conversationsLoadedForUserRef = useRef(null);
 
   const loadConversations = useCallback(async (isSilent = false) => {
     if (!user?.id) {
@@ -26,16 +27,18 @@ const InboxScreen = () => {
       return;
     }
 
-    if (!isSilent && conversations.length === 0) {
+    const hasLoadedForUser = conversationsLoadedForUserRef.current === user.id;
+    if (!isSilent && !hasLoadedForUser) {
       setLoading(true);
     }
     setError('');
 
     try {
       // 1. Tenta carregar do cache instantâneo se a lista estiver vazia
-      if (conversations.length === 0) {
+      if (!hasLoadedForUser) {
         const cached = await getCachedConversations(user.id);
         if (cached && cached.length > 0) {
+          conversationsLoadedForUserRef.current = user.id;
           setConversations(cached);
           setFiltered(cached);
           setLoading(false);
@@ -44,28 +47,25 @@ const InboxScreen = () => {
 
       // 2. Busca do servidor de forma ultra-rápida (batch queries)
       const convs = await getConversations(user.id);
+      conversationsLoadedForUserRef.current = user.id;
       setConversations(convs || []);
       setFiltered(convs || []);
     } catch (err) {
       console.log('[InboxScreen] Erro ao carregar conversas:', err.message);
-      if (conversations.length === 0) {
+      if (conversationsLoadedForUserRef.current !== user.id) {
         setError(err.message || 'Erro ao carregar conversas');
       }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [user?.id, conversations.length]);
-
-  useEffect(() => {
-    loadConversations();
   }, [user?.id]);
 
   useFocusEffect(
     useCallback(() => {
       // Ao focar na tela, atualiza silenciosamente sem travar a interface
       loadConversations(true);
-    }, [user?.id])
+    }, [loadConversations])
   );
 
   const onRefresh = () => {
@@ -127,7 +127,7 @@ const InboxScreen = () => {
         time = date.toLocaleDateString();
       }
     }
-    const isSelected = selectedConversationKey === `${item.otherId}_${item.itemId || ''}`;
+    const isSelected = selectedConversationKey === `${item.conversationId || item.otherId}_${item.itemId || ''}`;
     const initial = item.otherName?.trim()[0]?.toUpperCase() || 'U';
 
     return (
@@ -144,7 +144,7 @@ const InboxScreen = () => {
             }
             navigation.navigate('ChatScreen', { conversation: item });
           }}
-          onLongPress={() => setSelectedConversationKey(`${item.otherId}_${item.itemId || ''}`)}
+          onLongPress={() => setSelectedConversationKey(`${item.conversationId || item.otherId}_${item.itemId || ''}`)}
           style={styles.convMainButton}
           activeOpacity={0.85}
         >
@@ -217,7 +217,7 @@ const InboxScreen = () => {
           ) : null}
         </TouchableOpacity>
 
-        {isSelected && (
+        {isSelected && !item.otherDeleted && (
           <TouchableOpacity
             onPress={() => handleDeleteConversation(item)}
             style={[styles.deleteConversationButton, { backgroundColor: isDark ? '#1E293B' : '#FEE2E2' }]}
@@ -296,7 +296,7 @@ const InboxScreen = () => {
       ) : filtered.length > 0 ? (
         <FlatList
           data={filtered}
-          keyExtractor={item => `${item.otherId || ''}_${item.itemId || ''}`}
+          keyExtractor={item => item.conversationId || `${item.otherId || ''}_${item.itemId || ''}`}
           renderItem={renderItem}
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 24, paddingTop: 4 }}
@@ -351,13 +351,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderRadius: 18,
-    gap: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 5,
-    elevation: 2,
-  },
+    gap: 10,  },
   convMainButton: {
     flex: 1,
     flexDirection: 'row',

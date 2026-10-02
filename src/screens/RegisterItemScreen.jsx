@@ -446,31 +446,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
             : 'Local de Resgate do Animal'}
         </Text>
 
-        {/* Card Educativo de Privacidade e Proteção Anti-Golpes */}
-        {isLost && (
-          <View style={{
-            backgroundColor: isDark ? '#091512' : COLORS.primaryLight,
-            borderColor: isDark ? '#1C362D' : COLORS.primaryBorder,
-            borderWidth: 1,
-            borderRadius: 12,
-            padding: 12,
-            marginBottom: 12,
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            gap: 10,
-          }}>
-            <MaterialIcons name="security" size={22} color={COLORS.primary} style={{ marginTop: 2 }} />
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 13, fontWeight: '800', color: isDark ? '#34D399' : COLORS.primaryDark, marginBottom: 3 }}>
-                🛡️ Privacidade do Tutor Protegida
-              </Text>
-              <Text style={{ fontSize: 11.5, color: isDark ? '#CBD5E1' : '#334155', lineHeight: 17 }}>
-                O número da sua residência <Text style={{ fontWeight: '800' }}>NÃO é divulgado</Text>. Usamos a coordenada marcada apenas como <Text style={{ fontWeight: '800' }}>epicentro geográfico</Text> para enviar notificações automáticas a voluntários e lares temporários no raio do desaparecimento.
-              </Text>
-            </View>
-          </View>
-        )}
-
         {isSpotted && (
           <View style={{
             backgroundColor: isDark ? '#78350F' : '#FEF3C7',
@@ -653,18 +628,51 @@ const RegisterItemScreen = ({ navigation, route }) => {
     const isLost = status === 'lost';
     const isSpotted = status === 'found' && foundCustody === 'spotted';
     const isFoundWithMe = status === 'found' && foundCustody === 'with_me';
+    const hasMapLocation = Boolean(mapLocation?.latitude && mapLocation?.longitude);
 
     return (
       <>
+        {hasMapLocation && (
+          <View
+            style={[
+              styles.locationStatusCard,
+              {
+                backgroundColor: isDark ? '#12352D' : '#EAF7EF',
+                borderColor: isDark ? '#276749' : '#A7D7B5',
+              },
+            ]}
+            accessibilityLiveRegion="polite"
+          >
+            <MaterialIcons
+              name="check-circle"
+              size={22}
+              color={isDark ? '#68D391' : '#237A45'}
+            />
+            <Text
+              style={[
+                styles.locationStatusTitle,
+                { color: isDark ? '#B7F0C8' : '#1F6338' },
+              ]}
+            >
+              Região marcada
+            </Text>
+          </View>
+        )}
+
         <TouchableOpacity
-          style={[styles.mapButton, { borderColor: colors.primary, backgroundColor: isDark ? 'rgba(5, 150, 105, 0.15)' : colors.primaryLight }]}
+          style={[styles.mapButton, { backgroundColor: colors.primary }]}
           onPress={() => setMapModalVisible(true)}
+          activeOpacity={0.82}
+          accessibilityRole="button"
+          accessibilityLabel={hasMapLocation ? 'Alterar região marcada no mapa' : 'Marcar região no mapa, etapa necessária'}
         >
-          <Text style={[styles.mapButtonText, { color: colors.primary }]}>
-            {mapLocation
-              ? '📍 Alterar ponto no mapa'
-              : (isLost ? '📍 Marcar Região de Desaparecimento no Mapa' : '🗺️ Escolher localização no mapa')}
+          <MaterialIcons name={hasMapLocation ? 'edit-location-alt' : 'add-location-alt'} size={23} color="#FFFFFF" />
+          <Text style={styles.mapButtonText}>
+            {hasMapLocation
+              ? 'Alterar região no mapa'
+              : (isLost ? 'Marcar região do desaparecimento' : 'Marcar região no mapa')}
           </Text>
+          <MaterialIcons name="arrow-forward" size={20} color="#FFFFFF" />
         </TouchableOpacity>
         {isFoundWithMe && (
           <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 6 }}>
@@ -1931,7 +1939,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
             <TouchableOpacity
               key={opt.key}
               onPress={() => handleSelectType(opt.key)}
-              style={{ borderRadius: 18, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}
+              style={{ borderRadius: 12, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder }}
               activeOpacity={0.85}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', padding: 18 }}>
@@ -2219,11 +2227,6 @@ const RegisterItemScreen = ({ navigation, route }) => {
                       </Text>
                     </TouchableOpacity>
                   </View>
-                  {photos.length === 0 && (
-                    <Text style={{ fontSize: 11.5, color: colors.textMuted, marginTop: 5, textAlign: 'center' }}>
-                      Fotos são opcionais: se não tiver fotos agora, geramos uma ilustração com as características do animal.
-                    </Text>
-                  )}
                 </View>
               ) : (
                 <View style={[styles.uploadButton, { borderColor: colors.border, backgroundColor: colors.inputBg, paddingVertical: 14 }]}>
@@ -2390,7 +2393,7 @@ const RegisterItemScreen = ({ navigation, route }) => {
           {renderFoundModal()}
           {renderNearbyMatchingModal()}
           {renderPetMatchModal()}
-          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: colors.border, zIndex: 100, elevation: 10 }}>
+          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, padding: 16, paddingBottom: 56, borderTopWidth: 1, borderColor: colors.border, zIndex: 100 }}>
             <Button
               title={loading ? 'Publicando...' : 'Publicar'}
               onPress={handlePublish}
@@ -3099,16 +3102,35 @@ const styles = StyleSheet.create({
     color: COLORS.primaryDark,
   },
   mapButton: {
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: 8,
-    paddingVertical: 11,
+    minHeight: 56,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-  },
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 12,  },
   mapButtonText: {
-    color: COLORS.primary,
-    fontWeight: '700',
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 14,
+    flexShrink: 1,
+    textAlign: 'center',
+  },
+  locationStatusCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 10,
+  },
+  locationStatusTitle: {
+    fontSize: 13,
+    fontWeight: '800',
   },
   locationHint: {
     color: '#6B7280',

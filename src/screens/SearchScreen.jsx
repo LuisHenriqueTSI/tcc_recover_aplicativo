@@ -9,8 +9,10 @@ import {
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import { useTheme } from '../contexts/ThemeContext';
 
 const SearchScreen = ({ navigation }) => {
+  const { colors } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
   const [location, setLocation] = useState('');
@@ -21,9 +23,9 @@ const SearchScreen = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <Card>
-        <Text style={styles.title}>Busca Avançada</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Busca Avançada</Text>
 
         <Input
           label="Palavra-chave"
@@ -42,7 +44,7 @@ const SearchScreen = ({ navigation }) => {
         />
 
         <View style={styles.categoryContainer}>
-          <Text style={styles.label}>Tipo</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Tipo</Text>
           <View style={styles.categoryOptions}>
             {['animal'].map(cat => (
               <Button
@@ -69,13 +71,11 @@ const SearchScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#1F2937',
   },
   input: {
     marginBottom: 16,
@@ -87,7 +87,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    color: '#1F2937',
   },
   categoryOptions: {
     flexDirection: 'row',

@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
-  SafeAreaView,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import COLORS from '../constants/theme';
 

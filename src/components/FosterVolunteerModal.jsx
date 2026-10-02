@@ -13,6 +13,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -28,6 +29,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const FosterVolunteerModal = ({ visible, onClose, onSaved }) => {
   const { user, userProfile } = useAuth();
   const { colors, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -167,11 +169,12 @@ const FosterVolunteerModal = ({ visible, onClose, onSaved }) => {
               <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Carregando preferências...</Text>
             </View>
           ) : (
-            <ScrollView
-              style={styles.modalBody}
-              contentContainerStyle={{ paddingBottom: 24 }}
-              showsVerticalScrollIndicator={false}
-            >
+            <>
+              <ScrollView
+                style={styles.modalBody}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                showsVerticalScrollIndicator={false}
+              >
               {/* Toggle Principal de Ativação */}
               <View style={[
                 styles.activationCard,
@@ -382,7 +385,18 @@ const FosterVolunteerModal = ({ visible, onClose, onSaved }) => {
                 </>
               )}
 
-              {/* Botão de Salvar */}
+              </ScrollView>
+
+              <View
+                style={[
+                  styles.footer,
+                  {
+                    backgroundColor: colors.surface,
+                    borderTopColor: colors.border,
+                    paddingBottom: Math.max(insets.bottom, 16),
+                  },
+                ]}
+              >
               <TouchableOpacity
                 style={[styles.saveButton, saving && { opacity: 0.7 }]}
                 onPress={handleSave}
@@ -398,7 +412,8 @@ const FosterVolunteerModal = ({ visible, onClose, onSaved }) => {
                   </>
                 )}
               </TouchableOpacity>
-            </ScrollView>
+              </View>
+            </>
           )}
         </View>
       </View>
@@ -415,8 +430,9 @@ const styles = StyleSheet.create({
   modalCard: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: SCREEN_HEIGHT * 0.88,
+    height: SCREEN_HEIGHT * 0.88,
     paddingTop: 16,
+    overflow: 'hidden',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -447,8 +463,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   modalBody: {
+    flex: 1,
     paddingHorizontal: 20,
     paddingTop: 14,
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   loadingBox: {
     padding: 40,
@@ -549,14 +571,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#16A34A',
-    borderRadius: 14,
-    paddingVertical: 13,
-    marginTop: 20,
-    shadowColor: '#16A34A',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 3,
+    borderRadius: 8,
+    minHeight: 48,
+    paddingVertical: 12,
   },
   saveButtonText: {
     color: '#FFFFFF',

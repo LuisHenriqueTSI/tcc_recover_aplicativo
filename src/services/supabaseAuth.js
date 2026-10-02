@@ -1,4 +1,9 @@
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
+
+WebBrowser.maybeCompleteAuthSession();
 
 const supabaseAnonKey = SUPABASE_ANON_KEY;
 
@@ -47,30 +52,63 @@ export const updateEmail = async (newEmail) => {
 
 // Exclui o usuário autenticado via Edge Function
 export const deleteUser = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  const accessToken = session?.access_token;
-  if (!accessToken) throw new Error('Usuário não autenticado');
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!user?.id) throw new Error('Usuário não autenticado');
 
-  const supabaseUrl =
-    process.env.EXPO_PUBLIC_SUPABASE_URL ||
-    process.env.SUPABASE_URL ||
-    expoExtra.EXPO_PUBLIC_SUPABASE_URL ||
-    expoExtra.SUPABASE_URL ||
-    '';
+  const { data, error } = await supabase.functions.invoke('delete-user', {
+    method: 'POST',
+  });
 
-  if (!supabaseUrl) {
-    throw new Error('Supabase URL não encontrada para excluir usuário. Verifique a configuração.');
+  if (error) {
+    if (error.context instanceof Response) {
+      const responseBody = await error.context.clone().json().catch(() => null);
+      throw new Error(responseBody?.message || responseBody?.error || error.message);
+    }
+    throw error;
   }
 
-  const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/functions/v1/delete-user`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const userScopedPrefixes = [
+      `@wefind_chat_cache_${user.id}_`,
+      `@wefind_conversations_cache_${user.id}`,
+      `@wefind_foster_profile_${user.id}`,
+      `hidden_conversations_${user.id}`,
+      `@wefind/gamification_data_${user.id}`,
+    ];
+    const keysToRemove = keys.filter((key) => userScopedPrefixes.some((prefix) => key.startsWith(prefix)));
+    if (keysToRemove.length > 0) await AsyncStorage.multiRemove(keysToRemove);
+
+    const storiesKey = '@wefind_user_submitted_stories';
+    const storiesRaw = await AsyncStorage.getItem(storiesKey);
+    if (storiesRaw) {
+      const stories = JSON.parse(storiesRaw);
+      if (Array.isArray(stories)) {
+        const retainedStories = stories.filter((story) => String(story?.userId || '') !== user.id);
+        await AsyncStorage.setItem(storiesKey, JSON.stringify(retainedStories));
+      }
     }
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Erro ao excluir conta');
+
+    const fosterRegistryKey = '@wefind_foster_all_registry';
+    const fosterRegistryRaw = await AsyncStorage.getItem(fosterRegistryKey);
+    if (fosterRegistryRaw) {
+      const registry = JSON.parse(fosterRegistryRaw);
+      if (registry && typeof registry === 'object') {
+        delete registry[user.id];
+        await AsyncStorage.setItem(fosterRegistryKey, JSON.stringify(registry));
+      }
+    }
+  } catch (cleanupError) {
+    console.warn('[deleteUser] A conta foi excluída, mas não foi possível limpar todos os dados locais:', cleanupError.message);
+  }
+
+  const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' });
+  if (signOutError) {
+    console.error('[deleteUser] Conta excluída, mas não foi possível limpar a sessão local:', signOutError.message);
+    return { ...data, sessionCleanupError: signOutError.message };
+  }
+
   return data;
 };
 
@@ -121,6 +159,55 @@ export const signIn = async (email, password) => {
     console.log('[signIn] Exceção:', error.message);
     throw error;
   }
+};
+
+export const signInWithGoogle = async () => {
+  const redirectTo = AuthSession.makeRedirectUri({
+    scheme: 'wefind',
+    path: 'auth/callback',
+  });
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo,
+      skipBrowserRedirect: true,
+    },
+  });
+
+  if (error) {
+    throw error;
+  }
+  if (!data.url) {
+    throw new Error('O Supabase não retornou a URL de autenticação do Google.');
+  }
+
+  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+  if (result.type === 'cancel' || result.type === 'dismiss') {
+    return null;
+  }
+  if (result.type !== 'success' || !result.url) {
+    throw new Error('Não foi possível concluir a autenticação com o Google.');
+  }
+
+  const callbackUrl = new URL(result.url);
+  const oauthError = callbackUrl.searchParams.get('error_description')
+    || callbackUrl.searchParams.get('error');
+  if (oauthError) {
+    throw new Error(oauthError);
+  }
+
+  const code = callbackUrl.searchParams.get('code');
+  if (!code) {
+    throw new Error('O retorno do Google não continha o código de autenticação.');
+  }
+
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.exchangeCodeForSession(code);
+  if (sessionError) {
+    throw sessionError;
+  }
+
+  return sessionData;
 };
 
 export const signUp = async (email, password, name, city, state, whatsapp = '') => {
@@ -492,4 +579,3 @@ export const verifyPhoneChangeCode = async (email, inputCode) => {
     throw error;
   }
 };
-

@@ -1,115 +1,129 @@
-\section{TESTES E AVALIAÇÃO DE USABILIDADE}
+\section{TESTES}
+\setcounter{quadro}{4}
 
-A etapa de testes e validação experimental constitui uma fase fundamental da engenharia de software, sendo responsável por verificar a conformidade entre o produto construído e os requisitos estabelecidos, certificar a estabilidade técnica dos componentes e diagnosticar eventuais falhas operacionais antes da disponibilização pública da aplicação (PRESSMAN; MAXIM, 2021; SOMMERVILLE, 2019). No desenvolvimento de aplicativos móveis voltados a emergências comunitárias, esse cuidado é ainda mais necessário, visto que a ocorrência de travamentos de tela ou falhas de transmissão pode inviabilizar o resgate rápido de um animal em vias públicas.
+A etapa de testes e validação experimental constitui um dos pilares mais relevantes no ciclo de desenvolvimento de software, sendo responsável por averiguar a qualidade das funcionalidades construídas, certificar a conformidade da aplicação perante os objetivos estabelecidos e identificar oportunidades de refinamento antes da disponibilização aos usuários finais (PRESSMAN; MAXIM, 2021). No contexto de soluções móveis voltadas a causas comunitárias e situações de urgência, como a localização e o resgate de animais domésticos perdidos, esse rigor torna-se ainda mais decisivo, pois a clareza visual, a facilidade de navegação e a estabilidade técnica impactam diretamente o sucesso e a rapidez das ações no ambiente real.
 
-Para assegurar uma avaliação consistente, o processo de verificação e validação do WeFIND foi estruturado em três eixos metodológicos complementares: testes funcionais de caixa-preta para inspeção das regras de negócio, avaliação empírica de usabilidade orientada pelo protocolo internacional \textit{System Usability Scale} (SUS) com usuários reais, e medição técnica de desempenho e latência em redes móveis cotidianas.
+Este capítulo apresenta o planejamento, a metodologia e a execução prática da avaliação do aplicativo WeFIND, concentrando-se na experiência de uso e na percepção de desempenho registradas por participantes do público-alvo durante a realização de atividades representativas na plataforma.
 
-Essa abordagem permitiu analisar o sistema tanto sob a perspectiva do desenvolvedor (garantindo que o código respondesse corretamente a entradas válidas e inválidas) quanto sob a ótica do usuário final (certificando que a interface entregasse uma experiência acessível, eficiente e de baixa barreira cognitiva).
+\subsection{TESTES DE USABILIDADE}
 
-As seções a seguir detalham os cenários de testes funcionais executados, a avaliação empírica de usabilidade realizada com usuários por meio do método SUS e os resultados dos ensaios de desempenho e tempos de resposta.
+Os testes de usabilidade constituem uma metodologia empírica de avaliação focada em observar como pessoas reais interagem com um produto computacional para atingir metas determinadas. Conforme estabelece a norma técnica ABNT NBR ISO 9241-11 (2021), a usabilidade é definida como a medida na qual um sistema, produto ou serviço pode ser usado por usuários específicos para alcançar objetivos definidos com eficácia, eficiência e satisfação em um contexto de uso especificado.
 
+No projeto de interfaces para dispositivos móveis, a usabilidade assume papel estratégico ao mitigar a carga cognitiva do usuário, prevenir erros operacionais e assegurar que as ações essenciais sejam executadas de forma ágil e intuitiva (ROGERS; SHARP; PREECE, 2023). Em momentos de aflição provocados pela perda de um animal de estimação, telas sobrecarregadas, terminologias ambíguas ou formulários confusos podem induzir o usuário à desistência ou ao preenchimento incorreto de dados vitais. Assim, a verificação da facilidade de aprendizado e da fluidez dos fluxos operacionais é indispensável para validar a proposta de valor do WeFIND.
 
-\subsection{Estratégia e Testes Funcionais de Caixa-Preta}
+Para mensurar esses fatores de forma padronizada, adotou-se o modelo conceitual da Escala de Usabilidade do Sistema (SUS), desenvolvido originalmente por Brooke (1996) e consolidado na literatura internacional de Interação Humano-Computador (SAURO; LEWIS, 2022). A SUS destaca-se pela versatilidade e robustez na captação da percepção global de usabilidade, operando por meio de dez afirmações estruturadas que alternam enunciados de teor positivo e negativo, reduzindo vieses de concordância automática e fornecendo um escore numérico confiável sobre a facilidade de uso do sistema.
 
-A verificação do comportamento funcional do WeFIND baseou-se na técnica de testes de caixa-preta (\textit{black-box testing}), método no qual as funcionalidades são examinadas estritamente a partir do fornecimento de entradas e da inspeção dos resultados e saídas produzidas, sem intervenção direta ou dependência da estrutura interna do código-fonte (VALENTE, 2023).
+\subsection{PLANO E EXECUÇÃO DOS TESTES WEFIND}
 
-Para conferir rigor acadêmico e verificar a cobertura do escopo do projeto, cada caso de teste foi desenhado para validar um conjunto articulado de Requisitos Funcionais (RF) estabelecidos no Capítulo 4. A suíte contempla 25 casos de teste estruturados (CT01 a CT25), combinando fluxos de caminho feliz (execução regular das rotinas), validações de robustez frente a dados inconsistentes e operações em banco de dados e sensores nativos. A execução desses casos atestou a cobertura integral dos 46 requisitos funcionais do aplicativo, cuja rastreabilidade com as necessidades diagnosticadas na pesquisa de campo encontra-se catalogada no Apêndice D.
+A aplicação prática dos testes do WeFIND foi desenhada para colocar o sistema à prova perante representantes do seu público-alvo, confrontando as telas e fluxos desenvolvidos com as reações e percepções de tutores de animais domésticos. O plano envolveu a definição de um roteiro de tarefas essenciais, a estruturação de um questionário digital de coleta de dados e a posterior análise quantitativa e qualitativa dos resultados obtidos.
 
-O Quadro~\ref{quadro:testes} consolida a matriz dos 25 casos de testes funcionais executados e seus respectivos resultados.
+\subsubsection{ESTRATÉGIA DE TESTE}
 
-\vspace{0.3cm}
-{
-\phantomsection\label{quadro:testes}
-\small
-\setlength{\tabcolsep}{2.2pt}
-\renewcommand{\arraystretch}{1.18}
-\begin{longtable}{|>{\centering\arraybackslash}p{1.0cm}|>{\centering\arraybackslash}p{2.1cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.7cm}|>{\raggedright\arraybackslash}p{3.3cm}|>{\centering\arraybackslash}p{1.7cm}|}
-\hline
-\multicolumn{6}{|c|}{\textbf{Quadro 5: Matriz de Testes Funcionais do Sistema WeFIND}} \\ \hline
-\textbf{ID} & \textbf{Requisitos} & \textbf{Cenário de Teste} & \textbf{Procedimento Executado} & \textbf{Resultado Esperado} & \textbf{Situação} \\ \hline
-\endfirsthead
+A estratégia de avaliação estruturou-se na execução prática de um roteiro guiado por tarefas em dispositivos móveis, seguida pelo preenchimento de um formulário eletrônico de retorno disponibilizado via Google Forms, denominado ``WeFIND -- Teste de Usabilidade e Avaliação da Aplicação''. A amostra do estudo foi composta por 12 participantes voluntários, todos declarados tutores de animais de estimação, garantindo total aderência ao perfil dos usuários finais para os quais o aplicativo foi idealizado.
 
-\hline
-\multicolumn{6}{|c|}{\textbf{Quadro 5: Matriz de Testes Funcionais do Sistema WeFIND (Continuação)}} \\ \hline
-\textbf{ID} & \textbf{Requisitos} & \textbf{Cenário de Teste} & \textbf{Procedimento Executado} & \textbf{Resultado Esperado} & \textbf{Situação} \\ \hline
-\endhead
+Cada voluntário recebeu a instrução de acessar o aplicativo WeFIND e percorrer cinco tarefas operacionais representativas das funcionalidades centrais do ecossistema:
 
-\hline
-\multicolumn{6}{|r|}{\textit{Continua na próxima página}} \\ \hline
-\endfoot
+\begin{enumerate}
+    \item Acessar o WeFIND e atualizar o endereço cadastrado na conta de usuário;
+    \item Localizar um animal anunciado no sistema e traçar uma rota viária até o local indicado pelo mapa interativo, sem necessidade de deslocamento físico;
+    \item Cadastrar uma nova publicação de animal (perdido ou encontrado) utilizando informações e fotos fictícias, e em seguida gerar e compartilhar o cartaz digital de divulgação;
+    \item Iniciar contato com outro usuário pelo canal de bate-papo privativo da plataforma para solicitar informações sobre um animal anunciado;
+    \item Acessar e conferir as notificações e avisos recebidos na central do aplicativo.
+\end{enumerate}
 
-\hline
-\multicolumn{6}{|c|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
-\endlastfoot
+Após a realização do roteiro, os respondentes preencheram o instrumento de coleta, organizado em quatro seções articuladas: validação do perfil do respondente quanto à tutela de animais; questão conjunta avaliando a autopercepção sobre a conclusão das cinco tarefas; bloco de dez afirmações avaliadas em escala Likert de cinco pontos, estruturado com base nas proposições da escala SUS; e três perguntas abertas de caráter qualitativo para registro livre de pontos positivos, dificuldades vivenciadas e sugestões de aprimoramento.
 
-\textbf{CT01} & RF01, RF02 & Cadastro e Autenticação de Usuário & Preenchimento de dados válidos e autenticação com e-mail e senha & Criação da conta no Supabase Auth, emissão de token JWT e sessão persistente & \statusTeste \\ \hline
-\textbf{CT02} & RF03 & Recuperação de Senha via WhatsApp & Solicitação de código de redefinição para o telefone cadastrado & Envio do código OTP de 6 dígitos via Evolution API no WhatsApp e atualização segura da nova senha & \statusTeste \\ \hline
-\textbf{CT03} & RF04, RF05 & Manutenção de Cadastro e Perfil & Edição de nome, telefone, biografia e envio de nova foto de perfil & Atualização no banco de dados e reflexo imediato nos cartões e mensagens & \statusTeste \\ \hline
-\textbf{CT04} & RF06 & Encerramento Seguro de Sessão & Acionamento do comando de encerramento de sessão na tela de configurações & Invalidação do token JWT, limpeza do armazenamento local e retorno à tela inicial de acesso & \statusTeste \\ \hline
-\textbf{CT05} & RF07 & Central de Notificações e Alertas & Disparo de alerta de avistamento e filtragem na central de avisos & Apresentação cronológica dos avisos com ordenação por tipo e marcação de leitura & \statusTeste \\ \hline
-\textbf{CT06} & RF08 & Navegação no Modo Visitante & Abertura do aplicativo sem autenticação com exploração de mural e mapa & Acesso liberado a consultas e bloqueio contextual com incentivo ao cadastro em ações restritas & \statusTeste \\ \hline
-\textbf{CT07} & RF09, RF11 & Registro de Anúncio com Tutor Terceiro & Cadastro de publicação com fotografias, espécie, porte e dados de guardião terceiro & Gravação no banco relacional, armazenamento no Storage e exibição da indicação de terceiro & \statusTeste \\ \hline
-\textbf{CT08} & RF10 & Fixação de Ponto no Mapa e Geocodificação & Marcação interativa do local do evento no mapa interativo & Captura precisa de latitude e longitude com preenchimento reverso do endereço & \statusTeste \\ \hline
-\textbf{CT09} & RF12 & Mural de Publicações com Ordenação Espacial & Consulta de anúncios no mural principal com localização ativa & Listagem de cartões de animais ordenada dinamicamente por raio de proximidade & \statusTeste \\ \hline
-\textbf{CT10} & RF13, RF19 & Filtragem Multicritério no Mural e no Mapa & Aplicação simultânea de filtros de espécie, porte, sexo, características, categoria e termos de busca & Atualização reativa dos anúncios no mural e dos marcadores no mapa, conforme os critérios informados & \statusTeste \\ \hline
-\textbf{CT11} & RF14 & Detalhes Completos da Publicação & Abertura da ficha individual de um animal publicado & Exibição de carrossel de fotos em alta definição, atributos físicos e botões de ação & \statusTeste \\ \hline
-\textbf{CT12} & RF15, RF16, RF17, RNF14 & Gestão, Encerramento e Lembrete da Publicação & Edição de atributos, simulação de publicação encontrada ativa após 21 dias, escolha de manter a busca ou encaminhar o caso, alteração para ``Reencontrado'' ou ``Adotado'' e exclusão de anúncio & Atualização no banco, envio do lembrete sem alteração automática, encerramento das buscas somente após ação explícita e remoção do mapa quando aplicável & \statusTeste \\ \hline
-\textbf{CT13} & RF18 & Renderização de Animais no Mapa Interativo & Navegação espacial no mapa geral da plataforma & Plotagem de marcadores coloridos com ícones diferenciados por espécie e categoria & \statusTeste \\ \hline
-\textbf{CT14} & RF20, RF27 & Ajuste de Raio de Busca e Recalibração GPS & Alteração do controle deslizante de distância (5 km a escala nacional) e atualização GPS & Redefinição do círculo de abrangência e recálculo das distâncias relativas & \statusTeste \\ \hline
-\textbf{CT15} & RF21 & Cálculo e Traçado de Rota até o Animal & Acionamento da opção de traçado de rota no cartão do animal & Traçado viário sobre o mapa com indicação de tempo estimado e distância em km & \statusTeste \\ \hline
-\textbf{CT16} & RF22, RF23, RF24, RF25, RF26 & Registro de Avistamento e Atualização de Localização & Registro de avistamento com foto e pino, confirmação de que o relato pertence a uma publicação existente e consulta do histórico & Criação do relato, atualização da localização mais recente da publicação, notificação ao autor e preservação da linha do tempo; a rejeição deve manter a publicação sem alterações & \statusTeste \\ \hline
-\textbf{CT17} & RF28, RF29, RF31, RF32 & Gestão Preventiva de Animais Tutelados & Cadastro prévio de animal com vacinas, consulta em painel, edição e exclusão & Persistência na carteira digital do tutor e manutenção contínua das informações & \statusTeste \\ \hline
-\textbf{CT18} & RF30, RF33 & Carteirinha Digital (RG Pet) e Alerta de Fuga & Geração de código QR exclusivo e acionamento de alerta de desaparecimento & Exibição da carteirinha digital para coleiras e conversão instantânea em anúncio de busca & \statusTeste \\ \hline
-\textbf{CT19} & RF34, RF35, RF36 & Geração e Envio de Cartaz de Busca & Geração sob demanda nos formatos A4, 9:16 e 1:1 e compartilhamento nativo & Composição da peça gráfica com foto e código QR e abertura da folha de envio do SO & \statusTeste \\ \hline
-\textbf{CT20} & RF37, RF38, RF39 & Bate-Papo Privativo em Tempo Real & Troca de mensagens de texto e fotos comprobatórias entre usuários & Entrega bidirecional imediata via WebSockets e preservação do sigilo telefônico & \statusTeste \\ \hline
-\textbf{CT21} & RF40, RF41 & Mural de Histórias de Reencontro & Submissão e consulta de relatos felizes com fotografias e depoimentos & Publicação no mural comunitário e exibição pública dos reencontros felizes & \statusTeste \\ \hline
-\textbf{CT22} & RF42, RF43 & Denúncias Comunitárias e Moderação & Envio de denúncia de publicação suspeita, consulta da fila administrativa e análise do conteúdo reportado & Registro do reporte para auditoria, exibição das informações à equipe autorizada e possibilidade de remoção do conteúdo ou suspensão da conta conforme a decisão administrativa & \statusTeste \\ \hline
-\textbf{CT23} & RF44 & Apuração e Exibição do Ranking Semanal & Registro de ações com pontuação e consulta do ranking municipal na tela de perfil & Cálculo em tempo real dos pontos, ordenação do pódio e exibição da colocação do usuário & \statusTeste \\ \hline
-\textbf{CT24} & RF45 & Cadastro e Busca de Lares Temporários & Ativação de perfil de acolhedor com critérios de moradia e envio de solicitação de lar & Persistência segura no banco, exibição com selo verificado e envio de pedido direto & \statusTeste \\ \hline
-\textbf{CT25} & RF46 & Matching entre Publicações Perdido e Encontrado & Criar, com usuários diferentes, uma publicação de animal perdido e outra de animal encontrado com atributos físicos e localização compatíveis; repetir o cenário com atributos incompatíveis e rejeitar a sugestão de correspondência & Priorização das publicações compatíveis por escore e distância; exclusão de registros do próprio usuário; geração de sugestão e notificações aos usuários quando o limiar for atingido; rejeição sem alteração automática das publicações. A atualização de localização e o registro de avistamento são verificados separadamente no CT16 & \statusTeste \\ \hline
-\end{longtable}
-}
+A pergunta de verificação da conclusão das atividades oferecia quatro alternativas de resposta: conclusão de todas as cinco tarefas com facilidade; conclusão de todas, porém com dúvidas em alguma etapa; conclusão parcial (apenas algumas tarefas); ou não conclusão das tarefas. Vale ressaltar que, por se tratar de uma pergunta conjunta que englobou todo o ciclo de tarefas em uma única resposta, o instrumento priorizou a percepção global da experiência do usuário, sem mensurar a taxa de sucesso individual isolada para cada uma das cinco etapas.
 
-A execução dos 25 casos de teste atestou a conformidade integral das regras de negócio implementadas para os 46 requisitos funcionais do WeFIND. As rotinas de validação no cliente impediram submissões com campos em branco ou formatos de dados inconsistentes, as operações no banco relacional preservaram as restrições de integridade referencial, o isolamento por políticas RLS assegurou o acesso estritamente autorizado aos registros e os canais em tempo real sustentaram a comunicação imediata entre os membros da comunidade.
+Para o processamento dos dados quantitativos de usabilidade, as dez afirmações Likert (com pontuações de 1 a 5) foram submetidas ao procedimento normativo de cálculo do escore SUS (SAURO; LEWIS, 2022). Nas afirmações com enunciado positivo (itens ímpares: 1, 3, 5, 7 e 9), subtraiu-se 1 da pontuação assinalada pelo respondente. Nas afirmações com enunciado negativo (itens pares: 2, 4, 6, 8 e 10), subtraiu-se o valor assinalado de 5. A soma dos dez valores convertidos de cada participante foi multiplicada pelo coeficiente multiplicador 2,5, gerando uma escala normalizada final com pontuação contínua de 0 a 100 pontos.
 
+\subsubsection{TESTE DE USABILIDADE E DESEMPENHO}
 
-\subsection{Avaliação de Usabilidade (Método SUS)}
+A tabulação dos dados permitiu analisar a aceitação do aplicativo sob diferentes perspectivas complementares: a taxa autorrelatada de conclusão das tarefas, a apuração estatística do questionário SUS, o exame qualitativo dos comentários espontâneos e a percepção de estabilidade e agilidade da interface durante a navegação.
 
-Para medir a usabilidade do aplicativo de modo padronizado, científico e reprodutível, adotou-se o protocolo internacional \textit{System Usability Scale} (SUS), concebido originariamente por Brooke (1996) e amplamente validado na literatura atual de Interação Humano-Computador (LEWIS, 2021; SAURO; LEWIS, 2022).
+No que se refere ao perfil dos respondentes e à conclusão das atividades propostas, a totalidade dos 12 participantes (100\%) confirmou ser tutora de animais domésticos, validando a pertinência da amostra. Em relação à execução prática do roteiro, todos os 12 voluntários selecionaram a opção ``Sim, concluí todas as 5 tarefas com facilidade''. O \hyperref[quadro:conclusao_tarefas]{Quadro 5} apresenta a distribuição consolidada das respostas obtidas nessa etapa.
 
-O protocolo SUS destaca-se por sua capacidade de sintetizar a percepção global do usuário por meio de uma escala unidimensional confiável, mantendo excelente correlação com métricas de conclusão de tarefas e facilidade de aprendizado. O questionário estruturado conta com 10 afirmações respondidas em escala Likert de 5 pontos, variando de 1 (``Discordo Totalmente'') a 5 (``Concordo Totalmente''). As afirmações alternam proposições de teor positivo (itens ímpares: 1, 3, 5, 7 e 9) e teor negativo (itens pares: 2, 4, 6, 8 e 10), estratégia estatística planejada para evitar o vício de respostas automáticas (aquiescência). O instrumento na íntegra encontra-se documentado no Apêndice B (Seção B.2).
+\begin{table}[H]
+    \centering
+    \phantomsection\hypertarget{quadro:conclusao_tarefas}{}\label{quadro:conclusao_tarefas}
+    \small
+    \renewcommand{\arraystretch}{1.15}
+    \begin{tabular}{|p{8.4cm}|r|r|}
+        \hline
+        \multicolumn{3}{|c|}{\textbf{Quadro 5: Autopercepção dos participantes sobre a conclusão das tarefas}} \\ \hline
+        \textbf{Resposta} & \textbf{Participantes} & \textbf{Percentual} \\ \hline
+        Concluíram todas as cinco tarefas com facilidade & 12 & 100\% \\ \hline
+        Concluíram todas, mas tiveram dúvida em alguma etapa & 0 & 0\% \\ \hline
+        Concluíram apenas algumas tarefas & 0 & 0\% \\ \hline
+        Não conseguiram concluir as tarefas & 0 & 0\% \\ \hline
+        \textbf{Total} & \textbf{12} & \textbf{100\%} \\ \hline
+    \end{tabular}
+    \fonte{Dados da pesquisa (Google Forms, 2026)}
+\end{table}
 
-A bateria prática de testes de usabilidade foi conduzida com uma amostra de 20 voluntários, composta por tutores de animais domésticos, protetores independentes e pessoas engajadas na causa animal. As sessões foram aplicadas individualmente em smartphones físicos operando os sistemas Android e iOS. Antes de responderem ao questionário SUS, cada participante foi convidado a executar, de maneira autônoma e sem assistência do avaliador, um roteiro padronizado composto por cinco tarefas operacionais representativas da aplicação.
+A expressiva taxa de 100\% de conclusão autorrelatada com facilidade indica que a rotulação visual dos botões, os menus contextuais e os fluxos de navegação desenhados no WeFIND apresentaram baixa barreira de entrada e boa intuitividade. Cabe pontuar que esse índice reflete a avaliação autônoma dos participantes sobre o conjunto global do roteiro, não dispensando avaliações futuras com cronometragem em laboratório para observação detalhada de microinterações.
 
-O roteiro iniciou-se pela autenticação, demandando a criação de conta com nome, e-mail e senha, seguida do acesso inicial à plataforma. Na sequência, solicitou-se a exploração do mapa interativo, com aplicação de filtro para a espécie canina e abertura do cartão de detalhes de uma publicação. A terceira tarefa exigiu a publicação de um anúncio de animal perdido com envio de fotografia da galeria e marcação manual das coordenadas no mapa. Em seguida, os participantes geraram o cartaz digital de busca com código QR a partir da publicação realizada. Por fim, a quinta tarefa contemplou os recursos preventivos, consistindo na consulta ao cadastro do animal tutelado e na visualização da carteirinha digital de identificação com código QR exclusivo para coleiras.
+Em relação à avaliação quantitativa de usabilidade apurada pelo protocolo SUS, o cálculo individual das respostas aos dez itens demonstrou elevada consistência. A média aritmética geral obtida pelo WeFIND atingiu a marca de 93,33 pontos, com pontuações individuais situadas entre 85,0 e 100,0 pontos. O \hyperref[quadro:escores_sus]{Quadro 6} apresenta a distribuição dos escores anonimizados obtidos para cada respondente (P1 a P12).
 
+\begin{table}[H]
+    \centering
+    \phantomsection\hypertarget{quadro:escores_sus}{}\label{quadro:escores_sus}
+    \small
+    \renewcommand{\arraystretch}{1.15}
+    \begin{tabular}{|c|r|c|r|c|r|}
+        \hline
+        \multicolumn{6}{|c|}{\textbf{Quadro 6: Escores individuais do questionário baseado na SUS}} \\ \hline
+        \textbf{Participante} & \textbf{Escore} &
+        \textbf{Participante} & \textbf{Escore} &
+        \textbf{Participante} & \textbf{Escore} \\ \hline
+        P1 & 95,0 & P5 & 87,5 & P9 & 87,5 \\ \hline
+        P2 & 90,0 & P6 & 97,5 & P10 & 97,5 \\ \hline
+        P3 & 92,5 & P7 & 87,5 & P11 & 85,0 \\ \hline
+        P4 & 100,0 & P8 & 100,0 & P12 & 100,0 \\ \hline
+        \multicolumn{5}{|r|}{\textbf{Média Geral}} & \textbf{93,33} \\ \hline
+    \end{tabular}
+    \fonte{Dados da pesquisa (Google Forms, 2026)}
+\end{table}
 
-\subsubsection{Análise Quantitativa (Score SUS e Eficiência)}
+Na literatura especializada de usabilidade (SAURO; LEWIS, 2022), sistemas computacionais que alcançam escores médios superiores a 68 pontos situam-se acima da média mercadológica, enquanto pontuações que superam a barreira de 80,3 pontos classificam o produto no nível de excelência máxima (Grau A), correspondendo ao percentil mais elevado de satisfação e intuitividade de produtos digitais. O resultado de 93,33 pontos obtido pelo WeFIND consolida o acerto das diretrizes ergonômicas adotadas na concepção das telas e componentes visuais.
 
-A avaliação quantitativa contemplou duas dimensões: a taxa de eficácia e eficiência temporal na execução das tarefas práticas e a apuração estatística final do escore SUS.
+Para identificar as dimensões específicas da experiência que mais se destacaram, calcularam-se as médias aritméticas das notas brutas atribuídas a cada uma das dez afirmações do questionário, em escala de 1,00 a 5,00 pontos. O \hyperref[quadro:medias_itens_sus]{Quadro 7} sintetiza as médias apuradas. Para as afirmações de conotação negativa (itens pares), médias próximas a 1,00 representam baixa concordância com problemas operacionais, sinalizando um comportamento desejável da interface.
 
-Em relação à eficácia, todos os 20 voluntários (100\% de aproveitamento) concluíram com sucesso absoluto as cinco tarefas do roteiro sem demandar qualquer orientação ou intervenção do pesquisador, comprovando que a arquitetura de informação e a rotulação dos botões do WeFIND mostraram-se autoexplicativas.
+\begin{table}[H]
+    \centering
+    \phantomsection\hypertarget{quadro:medias_itens_sus}{}\label{quadro:medias_itens_sus}
+    \small
+    \renewcommand{\arraystretch}{1.15}
+    \begin{tabular}{|c|p{9.0cm}|r|}
+        \hline
+        \multicolumn{3}{|c|}{\textbf{Quadro 7: Média das respostas por afirmação do questionário}} \\ \hline
+        \textbf{Item} & \textbf{Aspecto avaliado} & \textbf{Média} \\ \hline
+        1 & Intenção de utilizar o sistema com frequência & 4,50 \\ \hline
+        2 & Complexidade desnecessária (negativo) & 1,50 \\ \hline
+        3 & Facilidade de uso & 4,92 \\ \hline
+        4 & Necessidade de ajuda técnica (negativo) & 1,00 \\ \hline
+        5 & Integração entre as funções & 4,83 \\ \hline
+        6 & Inconsistência do sistema (negativo) & 1,75 \\ \hline
+        7 & Facilidade de aprendizado & 5,00 \\ \hline
+        8 & Dificuldade ou embaraço de uso (negativo) & 1,00 \\ \hline
+        9 & Confiança durante o uso & 4,83 \\ \hline
+        10 & Necessidade de aprender muitas coisas (negativo) & 1,50 \\ \hline
+    \end{tabular}
+    \fonte{Dados da pesquisa (Google Forms, 2026)}
+\end{table}
 
-Em relação à eficiência temporal, o tempo médio cronometrado para percorrer integralmente o ciclo de cinco tarefas foi de apenas 1 minuto e 45 segundos (desvio-padrão de 14 segundos). A tarefa mais complexa (o cadastro completo de um animal com seleção de imagem e fixação manual das coordenadas no mapa) consumiu em média apenas 48 segundos, demonstrando agilidade operacional indispensável para situações reais de emergência.
+Os resultados do \hyperref[quadro:medias_itens_sus]{Quadro 7} revelam indicadores positivos expressivos. O item 7 (facilidade de aprendizado) alcançou a nota máxima unânime de 5,00 pontos, confirmando que o usuário consegue operar os recursos básicos da aplicação sem requerer treinamento prévio. A facilidade geral de uso (item 3) registrou média de 4,92, acompanhada por notas elevadas na integração funcional (4,83) e no sentimento de segurança e confiança durante o manuseio (4,83). Por sua vez, as proposições negativas confirmaram a ausência de atritos: a necessidade de suporte técnico para operar o aplicativo (item 4) e a sensação de embaraço ou dificuldade (item 8) registraram média mínima de 1,00 ponto.
 
-Para a apuração estatística do escore SUS, as respostas individuais dos 20 voluntários foram convertidas conforme a fórmula normativa do método: para cada afirmação ímpar, subtrai-se 1 da pontuação atribuída ($X = \text{resposta} - 1$); para cada afirmação par, subtrai-se a pontuação de 5 ($Y = 5 - \text{resposta}$). A soma das dez pontuações convertidas é multiplicada pelo fator de escala 2,5, resultando em um escore normalizado situado no intervalo contínuo de 0 a 100 pontos (SAURO; LEWIS, 2022).
+A análise das questões abertas complementou as métricas numéricas, trazendo relatos espontâneos sobre pontos fortes e aspectos a aperfeiçoar. Como principais pontos positivos, os participantes ressaltaram a eficácia dos recursos de geolocalização e o mapa interativo, elogiando a seleção intuitiva de pontos no mapa, a visualização dos animais registrados nas imediações e a possibilidade de indicar com precisão visual onde um animal foi avistado. Foram destacados também o formulário guiado com seletores predefinidos para características físicas, a inclusão ágil de imagens da galeria, a facilidade dos filtros de busca e a integração coerente entre publicações, rotas cartográficas e o canal privativo de mensagens.
 
-A tabulação das notas dos 20 respondentes resultou em uma pontuação média final de 85,3 pontos (com mediana de 87,5 pontos e desvio-padrão de 6,2 pontos). Segundo os intervalos de referência estabelecidos por Lewis (2021) e Sauro e Lewis (2022), sistemas com pontuação acima de 68 pontos situam-se acima da média, enquanto notas superiores a 80,3 pontos indicam um nível de usabilidade excelente (Grau A), correspondendo ao percentil de 90\% na escala de facilidade de uso.
+Quanto às dúvidas e dificuldades, 7 dos 12 respondentes declararam não ter enfrentado qualquer obstáculo durante as tarefas (uma resposta permaneceu em branco). Quatro participantes apontaram dúvidas pontuais: dificuldade em identificar de imediato onde acessar a ficha detalhada de um animal anunciado, questionamento sobre a diferença entre as modalidades de registro (animal perdido versus animal avistado/encontrado), dúvida sobre qual o passo inicial ideal ao abrir a aplicação pela primeira vez e acesso ao histórico de registros efetuados anteriormente.
 
+Dentre as sugestões práticas mencionadas, destacaram-se: aumentar o destaque visual do botão que abre os detalhes da publicação, inserir textos de apoio elucidando a diferença entre as opções de cadastro, enriquecer os filtros com características mais específicas, disponibilizar uma apresentação guiada de boas-vindas no primeiro acesso, permitir a opção de salvar publicações favoritas e facilitar a consulta ao histórico pessoal. Três participantes manifestaram satisfação plena sem sugerir melhorias imediatas, e dois não responderam ao campo opcional.
 
-\subsubsection{Análise Qualitativa (Opinião dos Participantes)}
+Durante a condução prática das sessões de teste nos aparelhos físicos dos voluntários, avaliou-se igualmente a dimensão de desempenho operacional e estabilidade do software. Os participantes relataram uma experiência fluida e responsiva durante a navegação entre abas, sem ocorrência de travamentos, lentidões perceptíveis no carregamento das listagens ou encerramentos inesperados da aplicação.
 
-Após o encerramento do protocolo quantitativo, realizou-se uma breve entrevista semiestruturada com cada participante para capturar suas impressões espontâneas, críticas e sugestões de aprimoramento. A análise de conteúdo dos relatos evidenciou quatro núcleos temáticos principais de satisfação do usuário.
+O módulo cartográfico, elemento central e tecnicamente mais exigente do aplicativo, apresentou boa agilidade na renderização dinâmica dos marcadores espaciais e no traçado vetorial de rotas sobre a malha viária. A rotina de composição do cartaz digital com código QR dinâmico e o compartilhamento nativo pelo sistema operacional responderam com agilidade, demonstrando que o consumo de memória e a renderização gráfica do React Native mantiveram-se dentro de patamares confortáveis para uso em smartphones cotidianos.
 
-Em relação à visibilidade geográfica, os voluntários apontaram a visualização espacial direta sobre o mapa como o recurso mais transformador da plataforma, ressaltando que identificar animais soltos marcados em ruas próximas supera com folga as buscas dispersas em postagens textuais de redes sociais comuns. Sob o ponto de vista da praticidade na divulgação, destacou-se a facilidade de gerar instantaneamente cartazes com código QR dinâmico e prontos para impressão física ou publicação digital, eliminando a necessidade de programas gráficos externos em momentos de urgência emocional.
+A interpretação desses resultados deve ponderar as condições de contorno da pesquisa. O estudo envolveu uma amostra de 12 participantes voluntários, e a conclusão das tarefas foi registrada por meio de autopercepção global em resposta conjunta no formulário. Embora a avaliação tenha capturado com rigor a perspectiva subjetiva do usuário e a ausência de falhas impeditivas, não foram implementadas sondas de telemetria contínua para cronometragem individualizada de cada microtarefa, nem medições laboratoriais de latência de pacotes sob diferentes variações de sinal celular (3G/4G/Wi-Fi) ou testes de estresse com alto volume de conexões simultâneas no banco de dados. Tais ensaios automatizados de carga e desempenho constituem uma recomendação natural para a continuidade do projeto em fases prévias à escala comercial.
 
-Em relação à segurança no contato, os participantes elogiaram amplamente o canal de bate-papo privativo em tempo real, enfatizando que a possibilidade de dialogar diretamente com os informantes sem divulgar números particulares de telefone em vias públicas reduz consideravelmente o risco de trotes e tentativas de golpe. Por fim, quanto à prevenção e guarda responsável, os tutores consideraram de alto valor a emissão da carteirinha de identificação do animal tutelado com histórico vacinal e código QR para fixação física em coleiras, consolidando uma barreira preventiva fundamental antes da ocorrência de fugas. Esses apontamentos confirmam que a proposta de valor do WeFIND atendeu plenamente às expectativas operacionais e emocionais do público-alvo.
-
-
-\subsection{Desempenho e Tempos de Resposta}
-
-Para além da conformidade funcional e da satisfação na interface, a viabilidade de uma aplicação móvel depende de sua resposta ágil sob condições reais de infraestrutura de telecomunicações. A avaliação de desempenho do WeFIND foi conduzida em aparelho físico intermediário (smartphone com 4 GB de RAM), alternando o tráfego entre conexões Wi-Fi residenciais de banda larga e redes móveis celulares 4G em condições habituais de uso urbano.
-
-As medições cronometradas atestaram a eficiência operacional dos módulos críticos da aplicação. O carregamento inicial e a renderização do mapa com marcadores registraram tempo médio de 1,2 segundo para requisitar à nuvem, processar os dados espaciais e plotar todos os pontos ativos no raio selecionado. No envio de mídias, a transmissão de fotografias para o Supabase Storage demandou média de 2,4 segundos, viabilizada pela rotina local do módulo \textit{expo-image-manipulator}, que redimensionou e comprimiu imagens originais de 4 megabytes para arquivos de cerca de 320 kilobytes antes do tráfego em rede, economizando até 92\% da franquia de dados móveis do usuário. Adicionalmente, a entrega de mensagens de texto no bate-papo em tempo real alcançou latência média de apenas 280 milissegundos, sustentada pelo protocolo de comunicação bidirecional via WebSockets provido pelo Supabase Realtime.
-
-Os resultados obtidos nos testes funcionais, na avaliação SUS e nas medições de desempenho indicam que o WeFIND atende aos requisitos operacionais e de usabilidade estabelecidos para o projeto. O Capítulo 9 finaliza a monografia com as considerações finais, as dificuldades enfrentadas e as propostas para trabalhos futuros.
+Em síntese, a avaliação empírica do WeFIND confirmou a conformidade do aplicativo perante seus requisitos de usabilidade e interface, atingindo escores de excelência internacional e demonstrando resposta operacional consistente, ao mesmo tempo em que forneceu subsídios objetivos para a evolução contínua da experiência do usuário.

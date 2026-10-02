@@ -8,9 +8,10 @@ import {
 } from 'react-native';
 import * as statisticsService from '../services/statistics';
 import Card from '../components/Card';
-import COLORS from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 const DashboardScreen = ({ navigation }) => {
+  const { colors } = useTheme();
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,53 +33,53 @@ const DashboardScreen = ({ navigation }) => {
 
   if (loading || !statistics) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Dashboard</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Dashboard</Text>
       </View>
 
       <View style={styles.statsGrid}>
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Total de Pets</Text>
-          <Text style={styles.statValue}>{statistics.total_items}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Total de Pets</Text>
+          <Text style={[styles.statValue, { color: colors.primary }]}>{statistics.total_items}</Text>
         </Card>
 
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Pets Reunidos</Text>
-          <Text style={styles.statValue}>{statistics.items_resolved}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Pets Reunidos</Text>
+          <Text style={[styles.statValue, { color: colors.primary }]}>{statistics.items_resolved}</Text>
         </Card>
 
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Pets Perdidos</Text>
-          <Text style={styles.statValue}>{statistics.items_lost}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Pets Perdidos</Text>
+          <Text style={[styles.statValue, { color: colors.primary }]}>{statistics.items_lost}</Text>
         </Card>
 
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Pets Encontrados</Text>
-          <Text style={styles.statValue}>{statistics.items_found}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Pets Encontrados</Text>
+          <Text style={[styles.statValue, { color: colors.primary }]}>{statistics.items_found}</Text>
         </Card>
 
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Usuários Ativos</Text>
-          <Text style={styles.statValue}>{statistics.total_users}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Usuários Ativos</Text>
+          <Text style={[styles.statValue, { color: colors.primary }]}>{statistics.total_users}</Text>
         </Card>
 
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Total de Mensagens</Text>
-          <Text style={styles.statValue}>{statistics.total_messages}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Total de Mensagens</Text>
+          <Text style={[styles.statValue, { color: colors.primary }]}>{statistics.total_messages}</Text>
         </Card>
       </View>
 
       <Card>
-        <Text style={styles.chartTitle}>Taxa de Resolução</Text>
-        <Text style={styles.chartValue}>
+        <Text style={[styles.chartTitle, { color: colors.text }]}>Taxa de Resolução</Text>
+        <Text style={[styles.chartValue, { color: colors.primary }]}>
           {statistics.total_items > 0
             ? ((statistics.items_resolved / statistics.total_items) * 100).toFixed(1)
             : 0}
@@ -92,13 +93,11 @@ const DashboardScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
   },
   header: {
     paddingHorizontal: 16,
@@ -107,7 +106,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1F2937',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -122,24 +120,20 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: '#6B7280',
     marginBottom: 4,
   },
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: COLORS.primary,
   },
   chartTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1F2937',
     marginBottom: 8,
   },
   chartValue: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#10B981',
   },
 });
 

@@ -576,13 +576,7 @@ export default function NotificationsScreen({ navigation, onNotificationsUpdated
                   backgroundColor: COLORS.primary,
                   paddingHorizontal: 18,
                   paddingVertical: 12,
-                  borderRadius: 14,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.12,
-                  shadowRadius: 3,
-                  elevation: 3,
-                }}
+                  borderRadius: 14,                }}
                 activeOpacity={0.8}
               >
                 <MaterialIcons name="bolt" size={20} color="#FFFFFF" style={{ marginRight: 6 }} />

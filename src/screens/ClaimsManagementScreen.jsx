@@ -17,10 +17,11 @@ import { approveVerification, rejectVerification } from '../services/proofVerifi
 import { listItems } from '../services/items';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import COLORS from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function ClaimsManagementScreen({ navigation }) {
   const { user } = useAuth();
+  const { colors, isDark } = useTheme();
   const [myFoundItems, setMyFoundItems] = useState([]);
   const [claims, setClaims] = useState([]);
   const [historyClaims, setHistoryClaims] = useState([]);
@@ -129,9 +130,9 @@ export default function ClaimsManagementScreen({ navigation }) {
 
   if (!user) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Card style={styles.messageCard}>
-          <Text style={styles.messageText}>Faça login para gerenciar reivindicações</Text>
+          <Text style={[styles.messageText, { color: colors.text }]}>Faça login para gerenciar reivindicações</Text>
         </Card>
       </View>
     );
@@ -139,18 +140,18 @@ export default function ClaimsManagementScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   if (myFoundItems.length === 0) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Card style={styles.messageCard}>
-          <Text style={styles.messageText}>Você não cadastrou pets encontrados</Text>
-          <Text style={styles.messageSubtext}>
+          <Text style={[styles.messageText, { color: colors.text }]}>Você não cadastrou pets encontrados</Text>
+          <Text style={[styles.messageSubtext, { color: colors.textSecondary }]}>
             Quando você registrar um pet como "encontrei", a pessoa que o perdeu poderá reivindicá-lo aqui.
           </Text>
         </Card>
@@ -159,12 +160,12 @@ export default function ClaimsManagementScreen({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Solicitações pendentes */}
       {claims.length === 0 && historyClaims.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>Nenhuma solicitação encontrada</Text>
-          <Text style={styles.emptySubtext}>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Nenhuma solicitação encontrada</Text>
+          <Text style={[styles.emptySubtext, { color: colors.textMuted }]}>
             As solicitações de devolução dos seus animais aparecerão aqui.
           </Text>
         </View>
@@ -176,48 +177,52 @@ export default function ClaimsManagementScreen({ navigation }) {
           ListHeaderComponent={() => (
             <View style={styles.listHeader}>
               {claims.length > 0 && (
-                <View style={styles.pendingSummary}>
-                  <Text style={styles.pendingSummaryText}>{claims.length} aguardando sua análise</Text>
+                <View style={[styles.pendingSummary, { backgroundColor: isDark ? '#3A2B12' : '#FEF3C7' }]}>
+                  <Text style={[styles.pendingSummaryText, { color: isDark ? '#FCD58A' : '#92400E' }]}>{claims.length} aguardando sua análise</Text>
                 </View>
               )}
             </View>
           )}
           renderItem={({ item: claim }) => (
-            <View key={claim.id} style={styles.claimCard}>
+            <View key={claim.id} style={[styles.claimCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
               <TouchableOpacity
                 style={styles.claimHeader}
                 onPress={() => setExpandedClaimId(expandedClaimId === claim.id ? null : claim.id)}
               >
                 <View style={styles.claimantInfo}>
-                  <Text style={styles.claimantName}>
+                  <Text style={[styles.claimantName, { color: colors.text }]}>
                     {claim.profiles?.name || 'Usuário'}
                   </Text>
-                  <Text style={styles.claimItemTitle}>{claim.itemTitle || 'Animal publicado'}</Text>
-                  <Text style={styles.claimTime}>
+                  <Text style={[styles.claimItemTitle, { color: colors.primary }]}>{claim.itemTitle || 'Animal publicado'}</Text>
+                  <Text style={[styles.claimTime, { color: colors.textMuted }]}>
                     {new Date(claim.created_at).toLocaleDateString('pt-BR')}
                   </Text>
                 </View>
                 <View style={styles.statusColumn}>
-                  <View style={[styles.statusPill, claim.status === 'pending' ? styles.pendingPill : claim.status === 'approved' ? styles.approvedPill : styles.rejectedPill]}>
-                    <Text style={styles.statusPillText}>{claim.status === 'pending' ? 'Pendente' : claim.status === 'approved' ? 'Aprovada' : 'Rejeitada'}</Text>
+                  <View style={[
+                    styles.statusPill,
+                    claim.status === 'pending' ? styles.pendingPill : claim.status === 'approved' ? styles.approvedPill : styles.rejectedPill,
+                    { backgroundColor: claim.status === 'pending' ? (isDark ? '#3A2B12' : '#FEF3C7') : claim.status === 'approved' ? (isDark ? '#173323' : '#DCFCE7') : (isDark ? '#351D1D' : '#FEE2E2') },
+                  ]}>
+                    <Text style={[styles.statusPillText, { color: colors.text }]}>{claim.status === 'pending' ? 'Pendente' : claim.status === 'approved' ? 'Aprovada' : 'Rejeitada'}</Text>
                   </View>
-                  <Text style={styles.expandIcon}>{expandedClaimId === claim.id ? '▲' : '▼'}</Text>
+                  <Text style={[styles.expandIcon, { color: colors.textMuted }]}>{expandedClaimId === claim.id ? '▲' : '▼'}</Text>
                 </View>
               </TouchableOpacity>
 
               {expandedClaimId === claim.id && (
-                <View style={styles.claimDetails}>
+                <View style={[styles.claimDetails, { borderTopColor: colors.divider }]}>
                   <View style={styles.messageSection}>
-                    <Text style={styles.sectionTitle}>Mensagem:</Text>
-                    <Text style={styles.claimMessage}>{claim.message}</Text>
+                    <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Mensagem:</Text>
+                    <Text style={[styles.claimMessage, { color: colors.text }]}>{claim.message}</Text>
                     {claim.itemTitle && (
-                      <Text style={styles.itemLabel}>Pet: {claim.itemTitle}</Text>
+                      <Text style={[styles.itemLabel, { color: colors.primary }]}>Pet: {claim.itemTitle}</Text>
                     )}
                   </View>
 
                   {claim.proof_photo_url && (
                     <View style={styles.photoSection}>
-                      <Text style={styles.sectionTitle}>Foto de comprovação:</Text>
+                      <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Foto de comprovação:</Text>
                       <Image
                         source={{ uri: claim.proof_photo_url }}
                         style={styles.proofPhoto}
@@ -226,9 +231,9 @@ export default function ClaimsManagementScreen({ navigation }) {
                   )}
 
                   {claim.rejection_reason && claim.status === 'rejected' && (
-                    <View style={styles.rejectionBox}>
-                      <Text style={styles.sectionTitle}>Motivo da rejeição:</Text>
-                      <Text style={styles.rejectionText}>{claim.rejection_reason}</Text>
+                    <View style={[styles.rejectionBox, { backgroundColor: isDark ? '#351D1D' : '#FEF2F2' }]}>
+                      <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Motivo da rejeição:</Text>
+                      <Text style={[styles.rejectionText, { color: isDark ? '#FCA5A5' : '#991B1B' }]}>{claim.rejection_reason}</Text>
                     </View>
                   )}
 
@@ -260,7 +265,6 @@ export default function ClaimsManagementScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
   },
   messageCard: {
     margin: 16,
@@ -269,12 +273,10 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
     marginBottom: 8,
   },
   messageSubtext: {
     fontSize: 14,
-    color: '#6B7280',
     lineHeight: 20,
   },
   emptyState: {
@@ -291,7 +293,6 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#9CA3AF',
     textAlign: 'center',
   },
   claimsList: {
@@ -315,12 +316,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   claimCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   claimHeader: {
     flexDirection: 'row',
@@ -334,22 +333,18 @@ const styles = StyleSheet.create({
   claimantName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
     marginBottom: 4,
   },
   claimItemTitle: {
     fontSize: 13,
-    color: COLORS.primary,
     fontWeight: '700',
     marginBottom: 3,
   },
   claimTime: {
     fontSize: 12,
-    color: '#9CA3AF',
   },
   expandIcon: {
     fontSize: 14,
-    color: '#6B7280',
     textAlign: 'right',
     marginTop: 6,
   },
@@ -392,12 +387,10 @@ const styles = StyleSheet.create({
   },
   claimMessage: {
     fontSize: 14,
-    color: '#1F2937',
     lineHeight: 20,
   },
   itemLabel: {
     fontSize: 12,
-    color: COLORS.primary,
     marginTop: 6,
     fontWeight: '600',
   },

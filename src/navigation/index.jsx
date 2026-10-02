@@ -43,6 +43,7 @@ import FosterVolunteersScreen from '../screens/FosterVolunteersScreen';
 import MyPetsScreen from '../screens/MyPetsScreen';
 import AddEditPetScreen from '../screens/AddEditPetScreen';
 import RankingScreen from '../screens/RankingScreen';
+import GamificationScreen from '../screens/GamificationScreen';
 import { listItems } from '../services/items';
 import { buildRenewalAlerts } from '../services/notifications';
 import { WeFindText } from '../components/WeFindBrand';
@@ -299,33 +300,34 @@ const MainAppTabs = ({ navigation }) => {
   const [renewalAlertCount, setRenewalAlertCount] = useState(0);
   const notificationChannelRef = useRef(null);
   const messageChannelRef = useRef(null);
+  const unreadFetchInProgressRef = useRef(false);
 
   const fetchUnread = async () => {
-    if (!user?.id) return;
-    const [messageCount, notifications, items] = await Promise.all([
-      getUnreadCount(user.id),
-      getUserNotifications(user.id),
-      listItems({ owner_id: user.id, resolved: false }),
-    ]);
+    if (!user?.id || unreadFetchInProgressRef.current) return;
+    unreadFetchInProgressRef.current = true;
+    try {
+      const [messageCount, notifications, items] = await Promise.all([
+        getUnreadCount(user.id),
+        getUserNotifications(user.id),
+        listItems({ owner_id: user.id, resolved: false }),
+      ]);
 
-    const unreadSystemAlerts = (notifications || []).filter(alert =>
-      alert?.read !== true &&
-      alert?.read !== 'true' &&
-      (alert?.type === 'renewal_reminder' || alert?.type === 'item_removed')
-    ).length;
-    const renewalAlerts = buildRenewalAlerts(items || []);
-    const renewalCount = renewalAlerts.length;
+      const unreadSystemAlerts = (notifications || []).filter(alert =>
+        alert?.read !== true &&
+        alert?.read !== 'true' &&
+        (alert?.type === 'renewal_reminder' || alert?.type === 'item_removed')
+      ).length;
+      const renewalAlerts = buildRenewalAlerts(items || []);
+      const renewalCount = renewalAlerts.length;
 
-    console.log('[MainAppTabs] fetchUnread', {
-      messageCount,
-      unreadSystemAlerts,
-      renewalCount,
-      notificationsCount: notifications?.length,
-    });
-
-    setUnreadCount(messageCount);
-    setSystemAlertCount(unreadSystemAlerts);
-    setRenewalAlertCount(renewalCount);
+      setUnreadCount(messageCount);
+      setSystemAlertCount(unreadSystemAlerts);
+      setRenewalAlertCount(renewalCount);
+    } catch (error) {
+      console.warn('[MainAppTabs] Não foi possível atualizar os indicadores:', error.message);
+    } finally {
+      unreadFetchInProgressRef.current = false;
+    }
   };
 
   useEffect(() => {
@@ -343,6 +345,7 @@ const MainAppTabs = ({ navigation }) => {
     };
 
     cleanupRealtimeChannels();
+    fetchUnread();
 
     const handleNotificationEvent = (payload) => {
       console.log('[MainAppTabs] realtime notification event', payload);
@@ -408,7 +411,7 @@ const MainAppTabs = ({ navigation }) => {
       )
       .subscribe();
 
-    const interval = setInterval(fetchUnread, 5000);
+    const interval = setInterval(fetchUnread, 60000);
 
     return () => {
       clearInterval(interval);
@@ -617,6 +620,11 @@ const MainStack = () => {
         name="Ranking"
         component={RankingScreen}
         options={{ title: 'Ranking da Comunidade' }}
+      />
+      <Stack.Screen
+        name="Gamification"
+        component={GamificationScreen}
+        options={{ title: 'Conquistas e nível' }}
       />
       <Stack.Screen
         name="Admin"

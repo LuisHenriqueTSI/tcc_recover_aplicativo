@@ -160,7 +160,7 @@ export const getConversations = async (userId) => {
     // 1. Busca as mensagens mais recentes do usuário
     const { data: messages, error } = await supabase
       .from('messages')
-      .select('*')
+      .select('*, conversations(*)')
       .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
       .order('sent_at', { ascending: false })
       .limit(120);
@@ -180,14 +180,28 @@ export const getConversations = async (userId) => {
     const itemIds = new Set();
 
     for (const msg of messages) {
-      const otherId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
-      if (!otherId) continue;
-      const key = [userId, otherId].sort().join('_');
+      const relatedConversation = Array.isArray(msg.conversations)
+        ? msg.conversations[0]
+        : msg.conversations;
+      const currentIsParticipantA = relatedConversation?.participant_a === userId;
+      const currentIsParticipantB = relatedConversation?.participant_b === userId;
+      const otherId = currentIsParticipantA
+        ? relatedConversation.participant_b
+        : currentIsParticipantB
+          ? relatedConversation.participant_a
+          : msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+      const otherDeleted = Boolean(relatedConversation && !otherId);
+      const key = otherId
+        ? [userId, otherId].sort().join('_')
+        : relatedConversation?.participant_a === null || relatedConversation?.participant_b === null
+          ? `deleted_${msg.conversation_id}`
+          : null;
+      if (!key) continue;
       if (hiddenKeys.includes(key)) continue;
 
       if (!rawConvs.has(key)) {
-        rawConvs.set(key, { otherId, msg });
-        otherUserIds.add(otherId);
+        rawConvs.set(key, { otherId, otherDeleted, msg, relatedConversation });
+        if (otherId) otherUserIds.add(otherId);
         if (msg.item_id) itemIds.add(msg.item_id);
       }
     }
@@ -210,15 +224,19 @@ export const getConversations = async (userId) => {
 
     // 4. Monta o resultado final instantaneamente
     const result = [];
-    for (const [key, { otherId, msg }] of rawConvs.entries()) {
+    for (const [key, { otherId, otherDeleted, msg, relatedConversation }] of rawConvs.entries()) {
       const prof = profileMap.get(otherId);
       const itemInfo = msg.item_id ? itemMap.get(msg.item_id) : null;
       const isItemDeleted = Boolean(msg.item_id && !itemInfo);
-      const itemTitle = itemInfo?.title || itemInfo?.species || (isItemDeleted ? 'Publicação excluída' : '');
+      const itemTitle = itemInfo?.title
+        || itemInfo?.species
+        || relatedConversation?.item_title_snapshot
+        || (isItemDeleted ? 'Publicação excluída' : '');
 
       result.push({
-        otherId,
-        otherName: prof?.name || 'Membro WeFIND',
+        otherId: otherId || null,
+        otherDeleted,
+        otherName: otherDeleted ? 'Conta excluída' : prof?.name || 'Membro WeFIND',
         avatarUrl: prof?.avatar_url || null,
         lastMessage: msg.content,
         lastPhotoUrl: msg.photo_url || null,
@@ -228,6 +246,7 @@ export const getConversations = async (userId) => {
         itemTitle,
         itemStatus: itemInfo?.status || (isItemDeleted ? 'deleted' : null),
         isItemDeleted,
+        conversationId: msg.conversation_id || null,
         status: 'ativa',
       });
     }
@@ -246,22 +265,28 @@ export const getMessages = async (userId, otherUserId, options = 50) => {
   try {
     let limit = 50;
     let itemId = null;
+    let conversationId = null;
 
     if (typeof options === 'number') {
       limit = options;
     } else if (typeof options === 'object' && options !== null) {
       limit = options.limit || 50;
       itemId = options.itemId || null;
+      conversationId = options.conversationId || null;
     } else if (typeof options === 'string' && options.length > 5 && isNaN(Number(options))) {
       itemId = options;
     }
 
-    let query = supabase
-      .from('messages')
-      .select('*')
-      .or(`and(sender_id.eq.${userId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${userId})`);
+    let query = supabase.from('messages').select('*');
 
-    if (itemId) {
+    if (conversationId) {
+      query = query.eq('conversation_id', conversationId);
+    } else {
+      if (!otherUserId) throw new Error('Participante da conversa não encontrado.');
+      query = query.or(`and(sender_id.eq.${userId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${userId})`);
+    }
+
+    if (itemId && !conversationId) {
       query = query.eq('item_id', itemId);
     }
 
@@ -302,6 +327,24 @@ export const markMessagesAsRead = async (userId, otherUserId) => {
     console.log('[markMessagesAsRead] Exceção:', error.message);
     throw error;
   }
+};
+
+export const markConversationMessagesAsRead = async (userId, conversationId) => {
+  if (!userId || !conversationId) return { success: false };
+
+  const { error } = await supabase
+    .from('messages')
+    .update({ read: true })
+    .eq('conversation_id', conversationId)
+    .eq('receiver_id', userId)
+    .eq('read', false);
+
+  if (error) {
+    console.error('[markConversationMessagesAsRead] Erro:', error.message);
+    throw error;
+  }
+
+  return { success: true };
 };
 
 export const markAllMessagesAsRead = async (userId) => {

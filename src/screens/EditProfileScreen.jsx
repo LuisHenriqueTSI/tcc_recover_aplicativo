@@ -357,9 +357,13 @@ const EditProfileScreen = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await supabaseAuth.deleteUser();
-              Alert.alert('Conta excluída', 'Sua conta foi encerrada com sucesso.');
-              navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+              const result = await supabaseAuth.deleteUser();
+              Alert.alert(
+                'Conta excluída',
+                result?.sessionCleanupError
+                  ? 'Sua conta foi excluída. Feche e abra o aplicativo novamente para encerrar a sessão local.'
+                  : 'Sua conta foi encerrada com sucesso.'
+              );
             } catch (e) {
               Alert.alert('Erro', e.message || 'Erro ao excluir conta.');
             }
@@ -781,7 +785,7 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
   },
   headerCard: {
-    borderRadius: 18,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     paddingVertical: 20,
@@ -832,7 +836,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   sectionCard: {
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
     padding: 16,
     marginBottom: 16,
@@ -942,7 +946,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   deleteCard: {
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     padding: 14,
     alignItems: 'center',

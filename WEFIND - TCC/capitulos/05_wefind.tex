@@ -1,18 +1,18 @@
 \section{A SOLUÇÃO PROPOSTA: APLICATIVO WeFIND}
 
-A concepção da plataforma WeFIND fundamentou-se em uma experiência prática vivenciada pelo autor durante a busca por um animal doméstico desaparecido no círculo familiar. Naquela ocasião, ficaram evidentes as dificuldades de depender apenas de redes sociais e grupos de mensagens: as publicações dispersas em diferentes grupos, a falta de filtros por proximidade no mapa e a dificuldade do tutor para acompanhar informações desencontradas. As limitações observadas naquele processo reforçaram a necessidade de uma ferramenta dedicada, capaz de centralizar as ocorrências e organizar o apoio comunitário de forma estruturada.
+A proposta do aplicativo WeFIND fundamentou-se em uma experiência prática vivenciada pelo autor durante a busca por um animal doméstico desaparecido no círculo familiar. Naquela ocasião, ficaram evidentes as dificuldades de depender apenas de redes sociais e grupos de mensagens: as publicações dispersas em diferentes grupos, a falta de filtros por proximidade no mapa e a dificuldade do tutor para acompanhar informações desencontradas. As limitações observadas naquele processo reforçaram a necessidade de uma ferramenta dedicada, capaz de centralizar as ocorrências e organizar o apoio comunitário de forma estruturada.
 
-Para estruturar a solução desenvolvida e contemplar os requisitos levantados, o aplicativo foi organizado em cinco eixos funcionais centrais:
+Para estruturar a solução desenvolvida e contemplar os requisitos levantados, o aplicativo foi organizado em cinco módulos funcionais:
 
-O primeiro eixo compreende a busca espacial georreferenciada, organizando o mapa interativo e o mural de publicações por proximidade territorial e permitindo a delimitação de raios de busca.
+O primeiro módulo compreende a busca espacial georreferenciada, organizando o mapa interativo e o mural de publicações por proximidade territorial e permitindo a delimitação de raios de busca.
 
-O segundo eixo estabelece o registro colaborativo de avistamentos. Por meio desse recurso, os usuários relatam animais observados em vias públicas com fotografias e coordenadas, construindo uma linha do tempo vinculada ao caso.
+O segundo módulo estabelece o registro colaborativo de avistamentos. Por meio desse recurso, os usuários relatam animais observados em vias públicas com fotografias e coordenadas, construindo uma linha do tempo vinculada ao caso.
 
-O terceiro eixo fundamenta-se na prevenção e na identificação antecipada. O tutor cadastra preventivamente os animais domésticos da família e gera uma carteirinha digital com código QR para uso em coleiras, viabilizando a leitura de dados autorizados diretamente pelo celular. Enquanto a leitura do microchip exige equipamentos específicos em clínicas veterinárias ou órgãos públicos, o código QR na coleira permite que qualquer pessoa com smartphone acesse as informações de contato no próprio local do encontro. Além disso, o aplicativo viabiliza o registro do número do microchip no perfil do animal, permitindo que tutores mantenham a comprovação oficial exigida pela legislação municipal vinculada à identificação do pet.
+O terceiro módulo fundamenta-se na prevenção e na identificação antecipada. O tutor cadastra preventivamente os animais domésticos da família e gera uma carteirinha digital com código QR para uso em coleiras, viabilizando a leitura de dados autorizados diretamente pelo celular. Enquanto a leitura do microchip exige equipamentos específicos em clínicas veterinárias ou órgãos públicos, o código QR na coleira permite que qualquer pessoa com smartphone acesse as informações de contato no próprio local do encontro. Além disso, o aplicativo viabiliza o registro do número do microchip no perfil do animal, permitindo que tutores mantenham a comprovação oficial exigida pela legislação municipal vinculada à identificação do pet.
 
-O quarto eixo trata da privacidade e da proteção de dados dos usuários. O sistema resguarda informações sensíveis, omitindo endereços residenciais exatos e contatos telefônicos pessoais em áreas públicas, e disponibilizando um canal de mensagens privativo para a comunicação direta entre as partes.
+O quarto módulo trata da privacidade e da proteção de dados dos usuários. O sistema resguarda informações sensíveis, omitindo endereços residenciais exatos e contatos telefônicos pessoais em áreas públicas, e disponibilizando um canal de mensagens privativo para a comunicação direta entre as partes.
 
-Por fim, o quinto eixo estimula a colaboração comunitária por meio de um sistema de reconhecimento solidário e gestão de lares temporários, valorizando a participação contínua de voluntários na rede de acolhimento e proteção animal.
+Por fim, o quinto módulo estimula a colaboração comunitária por meio de um sistema de reconhecimento solidário e gestão de lares temporários, valorizando a participação contínua de voluntários na rede de acolhimento e proteção animal.
 
 
 \subsection{Justificativa da Escolha da Plataforma Móvel}
@@ -26,10 +26,10 @@ A plataforma móvel reúne recursos nativos adequados para esse contexto operaci
 
 \subsection{Correspondência de Animais e Registro de Avistamentos}
 
-O WeFIND adota duas formas distintas e complementares para relacionar informações sobre animais: a correspondência automatizada (\textit{matching}) entre publicações e o registro comunitário de avistamentos. Embora ambas utilizem características físicas e dados de localização, operam com propósitos e fluxos distintos.
+O WeFIND adota duas formas distintas e complementares para relacionar informações sobre animais: a correspondência automatizada entre publicações e o registro comunitário de avistamentos. Embora ambas utilizem características físicas e dados de localização, operam com propósitos e fluxos distintos.
 
 
-\subsubsection{Correspondência entre publicações (Matching)}
+\subsubsection{Correspondência entre publicações}
 
 A correspondência automática analisa duas publicações ativas cadastradas de forma independente: uma do tipo ``Perdido'' e outra do tipo ``Encontrado''. O sistema avalia a compatibilidade de atributos como espécie, porte, sexo, raça e pelagem, cruzando esses dados com a distância geográfica entre os pontos registrados. Quando o índice atinge o limiar mínimo de similaridade estabelecido no projeto ($\ge 60\%$), o aplicativo emite uma sugestão para ambos os usuários.
 
@@ -44,7 +44,7 @@ O registro de avistamento opera a partir do relato de uma pessoa que visualizou 
 
 Após a conferência dos dados e a confirmação do usuário de que o animal visto corresponde a um anúncio específico, o aplicativo registra uma nova ocorrência vinculada ao caso original. Essa ocorrência preserva descrição, fotografia, coordenadas e identificação do informante em uma linha do tempo cronológica. A publicação principal é atualizada com o último ponto geográfico conhecido, mantendo intacto o histórico de deslocamento do animal. Caso o usuário verifique que se trata de outro animal, nenhuma publicação é alterada, podendo o relato ser descartado ou convertido em um novo cadastro.
 
-Dessa forma, o \textit{matching} atua comparando dois anúncios distintos, enquanto o avistamento acrescenta novos relatos a uma busca já acompanhada. Em ambos os fluxos, o sistema apenas organiza as informações, mantendo a autonomia de decisão com os usuários.
+Dessa forma, a correspondência automática atua comparando dois anúncios distintos, enquanto o avistamento acrescenta novos relatos a uma busca já acompanhada. Em ambos os fluxos, o sistema apenas organiza as informações, mantendo a autonomia de decisão com os usuários.
 
 
 \subsection{Classificação e Estados das Publicações}

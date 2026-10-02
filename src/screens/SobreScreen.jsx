@@ -133,13 +133,7 @@ const SobreScreen = ({ navigation }) => {
                 paddingHorizontal: 12,
                 paddingVertical: 6,
                 borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.28)',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-                elevation: 2,
-              }}
+                borderColor: 'rgba(255, 255, 255, 0.28)',              }}
               activeOpacity={0.75}
               accessibilityLabel="Entrar na conta"
             >
@@ -378,16 +372,10 @@ const styles = StyleSheet.create({
     paddingBottom: 36,
   },
   heroCard: {
-    borderRadius: 22,
+    borderRadius: 12,
     padding: 18,
     borderWidth: 1,
-    marginBottom: 18,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
+    marginBottom: 18,  },
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -419,13 +407,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     padding: 18,
     borderWidth: 1,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
+    marginBottom: 16,  },
   zigzagTextContainer: {
     flex: 1,
     paddingRight: 16,
@@ -512,14 +494,8 @@ const styles = StyleSheet.create({
   },
   storyCard: {
     padding: 14,
-    borderRadius: 18,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-  },
+    borderRadius: 12,
+    borderWidth: 1,  },
   storyTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -600,7 +576,7 @@ const styles = StyleSheet.create({
   stepItemCard: {
     flexDirection: 'row',
     padding: 14,
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'flex-start',
   },

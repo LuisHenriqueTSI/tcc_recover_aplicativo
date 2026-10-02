@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useFocusEffect } from '@react-navigation/native';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import COLORS from '../constants/theme';
@@ -23,11 +23,12 @@ import { WeFindText } from '../components/WeFindBrand';
 import { getFriendlyAuthErrorMessage } from '../utils/authErrors';
 
 const LoginScreen = ({ navigation }) => {
-  const { signIn, loading, user } = useAuth();
+  const { signIn, signInWithGoogle, loading, user } = useAuth();
   const { colors, isDark } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Captura o botão físico de voltar do Android e redireciona para a tela inicial
   useFocusEffect(
@@ -84,6 +85,22 @@ const LoginScreen = ({ navigation }) => {
     } catch (error) {
       const friendlyMessage = getFriendlyAuthErrorMessage(error);
       Alert.alert('Acesso não autorizado', friendlyMessage);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    Keyboard.dismiss();
+    setGoogleLoading(true);
+
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      Alert.alert(
+        'Não foi possível entrar com Google',
+        getFriendlyAuthErrorMessage(error) || error.message || 'Tente novamente.',
+      );
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -180,12 +197,34 @@ const LoginScreen = ({ navigation }) => {
 
           <TouchableOpacity
             onPress={handleLogin}
-            disabled={loading}
-            style={[styles.loginButton, { backgroundColor: colors.primary }]}
+            disabled={loading || googleLoading}
+            style={[styles.loginButton, { backgroundColor: colors.primary }, (loading || googleLoading) && styles.disabledButton]}
             activeOpacity={0.85}
           >
             <Text style={styles.loginButtonText}>{loading ? 'Autenticando...' : 'Entrar na Conta'}</Text>
             {!loading && <Feather name="arrow-right" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />}
+          </TouchableOpacity>
+
+          <View style={styles.oauthDivider}>
+            <View style={[styles.oauthDividerLine, { backgroundColor: colors.cardBorder }]} />
+            <Text style={[styles.oauthDividerText, { color: colors.textMuted }]}>ou</Text>
+            <View style={[styles.oauthDividerLine, { backgroundColor: colors.cardBorder }]} />
+          </View>
+
+          <TouchableOpacity
+            onPress={handleGoogleLogin}
+            disabled={loading || googleLoading}
+            style={[
+              styles.googleButton,
+              { backgroundColor: colors.background, borderColor: colors.cardBorder },
+              (loading || googleLoading) && styles.disabledButton,
+            ]}
+            activeOpacity={0.85}
+          >
+            <MaterialCommunityIcons name="google" size={20} color={colors.text} />
+            <Text style={[styles.googleButtonText, { color: colors.text }]}>
+              {googleLoading ? 'Conectando...' : 'Entrar com Google'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -238,13 +277,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 1.5,
-    padding: 10,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
-  },
+    padding: 10,  },
   logoImage: {
     width: '100%',
     height: '100%',
@@ -271,13 +304,7 @@ const styles = StyleSheet.create({
     maxWidth: 390,
     borderRadius: 24,
     paddingVertical: 22,
-    paddingHorizontal: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    elevation: 4,
-    borderWidth: 1,
+    paddingHorizontal: 20,    borderWidth: 1,
   },
   inputWrapper: {
     marginBottom: 4,
@@ -307,18 +334,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 16,
-    paddingVertical: 14,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 4,
+    paddingVertical: 14,  },
+  disabledButton: {
+    opacity: 0.6,
   },
   loginButtonText: {
     fontWeight: '800',
     fontSize: 15.5,
     letterSpacing: 0.2,
     color: '#FFFFFF',
+  },
+  oauthDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginVertical: 16,
+  },
+  oauthDividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  oauthDividerText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  googleButton: {
+    minHeight: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  googleButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
   },
   footerContainer: {
     alignItems: 'center',

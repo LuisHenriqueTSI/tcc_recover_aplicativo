@@ -2,9 +2,9 @@
 
 A implementação da plataforma WeFIND envolveu a escolha de tecnologias para o desenvolvimento da aplicação móvel, o armazenamento dos dados e a comunicação entre os serviços. Como ensinam Pressman e Maxim (2021) e Valente (2023), a arquitetura de software de um sistema móvel deve conciliar produtividade no ciclo de desenvolvimento, baixo acoplamento entre camadas e robustez na persistência e distribuição dos dados em nuvem.
 
-O projeto adotou o padrão arquitetural cliente-servidor distribuído, segmentado em duas camadas independentes: a camada cliente móvel (executada nos smartphones dos usuários) e a camada de serviços em nuvem (hospedada na infraestrutura do Supabase e na plataforma Render). Essa abordagem desacoplada assegura que a lógica de interface e renderização gráfica ocorra localmente no processador do celular, ao passo que as operações de autenticação, persistência relacional, armazenamento de arquivos multimídia, mensageria externa e sincronização em tempo real são delegadas a serviços gerenciados em nuvem de alta disponibilidade (BaaS, sigla para \textit{Backend-as-a-Service}).
+O projeto adotou o padrão arquitetural cliente-servidor distribuído, segmentado em duas camadas independentes: a camada cliente móvel (executada nos smartphones dos usuários) e a camada de serviços em nuvem (hospedada na infraestrutura do Supabase e na plataforma Render). Essa abordagem desacoplada assegura que a lógica de interface e renderização gráfica ocorra localmente no processador do celular, ao passo que as operações de autenticação, persistência relacional, armazenamento de arquivos multimídia, mensageria externa e sincronização em tempo real são delegadas a serviços gerenciados em nuvem de alta disponibilidade (BaaS, modelo de infraestrutura de retaguarda em nuvem).
 
-A consistência dos dados e a segurança das operações são garantidas pela integração com o banco de dados relacional PostgreSQL, estruturado com políticas de segurança em nível de linha (\textit{Row Level Security}, ou RLS). Esse mecanismo transfere o controle de acesso e isolamento de permissões para o próprio motor do banco de dados, impedindo que requisições não autorizadas alterem ou excluam dados alheios, mesmo em eventuais falhas na camada de apresentação móvel.
+A consistência dos dados e a segurança das operações são garantidas pela integração com o banco de dados relacional PostgreSQL, estruturado com políticas de segurança em nível de linha (RLS). Esse mecanismo transfere o controle de acesso e isolamento de permissões para o próprio motor do banco de dados, impedindo que requisições não autorizadas alterem ou excluam dados alheios, mesmo em eventuais falhas na camada de apresentação móvel.
 
 Este capítulo detalha as decisões técnicas e as ferramentas que compõem a arquitetura do WeFIND, descreve a infraestrutura de computação em nuvem provida pelo Supabase e pelo gateway de mensageria da Evolution API, apresenta a modelagem lógica relacional das entidades e tabelas no PostgreSQL e documenta as ferramentas auxiliares empregadas no projeto.
 
@@ -25,18 +25,18 @@ A biblioteca React Native foi adotada como núcleo para a interface móvel, oper
 
 Em relação ao desenvolvimento puramente nativo (como construir separadamente uma aplicação em Kotlin para Android e outra em Swift para iOS), a abordagem isolada exigiria a manutenção de duas bases de código completamente distintas. Esse cenário duplicaria o tempo de codificação, os custos e a complexidade de manutenção corretiva para um projeto desenvolvido individualmente. O React Native superou essa barreira ao permitir compilar para ambas as plataformas a partir de uma base de código unificada em TypeScript, compartilhando cem por cento da lógica de negócio e da interface visual.
 
-Frente a tecnologias baseadas em navegadores embutidos (como \textit{Progressive Web Apps} convencionais ou plataformas baseadas em \textit{WebView}), o React Native compila para os componentes de interface nativos do sistema operacional. Essa abordagem favorece o desempenho gráfico na renderização de mapas com múltiplos marcadores e na resposta aos eventos de toque, além de facilitar a comunicação com os sensores do dispositivo.
+Frente a tecnologias baseadas em navegadores embutidos (como aplicações web convencionais ou plataformas baseadas em navegadores embutidos via \textit{WebView}), o React Native compila para os componentes de interface nativos do sistema operacional. Essa abordagem favorece o desempenho gráfico na renderização de mapas com múltiplos marcadores e na resposta aos eventos de toque, além de facilitar a comunicação com os sensores do dispositivo.
 
 Em conjunto com o React Native, utilizou-se a plataforma Expo. O Expo foi escolhido por fornecer um conjunto estável de módulos nativos pré-configurados, eliminando a dependência de configurações manuais complexas em compiladores específicos de cada sistema operacional. No WeFIND, a integração com o aparelho apoiou-se em pacotes especializados do Expo: o módulo \textit{expo-location} para captura das coordenadas de satélite (GPS) com alta precisão; o \textit{expo-image-picker} para acesso à câmera fotográfica e à galeria do usuário; e o módulo \textit{expo-image-manipulator} para realizar a compressão local de fotos antes da transmissão pela rede celular.
 
-A camada cartográfica baseia-se na biblioteca \textit{react-native-maps}, responsável pela renderização dinâmica dos mapas interativos do Google Maps e Apple Maps, com plotagem de marcadores coloridos por espécie e cálculo de rotas. Para a geração sob demanda dos cartazes de busca diagramados com código QR, empregou-se o componente \textit{react-native-view-shot}, que converte a interface em arquivo de imagem de alta definição, associado ao módulo \textit{expo-sharing} para compartilhamento direto com mensageiros e redes sociais externas. A navegação entre telas utiliza o React Navigation, enquanto a estilização visual adotou a biblioteca utilitária NativeWind (baseada em TailwindCSS), preferida em relação ao \textit{StyleSheet} tradicional por permitir estilização declarativa e ágil por meio de classes utilitárias padronizadas.
+A camada cartográfica baseia-se na biblioteca \textit{react-native-maps}, responsável pela renderização dinâmica dos mapas interativos do Google Maps e Apple Maps, com plotagem de marcadores coloridos por espécie e cálculo de rotas. Para a geração sob demanda dos cartazes de busca diagramados com código QR, empregou-se o componente \textit{react-native-view-shot}, que converte a interface em arquivo de imagem de alta definição, associado ao módulo \textit{expo-sharing} para compartilhamento direto com mensageiros e redes sociais externas. A navegação entre telas utiliza o React Navigation, enquanto a estilização visual adotou a biblioteca utilitária NativeWind (baseada em TailwindCSS), preferida em relação à folha de estilos tradicional por permitir estilização declarativa e ágil por meio de classes utilitárias padronizadas.
 
 Para proteger o tráfego de rede e a integridade das consultas, foram inseridas regras de validação no próprio aplicativo cliente. Os formulários executam verificações em tempo real sobre campos de preenchimento obrigatório, validam a consistência sintática de endereços de e-mail e realizam a formatação padronizada de números telefônicos antes do envio à nuvem.
 
 
 \subsection{Serviços em Nuvem, Mensageria Externa e Banco de Dados PostgreSQL}
 
-Na camada de persistência e serviços em nuvem, adotou-se a plataforma Supabase (SUPABASE, 2026), que opera no modelo \textit{Backend-as-a-Service} (BaaS). A escolha do Supabase, em vez do Google Firebase ou de um backend próprio desenvolvido do zero, baseou-se em dois fatores principais:
+Na camada de persistência e serviços em nuvem, adotou-se a plataforma Supabase (SUPABASE, 2026), que opera no modelo de infraestrutura gerenciada em nuvem (BaaS). A escolha do Supabase, em vez do Google Firebase ou de um backend próprio desenvolvido do zero, baseou-se em dois fatores principais:
 
 Em comparação ao Firebase, que utiliza banco de dados NoSQL orientado a documentos, o Supabase utiliza o banco relacional PostgreSQL. No WeFIND, informações sobre animais, tutores, publicações e avistamentos exigem relações diretas e integridade referencial. Bancos NoSQL tornariam essas consultas complexas e gerariam duplicação de dados. Além disso, o Supabase oferece suporte nativo a políticas de segurança em nível de linha, assegurando que cada usuário acesse e altere apenas os seus próprios registros.
 
@@ -80,9 +80,9 @@ Cada anúncio possui um período inicial de 30 dias de vigência ativa. Três di
 
 Para prevenir a sobrecarga do banco de dados e evitar o acúmulo de arquivos obsoletos na nuvem, o sistema adota uma rotina periódica de limpeza definitiva. Caso a publicação permaneça inativa após um período de carência (30 dias), ela é apagada em definitivo da base PostgreSQL. Essa exclusão ocorre em cascata, removendo os registros vinculados na tabela \textit{fotos\_publicacoes} e apagando as imagens hospedadas no Supabase Storage, evitando consumo desnecessário de armazenamento e garantindo a eficiência das consultas na base de dados.
 
-\subsection{Motor Heurístico de Correspondência (Matching Multicritério)}
+\subsection{Motor Heurístico de Correspondência Multicritério}
 
-A localização de um animal doméstico depende da agilidade com que informações complementares são conectadas. Em redes sociais e canais informais, os usuários precisam revisar manualmente dezenas de postagens para tentar reconhecer seu animal em fotografias divulgadas por terceiros. Para automatizar essa verificação, o WeFIND incorpora o módulo de correspondência (\textit{petMatching.js}), que realiza o cruzamento sistemático entre publicações ativas de tipos complementares (animais Perdidos e animais Encontrados).
+A localização de um animal doméstico depende da agilidade com que informações complementares são conectadas. Em redes sociais e canais informais, os usuários precisam revisar manualmente dezenas de postagens para tentar reconhecer seu animal em fotografias divulgadas por terceiros. Para automatizar essa verificação, o WeFIND incorpora o módulo de correspondência automática, que realiza o cruzamento sistemático entre publicações ativas de tipos complementares (animais Perdidos e animais Encontrados).
 
 O motor opera em duas etapas sequenciais: a triagem eliminatória imediata e o cômputo ponderado de similaridade morfológica e espacial. Seu resultado é uma sugestão de correspondência entre publicações; o motor não registra automaticamente um avistamento nem altera a localização de uma publicação.
 
@@ -94,21 +94,21 @@ O primeiro critério corresponde à incompatibilidade de espécies, em que regis
 
 \subsubsection{Sistema de Ponderação, Penalidades e Proximidade por Haversine}
 
-Ultrapassada a barreira dos critérios eliminatórios, os anúncios são submetidos a uma matriz de pontuação cumulativa projetada para produzir um escore heurístico entre 0 e 100 pontos. Cada atributo físico coincidente adiciona valor ao índice de compatibilidade, ao passo que divergências relevantes em raça, pelagem ou distância geográfica aplicam penalidades. Esses pesos constituem uma decisão de projeto e ainda não representam uma probabilidade estatística calibrada. O Quadro~\ref{quadro:matching} consolida os critérios, as condições de pontuação e os pesos implementados no algoritmo.
+Ultrapassada a barreira dos critérios eliminatórios, os anúncios são submetidos a uma matriz de pontuação cumulativa projetada para produzir um escore heurístico entre 0 e 100 pontos. Cada atributo físico coincidente adiciona valor ao índice de compatibilidade, ao passo que divergências relevantes em raça, pelagem ou distância geográfica aplicam penalidades. Esses pesos constituem uma decisão de projeto e ainda não representam uma probabilidade estatística calibrada. O \hyperref[quadro:matching]{Quadro 4} consolida os critérios, as condições de pontuação e os pesos implementados no algoritmo.
 
 \vspace{0.3cm}
 {
-\phantomsection\label{quadro:matching}
+\phantomsection\hypertarget{quadro:matching}{}\label{quadro:matching}
 \small
 \renewcommand{\arraystretch}{1.12}
 \begin{longtable}{|>{\raggedright\arraybackslash}p{3.3cm}|>{\raggedright\arraybackslash}p{8.4cm}|>{\centering\arraybackslash}p{2.5cm}|}
 \hline
-\multicolumn{3}{|c|}{\textbf{Quadro 4: Critérios e Pesos do Algoritmo de Matching do WeFIND}} \\ \hline
+\multicolumn{3}{|c|}{\textbf{Quadro 4: Critérios e Pesos do Algoritmo de Correspondência do WeFIND}} \\ \hline
 \textbf{Critério Avaliado} & \textbf{Condição Lógica e Regra de Negócio} & \textbf{Pontuação} \\ \hline
 \endfirsthead
 
 \hline
-\multicolumn{3}{|c|}{\textbf{Quadro 4: Critérios e Pesos do Algoritmo de Matching (Continuação)}} \\ \hline
+\multicolumn{3}{|c|}{\textbf{Quadro 4: Critérios e Pesos do Algoritmo de Correspondência (Continuação)}} \\ \hline
 \textbf{Critério Avaliado} & \textbf{Condição Lógica e Regra de Negócio} & \textbf{Pontuação} \\ \hline
 \endhead
 
@@ -151,11 +151,11 @@ A faixa de compatibilidade muito alta, com índices iguais ou superiores a 85\%,
 
 Sempre que uma nova publicação atinge compatibilidade de no mínimo 60\% com algum animal ativo no banco de dados, o WeFIND aciona a rotina \textit{processAndNotifyPetMatches}. Esse serviço notifica em tempo real ambas as partes envolvidas: tanto o usuário que cadastrou a nova publicação quanto o autor da publicação preexistente recebem notificações internas, alertas nativos no smartphone e mensagens no WhatsApp via Evolution API, com acesso direto à comparação detalhada dos animais. A confirmação da identidade e eventual atualização de localização pertencem a fluxos posteriores e dependem de ação humana.
 
-\subsubsection{Distinção entre Matching e Registro de Avistamento}
+\subsubsection{Distinção entre Correspondência Automática e Registro de Avistamento}
 
-O matching automático e o registro de avistamento utilizam informações semelhantes, mas possuem finalidades e efeitos distintos. O matching compara duas publicações ativas de status oposto, Perdido e Encontrado, para identificar uma possível relação entre o animal perdido por um usuário e o animal encontrado por outro. Seu produto é um escore heurístico e uma notificação, sem alteração automática das publicações.
+A correspondência automática e o registro de avistamento utilizam informações semelhantes, mas possuem finalidades e efeitos distintos. A correspondência automática compara duas publicações ativas de status oposto, Perdido e Encontrado, para identificar uma possível relação entre o animal perdido por um usuário e o animal encontrado por outro. Seu produto é um escore heurístico e uma notificação, sem alteração automática das publicações.
 
-O registro de avistamento parte de uma publicação já existente e acrescenta uma nova ocorrência observada em outro momento ou local. Depois que o informante confirma que o animal visualizado corresponde ao caso sugerido, o serviço de avistamentos grava o relato na tabela correspondente, atualiza a localização mais recente da publicação principal e preserva os registros anteriores para compor a linha do tempo. Portanto, o matching auxilia a descoberta de possíveis correspondências, enquanto o avistamento confirmado atualiza o acompanhamento espacial do caso.
+O registro de avistamento parte de uma publicação já existente e acrescenta uma nova ocorrência observada em outro momento ou local. Depois que o informante confirma que o animal visualizado corresponde ao caso sugerido, o serviço de avistamentos grava o relato na tabela correspondente, atualiza a localização mais recente da publicação principal e preserva os registros anteriores para compor a linha do tempo. Portanto, a correspondência automática auxilia a descoberta de possíveis correspondências, enquanto o avistamento confirmado atualiza o acompanhamento espacial do caso.
 
 
 \subsection{Ferramentas Auxiliares de Apoio}

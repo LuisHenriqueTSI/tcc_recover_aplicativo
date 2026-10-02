@@ -2,9 +2,9 @@
 
 O desenvolvimento deste Trabalho de Conclusão de Curso resultou na concepção, modelagem e implementação da plataforma WeFIND, um aplicativo móvel voltado ao apoio à localização de animais domésticos perdidos e à divulgação de casos de acolhimento e adoção. A proposta buscou oferecer uma alternativa tecnológica para centralizar ocorrências, reduzindo a dispersão de informações observada em redes sociais convencionais.
 
-A partir do diagnóstico empírico de campo e da análise de soluções similares, foram levantados 46 requisitos funcionais e 14 requisitos não funcionais, que orientaram a modelagem conceitual do sistema e o desenvolvimento da aplicação móvel integrada a serviços em nuvem. A conformidade das regras de negócio foi verificada por meio da execução de 25 casos de testes funcionais cobrindo o escopo especificado.
+A partir do diagnóstico empírico de campo e da análise de soluções similares, foram levantados requisitos funcionais e não funcionais que orientaram a modelagem conceitual do sistema e o desenvolvimento da aplicação móvel integrada a serviços em nuvem. A avaliação com participantes e seus resultados são apresentados no Capítulo 8, incluindo as limitações dos dados coletados.
 
-O design centrado no usuário orientou a construção de interfaces intuitivas, utilizando a tipografia Roboto e uma paleta cromática semântica voltada à clareza das informações. A avaliação empírica de usabilidade conduzida com 20 voluntários por meio do protocolo \textit{System Usability Scale} (SUS) obteve pontuação média de 85,3 pontos, indicando boa aceitação da interface e facilidade na realização dos fluxos principais da aplicação.
+O design centrado no usuário orientou a construção das interfaces do aplicativo. Na avaliação de usabilidade, 12 participantes realizaram tarefas no WeFIND e responderam a um formulário com dez afirmações estruturadas com base na Escala de Usabilidade do Sistema (SUS). O escore médio calculado foi de 93,33 pontos. Esse resultado representa a percepção do grupo consultado e deve ser interpretado considerando o tamanho e o perfil da amostra, bem como as limitações do instrumento e da coleta, apresentadas no Capítulo 8.
 
 Dessa forma, o projeto consolidou uma solução funcional que reúne busca georreferenciada no mapa, comunicação direta entre usuários sem exposição de dados pessoais sensíveis e ferramentas preventivas de identificação animal.
 
@@ -13,7 +13,7 @@ Dessa forma, o projeto consolidou uma solução funcional que reúne busca georr
 
 Durante o desenvolvimento do WeFIND, foram enfrentados desafios técnicos e operacionais relacionados à integração das ferramentas e às restrições dos dispositivos móveis.
 
-O primeiro desafio envolveu o consumo de bateria e a renderização cartográfica na captura de coordenadas via GPS. Dispositivos móveis com menores recursos de processamento apresentavam lentidão na exibição simultânea de múltiplos marcadores no mapa. Para contornar essa situação, adotaram-se técnicas de agrupamento espacial (\textit{clustering}) e calibraram-se as chamadas ao módulo \textit{expo-location}, restringindo as atualizações contínuas de coordenadas aos momentos de interação ativa com o mapa ou traçado de rotas.
+O primeiro desafio envolveu o consumo de bateria e a renderização cartográfica na captura de coordenadas via GPS. Dispositivos móveis com menores recursos de processamento apresentavam lentidão na exibição simultânea de múltiplos marcadores no mapa. Para contornar essa situação, adotaram-se técnicas de agrupamento espacial de marcadores e calibraram-se as chamadas ao módulo \textit{expo-location}, restringindo as atualizações contínuas de coordenadas aos momentos de interação ativa com o mapa ou traçado de rotas.
 
 A segunda dificuldade relacionou-se ao tráfego de fotografias capturadas em alta resolução pelas câmeras dos smartphones. O envio direto desses arquivos, frequentemente superiores a 4 megabytes, sobrecarregava as conexões de dados móveis e tornava o carregamento dos anúncios lento. Essa limitação foi solucionada com a utilização do módulo \textit{expo-image-manipulator}, que redimensiona e comprime as imagens diretamente no aparelho antes do envio à nuvem, reduzindo substancialmente o tamanho dos arquivos sem prejudicar a nitidez necessária para a identificação do animal.
 
@@ -26,7 +26,7 @@ Por fim, considerou-se inicialmente o uso de modelos automatizados para moderaç
 
 A partir dos resultados obtidos e das limitações identificadas durante o desenvolvimento da ferramenta, sugerem-se algumas propostas para a continuidade do projeto:
 
-Primeiramente, sugere-se o aprimoramento do algoritmo de correspondência (\textit{matching}). A utilização do sistema em escala com uma base maior de anúncios permitirá calibrar com maior precisão os pesos atribuídos aos atributos morfológicos e à distância geográfica, além de possibilitar a experimentação de técnicas de comparação de imagens para apoiar a triagem preliminar dos animais.
+Primeiramente, sugere-se o aprimoramento do algoritmo de correspondência entre anúncios. A utilização do sistema em escala com uma base maior de anúncios permitirá calibrar com maior precisão os pesos atribuídos aos atributos morfológicos e à distância geográfica, além de possibilitar a experimentação de técnicas de comparação de imagens para apoiar a triagem preliminar dos animais.
 
 Em segundo lugar, a integração direta com redes sociais e plataformas de mensagens apresenta-se como uma evolução prática relevante. A automação do compartilhamento dos anúncios em grupos locais pode ampliar a visibilidade dos animais perdidos, sem exigir ações manuais repetitivas por parte dos tutores.
 

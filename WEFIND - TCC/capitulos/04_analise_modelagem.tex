@@ -7,7 +7,7 @@ No projeto WeFIND, a análise baseou-se no levantamento de 46 requisitos funcion
 
 \subsection{Engenharia e Levantamento de Requisitos}
 
-A especificação de requisitos define formalmente as funções do aplicativo e suas restrições operacionais (Sommerville, 2019). No WeFIND, os requisitos foram formulados a partir das carências identificadas na pesquisa de campo e das oportunidades observadas no estudo de soluções similares (Capítulo 3), mantendo rastreabilidade com os casos de teste documentados no Capítulo 8 e no Apêndice D.
+A especificação de requisitos define formalmente as funções do aplicativo e suas restrições operacionais (Sommerville, 2019). No WeFIND, os requisitos foram formulados a partir das carências identificadas na pesquisa de campo e das oportunidades observadas no estudo de soluções similares (Capítulo 3). A matriz de rastreabilidade entre necessidades, requisitos e funcionalidades correspondentes é apresentada no Apêndice D.
 
 Para organizar o desenvolvimento, os 46 Requisitos Funcionais (RF) foram distribuídos em áreas temáticas do aplicativo. As funções essenciais concentram-se no gerenciamento de contas e perfis (RF01 a RF08), no registro e controle de publicações de animais perdidos, encontrados e para adoção (RF09 a RF17), e na navegação cartográfica com traçado de rotas e busca geográfica (RF18 a RF21).
 
@@ -18,11 +18,11 @@ Por fim, a interação entre usuários e a integridade das informações são pr
 
 \subsubsection{Requisitos Funcionais}
 
-O \hyperref[quadro:funcionais]{Quadro 2} consolida a especificação integral dos 46 requisitos funcionais do aplicativo WeFIND, indicando para cada item o respectivo identificador único, a denominação operacional e a descrição do comportamento esperado pelo sistema. Ressalta-se que a totalidade dos 46 requisitos funcionais levantados foi integralmente implementada na aplicação móvel e validada na suíte de testes do Capítulo 8, correspondendo ao escopo efetivo do projeto.
+O \hyperref[quadro:funcionais]{Quadro 2} consolida a especificação dos 46 requisitos funcionais do aplicativo WeFIND, indicando para cada item o respectivo identificador único, a denominação operacional e a descrição do comportamento esperado pelo sistema. Os requisitos orientaram a implementação das funcionalidades e definiram o escopo previsto para a aplicação; sua especificação, por si só, não representa evidência de validação de cada requisito.
 
 \vspace{0.3cm}
 {
-\phantomsection\label{quadro:funcionais}
+\phantomsection\hypertarget{quadro:funcionais}{}\label{quadro:funcionais}
 \small
 \renewcommand{\arraystretch}{1.18}
 \begin{longtable}{|>{\centering\arraybackslash}p{1.3cm}|>{\raggedright\arraybackslash}p{4.2cm}|>{\raggedright\arraybackslash}p{8.8cm}|}
@@ -89,9 +89,11 @@ O \hyperref[quadro:funcionais]{Quadro 2} consolida a especificação integral do
 \textbf{RF43} & Manter Moderação e Denúncias & Permitir ao administrador listar denúncias, analisar publicações reportadas, remover conteúdos impróprios e suspender contas. \\ \hline
 \textbf{RF44} & Visualizar Ranking Semanal & Apurar dinamicamente as ações de impacto da comunidade e exibir ranking semanal municipal com pódio, pontuação e colocação do usuário. \\ \hline
 \textbf{RF45} & Gerenciar Lares Temporários & Permitir o cadastro voluntário de lares temporários com critérios de moradia e viabilizar a busca e solicitação de acolhimento solidário. \\ \hline
-\textbf{RF46} & Processar Correspondências Inteligentes (Matching) & Cruzar automaticamente publicações ativas de status oposto (Perdido $\leftrightarrow$ Encontrado), avaliando atributos morfológicos e distância geográfica via fórmula de Haversine, gerando percentual de similaridade e emitindo alertas bidirecionais caso a compatibilidade atinja o limiar mínimo de relevância ($\ge 60\%$). \\ \hline
+\textbf{RF46} & Processar Correspondências Inteligentes & Cruzar automaticamente publicações ativas de status oposto (Perdido $\leftrightarrow$ Encontrado), avaliando atributos morfológicos e distância geográfica via fórmula de Haversine, gerando percentual de similaridade e emitindo alertas bidirecionais caso a compatibilidade atinja o limiar mínimo de relevância ($\ge 60\%$). \\ \hline
 \end{longtable}
 }
+
+A especificação dos requisitos funcionais consolidada no \hyperref[quadro:funcionais]{Quadro 2} reflete diretamente as carências identificadas na pesquisa de campo e na análise das plataformas similares. O conjunto de 46 requisitos cobre desde operações básicas de cadastro, autenticação e moderação até os recursos centrais da solução proposta, como a busca espacial sobre mapas, o registro colaborativo de avistamentos, a comunicação privativa por mensagens em tempo real e a correspondência automatizada entre ocorrências. Essa estrutura serviu de guia para as decisões de modelagem conceitual, para a implementação das telas e para a condução dos testes apresentados nos capítulos seguintes.
 
 
 \subsubsection{Requisitos Não Funcionais}
@@ -102,7 +104,7 @@ O \hyperref[quadro:nao_funcionais]{Quadro 3} sintetiza os 14 requisitos não fun
 
 \vspace{0.3cm}
 {
-\phantomsection\label{quadro:nao_funcionais}
+\phantomsection\hypertarget{quadro:nao_funcionais}{}\label{quadro:nao_funcionais}
 \small
 \renewcommand{\arraystretch}{1.18}
 \begin{longtable}{|>{\centering\arraybackslash}p{1.4cm}|>{\raggedright\arraybackslash}p{3.8cm}|>{\raggedright\arraybackslash}p{9.2cm}|}

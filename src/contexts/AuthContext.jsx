@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import * as supabaseAuth from '../services/supabaseAuth';
 import * as userService from '../services/user';
 import { registerForPushNotificationsAsync } from '../services/pushNotifications';
@@ -27,6 +27,36 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const activeUserIdRef = useRef(null);
+  const profileRequestsRef = useRef(new Map());
+
+  const ensureProfile = useCallback((authUser) => {
+    if (!authUser?.id) return Promise.resolve(null);
+
+    const pendingRequest = profileRequestsRef.current.get(authUser.id);
+    if (pendingRequest) return pendingRequest;
+
+    const phone = authUser.user_metadata?.whatsapp || authUser.user_metadata?.phone || '';
+    const request = userService.createProfileIfMissing(authUser.id, {
+      name: authUser.user_metadata?.name || authUser.user_metadata?.full_name,
+      email: authUser.email,
+      city: authUser.user_metadata?.city,
+      state: authUser.user_metadata?.state,
+      whatsapp: phone,
+      phone,
+    }).then((profile) => {
+      if (profile && activeUserIdRef.current === authUser.id) {
+        setUserProfile(profile);
+        setIsAdmin(profileIsAdmin(profile, authUser));
+      }
+      return profile;
+    }).finally(() => {
+      profileRequestsRef.current.delete(authUser.id);
+    });
+
+    profileRequestsRef.current.set(authUser.id, request);
+    return request;
+  }, []);
 
   // Initialize auth state
   useEffect(() => {
@@ -37,7 +67,9 @@ export const AuthProvider = ({ children }) => {
         
         if (currentUser) {
           console.log('[Auth] Usuário encontrado:', currentUser.id);
+          activeUserIdRef.current = currentUser.id;
           setUser(currentUser);
+          setLoading(false);
 
           // Registra token para push notifications
           registerForPushNotificationsAsync(currentUser.id).catch(() => {});
@@ -46,22 +78,17 @@ export const AuthProvider = ({ children }) => {
           });
 
           // Garante que o perfil exista após restaurar a sessão
-          const userPhone = currentUser.user_metadata?.whatsapp || currentUser.user_metadata?.phone || '';
-          const profile = await userService.createProfileIfMissing(currentUser.id, {
-            name: currentUser.user_metadata?.name,
-            email: currentUser.email,
-            city: currentUser.user_metadata?.city,
-            state: currentUser.user_metadata?.state,
-            whatsapp: userPhone,
-            phone: userPhone,
-          });
-          if (profile) {
-            setUserProfile(profile);
-            setIsAdmin(profileIsAdmin(profile, currentUser));
+          try {
+            const profile = await ensureProfile(currentUser);
+            if (profile) {
             console.log('[Auth] Perfil carregado, isAdmin:', profileIsAdmin(profile, currentUser));
+            }
+          } catch (error) {
+            console.warn('[Auth] Não foi possível inicializar o perfil:', error.message);
           }
         } else {
           console.log('[Auth] Nenhum usuário autenticado');
+          activeUserIdRef.current = null;
           setUser(null);
           setUserProfile(null);
           setIsAdmin(false);
@@ -77,34 +104,26 @@ export const AuthProvider = ({ children }) => {
 
     // Listen to auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('[Auth] Auth state changed:', event);
         
         if (event === 'SIGNED_IN') {
           if (session?.user) {
+            activeUserIdRef.current = session.user.id;
             setUser(session.user);
             syncRatingNotifications(session.user.id).catch((error) => {
               console.warn('[Auth] Não foi possível sincronizar notificações de classificação:', error.message);
             });
-            const sessionPhone = session.user.user_metadata?.whatsapp || session.user.user_metadata?.phone || '';
-            const profile = await userService.createProfileIfMissing(session.user.id, {
-              name: session.user.user_metadata?.name,
-              email: session.user.email,
-              city: session.user.user_metadata?.city,
-              state: session.user.user_metadata?.state,
-              whatsapp: sessionPhone,
-              phone: sessionPhone,
+            Promise.resolve().then(() => ensureProfile(session.user)).catch((error) => {
+              console.error('[Auth] Não foi possível inicializar o perfil após autenticação:', error.message);
             });
-            if (profile) {
-              setUserProfile(profile);
-              setIsAdmin(profileIsAdmin(profile, session.user));
-            }
           }
         } else if (event === 'USER_UPDATED') {
           if (session?.user) {
             setUser(session.user);
           }
         } else if (event === 'SIGNED_OUT') {
+          activeUserIdRef.current = null;
           setUser(null);
           setUserProfile(null);
           setIsAdmin(false);
@@ -120,7 +139,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       authListener?.subscription?.unsubscribe();
     };
-  }, [resetThemeToLight, setThemeMode]);
+  }, [ensureProfile, resetThemeToLight, setThemeMode]);
 
   const signUp = useCallback(async (email, password, name, city, state, whatsapp) => {
     try {
@@ -148,31 +167,42 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('[signIn] Fazendo login...');
       const result = await supabaseAuth.signIn(email, password);
+      activeUserIdRef.current = result.user.id;
       setUser(result.user);
-      
-      // Garante que o perfil exista após autenticação válida
-      const profile = await userService.createProfileIfMissing(result.user.id, {
-        name: result.user.user_metadata?.name,
-        email: result.user.email,
-        city: result.user.user_metadata?.city,
-        state: result.user.user_metadata?.state,
-      });
-      if (profile) {
-        setUserProfile(profile);
-        setIsAdmin(profileIsAdmin(profile, result.user));
-      }
+      await ensureProfile(result.user);
       
       return result;
     } catch (error) {
       console.log('[signIn] Erro:', error.message);
       throw error;
     }
-  }, []);
+  }, [ensureProfile]);
+
+  const signInWithGoogle = useCallback(async () => {
+    try {
+      const result = await supabaseAuth.signInWithGoogle();
+      if (!result?.user) {
+        return result;
+      }
+
+      activeUserIdRef.current = result.user.id;
+      setUser(result.user);
+      Promise.resolve().then(() => ensureProfile(result.user)).catch((error) => {
+        console.error('[signInWithGoogle] Não foi possível carregar o perfil após autenticação:', error.message);
+      });
+
+      return result;
+    } catch (error) {
+      console.log('[signInWithGoogle] Erro:', error.message);
+      throw error;
+    }
+  }, [ensureProfile]);
 
   const signOut = useCallback(async () => {
     try {
       console.log('[signOut] Fazendo logout...');
       await supabaseAuth.signOut();
+      activeUserIdRef.current = null;
       setUser(null);
       setUserProfile(null);
       setIsAdmin(false);
@@ -210,6 +240,7 @@ export const AuthProvider = ({ children }) => {
     signUp,
     confirmSignUp,
     signIn,
+    signInWithGoogle,
     signOut,
     refreshProfile,
   };

@@ -18,7 +18,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getMessages, sendMessage, markMessagesAsRead, uploadMessagePhoto, getOrCreateConversation, closeConversation } from '../services/messages';
+import { getMessages, sendMessage, markMessagesAsRead, markConversationMessagesAsRead, uploadMessagePhoto, getOrCreateConversation, closeConversation } from '../services/messages';
 import { submitOwnershipProof, getVerificationStatus } from '../services/proofVerification';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -48,6 +48,7 @@ const ChatScreen = (props) => {
   const [avatarUrl, setAvatarUrl] = useState(conversation?.avatarUrl || null);
   const [itemData, setItemData] = useState(null);
   const [isItemDeleted, setIsItemDeleted] = useState(Boolean(conversation?.isItemDeleted));
+  const otherDeleted = Boolean(conversation?.otherDeleted);
   const [conversationState, setConversationState] = useState({
     id: conversation?.conversationId || null,
     status: conversation?.status || 'ativa',
@@ -74,6 +75,7 @@ const ChatScreen = (props) => {
 
   const otherId = conversation?.otherId;
   const itemId = conversation?.itemId;
+  const conversationId = conversation?.conversationId || conversationState.id;
 
   // Controlador de elevação animada do teclado (100% imune a bugs de Edge-to-Edge / Android)
   const keyboardHeightAnim = useRef(new Animated.Value(0)).current;
@@ -120,18 +122,20 @@ const ChatScreen = (props) => {
   }, [insets.bottom]);
 
   useEffect(() => {
-    if (!user?.id || !otherId) {
+    if (!user?.id || (!otherId && !otherDeleted)) {
       setLoading(false);
       return;
     }
-    const cacheKey = `@wefind_chat_cache_${user.id}_${otherId}_${itemId || 'all'}`;
+    const cacheKey = `@wefind_chat_cache_${user.id}_${otherId || conversationId}_${itemId || 'all'}`;
 
     const load = async () => {
-      try {
-        const persistedConversation = await getOrCreateConversation(user.id, otherId, itemId);
-        setConversationState(persistedConversation);
-      } catch (conversationError) {
-        console.error('[ChatScreen] Erro ao carregar conversa:', conversationError);
+      if (!otherDeleted) {
+        try {
+          const persistedConversation = await getOrCreateConversation(user.id, otherId, itemId);
+          setConversationState(persistedConversation);
+        } catch (conversationError) {
+          console.error('[ChatScreen] Erro ao carregar conversa:', conversationError);
+        }
       }
 
       // 1. Tenta carregar do cache local imediatamente para abrir em 0ms
@@ -150,8 +154,17 @@ const ChatScreen = (props) => {
       // 2. Busca mensagens do servidor em paralelo
       try {
         const [msgs] = await Promise.all([
-          getMessages(user.id, otherId, itemId || 50),
-          markMessagesAsRead(user.id, otherId).catch(() => {}),
+          getMessages(
+            user.id,
+            otherId,
+            otherDeleted ? { conversationId, limit: 120 } : itemId || 50,
+          ),
+          (otherDeleted
+            ? markConversationMessagesAsRead(user.id, conversationId)
+            : markMessagesAsRead(user.id, otherId)
+          ).catch((readError) => {
+            console.warn('[ChatScreen] Não foi possível marcar as mensagens como lidas:', readError.message);
+          }),
         ]);
 
         if (Array.isArray(msgs)) {
@@ -159,7 +172,7 @@ const ChatScreen = (props) => {
           AsyncStorage.setItem(cacheKey, JSON.stringify(msgs.slice(-50))).catch(() => {});
         }
 
-        if (!conversation?.otherName || !conversation?.avatarUrl) {
+        if (otherId && (!conversation?.otherName || !conversation?.avatarUrl)) {
           supabase
             .from('profiles')
             .select('name, avatar_url')
@@ -198,7 +211,7 @@ const ChatScreen = (props) => {
       }
     };
     load();
-  }, [user?.id, otherId, itemId]);
+  }, [user?.id, otherId, itemId, otherDeleted, conversationId]);
 
   // Identifica papéis na conversa
   const isFoundPet = !isItemDeleted && (itemData?.status === 'found' || conversation?.itemStatus === 'found');
@@ -229,7 +242,7 @@ const ChatScreen = (props) => {
   }, [itemId, user?.id, isMeFinder, isFoundPet, verificationStatus]);
 
   // O chat de um animal encontrado só é liberado após a aprovação do tutor.
-  const requiresInitialProof = Boolean(itemId && !isItemDeleted && isFoundPet && !isMeFinder && verificationStatus !== 'approved' && !loading);
+  const requiresInitialProof = Boolean(!otherDeleted && itemId && !isItemDeleted && isFoundPet && !isMeFinder && verificationStatus !== 'approved' && !loading);
   const verificationPending = verificationStatus === 'pending';
 
   // Resgatista pode confirmar o tutor e liberar o local de retirada
@@ -252,7 +265,7 @@ const ChatScreen = (props) => {
   const itemLongitude = itemData?.longitude ?? itemData?.extra_fields?.location_details?.longitude ?? itemData?.extra_fields?.longitude;
 
   useEffect(() => {
-    if (!user?.id || !otherId) return;
+    if (!user?.id || !otherId || otherDeleted) return;
 
     const channelName = `chat-room-${[user.id, otherId].sort().join('-')}-${itemId || 'general'}`;
     const channel = supabase.channel(channelName);
@@ -306,7 +319,7 @@ const ChatScreen = (props) => {
       .subscribe();
 
     return cleanupChannel;
-  }, [user?.id, otherId, itemId]);
+  }, [user?.id, otherId, itemId, otherDeleted]);
 
   const handlePickPhoto = async () => {
     try {
@@ -499,6 +512,7 @@ const ChatScreen = (props) => {
   };
 
   const handleSend = async () => {
+    if (otherDeleted || !otherId) return;
     if (conversationState.status === 'encerrada') {
       setError('Esta conversa foi encerrada e não aceita novas mensagens.');
       return;
@@ -553,6 +567,7 @@ const ChatScreen = (props) => {
 
   const renderItem = ({ item }) => {
     const isMe = item.sender_id === user.id;
+    const senderDeleted = Boolean(item.sender_deleted);
     const isHighlight = highlightMessageId && item.id === highlightMessageId;
     const isProofMsg = typeof item.content === 'string' && item.content.includes('[COMPROVAÇÃO DE TUTOR]');
     const isLocationReleaseMsg = typeof item.content === 'string' && item.content.includes('[LOCAL DE RETIRADA LIBERADO]');
@@ -597,6 +612,11 @@ const ChatScreen = (props) => {
             isHighlight && { borderWidth: 2, borderColor: '#F59E0B' },
           ]}
         >
+          {senderDeleted && (
+            <Text style={{ color: colors.textMuted, fontSize: 10.5, fontWeight: '700', marginBottom: 4 }}>
+              Conta excluída
+            </Text>
+          )}
           {isProofMsg && (
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 4 }}>
               <MaterialIcons name="verified" size={14} color={isMe ? '#FFFFFF' : '#10B981'} />
@@ -940,7 +960,13 @@ const ChatScreen = (props) => {
           },
         ]}
       >
-        {requiresInitialProof ? (
+        {otherDeleted ? (
+          <View style={{ paddingVertical: 10, paddingHorizontal: 12, alignItems: 'center' }}>
+            <Text style={{ fontSize: 12, color: colors.textSecondary, textAlign: 'center', fontWeight: '600' }}>
+              Esta conta foi excluída. O histórico foi mantido sem os dados pessoais do autor.
+            </Text>
+          </View>
+        ) : requiresInitialProof ? (
           <View style={{ paddingVertical: 10, paddingHorizontal: 12, alignItems: 'center' }}>
             <Text style={{ fontSize: 12, color: colors.textSecondary, textAlign: 'center', fontWeight: '600' }}>
               🔒 Preencha e envie a comprovação acima para liberar as mensagens.

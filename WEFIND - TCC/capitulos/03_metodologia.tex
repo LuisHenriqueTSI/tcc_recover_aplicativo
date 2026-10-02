@@ -18,7 +18,7 @@ Quanto à sua natureza, a pesquisa classifica-se como aplicada. Como explica Gil
 
 Quanto aos seus objetivos, a pesquisa é de caráter exploratório-descritivo. De acordo com Gil (2022), a pesquisa exploratória tem por objetivo principal aproximar o pesquisador do problema, tornando-o mais claro ou possibilitando a criação de hipóteses, sendo indicada quando há poucos estudos sobre o comportamento do público frente a aplicativos integrados de busca. Complementarmente, a pesquisa descritiva visa descrever com precisão as características de determinada população ou fenômeno, bem como estabelecer relações entre variáveis por meio de técnicas padronizadas de coleta de dados (Lakatos; Marconi, 2021). Essa abordagem permitiu entender de perto as dificuldades enfrentadas nos desaparecimentos e registrar os hábitos de prevenção dos tutores, os canais de divulgação usados e as limitações das ferramentas existentes.
 
-Quanto à forma de abordagem do problema, o estudo combina métodos quantitativos e qualitativos. A parte quantitativa permitiu medir em números e porcentagens os hábitos dos tutores por meio de questionário estruturado, avaliar a usabilidade pelo protocolo padronizado \textit{System Usability Scale} (SUS) e medir os tempos de resposta da aplicação em testes práticos (Gil, 2022; Sauro; Lewis, 2022). Já a parte qualitativa permitiu compreender as opiniões e frustrações dos participantes quanto ao uso de redes sociais comuns, além de ajudar a identificar pontos de melhoria a partir da análise dos aplicativos similares e dos relatos colhidos nas sessões de teste com voluntários.
+Quanto à forma de abordagem do problema, o estudo combina métodos quantitativos e qualitativos. A parte quantitativa permitiu mensurar, por meio de questionários estruturados, hábitos dos tutores e a percepção de usabilidade do aplicativo. Na avaliação do WeFIND, foram analisadas as respostas a dez afirmações organizadas com base na estrutura da \textit{System Usability Scale} (SUS), além da conclusão autorrelatada das tarefas. Já a parte qualitativa considerou as respostas abertas dos participantes, que contribuíram para identificar aspectos positivos, dificuldades e oportunidades de melhoria (Gil, 2022; Sauro; Lewis, 2022).
 
 Quanto aos procedimentos técnicos adotados, a pesquisa estruturou-se em três frentes principais: pesquisa bibliográfica, pesquisa de campo e análise comparativa de similares (Gil, 2022). A pesquisa bibliográfica contemplou a revisão de livros, artigos científicos e normas técnicas (como as diretrizes de usabilidade da ABNT NBR ISO 9241-11 e de acessibilidade da WCAG 2.2), constituindo a base conceitual do projeto. A pesquisa de campo coletou dados primários com participantes da comunidade para mapear as carências e expectativas em relação a um aplicativo dedicado. Por fim, a análise comparativa de similares examinou quatro plataformas disponíveis no mercado, identificando potencialidades e limitações funcionais para orientar a especificação do WeFIND.
 
@@ -147,24 +147,24 @@ Como pontos positivos, o Pet911 possui extensa base de dados mundial, fluxo simp
 
 Complementarmente às quatro plataformas especializadas, a investigação avaliou o papel desempenhado pelas redes sociais generalistas, com ênfase nos grupos comunitários do Facebook e nas conversas instantâneas no WhatsApp. Conforme atestado no levantamento de campo realizado com tutores (no qual 100\% dos participantes utilizam redes sociais e 73,7\% recorrem ao WhatsApp para divulgar desaparecimentos), essas ferramentas consolidam-se como a principal solução de contorno adotada pela sociedade civil na ausência de sistemas dedicados. Como pontos positivos evidentes, destacam-se a altíssima adesão popular cotidiana, o custo financeiro nulo para publicações convencionais e a facilidade de compartilhamento imediato na rede de contatos pessoais no instante da perda.
 
-Em contrapartida, a utilização dessas ferramentas para o resgate de animais revela severas limitações operacionais. Em primeiro lugar, os algoritmos e o fluxo contínuo de postagens fazem com que os pedidos de ajuda percam alcance poucas horas após a publicação. Em segundo lugar, não há integração com mapas nem filtros de distância por GPS, dificultando a busca por voluntários nos arredores. Em terceiro lugar, a falta de formulários próprios resulta em relatos incompletos, enquanto informações de avistamentos ficam perdidas nos comentários. Além disso, a prática comum de divulgar telefones celulares em postagens públicas expõe as famílias a trotes e tentativas de golpe. O Quadro~1 sintetiza a análise comparativa entre as plataformas especializadas e as redes sociais generalistas.
+Em contrapartida, a utilização dessas ferramentas para o resgate de animais revela severas limitações operacionais. Em primeiro lugar, os algoritmos e o fluxo contínuo de postagens fazem com que os pedidos de ajuda percam alcance poucas horas após a publicação. Em segundo lugar, não há integração com mapas nem filtros de distância por GPS, dificultando a busca por voluntários nos arredores. Em terceiro lugar, a falta de formulários próprios resulta em relatos incompletos, enquanto informações de avistamentos ficam perdidas nos comentários. Além disso, a prática comum de divulgar telefones celulares em postagens públicas expõe as famílias a trotes e tentativas de golpe. Para identificar as lacunas operacionais existentes nas ferramentas de mercado e nas soluções de contorno adotadas pela população, estruturou-se uma avaliação comparativa com base nas principais funcionalidades demandadas na busca por animais. O Quadro~1 consolida a disponibilidade desses recursos em cada uma das alternativas analisadas.
 
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
-\phantomsection\label{quadro:similares}
-\small
-\renewcommand{\arraystretch}{0.90}
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{4.3cm}|>{\raggedright\arraybackslash}p{4.5cm}|}
+\phantomsection\hypertarget{quadro:similares}{}\label{quadro:similares}
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{2.2cm}|>{\centering\arraybackslash}p{1.7cm}|>{\centering\arraybackslash}p{1.4cm}|>{\centering\arraybackslash}p{2.0cm}|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.9cm}|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.6cm}|}
 \hline
-\multicolumn{4}{|c|}{\textbf{Quadro 1: Análise Comparativa dos Sistemas Similares e Soluções de Contorno}} \\ \hline
-\textbf{Nome} & \textbf{Definição e Proposta} & \textbf{Pontos Positivos} & \textbf{Principais Limitações} \\ \hline
-\textbf{Viu Meu Pet} & Plataforma web e móvel nacional para cadastro, busca e divulgação de animais perdidos e encontrados. & Ampla visibilidade no Brasil, variedade de ferramentas visuais gratuitas (cartazes e IA) e opções escaláveis para ampliar o resgate. & Cobrança financeira para impulsionamento, ausência de identificador preventivo para coleiras e falta de canal privativo de mensagens. \\ \hline
-\textbf{PawBoost} & Plataforma internacional (web e móvel) voltada a alertas rápidos e mobilização comunitária em resgates. & Grande rede comunitária de voluntários, automação de alertas para grupos locais e notificações diretas no celular. & Interface em língua inglesa voltada aos Estados Unidos, recursos avançados pagos e dependência de páginas no Facebook. \\ \hline
-\textbf{AlertPet} & Serviço nacional baseado em portal web que atua como anúncio móvel digital, intermediando campanhas de busca. & Alcance regional rápido que independe da rede de contatos pessoal do tutor, segmentação geográfica profissional e relatórios formais. & Modelo estritamente comercial pago, ausência de mapa interativo de navegação livre e carência de recursos colaborativos. \\ \hline
-\textbf{Pet911} & Plataforma web e móvel internacional (com versão no Brasil) de achados e perdidos de animais domésticos. & Ampla base de registros internacionais, interface móvel simplificada, processos rápidos de publicação e alertas comunitários. & Busca em listagens tabulares por município sem mapa dinâmico via GPS, ausência de chat privativo e recursos patrocinados pagos. \\ \hline
-\textbf{Redes Sociais (Facebook e WhatsApp)} & Canais de comunicação e redes generalistas utilizados de forma improvisada como solução de contorno predominante. & Altíssima densidade de usuários ativos cotidianamente, custo financeiro nulo e facilidade de compartilhamento imediato na rede de contatos. & Perda acelerada de alcance nas linhas do tempo, ausência de busca espacial em mapa interativo, comentários desorganizados e exposição de telefones pessoais. \\ \hline
+\multicolumn{8}{|c|}{\textbf{Quadro 1: Análise Comparativa de Funcionalidades entre Sistemas Similares}} \\ \hline
+\textbf{Plataforma} & \textbf{Aplicativo Móvel} & \textbf{Mapa GPS} & \textbf{Registro de Avistamento} & \textbf{Chat Privativo} & \textbf{QR Code na Coleira} & \textbf{Cálculo de Rota} & \textbf{Acesso Gratuito} \\ \hline
+Viu Meu Pet & Sim & Parcial & Não & Não & Parcial & Não & Não \\ \hline
+PawBoost & Sim & Não & Parcial & Parcial & Não & Não & Não \\ \hline
+AlertPet & Não & Não & Não & Não & Não & Não & Não \\ \hline
+Pet911 & Sim & Não & Não & Não & Não & Não & Não \\ \hline
+Redes Sociais & Sim & Não & Não & Não & Não & Não & Sim \\ \hline
 \end{tabular}
 \vspace{-0.2cm}
 \fonte{Autoria própria (2026)}
@@ -228,6 +228,6 @@ A segunda etapa envolveu a modelagem e o projeto de interface, compreendendo a c
 
 A terceira etapa consistiu na implementação e codificação modular do aplicativo móvel, em que as telas, regras de negócio e serviços de sincronização em nuvem foram programados e integrados com apoio do controle de versões no Git e GitHub (Capítulo 6).
 
-Por fim, a quarta etapa compreendeu a realização dos testes funcionais, da validação técnica e da avaliação de usabilidade. Essa etapa reuniu testes funcionais de caixa-preta para verificação das regras operacionais do aplicativo, medição de latência das requisições em conexões de rede móvel e aplicação do protocolo padronizado \textit{System Usability Scale} (SUS) com participantes voluntários. O detalhamento dos procedimentos, cenários e resultados consolidados é apresentado no Capítulo 8.
+Por fim, a quarta etapa compreendeu a avaliação de usabilidade do aplicativo com participantes voluntários. Os participantes foram convidados a realizar cinco tarefas no WeFIND e, em seguida, responderam a um formulário com questões sobre sua experiência, incluindo dez afirmações estruturadas com base na SUS e perguntas abertas. Os procedimentos, os resultados e as limitações dessa avaliação são apresentados no Capítulo 8.
 
 A integração entre a pesquisa de campo, a análise de similares e as práticas de engenharia de software fundamentou a concepção e a implementação da aplicação móvel. O Capítulo 4 apresenta o levantamento detalhado de requisitos e os modelos conceituais do sistema.

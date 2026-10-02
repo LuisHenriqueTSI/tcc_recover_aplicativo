@@ -281,13 +281,7 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
       overflow: 'hidden',
       backgroundColor: isDark ? '#161F30' : '#FFFFFF',
       borderWidth: 1,
-      borderColor: isDark ? '#243248' : '#E2E8F0',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: isDark ? 0.35 : 0.08,
-      shadowRadius: 10,
-      elevation: 4,
-    }}>
+      borderColor: isDark ? '#243248' : '#E2E8F0',    }}>
       {/* 1. CARROSSEL DE FOTOS / IMAGEM HERO */}
       <View
         style={{ position: 'relative', width: '100%', height: IMAGE_HEIGHT, backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }}
@@ -345,13 +339,7 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
             borderWidth: 1,
             borderRadius: 12,
             paddingHorizontal: 8,
-            paddingVertical: 4,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 3,
-            elevation: 2,
-          }}>
+            paddingVertical: 4,          }}>
             <MaterialIcons name={statusIcon} size={13} color={statusTextColor} style={{ marginRight: 4 }} />
             <Text style={{ color: statusTextColor, fontWeight: '800', fontSize: 11.5 }}>
               {statusLabel}
@@ -733,13 +721,7 @@ const ItemCard = React.memo(({ item, user, userProfile, thumbnails, handleSendMe
               backgroundColor: colors.primary,
               borderRadius: 18,
               paddingHorizontal: 14,
-              paddingVertical: 7,
-              shadowColor: colors.primary,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              elevation: 3,
-            }}
+              paddingVertical: 7,            }}
             activeOpacity={0.85}
           >
             <Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '800', marginRight: 2 }}>Ver Detalhes</Text>
@@ -1734,13 +1716,7 @@ const HomeScreen = ({ navigation, route }) => {
                 paddingHorizontal: 12,
                 paddingVertical: 6,
                 borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.28)',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-                elevation: 2,
-              }}
+                borderColor: 'rgba(255, 255, 255, 0.28)',              }}
               activeOpacity={0.75}
               accessibilityLabel="Entrar na conta"
             >
@@ -2439,13 +2415,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: COLORS.primaryBorder,
-    shadowColor: '#111827',
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
-    zIndex: 100,
+    borderColor: COLORS.primaryBorder,    zIndex: 100,
   },
   profileMenuHeader: {
     flexDirection: 'row',
@@ -2531,13 +2501,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
-  },
+    borderRadius: 12,  },
   advHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2603,13 +2567,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  advPillActive: {
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 2,
-  },
+  advPillActive: {  },
   advPillText: {
     fontSize: 12,
     fontWeight: '600',
@@ -2893,13 +2851,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
+    zIndex: 10,  },
 });
 
 export default HomeScreen;

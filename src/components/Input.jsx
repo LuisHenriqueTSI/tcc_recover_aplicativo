@@ -90,18 +90,18 @@ const Input = ({
 
 const styles = StyleSheet.create({
   label: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    marginBottom: 6,
+    marginBottom: 5,
     color: '#0F172A',
   },
   input: {
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    borderRadius: 10,
-    paddingVertical: 12,
+    borderRadius: 8,
+    paddingVertical: 11,
     paddingHorizontal: 14,
-    fontSize: 15,
+    fontSize: 14,
     color: '#0F172A',
     backgroundColor: '#F8FAFC',
   },

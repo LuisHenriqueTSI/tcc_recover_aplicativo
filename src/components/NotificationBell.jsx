@@ -1,36 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { getUnreadCount } from '../services/messages';
-import { getUserNotifications } from '../services/notifications';
+import { getUnreadNotificationCount } from '../services/notifications';
 
 export default function NotificationBell({ style }) {
   const { user } = useAuth();
   const navigation = useNavigation();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    if (!user) return;
-    fetchCounts();
-    const interval = setInterval(fetchCounts, 15000);
-    return () => clearInterval(interval);
-  }, [user]);
-
-  async function fetchCounts() {
-    if (!user) return;
+  const fetchCounts = useCallback(async () => {
+    if (!user?.id) return;
     try {
-      const [unreadMsgs, systemNotifs] = await Promise.all([
-        getUnreadCount(user.id),
-        getUserNotifications(user.id),
-      ]);
-      const unreadSystem = (systemNotifs || []).filter((n) => !n.read).length;
-      setUnreadCount((unreadMsgs || 0) + unreadSystem);
-    } catch (e) {
-      // Ignora silenciosamente
+    const [unreadMsgs, unreadNotifications] = await Promise.all([
+      getUnreadCount(user.id),
+      getUnreadNotificationCount(user.id),
+    ]);
+    setUnreadCount(unreadMsgs + unreadNotifications);
+    } catch (error) {
+    console.warn('[NotificationBell] Não foi possível atualizar o contador:', error.message);
     }
-  }
+  }, [user?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+    if (!user?.id) return undefined;
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 60000);
+    return () => clearInterval(interval);
+    }, [fetchCounts, user?.id])
+  );
 
   return (
     <View style={[{ minWidth: 40, alignItems: 'center', justifyContent: 'center' }, style]}>

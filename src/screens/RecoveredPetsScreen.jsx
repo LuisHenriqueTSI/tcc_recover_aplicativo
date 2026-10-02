@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as itemsService from '../services/items';
 import OptimizedImage from '../components/OptimizedImage';
+import { useTheme } from '../contexts/ThemeContext';
 
 const SAMPLE_RECOVERED_PETS = [
   {
@@ -107,6 +108,7 @@ const formatRelativeTime = (dateString) => {
 };
 
 const RecoveredPetsScreen = ({ navigation }) => {
+  const { colors } = useTheme();
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -163,7 +165,7 @@ const RecoveredPetsScreen = ({ navigation }) => {
 
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
         activeOpacity={0.9}
         onPress={() => {
           if (typeof item.id === 'number' || !String(item.id).startsWith('sample-')) {
@@ -172,7 +174,7 @@ const RecoveredPetsScreen = ({ navigation }) => {
         }}
       >
         {/* Faixa Superior Verde: Reencontrado */}
-        <View style={styles.topStatusBanner}>
+        <View style={[styles.topStatusBanner, { backgroundColor: colors.primary }]}>
           <MaterialIcons name="check-circle" size={15} color="#FFFFFF" style={{ marginRight: 5 }} />
           <Text style={styles.topStatusText}>Reencontrado</Text>
         </View>
@@ -182,33 +184,33 @@ const RecoveredPetsScreen = ({ navigation }) => {
           {photoUrl ? (
             <OptimizedImage uri={photoUrl} style={styles.petImage} resizeMode="cover" />
           ) : (
-            <View style={styles.imagePlaceholder}>
+            <View style={[styles.imagePlaceholder, { backgroundColor: colors.innerCard }]}>
               <MaterialIcons name="pets" size={48} color="#94A3B8" />
             </View>
           )}
 
           {/* Faixa Sobreposta na Base da Foto: Tempo até ser encontrado */}
-          <View style={styles.durationOverlay}>
+          <View style={[styles.durationOverlay, { backgroundColor: colors.primaryDark }]}>
             <Text style={styles.durationText}>{durationLabel}</Text>
           </View>
         </View>
 
         {/* Rodapé / Informações do Animal */}
         <View style={styles.cardFooter}>
-          <Text style={styles.petName} numberOfLines={1}>
+          <Text style={[styles.petName, { color: colors.text }]} numberOfLines={1}>
             {item.title || 'Animal'}
           </Text>
 
           <View style={styles.metaRow}>
-            <Text style={styles.locationText} numberOfLines={1}>
+            <Text style={[styles.locationText, { color: colors.textSecondary }]} numberOfLines={1}>
               {locationLabel}
             </Text>
-            <Text style={styles.timeText}>{relativeTime}</Text>
+            <Text style={[styles.timeText, { color: colors.textMuted }]}>{relativeTime}</Text>
           </View>
 
           {item.owner_name ? (
-            <Text style={styles.tutorText} numberOfLines={1}>
-              Tutor: <Text style={{ fontWeight: '600', color: '#475569' }}>{item.owner_name}</Text>
+            <Text style={[styles.tutorText, { color: colors.textSecondary }]} numberOfLines={1}>
+              Tutor: <Text style={{ fontWeight: '600', color: colors.text }}>{item.owner_name}</Text>
             </Text>
           ) : null}
         </View>
@@ -217,27 +219,28 @@ const RecoveredPetsScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]} edges={['left', 'right', 'bottom']}>
       {/* Header com Busca e Filtros */}
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Animais Reencontrados 🎉</Text>
-        <Text style={styles.headerSubtitle}>
+      <View style={[styles.headerContainer, { backgroundColor: colors.card, borderBottomColor: colors.cardBorder }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Animais Reencontrados 🎉</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
           Animais que voltaram para os seus lares e famílias
         </Text>
 
         {/* Barra de Pesquisa */}
-        <View style={styles.searchBar}>
-          <MaterialIcons name="search" size={20} color="#64748B" style={{ marginRight: 8 }} />
+        <View style={[styles.searchBar, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
+          <MaterialIcons name="search" size={20} color={colors.textMuted} style={{ marginRight: 8 }} />
           <TextInput
             placeholder="Buscar animal reencontrado por nome, bairro..."
-            placeholderTextColor="#64748B"
+            placeholderTextColor={colors.textMuted}
+            selectionColor={colors.primary}
             value={searchTerm}
             onChangeText={setSearchTerm}
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.text }]}
           />
           {searchTerm ? (
             <TouchableOpacity onPress={() => setSearchTerm('')} style={{ padding: 4 }}>
-              <MaterialIcons name="close" size={16} color="#64748B" />
+              <MaterialIcons name="close" size={16} color={colors.textMuted} />
             </TouchableOpacity>
           ) : null}
         </View>
@@ -254,7 +257,8 @@ const RecoveredPetsScreen = ({ navigation }) => {
               key={filter.id}
               style={[
                 styles.filterChip,
-                speciesFilter === filter.id && styles.filterChipActive,
+                { backgroundColor: colors.card, borderColor: colors.cardBorder },
+                speciesFilter === filter.id && { backgroundColor: colors.primary, borderColor: colors.primary },
               ]}
               onPress={() => setSpeciesFilter(filter.id)}
               activeOpacity={0.8}
@@ -262,7 +266,9 @@ const RecoveredPetsScreen = ({ navigation }) => {
               <Text
                 style={[
                   styles.filterChipText,
+                  { color: colors.textSecondary },
                   speciesFilter === filter.id && styles.filterChipTextActive,
+                  speciesFilter === filter.id && { color: '#FFFFFF' },
                 ]}
               >
                 {filter.label}
@@ -275,8 +281,8 @@ const RecoveredPetsScreen = ({ navigation }) => {
       {/* Lista de Cards */}
       {loading && !refreshing ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#2E5634" />
-          <Text style={styles.loadingText}>Carregando animais reencontrados...</Text>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Carregando animais reencontrados...</Text>
         </View>
       ) : (
         <FlatList
@@ -286,13 +292,13 @@ const RecoveredPetsScreen = ({ navigation }) => {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2E5634']} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} tintColor={colors.primary} />
           }
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
               <MaterialIcons name="sentiment-dissatisfied" size={48} color="#94A3B8" />
-              <Text style={styles.emptyTitle}>Nenhum animal reencontrado no momento</Text>
-              <Text style={styles.emptySubtitle}>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhum animal reencontrado no momento</Text>
+              <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
                 Tente ajustar os termos da sua pesquisa ou filtros.
               </Text>
             </View>
@@ -375,16 +381,10 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
-  },
+    borderColor: '#E2E8F0',  },
   topStatusBanner: {
     backgroundColor: '#2E5634',
     flexDirection: 'row',

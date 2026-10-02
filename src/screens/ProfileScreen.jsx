@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Image,
   ScrollView,
@@ -15,23 +14,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import * as itemsService from '../services/items';
+import { supabase } from '../lib/supabase';
 import FosterVolunteerModal from '../components/FosterVolunteerModal';
-import GamificationCard from '../components/GamificationCard';
 import { getFosterProfile } from '../services/foster';
-import { getUserGamificationData } from '../services/gamification';
 
 const ProfileScreen = ({ navigation }) => {
   const { userProfile, user, signOut, refreshProfile, isAdmin } = useAuth();
   const { colors, isDark } = useTheme();
-  const [userItems, setUserItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [userItemsCount, setUserItemsCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [localSavedLocation, setLocalSavedLocation] = useState(null);
   const [fosterModalVisible, setFosterModalVisible] = useState(false);
   const [fosterProfile, setFosterProfile] = useState(null);
-  const [gamificationData, setGamificationData] = useState(null);
 
   const loadProfileData = useCallback(async () => {
     try {
@@ -40,25 +35,26 @@ const ProfileScreen = ({ navigation }) => {
     } catch (e) {}
 
     if (user?.id) {
-      try {
-        const [itemsRes, fosterRes, gamiRes] = await Promise.allSettled([
-          itemsService.getUserItems(user.id),
-          getFosterProfile(user.id),
-          getUserGamificationData(user.id, userProfile),
-        ]);
-        if (itemsRes.status === 'fulfilled') setUserItems(itemsRes.value || []);
-        if (fosterRes.status === 'fulfilled') setFosterProfile(fosterRes.value);
-        if (gamiRes.status === 'fulfilled') setGamificationData(gamiRes.value);
-      } catch (err) {
-        console.warn('[ProfileScreen] Erro ao carregar dados:', err);
+      const [itemsRes, fosterRes] = await Promise.allSettled([
+        supabase
+          .from('items')
+          .select('id', { count: 'exact', head: true })
+          .eq('owner_id', user.id),
+        getFosterProfile(user.id),
+      ]);
+      if (itemsRes.status === 'fulfilled') {
+        if (itemsRes.value.error) {
+          console.warn('[ProfileScreen] Erro ao contar publicações:', itemsRes.value.error.message);
+        } else {
+          setUserItemsCount(itemsRes.value.count || 0);
+        }
+      } else {
+        console.warn('[ProfileScreen] Erro ao contar publicações:', itemsRes.reason?.message);
       }
+      if (fosterRes.status === 'fulfilled') setFosterProfile(fosterRes.value);
+      else console.warn('[ProfileScreen] Erro ao carregar perfil de lar temporário:', fosterRes.reason?.message);
     }
-    setLoading(false);
-  }, [user?.id, userProfile]);
-
-  useEffect(() => {
-    loadProfileData();
-  }, [loadProfileData]);
+  }, [user?.id]);
 
   useFocusEffect(
     useCallback(() => {
@@ -99,69 +95,37 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-  const formatDisplayPhone = (value) => {
-    let digits = String(value || '').replace(/\D/g, '');
-    if (digits.startsWith('55')) digits = digits.slice(2);
-    if (!digits) return null;
-    if (digits.length === 10) return `(${digits.slice(0, 2)}) 9${digits.slice(2, 6)}-${digits.slice(6)}`;
-    if (digits.length === 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-    return digits;
-  };
-
-  if (loading) {
-    return (
-      <View style={[styles.loading, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
   const initial = userProfile?.name?.[0]?.toUpperCase() || 'U';
-  const phoneNumber = userProfile?.whatsapp || userProfile?.phone || user?.phone || null;
-  const formattedPhone = phoneNumber ? formatDisplayPhone(phoneNumber) : null;
-  
   const effectiveCity = userProfile?.city || localSavedLocation?.city;
   const effectiveState = userProfile?.state || localSavedLocation?.state;
-  const effectiveNeighborhood = userProfile?.neighborhood || localSavedLocation?.neighborhood || localSavedLocation?.district;
 
   const locationText = (effectiveCity && effectiveState)
     ? `${effectiveCity} - ${effectiveState}`
     : (effectiveCity || effectiveState || null);
 
-  const activeItemsCount = userItems.filter(i => i.status !== 'resolved').length;
-  const resolvedItemsCount = userItems.filter(i => i.status === 'resolved').length;
-
   const communityLinks = [
     {
       label: 'Ranking da Comunidade',
-      description: 'Veja quem mais está ajudando nesta semana',
       icon: 'leaderboard',
       iconColor: colors.secondary,
-      bgColor: colors.secondaryLight,
       route: 'Ranking',
     },
     {
       label: 'Rede de Lares Temporários',
-      description: 'Encontre voluntários disponíveis para abrigar pets',
       icon: 'groups',
       iconColor: '#16A34A',
-      bgColor: '#F0FDF4',
       route: 'FosterVolunteers',
     },
     {
       label: 'Mural de Reencontros',
-      description: 'Animais recuperados e relatos de tutores',
       icon: 'favorite',
       iconColor: '#EC4899',
-      bgColor: '#FDF2F8',
       route: 'MuralReencontros',
     },
     {
       label: 'Sobre o WeFIND',
-      description: 'Conheça a plataforma e como funciona',
       icon: 'info',
       iconColor: colors.primary,
-      bgColor: colors.primaryLight,
       route: 'Sobre',
     },
   ];
@@ -169,20 +133,24 @@ const ProfileScreen = ({ navigation }) => {
   const settingsLinks = [
     {
       label: 'Configurações',
-      description: 'Tema escuro, notificações e segurança',
       icon: 'settings',
-      iconColor: '#8B5CF6',
-      bgColor: '#F5F3FF',
+      iconColor: colors.textSecondary,
       route: 'Config',
     },
     {
       label: 'Ajuda e suporte',
-      description: 'Dúvidas frequentes e canais de contato',
       icon: 'help',
-      iconColor: '#10B981',
-      bgColor: '#ECFDF5',
+      iconColor: colors.textSecondary,
       route: 'AjudaSuporte',
     },
+  ];
+
+  const profileLinks = [
+    { label: 'Meus pets e carteirinhas', icon: 'pets', route: 'MyPets' },
+    { label: 'Meus anúncios', icon: 'campaign', route: 'MeusAnuncios', count: userItemsCount },
+    { label: 'Conquistas e nível', icon: 'workspace-premium', route: 'Gamification' },
+    { label: 'Solicitações de devolução', icon: 'assignment-turned-in', route: 'ClaimsManagement' },
+    ...(isAdmin ? [{ label: 'Painel administrativo', icon: 'admin-panel-settings', route: 'Admin' }] : []),
   ];
 
   return (
@@ -191,8 +159,8 @@ const ProfileScreen = ({ navigation }) => {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      {/* 1. HERO IDENTITY CARD */}
-      <View style={[styles.identityCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+      {/* Identidade e dados principais */}
+      <View style={styles.identityCard}>
         <View style={styles.identityRow}>
           <TouchableOpacity
             onPress={handlePickAvatar}
@@ -223,172 +191,46 @@ const ProfileScreen = ({ navigation }) => {
             <Text style={[styles.userEmail, { color: colors.textSecondary }]} numberOfLines={1}>
               {user?.email || 'Conta cadastrada'}
             </Text>
-
-            {(formattedPhone || locationText) ? (
-              <View style={styles.metaRow}>
-                {locationText ? (
-                  <View style={[styles.metaChip, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
-                    <Feather name="map-pin" size={11} color={colors.primary} style={{ marginRight: 4 }} />
-                    <Text style={[styles.metaText, { color: colors.text }]} numberOfLines={1}>
-                      {locationText}
-                    </Text>
-                  </View>
-                ) : null}
-                {formattedPhone ? (
-                  <View style={[styles.metaChip, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
-                    <Feather name="phone" size={11} color="#16A34A" style={{ marginRight: 4 }} />
-                    <Text style={[styles.metaText, { color: colors.text }]} numberOfLines={1}>
-                      {formattedPhone}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
+            {locationText ? (
+              <Text style={[styles.userLocation, { color: colors.textSecondary }]} numberOfLines={1}>
+                {locationText}
+              </Text>
             ) : null}
           </View>
         </View>
 
-        {/* Botão de Edição de Perfil */}
         <TouchableOpacity
-          style={[styles.editProfileButton, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : '#F8FAFC', borderColor: colors.border }]}
+          style={[styles.editProfileButton, { borderTopColor: colors.divider }]}
           onPress={() => navigation.navigate('EditProfile')}
           activeOpacity={0.75}
         >
-          <Feather name="edit-2" size={14} color={colors.primary} style={{ marginRight: 8 }} />
-          <Text style={[styles.editProfileButtonText, { color: colors.text }]}>Editar perfil e contatos</Text>
-          <MaterialIcons name="chevron-right" size={18} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
+          <Text style={[styles.editProfileButtonText, { color: colors.primary }]}>Editar perfil e contatos</Text>
+          <MaterialIcons name="arrow-forward" size={17} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
-      {/* 1.5 CARD DE GAMIFICAÇÃO & NÍVEL DE GUARDIÃO */}
-      {gamificationData && (
-        <GamificationCard
-          gamificationData={gamificationData}
-          onRefresh={loadProfileData}
-        />
-      )}
-
-      {/* 2. STATS QUICK CARDS */}
-      <View style={styles.statsGrid}>
-        <TouchableOpacity
-          style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-          onPress={() => navigation.navigate('MeusAnuncios')}
-          activeOpacity={0.8}
-        >
-          <View style={[styles.statIconBox, { backgroundColor: colors.primaryLight }]}>
-            <MaterialIcons name="pets" size={18} color={colors.primary} />
-          </View>
-          <Text style={[styles.statNumber, { color: colors.text }]}>{userItems.length}</Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Publicações</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-          onPress={() => navigation.navigate('MeusAnuncios')}
-          activeOpacity={0.8}
-        >
-          <View style={[styles.statIconBox, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.2)' : '#DCFCE7' }]}>
-            <MaterialIcons name="check-circle" size={18} color="#16A34A" />
-          </View>
-          <Text style={[styles.statNumber, { color: isDark ? '#4ADE80' : '#15803D' }]}>{activeItemsCount}</Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Ativas</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-          onPress={() => navigation.navigate('MuralReencontros')}
-          activeOpacity={0.8}
-        >
-          <View style={[styles.statIconBox, { backgroundColor: isDark ? 'rgba(236, 72, 153, 0.2)' : '#FCE7F3' }]}>
-            <MaterialIcons name="favorite" size={18} color="#DB2777" />
-          </View>
-          <Text style={[styles.statNumber, { color: isDark ? '#F472B6' : '#BE185D' }]}>{resolvedItemsCount}</Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Reencontros</Text>
-        </TouchableOpacity>
+      <Text style={[styles.groupTitle, { color: colors.textSecondary }]}>MINHA CONTA</Text>
+      <View style={[styles.menuGroup, { backgroundColor: colors.card, borderColor: colors.divider }]}>
+        {profileLinks.map((item, index) => (
+          <React.Fragment key={item.route}>
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => navigation.navigate(item.route)}
+              activeOpacity={0.75}
+            >
+              <MaterialIcons name={item.icon} size={20} color={colors.primary} style={styles.menuIcon} />
+              <Text style={[styles.menuTitle, styles.profileLinkTitle, { color: colors.text }]}>{item.label}</Text>
+              {item.count !== undefined && item.count > 0 ? (
+                <Text style={[styles.linkCount, { color: colors.textSecondary }]}>{item.count}</Text>
+              ) : null}
+              <MaterialIcons name="chevron-right" size={20} color={colors.textMuted} />
+            </TouchableOpacity>
+            {index < profileLinks.length - 1 ? (
+              <View style={[styles.menuDivider, { backgroundColor: colors.divider }]} />
+            ) : null}
+          </React.Fragment>
+        ))}
       </View>
-
-      {/* 2.5 ACESSO DIRETO: MEUS PETS & RG DIGITAL */}
-      <TouchableOpacity
-        style={[styles.postsCard, { backgroundColor: colors.card, borderColor: isDark ? '#334155' : '#BBF7D0', marginBottom: 10 }]}
-        onPress={() => navigation.navigate('MyPets')}
-        activeOpacity={0.85}
-      >
-        <View style={[styles.postsIconBox, { backgroundColor: isDark ? 'rgba(46, 86, 52, 0.3)' : '#DCFCE7' }]}>
-          <MaterialIcons name="badge" size={24} color="#15803D" />
-        </View>
-        <View style={styles.postsTextBox}>
-          <Text style={[styles.postsTitle, { color: colors.text }]}>Meus Pets & Carteirinhas</Text>
-          <Text style={[styles.postsSubtitle, { color: colors.textSecondary }]}>
-            Carteirinha digital, dados de saúde e alerta de desaparecimento
-          </Text>
-        </View>
-        <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ marginLeft: 4 }} />
-      </TouchableOpacity>
-
-      {/* 3. ACESSO DIRETO: MINHAS PUBLICAÇÕES */}
-      <TouchableOpacity
-        style={[styles.postsCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-        onPress={() => navigation.navigate('MeusAnuncios')}
-        activeOpacity={0.85}
-      >
-        <View style={[styles.postsIconBox, { backgroundColor: colors.primaryLight }]}>
-          <MaterialIcons name="dashboard" size={22} color={colors.primary} />
-        </View>
-        <View style={styles.postsTextBox}>
-          <Text style={[styles.postsTitle, { color: colors.text }]}>Gerenciar Meus Anúncios</Text>
-          <Text style={[styles.postsSubtitle, { color: colors.textSecondary }]}>
-            Acompanhar status, renovar e editar seus pets
-          </Text>
-        </View>
-        <View style={[styles.postsBadge, { backgroundColor: colors.primary }]}>
-          <Text style={styles.postsBadgeText}>
-            {userItems.length}
-          </Text>
-        </View>
-        <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ marginLeft: 4 }} />
-      </TouchableOpacity>
-
-      {/* 3.5 ACESSO DIRETO: SOLICITAÇÕES DE DEVOLUÇÃO */}
-      <TouchableOpacity
-        style={[styles.postsCard, { backgroundColor: isDark ? '#11221C' : '#F0FDF4', borderColor: isDark ? '#2E5634' : '#BBF7D0' }]}
-        onPress={() => navigation.navigate('ClaimsManagement')}
-        activeOpacity={0.85}
-      >
-        <View style={[styles.postsIconBox, { backgroundColor: isDark ? 'rgba(52, 211, 153, 0.2)' : '#DCFCE7' }]}>
-          <MaterialIcons name="assignment-turned-in" size={23} color="#15803D" />
-        </View>
-        <View style={styles.postsTextBox}>
-          <Text style={[styles.postsTitle, { color: colors.text }]}>Solicitações de devolução</Text>
-          <Text style={[styles.postsSubtitle, { color: colors.textSecondary }]}>
-            Revise comprovações de pessoas que reconheceram um animal publicado por você
-          </Text>
-        </View>
-        <MaterialIcons name="chevron-right" size={22} color={colors.textMuted} style={{ marginLeft: 4 }} />
-      </TouchableOpacity>
-
-      {/* CARD ESPECIAL: PAINEL ADMINISTRATIVO (ADMIN) */}
-      {isAdmin && (
-        <TouchableOpacity
-          style={[styles.postsCard, { backgroundColor: isDark ? '#11221C' : colors.primaryLight, borderColor: isDark ? colors.primary : '#A7F3D0', marginTop: 12, marginBottom: 4 }]}
-          onPress={() => navigation.navigate('Admin')}
-          activeOpacity={0.85}
-        >
-          <View style={[styles.postsIconBox, { backgroundColor: isDark ? 'rgba(52, 211, 153, 0.2)' : '#D1FAE5' }]}>
-            <MaterialIcons name="admin-panel-settings" size={24} color={colors.primary} />
-          </View>
-          <View style={styles.postsTextBox}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={[styles.postsTitle, { color: colors.text }]}>Painel do Administrador</Text>
-              <View style={{ backgroundColor: colors.primary, paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 4 }}>
-                <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#FFFFFF' }}>SUPER ADMIN</Text>
-              </View>
-            </View>
-            <Text style={[styles.postsSubtitle, { color: colors.textSecondary }]}>
-              Gerenciamento, denúncias, tutela e testes de sistema
-            </Text>
-          </View>
-          <MaterialIcons name="chevron-right" size={22} color={colors.primary} style={{ marginLeft: 4 }} />
-        </TouchableOpacity>
-      )}
 
       {/* 4. GRUPO: COMUNIDADE & IMPACTO */}
       <Text style={[styles.groupTitle, { color: colors.textSecondary }]}>COMUNIDADE & IMPACTO</Text>
@@ -399,13 +241,12 @@ const ProfileScreen = ({ navigation }) => {
           onPress={() => setFosterModalVisible(true)}
           activeOpacity={0.75}
         >
-          <View style={[styles.menuIconBox, { backgroundColor: fosterProfile?.isActive ? (isDark ? 'rgba(22, 163, 74, 0.2)' : '#DCFCE7') : (isDark ? 'rgba(255, 255, 255, 0.08)' : '#F0FDF4') }]}>
-            <MaterialIcons
-              name="home-work"
-              size={20}
-              color={fosterProfile?.isActive ? '#16A34A' : '#2E5634'}
-            />
-          </View>
+          <MaterialIcons
+            name="home-work"
+            size={20}
+            color={fosterProfile?.isActive ? '#16A34A' : colors.textSecondary}
+            style={styles.menuIcon}
+          />
           <View style={styles.menuTextBox}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Text style={[styles.menuTitle, { color: colors.text }]}>Lar Temporário Solidário</Text>
@@ -424,11 +265,6 @@ const ProfileScreen = ({ navigation }) => {
                 </Text>
               </View>
             </View>
-            <Text style={[styles.menuDescription, { color: colors.textSecondary }]} numberOfLines={1}>
-              {fosterProfile?.isActive
-                ? `Acolhe: ${fosterProfile.species?.map(s => s === 'dogs' ? '🐶 Cães' : (s === 'cats' ? '🐱 Gatos' : '🐾 Outros')).join(', ') || 'Pets'}`
-                : 'Ofereça abrigo temporário a pets resgatados'}
-            </Text>
           </View>
           <MaterialIcons name="chevron-right" size={20} color={colors.textMuted} />
         </TouchableOpacity>
@@ -442,12 +278,9 @@ const ProfileScreen = ({ navigation }) => {
               onPress={() => navigation.navigate(item.route)}
               activeOpacity={0.75}
             >
-              <View style={[styles.menuIconBox, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : item.bgColor }]}>
-                <MaterialIcons name={item.icon} size={20} color={item.iconColor} />
-              </View>
+              <MaterialIcons name={item.icon} size={20} color={item.iconColor} style={styles.menuIcon} />
               <View style={styles.menuTextBox}>
                 <Text style={[styles.menuTitle, { color: colors.text }]}>{item.label}</Text>
-                <Text style={[styles.menuDescription, { color: colors.textSecondary }]}>{item.description}</Text>
               </View>
               <MaterialIcons name="chevron-right" size={20} color={colors.textMuted} />
             </TouchableOpacity>
@@ -468,12 +301,9 @@ const ProfileScreen = ({ navigation }) => {
               onPress={() => navigation.navigate(item.route)}
               activeOpacity={0.75}
             >
-              <View style={[styles.menuIconBox, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : item.bgColor }]}>
-                <MaterialIcons name={item.icon} size={20} color={item.iconColor} />
-              </View>
+              <MaterialIcons name={item.icon} size={20} color={item.iconColor} style={styles.menuIcon} />
               <View style={styles.menuTextBox}>
                 <Text style={[styles.menuTitle, { color: colors.text }]}>{item.label}</Text>
-                <Text style={[styles.menuDescription, { color: colors.textSecondary }]}>{item.description}</Text>
               </View>
               <MaterialIcons name="chevron-right" size={20} color={colors.textMuted} />
             </TouchableOpacity>
@@ -519,41 +349,29 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 40,
   },
-  loading: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   identityCard: {
-    borderRadius: 20,
-    padding: 16,
-    borderWidth: 1,
-    marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    paddingTop: 8,
+    marginBottom: 22,
   },
   identityRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
   },
   avatarWrapper: {
     position: 'relative',
     marginRight: 14,
   },
   avatarImage: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: '#E2E8F0',
   },
   avatarFallback: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -577,177 +395,77 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userName: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 21,
+    fontWeight: '700',
     marginBottom: 2,
-    letterSpacing: -0.2,
   },
   userEmail: {
     fontSize: 13,
-    marginBottom: 6,
+    marginBottom: 3,
   },
-  metaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  metaChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  metaText: {
-    fontSize: 11.5,
-    fontWeight: '600',
+  userLocation: {
+    fontSize: 12,
   },
   editProfileButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1,
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    marginTop: 2,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   editProfileButtonText: {
     fontSize: 13,
-    fontWeight: '700',
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 14,
-  },
-  statBox: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  statIconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
-  statNumber: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 2,
-  },
-  statLabel: {
-    fontSize: 11,
     fontWeight: '600',
   },
-  postsCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    borderRadius: 18,
-    borderWidth: 1,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  postsIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  postsTextBox: {
-    flex: 1,
-  },
-  postsTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  postsSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-    lineHeight: 16,
-  },
-  postsBadge: {
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 4,
-  },
-  postsBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
-  },
   groupTitle: {
-    fontSize: 11.5,
-    fontWeight: '800',
-    letterSpacing: 0.6,
-    marginBottom: 8,
-    marginLeft: 4,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.35,
+    marginBottom: 6,
+    marginLeft: 2,
   },
   menuGroup: {
-    borderRadius: 18,
-    borderWidth: 1,
-    marginBottom: 20,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginBottom: 22,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
   },
   menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    minHeight: 54,
+    paddingVertical: 12,
     paddingHorizontal: 14,
   },
-  menuIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+  menuIcon: {
+    width: 24,
     marginRight: 12,
   },
   menuTextBox: {
     flex: 1,
   },
   menuTitle: {
-    fontSize: 14.5,
-    fontWeight: '700',
-  },
-  menuDescription: {
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: 14,
+    fontWeight: '600',
   },
   menuDivider: {
-    height: 1,
-    marginLeft: 64,
+    height: StyleSheet.hairlineWidth,
+    marginLeft: 50,
+  },
+  profileLinkTitle: {
+    flex: 1,
+  },
+  linkCount: {
+    fontSize: 13,
+    marginRight: 8,
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginTop: 4,
+    paddingVertical: 12,
+    marginTop: 0,
     marginBottom: 20,
   },
   logoutButtonText: {

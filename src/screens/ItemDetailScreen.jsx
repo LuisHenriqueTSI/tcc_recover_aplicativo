@@ -1526,13 +1526,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
               borderRadius: 12,
               paddingVertical: 11,
               paddingHorizontal: 14,
-              marginTop: 4,
-              shadowColor: colors.primary,
-              shadowOffset: { width: 0, height: 3 },
-              shadowOpacity: 0.25,
-              shadowRadius: 5,
-              elevation: 3,
-            }}
+              marginTop: 4,            }}
             onPress={handleOpenRoute}
             activeOpacity={0.85}
             accessibilityLabel="Ver rota no mapa"
@@ -1711,7 +1705,14 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
           {/* PAINEL DE CONTROLE PARA AUTOR E SUPER ADMIN */}
           {(isOwner || isAdmin) && (
-            <View style={[styles.ownerActionsGrid, { borderTopColor: colors.border }]}>
+            <View style={[styles.cardSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.sectionHeaderRow}>
+                <View style={[styles.sectionIconWrap, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+                  <MaterialIcons name="tune" size={19} color={colors.textSecondary} />
+                </View>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Ações da publicação</Text>
+              </View>
+              <View style={styles.ownerActionsGrid}>
               {isAdmin && !isOwner && (
                 <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: isDark ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, marginBottom: 8, borderWidth: 1, borderColor: isDark ? '#D97706' : '#FDE68A' }}>
                   <MaterialIcons name="admin-panel-settings" size={16} color="#D97706" style={{ marginRight: 6 }} />
@@ -1722,7 +1723,7 @@ const ItemDetailScreen = ({ route, navigation }) => {
               )}
 
               <TouchableOpacity
-                style={[styles.ownerActionBtn, { backgroundColor: isDark ? '#1E293B' : colors.primaryLight, borderColor: colors.border }]}
+                style={[styles.ownerActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
                 onPress={handleEditItem}
               >
                 <MaterialIcons name="edit" size={17} color={colors.primary} />
@@ -1733,17 +1734,17 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
               {isOwner && !isAdmin && (item.status === 'lost' || item.status === 'found') && (
                 <TouchableOpacity
-                  style={[styles.ownerActionBtn, { backgroundColor: isDark ? 'rgba(22, 163, 74, 0.15)' : '#DCFCE7', borderColor: '#A7F3D0' }]}
+                  style={[styles.ownerActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
                   onPress={handleMarkResolved}
                 >
-                  <MaterialIcons name="celebration" size={17} color="#16A34A" />
-                  <Text style={[styles.ownerActionText, { color: '#16A34A' }]}>Reencontrado!</Text>
+                  <MaterialIcons name="celebration" size={17} color={isDark ? '#4ADE80' : '#15803D'} />
+                  <Text style={[styles.ownerActionText, { color: isDark ? '#4ADE80' : '#15803D' }]}>Reencontrado!</Text>
                 </TouchableOpacity>
               )}
 
               {isAdmin && (
                 <TouchableOpacity
-                  style={[styles.ownerActionBtn, { backgroundColor: isDark ? '#1E293B' : '#FEF3C7', borderColor: '#FDE68A' }]}
+                  style={[styles.ownerActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
                   onPress={() => {
                     Alert.alert(
                       'Alterar Status (Admin)',
@@ -1758,24 +1759,24 @@ const ItemDetailScreen = ({ route, navigation }) => {
                     );
                   }}
                 >
-                  <MaterialIcons name="swap-horiz" size={18} color="#D97706" />
-                  <Text style={[styles.ownerActionText, { color: '#B45309' }]}>Status</Text>
+                  <MaterialIcons name="swap-horiz" size={18} color={isDark ? '#FBBF24' : '#B45309'} />
+                  <Text style={[styles.ownerActionText, { color: isDark ? '#FBBF24' : '#B45309' }]}>Status</Text>
                 </TouchableOpacity>
               )}
 
               {isOwner && item.status === 'found' && item.extra_fields?.found_custody !== 'spotted' && !isAdmin && (
                 <TouchableOpacity
-                  style={[styles.ownerActionBtn, { backgroundColor: item.extra_fields?.available_for_adoption ? COLORS.secondaryLight : '#ECFDF5', borderColor: item.extra_fields?.available_for_adoption ? COLORS.secondaryMedium : '#A7F3D0' }]}
+                  style={[styles.ownerActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
                   onPress={handleToggleAdoption}
                   disabled={togglingAdoption}
                 >
                   <MaterialIcons
                     name="favorite"
                     size={17}
-                    color={item.extra_fields?.available_for_adoption ? COLORS.secondaryDark : '#2E5634'}
+                    color={item.extra_fields?.available_for_adoption ? COLORS.secondaryDark : isDark ? '#4ADE80' : '#2E5634'}
                   />
                   <Text
-                    style={[styles.ownerActionText, { color: item.extra_fields?.available_for_adoption ? COLORS.secondaryDark : '#2E5634' }]}
+                    style={[styles.ownerActionText, { color: item.extra_fields?.available_for_adoption ? COLORS.secondaryDark : isDark ? '#4ADE80' : '#2E5634' }]}
                   >
                     {togglingAdoption ? 'Salvando...' : item.extra_fields?.available_for_adoption ? 'Pausar Adoção' : 'P/ Adoção'}
                   </Text>
@@ -1784,27 +1785,28 @@ const ItemDetailScreen = ({ route, navigation }) => {
 
               {isOwner && renewalInfo.canRenew && (
                 <TouchableOpacity
-                  style={[styles.ownerActionBtn, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}
+                  style={[styles.ownerActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
                   onPress={handleRenewItem}
                   disabled={renewing}
                 >
-                  <MaterialIcons name="refresh" size={17} color="#D97706" />
-                  <Text style={[styles.ownerActionText, { color: '#B45309' }]}>
+                  <MaterialIcons name="refresh" size={17} color={isDark ? '#FBBF24' : '#B45309'} />
+                  <Text style={[styles.ownerActionText, { color: isDark ? '#FBBF24' : '#B45309' }]}>
                     {renewing ? 'Renovando...' : 'Renovar'}
                   </Text>
                 </TouchableOpacity>
               )}
 
               <TouchableOpacity
-                style={[styles.ownerActionBtn, { backgroundColor: '#FEE2E2', borderColor: '#FECACA' }]}
+                style={[styles.ownerActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
                 onPress={handleDeleteItem}
                 disabled={deleting}
               >
-                <MaterialIcons name="delete-outline" size={17} color="#DC2626" />
-                <Text style={[styles.ownerActionText, { color: '#DC2626' }]}>
+                <MaterialIcons name="delete-outline" size={17} color={isDark ? '#F87171' : '#DC2626'} />
+                <Text style={[styles.ownerActionText, { color: isDark ? '#F87171' : '#DC2626' }]}>
                   {deleting ? 'Excluindo...' : (isAdmin && !isOwner ? 'Excluir (Admin)' : 'Excluir')}
                 </Text>
               </TouchableOpacity>
+              </View>
             </View>
           )}
         </>
@@ -2359,7 +2361,7 @@ const styles = StyleSheet.create({
   floatingShareBtn: { position: 'absolute', top: 16, right: 16, zIndex: 12 },
 
   // Card Section Container
-  cardSection: { marginHorizontal: 14, marginTop: 12, borderRadius: 16, padding: 14, borderWidth: 1, shadowColor: '#163A22', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
+  cardSection: { marginHorizontal: 14, marginTop: 12, borderRadius: 12, padding: 14, borderWidth: 1 },
 
   // Status and Title
   statusRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
@@ -2394,7 +2396,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 10,
     backgroundColor: '#FDF2F8',
-    borderRadius: 14,
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 9,
     borderWidth: 1,
@@ -2403,7 +2405,7 @@ const styles = StyleSheet.create({
   custodyNoticeCard: {
     marginHorizontal: 16,
     marginTop: 10,
-    borderRadius: 14,
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 9,
     borderWidth: 1,
@@ -2458,9 +2460,9 @@ const styles = StyleSheet.create({
   sheetActionIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 11 },
   sheetActionText: { flex: 1, fontSize: 13.5, fontWeight: '700' },
 
-  ownerActionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 12, paddingTop: 12, borderTopWidth: 1 },
-  ownerActionBtn: { flex: 1, minWidth: '45%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 10, paddingVertical: 9, borderWidth: 1, gap: 5 },
-  ownerActionText: { fontSize: 12.5, fontWeight: '800' },
+  ownerActionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  ownerActionBtn: { flex: 1, minWidth: '45%', minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 9, paddingHorizontal: 10, paddingVertical: 9, borderWidth: 1, gap: 7 },
+  ownerActionText: { fontSize: 13, fontWeight: '700' },
 
   // Comments Section
   commentsHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
@@ -2492,7 +2494,7 @@ const styles = StyleSheet.create({
 
   // Modals
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.45)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalCard: { borderRadius: 20, padding: 20, width: '100%', maxWidth: 440 },
+  modalCard: { borderRadius: 12, padding: 20, width: '100%', maxWidth: 440 },
   modalTitle: { fontSize: 18, fontWeight: '800', marginBottom: 4 },
   modalSubtitle: { fontSize: 13, marginBottom: 14 },
   radioOptionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
@@ -2520,7 +2522,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   matchesScrollContent: { paddingVertical: 4, gap: 10 },
-  matchCard: { width: 140, borderRadius: 14, borderWidth: 1.5, padding: 8, alignItems: 'center' },
+  matchCard: { width: 140, borderRadius: 12, borderWidth: 1.5, padding: 8, alignItems: 'center' },
   matchCardImageWrapper: { width: '100%', height: 95, borderRadius: 10, overflow: 'hidden', position: 'relative', marginBottom: 6 },
   matchCardImage: { width: '100%', height: '100%' },
   matchCardPlaceholder: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },

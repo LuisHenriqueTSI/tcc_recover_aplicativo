@@ -1,17 +1,63 @@
 import React, { useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme, createNavigationContainerRef } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
+import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import RootNavigator from './src/navigation';
-import { cleanupExpiredItems } from './src/services/items';
 import * as Clarity from '@microsoft/react-native-clarity';
 
 export const navigationRef = createNavigationContainerRef();
 
 const prefix = Linking.createURL('/');
+const clarityProjectId = Constants.expoConfig?.extra?.EXPO_PUBLIC_CLARITY_PROJECT_ID;
+const clarityAvailable =
+  Platform.OS !== 'web' && Constants.executionEnvironment !== 'storeClient';
+let clarityInitializationAttempted = false;
+let clarityInitialized = false;
+
+const initializeClarity = () => {
+  if (!clarityAvailable || clarityInitializationAttempted) {
+    return;
+  }
+  clarityInitializationAttempted = true;
+
+  if (!clarityProjectId) {
+    console.warn('[Clarity] ID do projeto não configurado.');
+    return;
+  }
+
+  try {
+    console.info('[Clarity] Inicializando SDK:', {
+      executionEnvironment: Constants.executionEnvironment,
+      platform: Platform.OS,
+    });
+    const callbackRegistered = Clarity.setOnSessionStartedCallback((sessionId) => {
+      console.info('[Clarity] Sessão iniciada:', sessionId);
+      Clarity.getCurrentSessionUrl().then((sessionUrl) => {
+        if (sessionUrl) {
+          console.info('[Clarity] URL da sessão:', sessionUrl);
+        }
+      }).catch((error) => {
+        console.warn('[Clarity] Não foi possível obter a URL da sessão:', error);
+      });
+    });
+    Clarity.initialize(clarityProjectId, {
+      logLevel: Clarity.LogLevel.Verbose,
+    });
+    clarityInitialized = callbackRegistered;
+    if (callbackRegistered) {
+      console.info('[Clarity] Inicialização solicitada.');
+    } else {
+      console.error('[Clarity] SDK nativo indisponível. Gere e instale um novo build Android.');
+    }
+  } catch (error) {
+    console.warn('[Clarity] Falha ao inicializar:', error);
+  }
+};
 
 const linking = {
   prefixes: [prefix, 'wefind://', 'https://wefind.app'],
@@ -35,6 +81,22 @@ const linking = {
 
 function MainAppContainer() {
   const { isDark, colors } = useTheme();
+  const currentRouteName = useRef(null);
+
+  const trackCurrentScreen = () => {
+    const routeName = navigationRef.getCurrentRoute()?.name;
+    if (!routeName || routeName === currentRouteName.current) {
+      return;
+    }
+
+    initializeClarity();
+    currentRouteName.current = routeName;
+    if (clarityInitialized) {
+      Clarity.setCurrentScreenName(routeName).catch((error) => {
+        console.warn('[Clarity] Não foi possível registrar a tela:', error);
+      });
+    }
+  };
 
   useEffect(() => {
     // Redireciona o usuário para os detalhes do pet quando tocar na notificação push do celular
@@ -61,7 +123,13 @@ function MainAppContainer() {
   };
 
   return (
-    <NavigationContainer ref={navigationRef} linking={linking} theme={navigationTheme}>
+    <NavigationContainer
+      ref={navigationRef}
+      linking={linking}
+      theme={navigationTheme}
+      onReady={trackCurrentScreen}
+      onStateChange={trackCurrentScreen}
+    >
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <RootNavigator />
     </NavigationContainer>
@@ -70,15 +138,10 @@ function MainAppContainer() {
 
 export default function App() {
   useEffect(() => {
-    try {
-      Clarity.initialize('ypdmkoaywd');
-    } catch (error) {
-      console.warn('[Clarity] Falha ao inicializar:', error);
+    if (Constants.executionEnvironment === 'storeClient') {
+      console.info('[Clarity] Não disponível no Expo Go; use um development build ou APK.');
     }
 
-    cleanupExpiredItems().catch((error) => {
-      console.error('[App] cleanupExpiredItems falhou:', error);
-    });
   }, []);
 
   return (

@@ -75,6 +75,13 @@ export const createProfileIfMissing = async (userId, profileData = {}) => {
       .single();
 
     if (error) {
+      if (error.code === '23505') {
+        const concurrentlyCreatedProfile = await getUser(userId);
+        if (concurrentlyCreatedProfile) {
+          return concurrentlyCreatedProfile;
+        }
+      }
+
       console.log('[createProfileIfMissing] Error:', error.message);
       throw error;
     }
