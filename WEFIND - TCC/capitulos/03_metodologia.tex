@@ -20,7 +20,7 @@ Quanto aos seus objetivos, a pesquisa é de caráter exploratório-descritivo. D
 
 Quanto à forma de abordagem do problema, o estudo combina métodos quantitativos e qualitativos. A parte quantitativa permitiu mensurar, por meio de questionários estruturados, hábitos dos tutores e a percepção de usabilidade do aplicativo. Na avaliação do WeFIND, foram analisadas as respostas a dez afirmações organizadas com base na estrutura da \textit{System Usability Scale} (SUS), além da conclusão autorrelatada das tarefas. Já a parte qualitativa considerou as respostas abertas dos participantes, que contribuíram para identificar aspectos positivos, dificuldades e oportunidades de melhoria (Gil, 2022; Sauro; Lewis, 2022).
 
-Quanto aos procedimentos técnicos adotados, a pesquisa estruturou-se em três frentes principais: pesquisa bibliográfica, pesquisa de campo e análise comparativa de similares (Gil, 2022). A pesquisa bibliográfica contemplou a revisão de livros, artigos científicos e normas técnicas (como as diretrizes de usabilidade da ABNT NBR ISO 9241-11 e de acessibilidade da WCAG 2.2), constituindo a base conceitual do projeto. A pesquisa de campo coletou dados primários com participantes da comunidade para mapear as carências e expectativas em relação a um aplicativo dedicado. Por fim, a análise comparativa de similares examinou quatro plataformas disponíveis no mercado, identificando potencialidades e limitações funcionais para orientar a especificação do WeFIND.
+Quanto aos procedimentos técnicos adotados, a pesquisa estruturou-se em três frentes principais: pesquisa bibliográfica, pesquisa de campo e análise comparativa de similares (Gil, 2022). A pesquisa bibliográfica contemplou a revisão de livros, artigos científicos e normas técnicas (como as diretrizes de usabilidade da ABNT NBR ISO 9241-11 e de acessibilidade da WCAG 2.2), constituindo a base conceitual do projeto. Para o recorte sobre animais desaparecidos e soluções digitais, foi realizada uma busca bibliográfica exploratória no portal SBC OpenLib (SOL) e nas ferramentas Crossref e OpenAlex, com termos como ``animais desaparecidos Brasil'', ``animais perdidos aplicativo'' e ``FugaPet-Rotas''. Essa busca não teve caráter sistemático nem pretendeu esgotar a produção nacional; por isso, a lacuna de levantamentos nacionais descrita no Capítulo 2 refere-se às fontes consultadas. A pesquisa de campo coletou dados primários com participantes da comunidade para mapear as carências e expectativas em relação a um aplicativo dedicado. Por fim, a análise comparativa examinou quatro plataformas disponíveis, identificando potencialidades e limitações funcionais para orientar a especificação do WeFIND.
 
 \subsection{Pesquisa de Campo com Tutores}
 
@@ -82,12 +82,12 @@ A apuração dos dados da Figura~\ref{fig:experiencia_perda} indica que 90\% dos
 
 Complementarmente, a pesquisa investigou as principais barreiras percebidas pelos participantes nos meios atuais e avaliou a receptividade às funcionalidades projetadas para a solução proposta. Foram relatadas como dificuldades a perda acelerada de alcance das postagens nas redes sociais após algumas horas (100\%), a carência de mapas interativos (89,5\%), a insuficiência de informações detalhadas (89,5\%) e a insegurança na exposição de telefones pessoais (73,7\%). Entre as funcionalidades apresentadas, a utilidade do mapa geolocalizado recebeu 100\% de avaliações positivas (notas 4 e 5), o recebimento de alertas no celular foi considerado indispensável por 90\% dos participantes, a disposição para registrar avistamentos rápidos no mapa (``Vi o Pet'') alcançou 100\% de concordância, a geração automática de cartazes padronizados obteve 100\% de avaliações positivas (notas 4 e 5), o chat privativo sem expor telefones alcançou 95\% de avaliações positivas e a centralização exclusiva de anúncios foi apontada como principal diferencial frente às redes sociais por 45\% dos participantes, conforme documentado nos gráficos consolidados das Figuras~B2 a B14 do Apêndice~B. Esses resultados expressam a percepção e a intenção declaradas pelos participantes consultados, servindo como base empírica para a elicitação dos requisitos do sistema, cuja eficácia operacional e usabilidade prática foram posteriormente avaliadas por meio dos testes documentados no Capítulo 8.
 
-\subsubsection{Análise Comparativa de Sistemas Similares}
+\subsection{Análise Comparativa de Sistemas Similares}
 
-Para conhecer em profundidade o estado da arte e embasar tecnicamente as decisões de requisitos e design da aplicação proposta, realizou-se uma avaliação comparativa de sistemas similares, fundamentada nas diretrizes de usabilidade e experiência do usuário sintetizadas por Amstel (2024). Foram selecionadas e inspecionadas quatro plataformas representativas: \textit{Viu Meu Pet}, \textit{PawBoost}, \textit{AlertPet} e \textit{Pet911}, além da investigação das redes sociais generalistas (Facebook e WhatsApp), que atuam na prática como a principal solução de contorno adotada pela sociedade.
+Para conhecer em profundidade o estado da arte e embasar tecnicamente as decisões de requisitos e design da aplicação proposta, realizou-se uma avaliação comparativa de sistemas similares, fundamentada nas diretrizes de usabilidade e experiência do usuário sintetizadas por Amstel (2024). Foram selecionadas e inspecionadas quatro plataformas representativas: \textit{Viu Meu Pet}, \textit{PawBoost}, \textit{AlertPet} e a plataforma \textit{Facebook}, que atua na prática como a principal ferramenta comunitária adotada pela sociedade civil para a divulgação de desaparecimentos.
 
 
-A primeira plataforma analisada foi o \textbf{Viu Meu Pet}, um dos serviços brasileiros mais difundidos no segmento, disponível em versão web e aplicativo móvel para smartphones, cuja interface inicial é exibida na Figura~\ref{fig:viumeupet}.
+\subsubsection{Viu Meu Pet}
 
 \begin{figure}[H]
     \centering
@@ -97,10 +97,16 @@ A primeira plataforma analisada foi o \textbf{Viu Meu Pet}, um dos serviços bra
     \fonte{Viu Meu Pet (2026)}
 \end{figure}
 
-A interface inicial da plataforma (Figura~\ref{fig:viumeupet}) prioriza botões de triagem para perda ou resgate e apresenta métricas de reencontros. Como pontos fortes, o \textit{Viu Meu Pet} possui ampla penetração nacional, ferramentas gratuitas para cartazes com código QR e cruzamento automatizado por inteligência artificial. Em contrapartida, apoia-se em listagens estáticas organizadas por município, sem mapa georreferenciado contínuo via GPS, e não dispõe de chat privativo, obrigando os tutores a divulgar números de telefone pessoais nos anúncios públicos.
+\noindent \textbf{Descrição Geral e Interface:} O \textit{Viu Meu Pet} é um dos serviços brasileiros mais difundidos no segmento de achados e perdidos de animais domésticos, disponibilizado tanto em versão para navegador web quanto em aplicativo móvel para smartphones (Figura~\ref{fig:viumeupet}). Sua interface inicial concentra as ações em botões destacados de triagem entre a perda ou o resgate de animais, complementados pela exibição de métricas públicas de reencontros e avisos institucionais.
+
+\vspace{0.25cm}
+\noindent \textbf{Pontos Fortes:} A plataforma destaca-se por sua ampla penetração e base de cadastros em âmbito nacional, pelo fornecimento de gerador de cartazes com código QR para impressão física e compartilhamento digital, e pela incorporação de mecanismos automatizados para identificação e correspondência básica de anúncios.
+
+\vspace{0.25cm}
+\noindent \textbf{Limitações Identificadas:} A solução apoia-se em listagens estáticas estruturadas por município e estado, carecendo de um mapa interativo contínuo com geolocalização por GPS. Não dispõe de recursos para registro colaborativo de novos avistamentos no espaço geográfico nem de canal de mensagens privativo integrado, forçando os usuários a expor seus telefones particulares nas páginas públicas. Além disso, recursos de destaque e notificações ampliadas dependem da contratação de planos pagos.
 
 
-A segunda solução examinada foi o \textbf{PawBoost}, plataforma de alcance internacional que reúne mais de sete milhões de membros voluntários cadastrados em sua rede comunitária (\textit{Rescue Squad}™), acessível por portal web e aplicativos para sistemas operacionais Android e iOS (Figura~\ref{fig:pawboost}).
+\subsubsection{PawBoost}
 
 \begin{figure}[H]
     \centering
@@ -110,12 +116,16 @@ A segunda solução examinada foi o \textbf{PawBoost}, plataforma de alcance int
     \fonte{PawBoost (2026)}
 \end{figure}
 
-A interface principal do PawBoost (Figura~\ref{fig:pawboost}) exibe uma barra superior em tom verde escuro contendo logotipo, atalhos de navegação (``Como Funciona'', ``Lost Pets'', ``Found Pets'', ``Histórias Felizes'', ``Receba Alertas'') e o botão alaranjado em destaque ``Anuncie Pet''. Na lateral esquerda, figura a chamada de impacto ``Find and Report Lost \& Found Pets'', acompanhada pelo contador de impacto social (``2,300,058 Pets Reunidos!'') e uma maquete de smartphone demonstrando o formato de anúncio geolocalizado gerado para redes sociais. Na lateral direita, exibe-se o cartão de formulário rápido com os botões de seleção ``I Lost My Pet'' e ``I Found A Stray Pet'', campos para nome, último endereço avistado, e-mail e botão de envio ``Traga Seu Pet Pra Casa O Quanto Antes''.
+\noindent \textbf{Descrição Geral e Interface:} O \textit{PawBoost} é uma plataforma de projeção internacional que mobiliza uma comunidade voluntária com milhões de membros cadastrados (\textit{Rescue Squad}™), acessível via portal web e por aplicativos para Android e iOS (Figura~\ref{fig:pawboost}). Sua tela inicial organiza a navegação em uma barra superior escura com atalhos funcionais e botão chamativo para novos anúncios. O painel central divide-se entre dados de impacto social, modelos de anúncios visuais voltados a redes externas e um formulário direto de triagem de desaparecimento.
 
-Entre suas principais vantagens operacionais, destacam-se a automação de postagens em páginas parceiras do Facebook, o envio acelerado de alertas por e-mail e notificações móveis para voluntários cadastrados na região da publicação. Apesar de sua excelência técnica, a plataforma apresenta limitações importantes para o contexto brasileiro: sua indexação territorial baseia-se prioritariamente no sistema postal norte-americano (Zip Codes) e os planos de impulsionamento patrocinado exigem pagamentos em moeda estrangeira (dólar americano), restringindo o acesso amplo da população brasileira.
+\vspace{0.25cm}
+\noindent \textbf{Pontos Fortes:} Sobressai-se pela automação da replicação de alertas em páginas parceiras de redes sociais, pela rapidez no disparo de notificações por e-mail para protetores inscritos na região aproximada e pelo design profissional de seus alertas digitais padronizados.
+
+\vspace{0.25cm}
+\noindent \textbf{Limitações Identificadas:} Apresenta restrições contundentes para o usuário brasileiro: sua delimitação territorial é orientada pelo padrão postal dos Estados Unidos (\textit{Zip Codes}), o que prejudica a precisão geográfica local; não oferece mapa dinâmico público com rotas até o animal nem código QR para identificação preventiva em coleiras; e seus pacotes de impulsionamento e alcance patrocinado exigem pagamentos em moeda estrangeira (dólar americano), inviabilizando o acesso universal e gratuito.
 
 
-A terceira plataforma inspecionada foi o \textbf{AlertPet}, iniciativa brasileira estruturada no formato de portal web que opera sob o conceito de ``carro de som digital'', intermediando campanhas patrocinadas de busca geográfica regional (Figura~\ref{fig:alertpet}).
+\subsubsection{AlertPet}
 
 \begin{figure}[H]
     \centering
@@ -125,29 +135,24 @@ A terceira plataforma inspecionada foi o \textbf{AlertPet}, iniciativa brasileir
     \fonte{AlertPet (2026)}
 \end{figure}
 
-A composição visual da página inicial do AlertPet (Figura~\ref{fig:alertpet}) estrutura-se com um cabeçalho limpo no qual se destaca uma notificação flutuante simulada em tempo real (``Novo pet perdido em São Paulo: Ajude a encontrar Pudim'', com fotografia e botão ``Ver caso''). No lado esquerdo, visualiza-se o título de grande porte ``Encontre seu pet com a maior rede de busca do Brasil'', dados de prova social com fotografias de tutores (``4.862 casos'' e nota de avaliação média ``4.9 com 629 avaliações''), o botão verde primário ``+ Anunciar Pet'' e o botão secundário ``Como Funciona''. Na composição da direita, uma fotografia de tutora com seu cão e celular é sobreposta por um recorte de mapa apontando o local do desaparecimento (``Visto aqui'') e uma notificação instantânea (``AlertPet Alerta: Bob foi localizado!'').
+\noindent \textbf{Descrição Geral e Interface:} O \textit{AlertPet} é uma iniciativa brasileira desenvolvida exclusivamente como portal web que funciona sob o conceito de ``carro de som digital'', gerenciando campanhas patrocinadas de busca geográfica regional (Figura~\ref{fig:alertpet}). A composição visual da página de entrada estrutura-se em um cabeçalho limpo com notificações simuladas de resgate, indicadores de prova social com avaliações de tutores atendidos, botão de contratação de anúncios e imagens promocionais sobrepostas a recortes de mapas estáticos.
 
-O ponto forte do \textit{AlertPet} está na elaboração profissional de peças gráficas de busca e na distribuição de anúncios patrocinados direcionados por raio de distância nas redes sociais, com posterior envio de relatórios de resultados (Reportei) aos tutores. Porém, a solução opera como um serviço estritamente comercial de mídia paga, não oferecendo aplicativo móvel nativo, não dispondo de mapa interativo público gratuito e vinculando a visibilidade da publicação ao pagamento financeiro de pacotes.
+\vspace{0.25cm}
+\noindent \textbf{Pontos Fortes:} Destaca-se pela criação de peças visuais de alta qualidade e pela gestão de tráfego pago geolocalizado em redes sociais por raio de distância, encaminhando relatórios analíticos de visualizações e engajamento diretamente aos tutores.
 
-
-A quarta plataforma avaliada foi o \textbf{Pet911}, serviço de abrangência internacional com versão localizada para o Brasil, centrado no agrupamento de anúncios de animais perdidos e encontrados (Figura~\ref{fig:pet911}).
-
-\begin{figure}[H]
-    \centering
-    \caption{Interface da plataforma Pet911}
-    \label{fig:pet911}
-    \includegraphics[width=0.68\textwidth]{imagens/01_pesquisa/figura06_pet911.png}
-    \fonte{Pet911 (2026)}
-\end{figure}
-
-A interface do Pet911 (Figura~\ref{fig:pet911}) adota uma identidade visual verde esmeralda com foco prioritário na navegação móvel em smartphones. O topo traz o logotipo e três molduras circulares com imagens de animais resgatados, seguidas pelo título ``Serviço Mundial de Achados e Perdidos de Animais de Estimação'' e a métrica comunitária ``Já devolvemos 45.600 animais para casa''. O usuário pode alternar entre as abas superiores ``Criar um Anúncio'' e ``Encontrar anúncio'', visualizando um cartão com o título ``O que aconteceu?'' e o botão de ação destacado ``Perdi meu pet''. Na base da tela, fixa-se uma barra inferior de navegação com quatro ícones funcionais: ``+ Criar'', ``Listagens'', ``Faça login'' e ``Menu''.
-
-Como pontos positivos, o Pet911 possui extensa base de dados mundial, fluxo simplificado de cadastro inicial e geração automática de cartazes para impressão. Em contrapartida, apresenta limitações importantes na exploração por mapa: os anúncios são organizados em listas por município, sem mapa dinâmico com GPS, não possui canal privativo de mensagens e o impulsionamento de anúncios é pago.
+\vspace{0.25cm}
+\noindent \textbf{Limitações Identificadas:} A solução opera sob um modelo estritamente comercial, não disponibilizando aplicativo móvel para celulares e condicionando a visibilidade do pet ao pagamento financeiro de pacotes. Inexiste mapa interativo para navegação livre da comunidade, não há funcionalidade para registrar avistamentos colaborativos em tempo real, inexiste chat interno para conversas protegidas e não são contemplados mecanismos preventivos com código QR para identificação física.
 
 
-Complementarmente às quatro plataformas especializadas, a investigação avaliou o papel desempenhado pelas redes sociais generalistas, com ênfase nos grupos comunitários do Facebook e nas conversas instantâneas no WhatsApp. Conforme atestado no levantamento de campo realizado com tutores (no qual 100\% dos participantes utilizam redes sociais e 73,7\% recorrem ao WhatsApp para divulgar desaparecimentos), essas ferramentas consolidam-se como a principal solução de contorno adotada pela sociedade civil na ausência de sistemas dedicados. Como pontos positivos evidentes, destacam-se a altíssima adesão popular cotidiana, o custo financeiro nulo para publicações convencionais e a facilidade de compartilhamento imediato na rede de contatos pessoais no instante da perda.
+\subsubsection{Facebook}
 
-Em contrapartida, a utilização dessas ferramentas para o resgate de animais revela severas limitações operacionais. Em primeiro lugar, os algoritmos e o fluxo contínuo de postagens fazem com que os pedidos de ajuda percam alcance poucas horas após a publicação. Em segundo lugar, não há integração com mapas nem filtros de distância por GPS, dificultando a busca por voluntários nos arredores. Em terceiro lugar, a falta de formulários próprios resulta em relatos incompletos, enquanto informações de avistamentos ficam perdidas nos comentários. Além disso, a prática comum de divulgar telefones celulares em postagens públicas expõe as famílias a trotes e tentativas de golpe. Para identificar as lacunas operacionais existentes nas ferramentas de mercado e nas soluções de contorno adotadas pela população, estruturou-se uma avaliação comparativa com base nas principais funcionalidades demandadas na busca por animais. O Quadro~1 consolida a disponibilidade desses recursos em cada uma das alternativas analisadas.
+\noindent \textbf{Descrição Geral e Interface:} O \textit{Facebook} é a solução espontânea mais utilizada pela sociedade para divulgar e tentar solucionar o desaparecimento de animais de estimação, operando por meio de grupos comunitários dedicados (como grupos municipais de achados e perdidos), páginas de proteção animal e publicações em perfis pessoais. Sua interface fundamenta-se na lógica de redes sociais generalistas, com linha do tempo de postagens com textos e fotografias, botões de interação (curtir e compartilhar) e seções de comentários sequenciais.
+
+\vspace{0.25cm}
+\noindent \textbf{Pontos Fortes:} Caracteriza-se pelo seu alcance massivo e habitualidade de uso pela população urbana (ratificado na pesquisa empírica, na qual 100\% dos participantes utilizam redes sociais para fins de busca), pela facilidade de compartilhamento imediato nos círculos de contatos pessoais no instante do sumiço e pelo custo financeiro nulo para publicações orgânicas em grupos comunitários.
+
+\vspace{0.25cm}
+\noindent \textbf{Limitações Identificadas:} Revela graves deficiências técnicas quando empregado para o resgate de animais: a dependência de algoritmos de distribuição faz com que os apelos percam visibilidade em poucas horas (barreira apontada por 100\% dos respondentes do questionário); inexiste integração com mapa ou geolocalização contínua por GPS, inviabilizando buscas filtradas por raio de distância; os relatos de possíveis avistamentos ficam desestruturados e dispersos nos comentários; inexiste ferramenta de cálculo de rotas ou código QR para coleiras; e, de maneira crítica, a necessidade de expor telefones pessoais nos textos públicos deixa os tutores suscetíveis a trotes, chantagens e golpes em momentos de extrema fragilidade emocional.
 
 
 \begin{table}[H]
@@ -155,16 +160,22 @@ Em contrapartida, a utilização dessas ferramentas para o resgate de animais re
 \phantomsection\hypertarget{quadro:similares}{}\label{quadro:similares}
 \footnotesize
 \renewcommand{\arraystretch}{1.2}
-\setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{|>{\raggedright\arraybackslash}p{2.2cm}|>{\centering\arraybackslash}p{1.7cm}|>{\centering\arraybackslash}p{1.4cm}|>{\centering\arraybackslash}p{2.0cm}|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.9cm}|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.6cm}|}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{6.0cm}|>{\centering\arraybackslash}p{2.0cm}|>{\centering\arraybackslash}p{2.0cm}|>{\centering\arraybackslash}p{2.0cm}|>{\centering\arraybackslash}p{2.0cm}|}
 \hline
-\multicolumn{8}{|c|}{\textbf{Quadro 1: Análise Comparativa de Funcionalidades entre Sistemas Similares}} \\ \hline
-\textbf{Plataforma} & \textbf{Aplicativo Móvel} & \textbf{Mapa GPS} & \textbf{Registro de Avistamento} & \textbf{Chat Privativo} & \textbf{QR Code na Coleira} & \textbf{Cálculo de Rota} & \textbf{Acesso Gratuito} \\ \hline
-Viu Meu Pet & Sim & Parcial & Não & Não & Parcial & Não & Não \\ \hline
-PawBoost & Sim & Não & Parcial & Parcial & Não & Não & Não \\ \hline
-AlertPet & Não & Não & Não & Não & Não & Não & Não \\ \hline
-Pet911 & Sim & Não & Não & Não & Não & Não & Não \\ \hline
-Redes Sociais & Sim & Não & Não & Não & Não & Não & Sim \\ \hline
+\multicolumn{5}{|c|}{\textbf{Quadro 1: Análise Comparativa de Funcionalidades entre Sistemas Similares}} \\ \hline
+\textbf{Funcionalidade} & \textbf{Viu Meu Pet} & \textbf{PawBoost} & \textbf{AlertPet} & \textbf{Facebook} \\ \hline
+Cadastrar características e fotos do animal & \certo & \certo & \certo & \certo \\ \hline
+Disponibilizar aplicativo móvel dedicado & \certo & \certo & \errado & \certo \\ \hline
+Gerar cartazes digitais de busca para divulgação & \certo & \certo & \certo & \errado \\ \hline
+Filtrar publicações por espécie e município & \certo & \certo & \certo & \errado \\ \hline
+Disparar notificações de alerta para a comunidade & \certo & \certo & \certo & \errado \\ \hline
+Visualizar ocorrências em mapa interativo via GPS & \errado & \errado & \errado & \errado \\ \hline
+Registrar avistamentos colaborativos em tempo real & \errado & \errado & \errado & \errado \\ \hline
+Comunicar-se via chat privativo integrado & \errado & \errado & \errado & \errado \\ \hline
+Gerar identificação por código QR para coleira & \errado & \errado & \errado & \errado \\ \hline
+Traçar rotas de deslocamento até o animal & \errado & \errado & \errado & \errado \\ \hline
+Acessar todos os recursos de forma gratuita & \errado & \errado & \errado & \certo \\ \hline
 \end{tabular}
 \vspace{-0.2cm}
 \fonte{Autoria própria (2026)}
@@ -173,11 +184,11 @@ Redes Sociais & Sim & Não & Não & Não & Não & Não & Sim \\ \hline
 
 A síntese do Quadro~1 e as respostas obtidas na pesquisa com tutores mostram que nenhuma das plataformas avaliadas atende de forma integrada e acessível a todas as etapas de busca, prevenção e resgate. A partir desse diagnóstico, destacam-se os principais diferenciais da proposta do WeFIND:
 
-O primeiro diferencial é a busca visual no mapa: enquanto o Viu Meu Pet e o Pet911 organizam anúncios em listas por município e as redes sociais espalham postagens na linha do tempo, o WeFIND reúne os casos diretamente em um mapa interativo com GPS, filtros por raio de distância e cálculo de rotas até o local do animal.
+O primeiro diferencial é a busca visual no mapa: enquanto o Viu Meu Pet organiza anúncios em listas por município e o Facebook dispersa postagens na linha do tempo sem critério espacial, o WeFIND reúne os casos diretamente em um mapa interativo com GPS, filtros por raio de distância e cálculo de rotas até o local do animal.
 
 O segundo diferencial é o acesso gratuito e comunitário: ao contrário do AlertPet e do PawBoost, que cobram para dar visibilidade aos anúncios, o WeFIND disponibiliza todas as suas ferramentas sem custos, incluindo alertas para a vizinhança, filtros detalhados e sugestões automáticas de correspondência entre animais perdidos e encontrados.
 
-O terceiro diferencial é a segurança e a proteção de dados pessoais: em vez de exigir que o tutor exponha seu telefone em redes públicas, o WeFIND conta com um chat interno no próprio aplicativo. Isso permite conversar rapidamente com quem avistou ou resgatou o animal sem divulgar números particulares, evitando trotes e tentativas de golpe.
+O terceiro diferencial é a segurança e a proteção de dados pessoais: em vez de exigir que o tutor exponha seu telefone em redes públicas como no Facebook, o WeFIND conta com um chat interno no próprio aplicativo. Isso permite conversar rapidamente com quem avistou ou resgatou o animal sem divulgar números particulares, evitando trotes e tentativas de golpe.
 
 Por fim, o WeFIND inclui recursos preventivos e colaborativos que não estão presentes nas alternativas estudadas. Na parte preventiva, gera uma carteirinha digital com código QR para fixação na coleira, oferecendo uma forma simples de identificação que ajuda a contornar a baixa adesão ao microchip (70\%) e a coleiras comuns (75\%) observada na pesquisa de campo. Na parte colaborativa, o recurso de avistamentos (``Vi o Pet'') permite que moradores registrem novos pontos no mapa com foto e horário, ajudando a acompanhar o trajeto percorrido pelo animal.
 
