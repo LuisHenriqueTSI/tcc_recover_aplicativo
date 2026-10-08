@@ -97,7 +97,7 @@ export async function registerForPushNotificationsAsync(userId = null) {
     }
 
     if (token) {
-      console.log('[PushNotifications] ✓ Expo Push Token registrado:', token);
+      console.log('[PushNotifications] Token de notificações registrado.');
       await AsyncStorage.setItem(PUSH_TOKEN_STORAGE_KEY, token);
 
       // Salva no perfil do Supabase se o usuário estiver autenticado

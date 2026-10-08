@@ -1,4 +1,4 @@
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 function normalizeWhatsAppNumber(phone) {
   if (!phone) return null;
@@ -36,10 +36,6 @@ function normalizeWhatsAppNumber(phone) {
   return `+${digitsOnly}`;
 }
 
-const EVOLUTION_API_URL = process.env.EXPO_PUBLIC_EVOLUTION_API_URL || 'https://wefind-whatsapp-api.onrender.com';
-const EVOLUTION_API_KEY = process.env.EXPO_PUBLIC_EVOLUTION_API_KEY || 'wefind_secret_token_123';
-const EVOLUTION_INSTANCE = process.env.EXPO_PUBLIC_EVOLUTION_INSTANCE || 'wefind';
-
 export async function sendWhatsAppMessage({ phone, title, message, text }) {
   const normalizedPhone = normalizeWhatsAppNumber(phone);
   if (!normalizedPhone) return { sent: false, reason: 'invalid-phone' };
@@ -52,37 +48,23 @@ export async function sendWhatsAppMessage({ phone, title, message, text }) {
   const content = message || text || '';
   const messageText = title ? `*${title}*\n\n${content}` : content;
 
-  try {
-    const url = `${EVOLUTION_API_URL.replace(/\/$/, '')}/message/sendText/${EVOLUTION_INSTANCE}`;
-    console.log('[whatsapp-notifications] Enviando direto via Evolution API:', { url, phone: rawDigits });
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': EVOLUTION_API_KEY,
-      },
-      body: JSON.stringify({
-        number: rawDigits,
-        text: messageText,
-      }),
-    });
-
-    const responseText = await response.text();
-    console.log('[whatsapp-notifications] Resposta Evolution API:', { status: response.status, body: responseText });
-
-    return { sent: response.ok, status: response.status, data: responseText };
-  } catch (err) {
-    console.warn('[whatsapp-notifications] Erro no envio direto Evolution API:', err);
-    return { sent: false, error: err.message };
+  const { data, error } = await supabase.functions.invoke('notify-whatsapp', {
+    body: {
+      phone: rawDigits,
+      title,
+      message: messageText,
+    },
+  });
+  if (error) {
+    console.warn('[whatsapp-notifications] Falha no envio via função protegida:', error.message);
+    return { sent: false, reason: 'notification-function-error' };
   }
+  return { sent: Boolean(data?.ok), data };
 }
 
 export async function dispatchSystemNotificationToWhatsApp({ userId, title, message, type }) {
-  console.log('[dispatchSystemNotificationToWhatsApp] ➡️ Iniciando envio para userId:', userId, { title, type });
-
   if (!userId || !title || !message) {
-    console.warn('[dispatchSystemNotificationToWhatsApp] ❌ Dados insuficientes:', { userId, title, message });
+    console.warn('[dispatchSystemNotificationToWhatsApp] Dados insuficientes');
     return { sent: false, reason: 'missing-data' };
   }
 
@@ -92,8 +74,6 @@ export async function dispatchSystemNotificationToWhatsApp({ userId, title, mess
       .select('whatsapp, phone, whatsapp_notifications_enabled')
       .eq('id', userId)
       .maybeSingle();
-
-    console.log('[dispatchSystemNotificationToWhatsApp] 👤 Perfil obtido:', { profile, profileError });
 
     if (profileError) {
       console.warn('[whatsapp-notifications] Falha ao buscar perfil:', profileError);
@@ -107,53 +87,14 @@ export async function dispatchSystemNotificationToWhatsApp({ userId, title, mess
 
     const rawPhone = profile?.whatsapp || profile?.phone;
     const phone = normalizeWhatsAppNumber(rawPhone);
-    console.log('[dispatchSystemNotificationToWhatsApp] 📞 Telefone processado:', { rawPhone, normalized: phone });
-
     if (!phone) {
-      console.warn('[whatsapp-notifications] ❌ Nenhum WhatsApp/telefone encontrado para o usuário:', userId);
+      console.warn('[whatsapp-notifications] Nenhum WhatsApp/telefone encontrado');
       return { sent: false, reason: 'missing-whatsapp' };
     }
 
-    // 1. Tenta envio direto para Evolution API
-    console.log('[dispatchSystemNotificationToWhatsApp] 🚀 Disparando sendWhatsAppMessage direto...');
-    const directResult = await sendWhatsAppMessage({ phone, title, message });
-    console.log('[dispatchSystemNotificationToWhatsApp] 📡 Resultado envio direto:', directResult);
-
-    if (directResult.sent) {
-      return directResult;
-    }
-
-    // 2. Fallback via Edge Function
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-      console.log('[whatsapp-notifications] Tentando via edge function:', { userId, phone, title, message, type });
-
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/notify-whatsapp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
-          userId,
-          phone,
-          title,
-          message,
-          type,
-        }),
-      });
-
-      const responseBody = await response.text();
-      console.log('[whatsapp-notifications] Resposta da edge function:', { status: response.status, body: responseBody });
-
-      if (response.ok) {
-        return { sent: true, data: responseBody };
-      }
-    }
-
-    return directResult;
+    return sendWhatsAppMessage({ phone, title, message, text: message });
   } catch (error) {
     console.warn('[whatsapp-notifications] Exceção ao encaminhar para WhatsApp:', error);
     return { sent: false, reason: 'exception', error };
   }
 }
-

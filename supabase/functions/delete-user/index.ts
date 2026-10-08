@@ -1,13 +1,17 @@
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+const getCorsHeaders = (request: Request) => {
+  const allowed = (Deno.env.get('ALLOWED_ORIGINS') ?? '').split(',').map((origin) => origin.trim()).filter(Boolean);
+  const origin = request.headers.get('origin') ?? '';
+  return {
+    'Access-Control-Allow-Origin': allowed.includes(origin) ? origin : allowed[0] ?? 'null',
+    'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
 };
 
-const jsonResponse = (body: Record<string, unknown>, status = 200) =>
+const jsonResponse = (body: Record<string, unknown>, status = 200, request?: Request) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...getCorsHeaders(request ?? new Request('http://localhost')), 'Content-Type': 'application/json' },
   });
 
 type StoragePaths = Record<string, string[]>;
@@ -45,16 +49,16 @@ const collectStorageUrls = (paths: StoragePaths, value: unknown) => {
 
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(request) });
   }
 
   if (request.method !== 'POST') {
-    return jsonResponse({ error: 'method-not-allowed', message: 'Método não permitido.' }, 405);
+    return jsonResponse({ error: 'method-not-allowed', message: 'Método não permitido.' }, 405, request);
   }
 
   const authorization = request.headers.get('Authorization');
   if (!authorization?.match(/^Bearer\s+\S+$/i)) {
-    return jsonResponse({ error: 'unauthorized', message: 'Faça login novamente e tente outra vez.' }, 401);
+    return jsonResponse({ error: 'unauthorized', message: 'Faça login novamente e tente outra vez.' }, 401, request);
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');

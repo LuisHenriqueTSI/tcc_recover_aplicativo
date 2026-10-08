@@ -2,23 +2,21 @@
 
 A fase de análise e modelagem de sistemas traduz os requisitos levantados junto aos usuários em especificações técnicas estruturadas, regras de negócio e modelos conceituais padronizados (Pressman; Maxim, 2021; Sommerville, 2019). Essa etapa assegura a compreensão das funções do aplicativo, delimita o escopo operacional e previne inconsistências arquiteturais antes da programação (Valente, 2023).
 
-No projeto WeFIND, a análise baseou-se no levantamento de 46 requisitos funcionais e 14 requisitos não funcionais, orientados pela pesquisa de campo (Capítulo 3) e pela norma ISO/IEC 25010 (ISO, 2023). A modelagem do sistema foi documentada por meio da \textit{Unified Modeling Language} (UML), utilizando diagramas de casos de uso para mapear o comportamento dos usuários e diagramas de classes para estruturar as informações de domínio. As seções a seguir detalham os requisitos especificados e os modelos conceituais desenvolvidos.
+No projeto WeFIND, a análise dos requisitos funcionais priorizou os fluxos centrais de busca e reencontro de animais, orientados pela pesquisa de campo (Capítulo 3). Os requisitos não funcionais foram revistos com base em atributos de qualidade da norma ISO/IEC 25010 (ISO, 2023), mantendo-se os critérios pertinentes ao sistema e passíveis de verificação. A modelagem foi documentada por meio da \textit{Unified Modeling Language} (UML), com diagramas de casos de uso e de classes. Recursos adicionais implementados, mas não essenciais a esse recorte, são identificados separadamente como complementares.
 
 
 \subsection{Engenharia e Levantamento de Requisitos}
 
-A especificação de requisitos define formalmente as funções do aplicativo e suas restrições operacionais (Sommerville, 2019). No WeFIND, os requisitos foram formulados a partir das carências identificadas na pesquisa de campo e das oportunidades observadas no estudo de soluções similares (Capítulo 3). A matriz de rastreabilidade entre necessidades, requisitos e funcionalidades correspondentes é apresentada no Apêndice D.
+A especificação de requisitos define formalmente as funções do aplicativo e suas restrições operacionais (Sommerville, 2019). No WeFIND, os requisitos funcionais centrais foram formulados a partir das necessidades identificadas na pesquisa de campo e da análise de sistemas similares (Capítulo 3). Para tornar o escopo mais claro e os modelos mais legíveis, operações correlatas foram agrupadas em requisitos que descrevem resultados observáveis para os usuários. A matriz de rastreabilidade entre necessidades, requisitos centrais e funcionalidades é apresentada no Apêndice D, que também registra as verificações funcionais manuais relatadas pelo autor.
 
-Para organizar o desenvolvimento, os 46 Requisitos Funcionais (RF) foram distribuídos em áreas temáticas do aplicativo. As funções essenciais concentram-se no gerenciamento de contas e perfis (RF01 a RF08), no registro e controle de publicações de animais perdidos, encontrados e para adoção (RF09 a RF17), e na navegação cartográfica com traçado de rotas e busca geográfica (RF18 a RF21).
+O escopo funcional central abrange criação e acesso à conta; atualização do perfil; consulta, publicação e ciclo de vida das ocorrências de animais perdidos ou encontrados; visualização e busca geográfica em lista e mapa; correspondência entre publicações; registro de avistamentos; comunicação entre participantes; notificações relacionadas à busca; geração e compartilhamento de cartazes de divulgação; e denúncia e moderação básica de conteúdo.
 
-O apoio às buscas e à colaboração comunitária é estruturado pelo módulo de avistamentos colaborativos (RF22 a RF27), pelo cadastro preventivo de animais com geração de código QR e disparo de alertas de desaparecimento (RF28 a RF33), e pela geração de cartazes digitais para impressão e compartilhamento em redes sociais (RF34 a RF36). 
-
-Por fim, a interação entre usuários e a integridade das informações são providas pelo chat privativo em tempo real (RF37 a RF39), pela moderação de denúncias (RF40 a RF43), pelo suporte comunitário com lares temporários e ranking de ações solidárias (RF44 e RF45) e pelo algoritmo de correspondência automatizada entre animais perdidos e encontrados (RF46).
+O aplicativo também contém recursos complementares implementados, como publicações de adoção, cadastro preventivo de animais e identificação por QR code, histórias de reencontro, ranking comunitário, oferta de lares temporários e recompensas. Esses recursos permanecem descritos como extensões do produto, mas não compõem o conjunto de requisitos do escopo central deste trabalho.
 
 
 \subsubsection{Requisitos Funcionais}
 
-O \hyperref[quadro:funcionais]{Quadro 2} consolida a especificação dos 46 requisitos funcionais do aplicativo WeFIND, indicando para cada item o respectivo identificador único, a denominação operacional e a descrição do comportamento esperado pelo sistema. Os requisitos orientaram a implementação das funcionalidades e definiram o escopo previsto para a aplicação; sua especificação, por si só, não representa evidência de validação de cada requisito.
+O \hyperref[quadro:funcionais]{Quadro 2} consolida os 17 requisitos funcionais centrais do WeFIND. Cada requisito apresenta um identificador, uma denominação baseada em ação observável e o comportamento esperado. Operações correlatas, como criar, editar e encerrar uma ocorrência, são reunidas para evitar fragmentação excessiva; a especificação, por si só, não representa evidência de validação de cada comportamento.
 
 \vspace{0.3cm}
 {
@@ -44,63 +42,34 @@ O \hyperref[quadro:funcionais]{Quadro 2} consolida a especificação dos 46 requ
 \multicolumn{3}{|c|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
 \endlastfoot
 
-\textbf{RF01} & Realizar Cadastro & Permitir a criação de conta fornecendo nome completo, e-mail, telefone e senha de acesso, com suporte de verificação de código. \\ \hline
-\textbf{RF02} & Efetuar Login & Validar credenciais de acesso e iniciar sessão persistente no aplicativo via Supabase Auth. \\ \hline
-\textbf{RF03} & Redefinir Senha & Permitir a recuperação de conta esquecida por meio de envio e validação de código seguro via Evolution API no WhatsApp. \\ \hline
-\textbf{RF04} & Manter Cadastro de Usuário & Exibir e gerenciar informações cadastrais, dados de contato e histórico de atividades do usuário. \\ \hline
-\textbf{RF05} & Manter Perfil de Usuário & Permitir a personalização de foto de perfil, dados de identificação, redes sociais e preferências de localização. \\ \hline
-\textbf{RF06} & Fazer Logout & Finalizar a sessão ativa no dispositivo móvel de forma segura, limpando dados temporários e credenciais em cache. \\ \hline
-\textbf{RF07} & Consultar Notificações & Apresentar painel com avisos sobre novos avistamentos, mensagens recebidas e alertas de publicações próximas. \\ \hline
-\textbf{RF08} & Permitir Modo Visitante & Disponibilizar acesso público inicial para consulta de publicações e navegação no mapa sem exigir autenticação imediata. \\ \hline
-\textbf{RF09} & Manter Publicação & Registrar, alterar ou remover publicação de animal (Perdido, Encontrado ou Adoção) com fotos, atributos e descrição. \\ \hline
-\textbf{RF10} & Selecionar Localização no Mapa & Abrir mapa interativo para o usuário fixar as coordenadas geográficas exatas onde o fato ocorreu. \\ \hline
-\textbf{RF11} & Informar Tutor Terceiro & Permitir ao usuário que encontrou um animal cadastrar dados de contato de uma terceira pessoa responsável pela guarda. \\ \hline
-\textbf{RF12} & Visualizar Publicações & Exibir anúncios ativos em formato de mural contínuo, ordenados dinamicamente por proximidade e data de publicação. \\ \hline
-\textbf{RF13} & Utilizar Filtro Avançado & Permitir filtragem multicritério simultânea por espécie, status (Perdido/Encontrado/Adoção), porte, sexo e características. \\ \hline
-\textbf{RF14} & Visualizar Detalhes da Publicação & Apresentar tela completa da publicação com fotos ampliadas, características físicas e botões de ação e contato. \\ \hline
-\textbf{RF15} & Editar Dados da Publicação & Permitir ao autor do anúncio atualizar fotos, características físicas, descrições e telefones de contato informados. \\ \hline
-\textbf{RF16} & Atualizar Status da Publicação & Permitir ao autor alterar o status da publicação para ``Reencontrado'' ou ``Adotado'', encerrando as buscas ativas. \\ \hline
-\textbf{RF17} & Excluir Publicação & Permitir ao autor remover permanentemente o anúncio cadastrado da base de dados e do mapa. \\ \hline
-\textbf{RF18} & Visualizar Animais no Mapa & Apresentar mapa interativo com marcadores coloridos identificando animais perdidos, encontrados e disponíveis para adoção. \\ \hline
-\textbf{RF19} & Pesquisar Marcadores no Mapa & Filtrar em tempo real os marcadores exibidos no mapa de acordo com termos de busca e atributos do pet. \\ \hline
-\textbf{RF20} & Ajustar Raio de Proximidade & Permitir configurar a distância de abrangência da busca geográfica no mapa, desde um raio local de 5 km até a consulta em escala nacional. \\ \hline
-\textbf{RF21} & Traçar rota até o animal & Calcular e desenhar no mapa o trajeto viário e estimativa de deslocamento até o local onde o animal foi visto. \\ \hline
-\textbf{RF22} & Registrar Avistamento & Permitir relatar o avistamento de um pet perdido, anexando foto opcional, coordenadas e descrição do local. \\ \hline
-\textbf{RF23} & Selecionar Local do Avistamento & Abrir o mapa interativo para indicar o local em que o animal foi avistado em via pública, permitindo ao usuário posicionar o marcador. \\ \hline
-\textbf{RF24} & Listar Histórico de Avistamentos & Exibir linha do tempo na publicação com todos os relatos de avistamentos registrados pela comunidade. \\ \hline
-\textbf{RF25} & Editar Dados do Avistamento & Permitir ao autor do avistamento atualizar detalhes, fotos ou referências do relato cadastrado. \\ \hline
-\textbf{RF26} & Excluir Registro de Avistamento & Permitir a remoção de um relato de avistamento incorreto ou duplicado da linha do tempo da publicação. \\ \hline
-\textbf{RF27} & Atualizar Localização & Atualizar as coordenadas geográficas via GPS do dispositivo móvel para recalcular distâncias e rotas. \\ \hline
-\textbf{RF28} & Cadastro Preventivo de Pets & Registrar preventivamente os animais domésticos da família com nome, espécie, raça, vacinas e contatos do tutor. \\ \hline
-\textbf{RF29} & Listar Pets Cadastrados & Apresentar painel com todos os animais domésticos tutelados pelo usuário cadastrados preventivamente. \\ \hline
-\textbf{RF30} & Consultar Identificação do Animal Tutelado & Apresentar a ficha cadastral de identificação do animal contendo foto, dados do tutor e código QR exclusivo. \\ \hline
-\textbf{RF31} & Editar Dados de Meu Pet & Permitir ao tutor atualizar fotos, registros veterinários, vacinas e características físicas dos animais tutelados. \\ \hline
-\textbf{RF32} & Excluir Cadastro de Meu Pet & Permitir ao tutor excluir definitivamente o registro preventivo de um animal do seu perfil. \\ \hline
-\textbf{RF33} & Acionar Alerta de Desaparecimento & Converter instantaneamente o cadastro do animal tutelado em publicação de busca no mapa sem redigitar dados. \\ \hline
-\textbf{RF34} & Compartilhar Publicação & Criar automaticamente cartaz de divulgação contendo fotografia, dados essenciais da publicação e código QR escaneável. \\ \hline
-\textbf{RF35} & Escolher Formato do Cartaz & Permitir a geração da peça gráfica em múltiplos formatos (A4 para impressão em postes, proporção vertical 9:16 e proporção quadrada 1:1 para murais em redes sociais). \\ \hline
-\textbf{RF36} & Compartilhar Cartaz Digital & Integrar com o compartilhamento nativo do sistema operacional para envio direto da imagem em redes e mensageiros. \\ \hline
-\textbf{RF37} & Enviar Mensagem & Abrir canal de diálogo direto e privativo entre o interessado e o autor de uma publicação específica. \\ \hline
-\textbf{RF38} & Manter Mensagens Privadas & Viabilizar o envio e recebimento instantâneo de mensagens de texto entre usuários conectados via WebSockets. \\ \hline
-\textbf{RF39} & Enviar Imagens no Chat & Permitir o envio de fotos na conversa privativa para conferência de características físicas e identificação segura do animal. \\ \hline
-\textbf{RF40} & Manter História Feliz & Permitir ao tutor cujo pet foi localizado publicar um relato de agradecimento com fotos no mural comunitário. \\ \hline
-\textbf{RF41} & Visualizar Mural de Reencontros & Exibir mural público comunitário com relatos e fotos de animais que foram resgatados ou reencontrados com sucesso. \\ \hline
-\textbf{RF42} & Denunciar Publicação Suspeita & Permitir que os usuários reportem anúncios falsos, suspeitos ou com conteúdo impróprio à equipe de moderação. \\ \hline
-\textbf{RF43} & Manter Moderação e Denúncias & Permitir ao administrador listar denúncias, analisar publicações reportadas, remover conteúdos impróprios e suspender contas. \\ \hline
-\textbf{RF44} & Visualizar Ranking Semanal & Apurar dinamicamente as ações de impacto da comunidade e exibir ranking semanal municipal com pódio, pontuação e colocação do usuário. \\ \hline
-\textbf{RF45} & Gerenciar Lares Temporários & Permitir o cadastro voluntário de lares temporários com critérios de moradia e viabilizar a busca e solicitação de acolhimento solidário. \\ \hline
-\textbf{RF46} & Processar Correspondências Inteligentes & Cruzar automaticamente publicações ativas de status oposto (Perdido $\leftrightarrow$ Encontrado), avaliando atributos morfológicos e distância geográfica via fórmula de Haversine, gerando percentual de similaridade e emitindo alertas bidirecionais caso a compatibilidade atinja o limiar mínimo de relevância ($\ge 60\%$). \\ \hline
+\textbf{RF01} & Criar e acessar conta & Permitir cadastro, autenticação, recuperação de senha e encerramento de sessão de usuários. \\ \hline
+\textbf{RF02} & Atualizar perfil & Permitir ao usuário consultar e atualizar seus dados básicos de perfil e contato. \\ \hline
+\textbf{RF03} & Consultar ocorrências & Exibir ocorrências ativas de animais perdidos ou encontrados em lista e apresentar seus detalhes, incluindo imagens, características e local informado. \\ \hline
+\textbf{RF04} & Publicar ocorrência & Permitir a usuários autenticados cadastrar uma ocorrência de animal perdido ou encontrado, informando características, descrição, imagens e localização selecionada ou confirmada no mapa. \\ \hline
+\textbf{RF05} & Atualizar ocorrência própria & Permitir ao autor editar ou excluir sua ocorrência e atualizar sua situação quando o animal for reencontrado. \\ \hline
+\textbf{RF06} & Visualizar ocorrências no mapa & Apresentar em mapa as ocorrências ativas de animais perdidos ou encontrados, posicionadas conforme o local registrado. \\ \hline
+\textbf{RF07} & Pesquisar e filtrar ocorrências & Permitir localizar ocorrências por espécie, situação, características e distância, considerando a localização informada pelo usuário. \\ \hline
+\textbf{RF08} & Traçar rota até o local informado & Apresentar uma rota até o local associado à ocorrência, quando houver dados de localização suficientes. \\ \hline
+\textbf{RF09} & Registrar avistamento & Permitir a usuário autenticado registrar em uma ocorrência um avistamento, com local, data ou horário, descrição e imagem opcional. \\ \hline
+\textbf{RF10} & Consultar e atualizar avistamentos próprios & Exibir os avistamentos associados à ocorrência e permitir que seu autor edite ou remova o próprio relato. \\ \hline
+\textbf{RF11} & Trocar mensagens sobre ocorrência & Permitir que usuários autenticados iniciem e mantenham conversa privada relacionada a uma ocorrência, com envio e recebimento de mensagens. \\ \hline
+\textbf{RF12} & Receber e consultar notificações & Informar o usuário sobre eventos relevantes da busca, como novos avistamentos, mensagens, possíveis correspondências, ocorrências próximas e lembretes de renovação, por meio da central de notificações e, quando houver permissão e suporte do dispositivo, de notificações locais ou push. \\ \hline
+\textbf{RF13} & Denunciar conteúdo & Permitir ao usuário autenticado enviar denúncia sobre uma publicação ou conteúdo suspeito para análise administrativa. \\ \hline
+\textbf{RF14} & Analisar denúncias e moderar conteúdo & Permitir ao administrador consultar denúncias, analisar o conteúdo reportado e aplicar medidas de moderação disponíveis. \\ \hline
+\textbf{RF15} & Gerar e compartilhar cartaz de divulgação & Permitir gerar e compartilhar uma imagem da ocorrência nos formatos A4, vertical 9:16 ou quadrado 1:1. No formato A4, incluir código QR que direcione à página pública da ocorrência. \\ \hline
+\textbf{RF16} & Expirar e remover publicação não renovada & Manter a publicação ativa por 30 dias a partir do cadastro ou da renovação e avisar o responsável três dias antes do vencimento. Sem renovação, ocultá-la do mural e do mapa, permitindo renová-la durante 30 dias de carência. Ao fim desse período, removê-la permanentemente por meio da rotina de limpeza acionada pelo aplicativo. \\ \hline
+\textbf{RF17} & Sugerir correspondências entre ocorrências & Permitir que o sistema compare publicações ativas de animais perdidos e encontrados com base na espécie, nas características físicas e na distância geográfica, apresentando sugestões de possíveis correspondências sem confirmar automaticamente que se trata do mesmo animal. \\ \hline
 \end{longtable}
 }
 
-A especificação dos requisitos funcionais consolidada no \hyperref[quadro:funcionais]{Quadro 2} reflete diretamente as carências identificadas na pesquisa de campo e na análise das plataformas similares. O conjunto de 46 requisitos cobre desde operações básicas de cadastro, autenticação e moderação até os recursos centrais da solução proposta, como a busca espacial sobre mapas, o registro colaborativo de avistamentos, a comunicação privativa por mensagens em tempo real e a correspondência automatizada entre ocorrências. Essa estrutura serviu de guia para as decisões de modelagem conceitual, para a implementação das telas e para a condução dos testes apresentados nos capítulos seguintes.
+A especificação funcional do Quadro 2 prioriza as necessidades de busca e reencontro identificadas na pesquisa de campo e na análise das plataformas similares. Os 17 requisitos organizam os fluxos de consulta e publicação de ocorrências, busca espacial, correspondência entre anúncios, avistamentos, comunicação, divulgação por cartaz, ciclo de vida das publicações e moderação. Os demais recursos complementares descritos anteriormente foram implementados, mas não integram o escopo funcional central nem a contagem apresentada neste quadro.
 
 
 \subsubsection{Requisitos Não Funcionais}
 
-Enquanto os requisitos funcionais estabelecem as ações e serviços oferecidos pela aplicação móvel, os Requisitos Não Funcionais (RNF) especificam as restrições arquiteturais, os critérios de qualidade do produto e os padrões de desempenho sob os quais o sistema deve operar (Valente, 2023). A definição desses parâmetros fundamentou-se na norma internacional ISO/IEC 25010 (ISO, 2023), englobando aspectos de eficiência de desempenho, compatibilidade multiplataforma, segurança da informação e confiabilidade.
+Enquanto os requisitos funcionais estabelecem as ações oferecidas pela aplicação, os Requisitos Não Funcionais (RNF) registram restrições e critérios de qualidade do sistema (Valente, 2023). A seleção considerou atributos da ISO/IEC 25010 (ISO, 2023) e priorizou critérios incorporados ao projeto. As verificações desses critérios foram realizadas por inspeção do código e da configuração da aplicação, sem uma campanha independente de medições; por isso, o texto não os apresenta como resultados experimentais validados.
 
-O \hyperref[quadro:nao_funcionais]{Quadro 3} sintetiza os 14 requisitos não funcionais estabelecidos para a plataforma WeFIND, organizados por critérios mensuráveis de aceitação.
+O \hyperref[quadro:nao_funcionais]{Quadro 3} sintetiza quatro requisitos não funcionais relativos à autenticação e ao controle de acesso, à privacidade da localização, à comunicação segura e ao tratamento de imagens.
 
 \vspace{0.3cm}
 {
@@ -126,26 +95,14 @@ O \hyperref[quadro:nao_funcionais]{Quadro 3} sintetiza os 14 requisitos não fun
 \multicolumn{3}{|c|}{\textbf{Fonte:} Autoria própria (2026)} \\ \hline
 \endlastfoot
 
-\textbf{RNF01} & Desempenho de Inicialização & O tempo de carregamento da interface inicial e dos anúncios no mural deve ser inferior a 3,0 segundos em conexões móveis 4G. \\ \hline
-\textbf{RNF02} & Latência de Mensagens no Chat & A entrega e exibição de mensagens de texto entre usuários no chat via WebSockets deve ocorrer em tempo inferior a 500 milissegundos. \\ \hline
-\textbf{RNF03} & Compressão Local de Imagens & As fotografias devem passar por compressão local no dispositivo antes do envio, gerando arquivos JPEG com tamanho inferior a 1,0 MB. \\ \hline
-\textbf{RNF04} & Robustez da Geolocalização & Ao usar a localização do dispositivo, o usuário deve poder revisar e ajustar o marcador no mapa antes de confirmar o cadastro. A precisão pode variar conforme o aparelho e as condições de recepção; o aplicativo não garante um limite métrico fixo. \\ \hline
-\textbf{RNF05} & Proteção de Dados e Privacidade & O sistema não deve exibir endereço residencial exato em mapas públicos, limitando a visualização territorial ao bairro ou raio aproximado. \\ \hline
-\textbf{RNF06} & Anonimato de Lares Temporários & O endereço físico e contatos de voluntários de lares temporários devem permanecer ocultos até a confirmação formal de acolhimento. \\ \hline
-\textbf{RNF07} & Segurança de Autenticação & As senhas devem ser armazenadas com hash criptográfico irreversível (bcrypt) e a comunicação autenticada deve exigir tokens JWT válidos. \\ \hline
-\textbf{RNF08} & Isolamento de Dados via RLS & As tabelas no PostgreSQL devem implementar políticas de segurança em nível de linha (RLS), impedindo alteração ou exclusão de registros por terceiros. \\ \hline
-\textbf{RNF09} & Criptografia em Trânsito & 100\% do tráfego de dados entre o aplicativo e os serviços em nuvem deve utilizar criptografia em trânsito com protocolo HTTPS/TLS 1.2 ou superior. \\ \hline
-\textbf{RNF10} & Acessibilidade e Contraste & A interface deve suportar modos Claro e Escuro com taxa de contraste mínima de 4,5:1 para textos normais, tomando como base a WCAG 2.1 nível AA. \\ \hline
-\textbf{RNF11} & Compatibilidade Móvel & O aplicativo deve ser compilado e executado de forma nativa em dispositivos móveis Android (versão 7.0 ou superior) e iOS (versão 13 ou superior). \\ \hline
-\textbf{RNF12} & Design Responsivo de Telas & A interface deve adaptar-se a telas de 4,7 a 6,7 polegadas sem sobreposição de botões, quebra indevida de componentes ou corte de texto. \\ \hline
-\textbf{RNF13} & Confiabilidade da Nuvem & A infraestrutura de serviços em nuvem deve manter disponibilidade mínima de 99,5\% com rotinas automatizadas diárias de cópia de segurança (backup). \\ \hline
-\textbf{RNF14} & Lembrete de Adoção Responsável & Publicações ativas de animais encontrados há mais de 21 dias devem gerar notificação sugerindo adoção responsável, sem alterar o status da busca de forma automática. \\ \hline
+\textbf{RNF01} & Autenticação e controle de acesso & O acesso às operações restritas deve exigir sessão válida gerenciada pelo Supabase Auth. Políticas RLS devem impedir que usuários alterem ou excluam registros pertencentes a outras contas. \\ \hline
+\textbf{RNF02} & Privacidade da localização & Nas telas públicas do mural e do mapa, o sistema não deve exibir endereço residencial exato; a localização residencial deve ser apresentada de forma aproximada. \\ \hline
+\textbf{RNF03} & Comunicação segura & As requisições entre o aplicativo e os serviços em nuvem devem utilizar conexões HTTPS. \\ \hline
+\textbf{RNF04} & Compressão de imagens & As imagens devem ser comprimidas no dispositivo antes do envio, reduzindo seu tamanho sem comprometer a identificação visual do animal. \\ \hline
 \end{longtable}
 }
 
-Os requisitos não funcionais estabelecem os critérios de aceitação técnica e conformidade operacional do sistema. No âmbito de desempenho e eficiência, definem-se limites mensuráveis para carregamento inicial (RNF01) e entrega de mensagens (RNF02), aliados à compressão local de imagens para redução do consumo de dados (RNF03) e à possibilidade de revisar e ajustar no mapa o ponto sugerido pela localização do dispositivo (RNF04).
-
-Na dimensão de segurança e privacidade, o sistema assegura a preservação de dados por meio do mascaramento territorial de endereços (RNF05), sigilo de voluntários de lares temporários (RNF06), armazenamento criptografado de credenciais com tokens JWT (RNF07), isolamento estrito de registros via políticas RLS no PostgreSQL (RNF08) e comunicação cifrada em trânsito via HTTPS/TLS (RNF09). Por fim, os critérios de usabilidade, portabilidade e confiabilidade abrangem acessibilidade visual com modos claro e escuro aderentes à WCAG (RNF10), suporte nativo para Android e iOS (RNF11), responsividade em diferentes dimensões de tela (RNF12), garantia de disponibilidade com rotinas de backup (RNF13) e notificação periódica orientada à adoção responsável (RNF14).
+Os critérios selecionados concentram-se em autenticação e autorização (RNF01), privacidade da localização exposta publicamente (RNF02), segurança de transporte (RNF03) e preparação das imagens enviadas (RNF04). A avaliação de usabilidade com participantes é descrita no Capítulo 8. Não foram atribuídos limites de desempenho ou disponibilidade que não tenham sido medidos, e não foi registrada uma medição sistemática do limite de tamanho definido para o RNF04.
 
 
 \subsection{Modelagem Conceitual e Estrutural do Sistema}
@@ -159,57 +116,32 @@ No desenvolvimento da aplicação proposta, utilizou-se a \textit{Unified Modeli
 
 O diagrama de casos de uso da \textit{Unified Modeling Language} (UML) sintetiza as principais funcionalidades do sistema a partir do ponto de vista dos usuários. Ele apresenta as ações que cada perfil de usuário pode realizar dentro do aplicativo (Bezerra, 2021; Valente, 2023). Segundo Pressman e Maxim (2021), os casos de uso não precisam detalhar cada regra interna do sistema ou do banco de dados, mas sim apresentar as ações práticas que têm utilidade direta para as pessoas que utilizam a aplicação.
 
-Para representar o sistema de forma clara, optou-se por criar um diagrama de casos de uso geral e unificado na ferramenta Astah UML. Esse modelo reúne em uma única imagem as funções públicas dos visitantes, as opções disponíveis para usuários cadastrados e a área de moderação do administrador. A Figura~\ref{fig:diagrama_casos_de_uso} apresenta o diagrama de casos de uso da plataforma WeFIND.
+Para representar o sistema de forma clara, optou-se por criar um diagrama de casos de uso geral e unificado na ferramenta Astah UML. A versão apresentada no corpo do capítulo reúne apenas as funções principais dos visitantes, dos usuários cadastrados e do administrador. A Figura~\ref{fig:diagrama_casos_de_uso} apresenta essa visão reduzida, enquanto a versão detalhada é disponibilizada no Apêndice~A.
 
 \begin{figure}[H]
     \centering
     \caption{Diagrama de Casos de Uso Geral da Plataforma WeFIND}
     \label{fig:diagrama_casos_de_uso}
-    \vspace{0.2cm}
-    \includegraphics[width=\textwidth]{imagens/02_modelagem/figura06_diagrama_casos_de_uso.pdf}
-    \vspace{0.1cm}
+    \vspace{0cm}
+    \includegraphics[
+        trim=0 25mm 0 17mm,
+        clip,
+        width=\textwidth
+    ]{imagens/02_modelagem/figura06_diagrama_casos_de_uso_reduzido.pdf}
+    \vspace{-2.4cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-A estrutura do diagrama é organizada em torno de três atores principais e das diferentes áreas de funcionamento do aplicativo.
+O diagrama sintetiza o escopo funcional central por meio de três atores: o visitante, que consulta ocorrências e seus detalhes; o usuário autenticado, que pode publicar e atualizar ocorrências, registrar avistamentos, trocar mensagens e denunciar conteúdo; e o administrador, responsável por analisar denúncias e moderar publicações. A generalização entre usuário autenticado e visitante indica que, além das ações que exigem autenticação, o primeiro também pode consultar ocorrências disponíveis publicamente.
 
-O sistema possui três tipos de atores: o Usuário Visitante, o Usuário Autenticado e o Administrador. O Usuário Visitante representa a pessoa que acessa o aplicativo sem autenticação ou cadastro prévio. Esse usuário pode consultar as publicações de animais no mural, olhar os animais marcados no mapa, acompanhar o mural de reencontros e abrir os detalhes de qualquer publicação, além de poder se cadastrar ou entrar na sua conta.
+Os casos de uso foram agrupados por objetivo, em vez de representar cada operação de cadastro como uma elipse independente. A consulta compreende a visualização em lista ou mapa e o acesso aos detalhes (RF03 e RF06); a busca reúne os filtros por espécie, situação, características e distância (RF07); e a publicação reúne o registro de ocorrência perdida ou encontrada, incluindo o local informado (RF04), além da edição, do encerramento ou da exclusão pelo autor (RF05). A correspondência entre publicações perdidas e encontradas, com apresentação de uma sugestão baseada em similaridade, corresponde ao RF17. A renovação da publicação e sua expiração após o período de vigência correspondem ao RF16. O caso de compartilhamento de publicação também abrange a geração e divulgação do cartaz associado à ocorrência (RF15). O registro e a consulta de avistamentos correspondem aos RF09 e RF10. A comunicação privada e as notificações relacionadas à ocorrência correspondem aos RF11 e RF12. Por fim, a denúncia e a análise administrativa correspondem aos RF13 e RF14.
 
-O Usuário Autenticado é a pessoa que possui uma conta cadastrada e confirmada no aplicativo. No diagrama, ele herda todas as permissões do Usuário Visitante (relação de generalização). Na prática, isso significa que o usuário autenticado pode fazer tudo o que o visitante faz e ainda ganha acesso a recursos exclusivos, como criar publicações, conversar no chat privado, comentar, cadastrar seus animais de forma preventiva, acionar alerta de perda, avaliar outros usuários e pedir a devolução de um animal.
-
-O Administrador é o responsável por cuidar da moderação da plataforma, avaliando publicações suspeitas e gerenciando as denúncias enviadas pelos próprios usuários para manter a comunidade segura.
-
-Na parte de acesso e conta, os casos de uso principais são \textit{Realizar Cadastro} e \textit{Efetuar Login}. Durante o cadastro, o sistema aciona obrigatoriamente o caso de uso \textit{Verificar Código}, garantindo a validação de segurança da conta por código temporário enviado ao celular. A tela de login oferece também a opção complementar de \textit{Redefinir Senha}, que recorre igualmente à verificação de código para os casos em que o usuário esquece suas credenciais. O gerenciamento das informações pessoais é feito pelos casos de uso \textit{Manter Cadastro de Usuário} e \textit{Manter Perfil de Usuário}, de onde também parte a opção de saída \textit{Fazer Logout}.
-
-Para a busca de animais, o aplicativo oferece os casos de uso \textit{Visualizar Publicações}, em formato de lista no mural, e \textit{Visualizar Animais no Mapa}, que posiciona os animais diretamente sobre o mapa da região. A partir da listagem de publicações, o usuário pode acionar ações adicionais como \textit{Utilizar Filtro Avançado}, para filtrar espécies e características, \textit{Ajustar Raio de Proximidade}, para definir a distância máxima da busca, e \textit{Atualizar Localização}, para atualizar sua posição via GPS.
-
-Ao abrir os detalhes de uma publicação (\textit{Visualizar Detalhes da Publicação}), o usuário encontra opções complementares de interação. A opção \textit{Traçar rota até o animal} fica disponível quando o animal foi visto na rua, traçando o caminho no mapa até o local onde ele foi avistado. A opção \textit{Enviar Mensagem} permite conversar diretamente com o autor da publicação caso o usuário esteja autenticado, ligando-se ao caso de uso \textit{Manter Mensagens Privadas}. A opção \textit{Solicitar Devolução} é utilizada quando um tutor reconhece seu animal perdido, exigindo obrigatoriamente a etapa de \textit{Enviar Comprovação} para o envio de fotos ou documentos que comprovem a tutela do pet. O usuário também pode usar \textit{Compartilhar Publicação}, gerando o cartaz de busca, e acessar \textit{Visualizar Perfil do Membro}, onde é possível avaliar o outro usuário (\textit{Classificar Membro}) se já tiver ocorrido diálogo entre eles.
-
-A publicação de novos anúncios é feita pelo caso de uso \textit{Manter Publicação}, que permite criar, alterar ou excluir postagens. Para cadastrar qualquer publicação, o sistema exige obrigatoriamente o caso de uso \textit{Selecionar Localização no Mapa}, no qual o usuário informa ou ajusta a posição a ser associada ao anúncio. A publicação também permite que outras pessoas utilizem o caso de uso \textit{Manter Comentário} para enviar pistas e relatos de avistamento, além da opção \textit{Informar Tutor Terceiro}, usada quando o animal resgatado fica com outra pessoa. Adicionalmente, o caso de uso \textit{Registrar Avistamento} pode ser acionado a partir do mapa ou dos detalhes de uma publicação por usuários autenticados, exigindo igualmente a marcação do ponto em \textit{Selecionar Localização no Mapa}.
-
-Na área de prevenção, o perfil do usuário conecta-se ao caso de uso \textit{Cadastro Preventivo de Pets}. Essa função permite registrar preventivamente os animais domésticos da família com fotografias, características físicas e contatos do tutor. Caso o animal fuja ou se perca, o tutor pode acionar diretamente a opção \textit{Acionar Alerta de Desaparecimento}, gerando um anúncio de busca no mapa de forma ágil, reaproveitando as informações previamente cadastradas.
-
-Por fim, a moderação do aplicativo é feita pelo caso de uso \textit{Manter Moderação e Denúncias}, acessível ao administrador. Os casos de reencontro são reunidos no caso de uso \textit{Visualizar Mural de Reencontros} e mantidos por \textit{Manter História Feliz}, enquanto os avisos e alertas do aplicativo são acompanhados por meio de \textit{Consultar Notificações}.
-
-\enlargethispage{3\baselineskip}
-A relação direta entre os casos de uso do diagrama e os requisitos funcionais do sistema se dá da seguinte maneira:
-
-O caso de uso \textit{Realizar Cadastro} atende ao RF01 (com apoio do caso \textit{Verificar Código}) e ao RF08, enquanto \textit{Efetuar Login} atende ao RF02 e \textit{Redefinir Senha} ao RF03 (também apoiado por \textit{Verificar Código}). A gestão da conta do usuário é atendida por \textit{Manter Cadastro de Usuário} (RF04) e \textit{Manter Perfil de Usuário} (RF05), além de \textit{Fazer Logout} (RF06) e \textit{Consultar Notificações} (RF07).
-
-O caso de uso \textit{Manter Publicação} concentra os requisitos de publicação de anúncios (RF09, RF15, RF16 e RF17), funcionando em conjunto com \textit{Selecionar Localização no Mapa} (RF10) e \textit{Informar Tutor Terceiro} (RF11). A visualização e a busca de postagens são atendidas por \textit{Visualizar Publicações} (RF12), \textit{Utilizar Filtro Avançado} (RF13), \textit{Visualizar Detalhes da Publicação} (RF14) e \textit{Compartilhar Publicação} (RF34, RF35 e RF36).
-
-No mapa, os casos de uso \textit{Visualizar Animais no Mapa} (RF18 e RF19), \textit{Ajustar Raio de Proximidade} (RF20), \textit{Traçar rota até o animal} (RF21) e \textit{Atualizar Localização} (RF27) cobrem as necessidades de localização geográfica e rotas.
-
-A parte de pistas e relatos comunitários é atendida por \textit{Manter Comentário} e \textit{Registrar Avistamento} (RF22 a RF26), além da avaliação de participantes com \textit{Visualizar Perfil do Membro} e \textit{Classificar Membro}. O contato direto entre pessoas fica a cargo de \textit{Enviar Mensagem} (RF37) e \textit{Manter Mensagens Privadas} (RF38 e RF39).
-
-A proteção e a prevenção contra perdas são atendidas pelo \textit{Cadastro Preventivo de Pets} (RF28 a RF32) e pelo \textit{Acionar Alerta de Desaparecimento} (RF33), além da reivindicação segura do animal tutelado com \textit{Solicitar Devolução} e \textit{Enviar Comprovação}.
-
-Por fim, os relatos de sucesso são atendidos por \textit{Manter História Feliz} (RF40) e \textit{Visualizar Mural de Reencontros} (RF41), enquanto a fiscalização e a segurança da comunidade são garantidas pelo caso de uso \textit{Manter Moderação e Denúncias} (RF42 e RF43). O reconhecimento de ações solidárias e o suporte a abrigo provisório são atendidos por \textit{Visualizar Ranking Semanal} (RF44) e \textit{Gerenciar Lares Temporários} (RF45), enquanto o cruzamento automático de informações entre animais perdidos e encontrados é executado por \textit{Processar Correspondências Inteligentes} (RF46).
+Recursos complementares implementados, como adoção, cadastro preventivo de animais, QR code preventivo e ranking, não são detalhados no diagrama por não fazerem parte do escopo funcional central definido para esta análise.
 
 
 \subsubsection{Diagrama de Classes de Domínio}
 
-O diagrama de classes de domínio organiza as informações do sistema com base no paradigma orientado a objetos, formalizando as entidades essenciais do sistema WeFIND, seus atributos tipados com visibilidade, métodos de negócio e as relações estruturais da aplicação. A Figura~\ref{fig:diagrama_classes} apresenta o diagrama de classes de domínio da plataforma.
+O diagrama de classes de domínio organiza as entidades da aplicação, seus atributos, operações e relações. A Figura~\ref{fig:diagrama_classes} retoma a versão integral do diagrama, com as classes do núcleo e dos recursos complementares implementados.
 
 \begin{figure}[H]
     \centering
@@ -222,14 +154,8 @@ O diagrama de classes de domínio organiza as informações do sistema com base 
 \end{figure}
 
 \enlargethispage{2\baselineskip}
-Na estrutura da Figura~\ref{fig:diagrama_classes}, os dados estão organizados a partir das classes centrais \textit{Usuario}, \textit{Pet} e \textit{Publicacao}, complementadas por classes de apoio operacional e colaborativo. A classe \textit{Usuario} concentra os dados de identificação do usuário (identificador único UUID, nome, e-mail, número de WhatsApp e foto de perfil) e suas referências espaciais (latitude, longitude, bairro, cidade, estado e raio de busca), além de gerenciar privilégios administrativos, pontuação por ações solidárias e disponibilidade para lar temporário. Suas operações estruturam os fluxos de autenticação, redefinição de senha com validação de código via WhatsApp, atualização de localização no mapa e controle de notificações.
+No núcleo do modelo, \textit{Usuario} representa as contas e \textit{Publicacao} representa as ocorrências de animais perdidos ou encontrados, incluindo sua localização e imagens. A classe \textit{Avistamento} registra relatos associados a uma publicação. \textit{Conversa} e \textit{Mensagem} representam a comunicação privada contextualizada pela ocorrência; \textit{Notificacao} registra os avisos destinados ao usuário; e \textit{Denuncia} dá suporte ao fluxo de análise administrativa. A geração do cartaz de divulgação está associada à publicação que lhe fornece os dados.
 
-A classe \textit{Pet} viabiliza o cadastro preventivo de animais domésticos (abrangendo cães, gatos, aves, equinos e outros animais de companhia), registrando características físicas (raça, porte, sexo, pelagem e idade), cuidados veterinários (histórico vacinal e observações médicas), código de microchip eletrônico e identificador digital baseado em código QR. Destaca-se o método de acionamento de alerta de desaparecimento, que converte instantaneamente o cadastro do animal tutelado em uma nova publicação pública no sistema.
-
-A classe \textit{Publicacao} representa os anúncios georreferenciados de animais perdidos, encontrados ou disponíveis para adoção. O registro armazena as coordenadas geográficas informadas ou selecionadas no mapa para o desaparecimento ou avistamento, endereço estruturado, características físicas, datas de abertura e resolução, além de operações para cálculo de distância entre os pontos registrados, renovação de expiração e geração automatizada de cartazes digitais diagramados. Cada anúncio pode incorporar de zero a seis imagens gerenciadas pela classe \textit{FotoPublicacao}, que provê métodos de integração com o armazenamento em nuvem (\textit{storage}).
-
-A colaboração comunitária é viabilizada pela classe \textit{Avistamento}, que documenta coordenadas, fotos de evidência e a distância em relação ao ponto de fuga original. O acolhimento emergencial é estruturado pela classe \textit{LarTemporario}, que avalia a compatibilidade de espécies e portes frente à infraestrutura da moradia do voluntário. Por sua vez, a restituição formal de animais resgatados é mediada pela classe \textit{Devolucao}, com envio de comprovantes de tutela, podendo associar-se a uma bonificação gerenciada pela classe \textit{Recompensa} com chave PIX.
-
-A troca de mensagens entre os usuários ocorre por meio da classe \textit{Conversa}, que reúne instâncias da classe \textit{Mensagem} para tráfego instantâneo de texto e fotografias em tempo real via WebSockets. Por fim, a integridade da plataforma é assegurada pela classe \textit{Denuncia}, que permite reportar anúncios suspeitos para moderação administrativa, enquanto a classe \textit{HistoriaFeliz} reúne os relatos de reencontros no mural comunitário e a classe \textit{Notificacao} distribui alertas geolocalizados aos usuários.
+O diagrama também apresenta classes de recursos complementares presentes na implementação, como \textit{Pet}, \textit{PerfilVoluntarioLar}, \textit{Reivindicacao}, \textit{Recompensa} e \textit{HistoriaFeliz}. A inclusão dessas classes documenta a estrutura implementada, sem alterar a delimitação do escopo funcional central definida pelos requisitos.
 
 Com os requisitos funcionais formalizados e a modelagem de classes de domínio consolidada, o Capítulo 5 apresenta a solução proposta com o aplicativo WeFIND, detalhando a concepção da ferramenta, sua arquitetura e as decisões técnicas adotadas.

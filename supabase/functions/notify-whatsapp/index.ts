@@ -54,8 +54,6 @@ async function sendViaEvolutionApi(phone: string, text: string) {
   const rawDigits = phone.replace(/\D/g, '');
   const url = `${EVOLUTION_API_URL.replace(/\/$/, '')}/message/sendText/${EVOLUTION_INSTANCE}`;
 
-  console.log('[notify-whatsapp] Enviando via Evolution API:', { url, phone: rawDigits });
-
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -68,17 +66,14 @@ async function sendViaEvolutionApi(phone: string, text: string) {
     }),
   });
 
-  const responseText = await response.text();
-  console.log('[notify-whatsapp] Resposta Evolution API:', { status: response.status, body: responseText });
-  return { ok: response.ok, status: response.status, body: responseText };
+  await response.text();
+  return { ok: response.ok, status: response.status };
 }
 
 async function sendViaTwilio(phone: string, text: string) {
   if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_FROM) {
     return { ok: false, reason: 'missing-twilio-env' };
   }
-
-  console.log('[notify-whatsapp] Enviando via Twilio:', { phone, from: TWILIO_WHATSAPP_FROM });
 
   const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`, {
     method: 'POST',
@@ -93,13 +88,40 @@ async function sendViaTwilio(phone: string, text: string) {
     }).toString(),
   });
 
-  const responseText = await response.text();
-  console.log('[notify-whatsapp] Resposta Twilio:', { status: response.status, body: responseText });
-  return { ok: response.ok, status: response.status, body: responseText };
+  await response.text();
+  return { ok: response.ok, status: response.status };
+}
+
+async function requireAuthenticatedUser(req: Request) {
+  const authorization = req.headers.get('authorization') ?? '';
+  const token = authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+  if (!token) return null;
+
+  const client = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    { global: { headers: { Authorization: `Bearer ${token}` } } },
+  );
+  const { data } = await client.auth.getUser(token);
+  return data.user ?? null;
+}
+
+function corsHeaders(req: Request) {
+  const allowed = (Deno.env.get('ALLOWED_ORIGINS') ?? '').split(',').map((origin) => origin.trim()).filter(Boolean);
+  const origin = req.headers.get('origin') ?? '';
+  return {
+    'Access-Control-Allow-Origin': allowed.includes(origin) ? origin : allowed[0] ?? 'null',
+    'Access-Control-Allow-Headers': 'authorization, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
 }
 
 Deno.serve(async (req: Request) => {
   try {
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: corsHeaders(req) });
+    }
+
     // Suporte a redirecionamento Web / Deep Link para abrir o App ao clicar no link do WhatsApp
     if (req.method === 'GET') {
       const url = new URL(req.url);
@@ -141,7 +163,7 @@ Deno.serve(async (req: Request) => {
 
       const headers = new Headers();
       headers.set('Content-Type', 'text/html; charset=utf-8');
-      headers.set('Access-Control-Allow-Origin', '*');
+      Object.entries(corsHeaders(req)).forEach(([key, value]) => headers.set(key, value));
 
       return new Response(html, {
         status: 200,
@@ -149,16 +171,22 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    const user = await requireAuthenticatedUser(req);
+    if (!user) {
+      return new Response(JSON.stringify({ ok: false, reason: 'authentication-required' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders(req) },
+      });
+    }
+
     const body = await req.json();
     const { phone, title, message, type } = body ?? {};
     const normalizedPhone = normalizeWhatsAppNumber(phone);
 
-    console.log('[notify-whatsapp] Payload recebido:', { phone, normalizedPhone, title, message, type });
-
     if (!normalizedPhone || !message) {
       return new Response(JSON.stringify({ ok: false, reason: 'missing-params' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders(req) },
       });
     }
 
@@ -168,9 +196,9 @@ Deno.serve(async (req: Request) => {
     if (EVOLUTION_API_URL && EVOLUTION_API_KEY) {
       const evoResult = await sendViaEvolutionApi(normalizedPhone, text);
       if (evoResult.ok) {
-        return new Response(JSON.stringify({ ok: true, provider: 'evolution', response: evoResult.body }), {
+        return new Response(JSON.stringify({ ok: true, provider: 'evolution' }), {
           status: 200,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...corsHeaders(req) },
         });
       }
       console.warn('[notify-whatsapp] Evolution API falhou, tentando fallback Twilio...');
@@ -180,25 +208,26 @@ Deno.serve(async (req: Request) => {
     if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN) {
       const twilioResult = await sendViaTwilio(normalizedPhone, text);
       if (twilioResult.ok) {
-        return new Response(JSON.stringify({ ok: true, provider: 'twilio', response: twilioResult.body }), {
+        return new Response(JSON.stringify({ ok: true, provider: 'twilio' }), {
           status: 200,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...corsHeaders(req) },
         });
       }
-      return new Response(JSON.stringify({ ok: false, provider: 'twilio', response: twilioResult.body }), {
+      return new Response(JSON.stringify({ ok: false, provider: 'twilio' }), {
         status: 502,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders(req) },
       });
     }
 
     return new Response(JSON.stringify({ ok: false, reason: 'no-whatsapp-provider-configured' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders(req) },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ ok: false, error: String(error) }), {
+    return new Response(JSON.stringify({ ok: false, error: 'notification-provider-error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 });
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';

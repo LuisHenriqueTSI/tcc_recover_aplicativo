@@ -1,0 +1,99 @@
+@startuml
+title WeFIND - Diagrama de Classes de Domínio
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+
+package "Núcleo de busca e reencontro" {
+  class Usuario {
+    id
+    nome
+    email
+    telefone
+  }
+  class Publicacao {
+    id
+    categoria
+    situacao
+    descricao
+    localizacao
+  }
+  class Foto {
+    id
+    url
+  }
+  class Avistamento {
+    id
+    localizacao
+    dataHora
+    descricao
+  }
+  class Conversa {
+    id
+    situacao
+  }
+  class Mensagem {
+    id
+    conteudo
+    enviadaEm
+    lida
+  }
+  class Notificacao {
+    id
+    tipo
+    criadaEm
+    lida
+  }
+  class Denuncia {
+    id
+    motivo
+    situacao
+  }
+}
+
+package "Recursos complementares implementados" {
+  class Pet {
+    id
+    nome
+    especie
+    codigoQR
+  }
+  class PerfilVoluntarioLar {
+    especiesAceitas
+    portesAceitos
+    disponibilidade
+  }
+  class Reivindicacao {
+    id
+    comprovante
+    situacao
+  }
+  class Recompensa {
+    id
+    valor
+    situacao
+  }
+  class HistoriaFeliz {
+    id
+    relato
+    publicadaEm
+  }
+}
+
+Usuario "1" -- "0..*" Publicacao : publica
+Publicacao "1" *-- "0..*" Foto : inclui
+Publicacao "1" *-- "0..*" Avistamento : recebe
+Usuario "1" -- "0..*" Avistamento : registra
+Publicacao "0..1" -- "0..*" Conversa : contextualiza
+Usuario "1" -- "0..*" Conversa : participa
+Conversa "1" *-- "1..*" Mensagem : contém
+Usuario "1" -- "0..*" Notificacao : recebe
+Usuario "1" -- "0..*" Denuncia : registra
+Publicacao "1" -- "0..*" Denuncia : é reportada
+
+Usuario "1" -- "0..*" Pet : cadastra
+Usuario "1" -- "0..1" PerfilVoluntarioLar : possui
+Publicacao "1" -- "0..*" Reivindicacao : recebe
+Publicacao "0..1" -- "0..1" Recompensa : pode oferecer
+Publicacao "0..1" -- "0..*" HistoriaFeliz : pode originar
+@enduml

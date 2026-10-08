@@ -39,7 +39,28 @@ function normalizeWhatsAppNumber(phone: string | undefined | null) {
 }
 
 function createSixDigitCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  const values = new Uint32Array(1);
+  crypto.getRandomValues(values);
+  return String(100000 + (values[0] % 900000));
+}
+
+async function hashVerificationCode(code: string) {
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(code),
+  );
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function safeEqual(left: string, right: string) {
+  if (left.length !== right.length) return false;
+  let result = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    result |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  }
+  return result === 0;
 }
 
 function getRestHeaders(serviceRoleKey: string) {
@@ -50,7 +71,8 @@ function getRestHeaders(serviceRoleKey: string) {
   };
 }
 
-async function storeVerificationCode(supabaseUrl: string, serviceRoleKey: string, email: string, code: string, whatsapp: string) {
+async function storeVerificationCode(supabaseUrl: string, serviceRoleKey: string, email: string, code: string, whatsapp: string, hashCode = true) {
+  const codeHash = hashCode ? await hashVerificationCode(code) : '';
   const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/signup_verifications`, {
     method: 'POST',
     headers: {
@@ -61,7 +83,7 @@ async function storeVerificationCode(supabaseUrl: string, serviceRoleKey: string
     body: JSON.stringify([
       {
         email,
-        code,
+        ...(hashCode ? { code_hash: codeHash, attempts: 0 } : { code }),
         whatsapp,
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
@@ -74,7 +96,7 @@ async function storeVerificationCode(supabaseUrl: string, serviceRoleKey: string
 }
 
 async function fetchVerificationCode(supabaseUrl: string, serviceRoleKey: string, email: string) {
-  const url = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/signup_verifications?select=code,expires_at&email=eq.${encodeURIComponent(email)}&order=created_at.desc&limit=1`;
+  const url = `${supabaseUrl.replace(/\/$/, '')}/rest/v1/signup_verifications?select=code,code_hash,attempts,created_at,expires_at&email=eq.${encodeURIComponent(email)}&order=created_at.desc&limit=1`;
 
   const response = await fetch(url, {
     method: 'GET',
@@ -107,15 +129,23 @@ async function deleteVerificationCode(supabaseUrl: string, serviceRoleKey: strin
   return { ok: response.ok, status: response.status, body: bodyText };
 }
 
+async function incrementVerificationAttempts(supabaseUrl: string, serviceRoleKey: string, email: string, attempts: number) {
+  await fetch(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/signup_verifications?email=eq.${encodeURIComponent(email)}`, {
+    method: 'PATCH',
+    headers: { ...getRestHeaders(serviceRoleKey), Prefer: 'return=minimal' },
+    body: JSON.stringify({ attempts }),
+  });
+}
+
 async function dispatchVerificationCode(phone: string, code: string) {
   const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL') ?? 'https://wefind-whatsapp-api.onrender.com';
-  const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') ?? 'wefind_secret_token_123';
+  const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') ?? '';
   const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE') ?? 'wefind';
 
   const normalizedPhone = normalizeWhatsAppNumber(phone);
   const rawDigits = normalizedPhone ? normalizedPhone.replace(/\D/g, '') : phone.replace(/\D/g, '');
 
-  console.log('[create-user] Disparando código via Evolution API:', { url: EVOLUTION_API_URL, instance: EVOLUTION_INSTANCE, phone: rawDigits });
+  if (!EVOLUTION_API_KEY) return { ok: false, reason: 'missing-evolution-api-key' };
 
   try {
     const evoUrl = `${EVOLUTION_API_URL.replace(/\/$/, '')}/message/sendText/${EVOLUTION_INSTANCE}`;
@@ -132,48 +162,25 @@ async function dispatchVerificationCode(phone: string, code: string) {
     });
 
     const evoBody = await evoResponse.text();
-    console.log('[create-user] Resposta Evolution API:', { status: evoResponse.status, body: evoBody });
     if (evoResponse.ok) {
-      return { ok: true, status: evoResponse.status, body: evoBody };
+      return { ok: true, status: evoResponse.status };
     }
   } catch (evoErr) {
     console.warn('[create-user] Falha ao enviar direto via Evolution API:', evoErr);
   }
 
-  // Fallback via notify-whatsapp
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-  if (supabaseUrl && supabaseAnonKey) {
-    try {
-      const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/functions/v1/notify-whatsapp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${supabaseAnonKey}`,
-        },
-        body: JSON.stringify({
-          phone,
-          title: 'Código de confirmação',
-          message: `Seu código de confirmação é:\n\n${code}\n\nUse-o para concluir o cadastro.`,
-          type: 'signup-verification',
-        }),
-      });
-      const bodyText = await response.text();
-      return { ok: response.ok, status: response.status, body: bodyText };
-    } catch {
-      // ignore
-    }
-  }
-
   return { ok: false, reason: 'failed-all-senders' };
 }
 
-function jsonResponse(payload: unknown, status = 200) {
+function jsonResponse(payload: unknown, status = 200, request?: Request) {
+  const configuredOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '').split(',').map((origin) => origin.trim()).filter(Boolean);
+  const requestOrigin = request?.headers.get('origin') ?? '';
+  const allowOrigin = configuredOrigins.includes(requestOrigin) ? requestOrigin : configuredOrigins[0] ?? 'null';
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': allowOrigin,
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'content-type, authorization, apikey',
     },
@@ -182,11 +189,11 @@ function jsonResponse(payload: unknown, status = 200) {
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return jsonResponse({ ok: true }, 200);
+    return jsonResponse({ ok: true }, 200, req);
   }
 
   if (req.method !== 'POST') {
-    return jsonResponse({ ok: false, error: 'method-not-allowed' }, 405);
+    return jsonResponse({ ok: false, error: 'method-not-allowed' }, 405, req);
   }
 
   let body: Record<string, unknown> = {};
@@ -210,12 +217,18 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ ok: false, error: 'missing-fields' }, 400);
     }
 
-    const code = String(body.code ?? '').trim() || createSixDigitCode();
+    const code = createSixDigitCode();
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SERVICE_ROLE_KEY') ?? '';
     if (!supabaseUrl || !serviceRoleKey) {
       return jsonResponse({ ok: false, error: 'missing-service-role-key' }, 500);
+    }
+
+    const previous = await fetchVerificationCode(supabaseUrl, serviceRoleKey, email);
+    const previousCreatedAt = previous.record?.created_at ? new Date(String(previous.record.created_at)).getTime() : 0;
+    if (previousCreatedAt && Date.now() - previousCreatedAt < 60_000) {
+      return jsonResponse({ ok: false, error: 'verification-rate-limited' }, 429);
     }
 
     const storeResult = await storeVerificationCode(supabaseUrl, serviceRoleKey, email, code, whatsapp);
@@ -228,10 +241,8 @@ Deno.serve(async (req: Request) => {
       ok: true,
       pendingVerification: true,
       phone: whatsapp,
-      code,
       whatsappSent: whatsappResult.ok,
       whatsappStatus: whatsappResult.status,
-      devCode: code,
     });
   }
 
@@ -252,12 +263,18 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ ok: false, error: 'invalid-verification-code', details: 'code-not-found' }, 400);
     }
 
-    const { code: storedCodeRaw, expires_at: expiresAt } = fetchResult.record as { code?: string | number; expires_at?: string };
-    const storedCode = storedCodeRaw != null ? String(storedCodeRaw).trim() : '';
+    const { code_hash: storedCodeHash, expires_at: expiresAt, attempts: attemptsRaw } = fetchResult.record as { code_hash?: string; expires_at?: string; attempts?: number };
+    const attempts = Number(attemptsRaw) || 0;
     const enteredCode = String(verificationCode).trim();
 
-    if (!storedCode || storedCode !== enteredCode) {
-      console.warn('[create-user] Código de verificação inválido', { email, storedCode, enteredCode, fetchResult });
+    if (attempts >= 5) {
+      await deleteVerificationCode(supabaseUrl, serviceRoleKey, email);
+      return jsonResponse({ ok: false, error: 'verification-attempts-exceeded' }, 429);
+    }
+
+    const enteredCodeHash = await hashVerificationCode(enteredCode);
+    if (!storedCodeHash || !safeEqual(storedCodeHash, enteredCodeHash)) {
+      await incrementVerificationAttempts(supabaseUrl, serviceRoleKey, email, attempts + 1);
       return jsonResponse({ ok: false, error: 'invalid-verification-code' }, 400);
     }
 
@@ -434,33 +451,16 @@ async function findUserProfilesByPhone(supabaseUrl: string, serviceRoleKey: stri
     // Grava código para o perfil alvo e também para os perfis vinculados
     for (const p of foundProfiles) {
       const resetKey = `reset_${p.id}`;
+      const previous = await fetchVerificationCode(supabaseUrl, serviceRoleKey, resetKey);
+      const previousCreatedAt = previous.record?.created_at ? new Date(String(previous.record.created_at)).getTime() : 0;
+      if (previousCreatedAt && Date.now() - previousCreatedAt < 60_000) {
+        return jsonResponse({ ok: false, error: 'verification-rate-limited' }, 429);
+      }
       await storeVerificationCode(supabaseUrl, serviceRoleKey, resetKey, code, whatsapp);
     }
 
-    // Dispara WhatsApp com mensagem formatada
-    const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL') ?? 'https://wefind-whatsapp-api.onrender.com';
-    const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') ?? 'wefind_secret_token_123';
-    const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE') ?? 'wefind';
-
     const userName = targetProfile.name ? String(targetProfile.name).split(' ')[0] : 'Usuário';
-    const messageText = `🐾 *Código de Redefinição de Senha - WeFIND*\n\nOlá, ${userName}! Você solicitou a redefinição de senha para sua conta no WeFIND.\n\nSeu código de segurança é:\n👉 *${code}*\n\nEste código é válido por 10 minutos. Se não foi você quem solicitou, por favor desconsidere esta mensagem.`;
-
-    try {
-      const evoUrl = `${EVOLUTION_API_URL.replace(/\/$/, '')}/message/sendText/${EVOLUTION_INSTANCE}`;
-      await fetch(evoUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: EVOLUTION_API_KEY,
-        },
-        body: JSON.stringify({
-          number: rawDigits,
-          text: messageText,
-        }),
-      });
-    } catch (err) {
-      console.warn('[send-reset-code] Erro ao enviar Evolution API:', err);
-    }
+    const whatsappResult = await dispatchVerificationCode(whatsapp, code);
 
     const ddd = cleanPhone.slice(0, 2);
     const lastDigits = cleanPhone.slice(-4);
@@ -479,7 +479,7 @@ async function findUserProfilesByPhone(supabaseUrl: string, serviceRoleKey: stri
       maskedPhone,
       accounts: accountsSummary,
       hasMultipleAccounts: accountsSummary.length > 1,
-      whatsappSent: true,
+      whatsappSent: whatsappResult.ok,
     });
   }
 
@@ -518,11 +518,18 @@ async function findUserProfilesByPhone(supabaseUrl: string, serviceRoleKey: stri
       return jsonResponse({ ok: false, error: 'invalid-verification-code', message: 'Código não encontrado ou expirado. Solicite um novo código.' }, 400);
     }
 
-    const { code: storedCodeRaw, expires_at: expiresAt } = fetchResult.record as { code?: string | number; expires_at?: string };
-    const storedCode = storedCodeRaw != null ? String(storedCodeRaw).trim() : '';
+    const { code_hash: storedCodeHash, expires_at: expiresAt, attempts: attemptsRaw } = fetchResult.record as { code_hash?: string; expires_at?: string; attempts?: number };
+    const attempts = Number(attemptsRaw) || 0;
     const enteredCode = String(verificationCode).trim();
 
-    if (!storedCode || storedCode !== enteredCode) {
+    if (attempts >= 5) {
+      await deleteVerificationCode(supabaseUrl, serviceRoleKey, resetKey);
+      return jsonResponse({ ok: false, error: 'verification-attempts-exceeded' }, 429);
+    }
+
+    const enteredCodeHash = await hashVerificationCode(enteredCode);
+    if (!storedCodeHash || !safeEqual(storedCodeHash, enteredCodeHash)) {
+      await incrementVerificationAttempts(supabaseUrl, serviceRoleKey, resetKey, attempts + 1);
       return jsonResponse({ ok: false, error: 'invalid-verification-code', message: 'Código incorreto. Verifique os números digitados.' }, 400);
     }
 
@@ -539,7 +546,7 @@ async function findUserProfilesByPhone(supabaseUrl: string, serviceRoleKey: stri
     // Gera token criptográfico de uso único para a troca de senha (válido por 5 minutos)
     const resetToken = crypto.randomUUID();
     const tokenKey = `token_${resetToken}`;
-    await storeVerificationCode(supabaseUrl, serviceRoleKey, tokenKey, targetProfile.id, whatsapp);
+    await storeVerificationCode(supabaseUrl, serviceRoleKey, tokenKey, targetProfile.id, whatsapp, false);
 
     return jsonResponse({
       ok: true,
@@ -610,10 +617,10 @@ async function findUserProfilesByPhone(supabaseUrl: string, serviceRoleKey: stri
       }),
     });
 
-    const updateBody = await updateRes.text();
+    await updateRes.text();
     if (!updateRes.ok) {
-      console.warn('[reset-password] Erro ao atualizar senha via Admin:', updateBody);
-      return jsonResponse({ ok: false, error: 'failed-to-update-password', details: updateBody }, updateRes.status);
+      console.warn('[reset-password] Falha ao atualizar senha via Admin:', updateRes.status);
+      return jsonResponse({ ok: false, error: 'failed-to-update-password' }, updateRes.status);
     }
 
     // Disparar notificação de segurança no WhatsApp informando a alteração
@@ -624,19 +631,21 @@ async function findUserProfilesByPhone(supabaseUrl: string, serviceRoleKey: stri
         const pData = await pRes.json();
         const userPhone = pData?.[0]?.whatsapp || pData?.[0]?.phone;
         if (userPhone) {
-          const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL') ?? 'https://wefind-whatsapp-api.onrender.com';
-          const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') ?? 'wefind_secret_token_123';
+          const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL') ?? '';
+          const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY') ?? '';
           const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE') ?? 'wefind';
           const rawDigits = userPhone.replace(/\D/g, '');
 
-          await fetch(`${EVOLUTION_API_URL.replace(/\/$/, '')}/message/sendText/${EVOLUTION_INSTANCE}`, {
+          if (EVOLUTION_API_URL && EVOLUTION_API_KEY) {
+            await fetch(`${EVOLUTION_API_URL.replace(/\/$/, '')}/message/sendText/${EVOLUTION_INSTANCE}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', apikey: EVOLUTION_API_KEY },
             body: JSON.stringify({
               number: rawDigits,
               text: '🔒 *Segurança WeFIND*\n\nA senha da sua conta WeFIND foi alterada com sucesso.\n\nSe você não reconhece esta operação, entre em contato imediatamente com o suporte.',
             }),
-          });
+            });
+          }
         }
       }
     } catch (secErr) {

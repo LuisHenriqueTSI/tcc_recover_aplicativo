@@ -28,6 +28,13 @@ const normalizeWhatsapp = (whatsapp = '') => {
 
 const getSupabaseUrl = () => SUPABASE_URL;
 
+const hashVerificationCode = async (code) => {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(code));
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+};
+
 const getCreateUserFunctionUrl = () => {
   const supabaseUrl = getSupabaseUrl();
   if (!supabaseUrl) {
@@ -137,26 +144,22 @@ export const getUser = async () => {
 
 export const signIn = async (email, password) => {
   try {
-    console.log('[signIn] Iniciando login com email:', email);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      console.log('[signIn] Erro:', error.message);
       throw error;
     }
 
     if (!data.user.confirmed_at) {
-      console.log('[signIn] Email não confirmado. Bloqueando acesso.');
       throw new Error('Por favor, confirme seu email antes de fazer login.');
     }
 
-    console.log('[signIn] Login bem-sucedido');
     return { user: data.user, session: data.session };
   } catch (error) {
-    console.log('[signIn] Exceção:', error.message);
+    console.warn('[signIn] Falha no login:', error.message);
     throw error;
   }
 };
@@ -212,43 +215,29 @@ export const signInWithGoogle = async () => {
 
 export const signUp = async (email, password, name, city, state, whatsapp = '') => {
   try {
-    console.log('[signUp] Gerando código de verificação por WhatsApp...');
-
     const payloadWhatsapp = normalizeWhatsapp(whatsapp);
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    const normalizedPhone = payloadWhatsapp.startsWith('55') ? `+${payloadWhatsapp}` : `+55${payloadWhatsapp}`;
-
-    // 1. Grava no banco de dados signup_verifications como fonte única da verdade
-    const { error: storeError } = await supabase.from('signup_verifications').upsert({
-      email: email.trim().toLowerCase(),
-      code: code,
-      whatsapp: normalizedPhone,
-      created_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-    }, { onConflict: 'email' });
-
-    if (storeError) {
-      console.warn('[signUp] Erro ao gravar verificação em signup_verifications:', storeError.message);
-    }
-
-    // 2. Dispara a mensagem com o código exato via Evolution API
-    try {
-      const { sendWhatsAppMessage } = require('./whatsappNotifications');
-      console.log('[signUp] Disparando código via Evolution API para:', payloadWhatsapp, 'código:', code);
-      await sendWhatsAppMessage({
-        phone: payloadWhatsapp,
-        title: 'Código de Confirmação WeFIND',
-        text: `Seu código de verificação é:\n\n*${code}*\n\nInforme este código no aplicativo para concluir o seu cadastro.`,
-      });
-    } catch (directErr) {
-      console.warn('[signUp] Erro no envio direto Evolution API:', directErr.message);
+    const response = await fetch(getCreateUserFunctionUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: supabaseAnonKey },
+      body: JSON.stringify({
+        action: 'send-verification',
+        email,
+        password,
+        name,
+        city,
+        state,
+        whatsapp: payloadWhatsapp,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data?.error || 'Não foi possível enviar o código de confirmação.');
     }
 
     return {
       pendingVerification: true,
       phone: payloadWhatsapp,
-      whatsappSent: true,
-      code,
+      whatsappSent: Boolean(data.whatsappSent),
       devCode: null,
       email,
       password,
@@ -258,7 +247,7 @@ export const signUp = async (email, password, name, city, state, whatsapp = '') 
       whatsapp: payloadWhatsapp,
     };
   } catch (error) {
-    console.log('[signUp] Exceção:', error.message);
+    console.warn('[signUp] Falha no cadastro:', error.message);
     throw error;
   }
 };
@@ -296,7 +285,7 @@ export const confirmSignUp = async ({ email, password, name, city, state, whatsa
       payload = { error: text || parseError.message };
     }
 
-    console.log('[confirmSignUp] Função URL:', functionUrl, 'status:', response.status, 'payload:', payload);
+    console.log('[confirmSignUp] Resposta da função de cadastro:', response.status);
 
     if (!response.ok) {
       throw new Error(payload?.error || 'Falha ao confirmar o código de verificação.');
@@ -343,7 +332,6 @@ export const sendPasswordReset = async (email) => {
  */
 export const requestPasswordResetByWhatsApp = async (whatsapp, userId = null) => {
   try {
-    console.log('[requestPasswordResetByWhatsApp] Solicitando código para:', whatsapp, 'userId:', userId);
     const payloadWhatsapp = normalizeWhatsapp(whatsapp);
     if (!payloadWhatsapp) {
       throw new Error('Informe um número de WhatsApp válido com DDD.');
@@ -377,7 +365,7 @@ export const requestPasswordResetByWhatsApp = async (whatsapp, userId = null) =>
       hasMultipleAccounts: Boolean(data.hasMultipleAccounts),
     };
   } catch (error) {
-    console.warn('[requestPasswordResetByWhatsApp] Erro:', error.message);
+    console.warn('[requestPasswordResetByWhatsApp] Falha na solicitação:', error.message);
     throw error;
   }
 };
@@ -387,7 +375,6 @@ export const requestPasswordResetByWhatsApp = async (whatsapp, userId = null) =>
  */
 export const verifyPasswordResetCode = async (whatsapp, code, userId = null) => {
   try {
-    console.log('[verifyPasswordResetCode] Validando código...', { userId });
     const payloadWhatsapp = normalizeWhatsapp(whatsapp);
     const trimmedCode = String(code || '').trim();
 
@@ -421,7 +408,7 @@ export const verifyPasswordResetCode = async (whatsapp, code, userId = null) => 
       user: data.user,
     };
   } catch (error) {
-    console.warn('[verifyPasswordResetCode] Erro:', error.message);
+    console.warn('[verifyPasswordResetCode] Falha na validação:', error.message);
     throw error;
   }
 };
@@ -493,20 +480,23 @@ export const updatePassword = async (newPassword) => {
  */
 export const sendPhoneChangeVerificationCode = async (newWhatsapp, email) => {
   try {
-    console.log('[sendPhoneChangeVerificationCode] Gerando código para alteração de número:', newWhatsapp);
     const payloadWhatsapp = normalizeWhatsapp(newWhatsapp);
     if (!payloadWhatsapp || payloadWhatsapp.length < 10) {
       throw new Error('Informe um número de WhatsApp válido com DDD.');
     }
 
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const randomValues = new Uint32Array(1);
+    crypto.getRandomValues(randomValues);
+    const code = String(100000 + (randomValues[0] % 900000));
+    const codeHash = await hashVerificationCode(code);
     const normalizedPhone = payloadWhatsapp.startsWith('55') ? `+${payloadWhatsapp}` : `+55${payloadWhatsapp}`;
     const verificationKey = `phone-change:${String(email || '').trim().toLowerCase()}`;
 
     // Grava no banco signup_verifications
     const { error: storeError } = await supabase.from('signup_verifications').upsert({
       email: verificationKey,
-      code: code,
+      code_hash: codeHash,
+      attempts: 0,
       whatsapp: normalizedPhone,
       created_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
@@ -518,7 +508,6 @@ export const sendPhoneChangeVerificationCode = async (newWhatsapp, email) => {
 
     // Dispara via Evolution API
     const { sendWhatsAppMessage } = require('./whatsappNotifications');
-    console.log('[sendPhoneChangeVerificationCode] Enviando mensagem via WhatsApp para:', payloadWhatsapp);
     await sendWhatsAppMessage({
       phone: payloadWhatsapp,
       title: 'Código de Confirmação WeFIND',
@@ -527,7 +516,6 @@ export const sendPhoneChangeVerificationCode = async (newWhatsapp, email) => {
 
     return {
       success: true,
-      code,
       phone: payloadWhatsapp,
     };
   } catch (error) {
@@ -559,7 +547,17 @@ export const verifyPhoneChangeCode = async (email, inputCode) => {
       throw new Error('Nenhum código recente encontrado. Solicite um novo código.');
     }
 
-    if (data.code !== cleanCode) {
+    if (Number(data.attempts) >= 5) {
+      await supabase.from('signup_verifications').delete().eq('email', verificationKey);
+      throw new Error('Limite de tentativas excedido. Solicite um novo código.');
+    }
+
+    const codeHash = await hashVerificationCode(cleanCode);
+    if (data.code_hash !== codeHash) {
+      await supabase
+        .from('signup_verifications')
+        .update({ attempts: Number(data.attempts || 0) + 1 })
+        .eq('email', verificationKey);
       throw new Error('Código incorreto. Verifique a mensagem recebida no WhatsApp.');
     }
 

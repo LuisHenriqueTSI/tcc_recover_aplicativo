@@ -5,6 +5,14 @@ A etapa de testes e validação experimental constitui um dos pilares mais relev
 
 Este capítulo apresenta o planejamento, a metodologia e a execução prática da avaliação do aplicativo WeFIND, concentrando-se na experiência de uso e na percepção de desempenho registradas por participantes do público-alvo durante a realização de atividades representativas na plataforma.
 
+\subsection{VERIFICAÇÃO FUNCIONAL MANUAL}
+
+Antes da avaliação com participantes, o autor realizou verificações manuais dos fluxos funcionais descritos no Capítulo 4, incluindo acesso à conta, consulta e publicação de ocorrências, busca no mapa, filtros, registro de avistamentos, mensagens, avisos e moderação. As verificações ocorreram entre 10 e 25 de setembro de 2026, em um aparelho Xiaomi Redmi Note 13 com Android 15 (versão/build informada: AQ3A.240829.003). Durante os fluxos percorridos, não foram observados erros que impedissem a conclusão das operações. A geração e o compartilhamento do cartaz (RF15) também foram incluídos na terceira tarefa do roteiro aplicado aos participantes; como o questionário avaliou a conclusão do conjunto de tarefas, não houve registro isolado do resultado dessa funcionalidade.
+
+Essas verificações foram conduzidas pelo próprio autor, sem roteiro formal previamente registrado, automação ou coleta sistemática de evidências. Portanto, seus resultados têm caráter exploratório e não equivalem a uma validação independente, a testes exaustivos de todas as condições de erro ou a uma garantia de ausência de defeitos. A avaliação de usabilidade com participantes, descrita nas seções seguintes, constitui uma atividade distinta.
+
+Além das verificações funcionais, foi realizada uma inspeção estática dos controles de segurança implementados no código e nas migrações do projeto. Essa inspeção confirmou o uso de HTTPS, a delegação do tratamento de senhas ao Supabase Auth, o uso de PKCE no fluxo OAuth, políticas RLS em tabelas com regras definidas, validações de entrada, códigos temporários gerados por fonte criptograficamente segura e armazenados como resumo SHA-256, limite de cinco tentativas por código, autenticação da função de mensageria e remoção de dados sensíveis dos logs. A atividade não substitui teste de invasão, auditoria da infraestrutura hospedada ou verificação independente das configurações de backup, restauração, expiração global de sessões e disponibilidade dos provedores.
+
 \subsection{TESTES DE USABILIDADE}
 
 Os testes de usabilidade constituem uma metodologia empírica de avaliação focada em observar como pessoas reais interagem com um produto computacional para atingir metas determinadas. Conforme estabelece a norma técnica ABNT NBR ISO 9241-11 (2021), a usabilidade é definida como a medida na qual um sistema, produto ou serviço pode ser usado por usuários específicos para alcançar objetivos definidos com eficácia, eficiência e satisfação em um contexto de uso especificado.
@@ -31,7 +39,7 @@ Cada voluntário recebeu a instrução de acessar o aplicativo WeFIND e percorre
     \item Acessar e conferir as notificações e avisos recebidos na central do aplicativo.
 \end{enumerate}
 
-Após a realização do roteiro, os respondentes preencheram o instrumento de coleta, organizado em quatro seções articuladas: validação do perfil do respondente quanto à tutela de animais; questão conjunta avaliando a autopercepção sobre a conclusão das cinco tarefas; bloco de dez afirmações avaliadas em escala Likert de cinco pontos, estruturado com base nas proposições da escala SUS; e três perguntas abertas de caráter qualitativo para registro livre de pontos positivos, dificuldades vivenciadas e sugestões de aprimoramento.
+Após a realização do roteiro, os respondentes preencheram o instrumento de coleta, organizado em quatro seções articuladas: validação do perfil do respondente quanto à tutela de animais; questão conjunta avaliando a autopercepção sobre a conclusão das cinco tarefas; bloco das dez afirmações originais da escala SUS, traduzidas para o português e avaliadas em escala Likert de cinco pontos; e três perguntas abertas de caráter qualitativo para registro livre de pontos positivos, dificuldades vivenciadas e sugestões de aprimoramento.
 
 A pergunta de verificação da conclusão das atividades oferecia quatro alternativas de resposta: conclusão de todas as cinco tarefas com facilidade; conclusão de todas, porém com dúvidas em alguma etapa; conclusão parcial (apenas algumas tarefas); ou não conclusão das tarefas. Vale ressaltar que, por se tratar de uma pergunta conjunta que englobou todo o ciclo de tarefas em uma única resposta, o instrumento priorizou a percepção global da experiência do usuário, sem mensurar a taxa de sucesso individual isolada para cada uma das cinco etapas.
 
@@ -41,7 +49,7 @@ Para o processamento dos dados quantitativos de usabilidade, as dez afirmações
 
 A tabulação dos dados permitiu analisar a aceitação do aplicativo sob diferentes perspectivas complementares: a taxa autorrelatada de conclusão das tarefas, a apuração estatística do questionário SUS, o exame qualitativo dos comentários espontâneos e a percepção de estabilidade e agilidade da interface durante a navegação.
 
-No que se refere ao perfil dos respondentes e à conclusão das atividades propostas, a totalidade dos 12 participantes (100\%) confirmou ser tutora de animais domésticos, validando a pertinência da amostra. Em relação à execução prática do roteiro, todos os 12 voluntários selecionaram a opção ``Sim, concluí todas as 5 tarefas com facilidade''. O \hyperref[quadro:conclusao_tarefas]{Quadro 5} apresenta a distribuição consolidada das respostas obtidas nessa etapa.
+No que se refere ao perfil dos respondentes e à conclusão das atividades propostas, a totalidade dos 12 participantes (100\%) confirmou ser tutora de animais domésticos, atendendo ao perfil definido para a avaliação. Em relação à execução prática do roteiro, todos os 12 voluntários selecionaram a opção ``Sim, concluí todas as 5 tarefas com facilidade''. O \hyperref[quadro:conclusao_tarefas]{Quadro 5} apresenta a distribuição consolidada das respostas obtidas nessa etapa.
 
 \begin{table}[H]
     \centering
@@ -61,9 +69,9 @@ No que se refere ao perfil dos respondentes e à conclusão das atividades propo
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{table}
 
-A expressiva taxa de 100\% de conclusão autorrelatada com facilidade indica que a rotulação visual dos botões, os menus contextuais e os fluxos de navegação desenhados no WeFIND apresentaram baixa barreira de entrada e boa intuitividade. Cabe pontuar que esse índice reflete a avaliação autônoma dos participantes sobre o conjunto global do roteiro, não dispensando avaliações futuras com cronometragem em laboratório para observação detalhada de microinterações.
+A taxa de 100\% de conclusão autorrelatada com facilidade é compatível com uma percepção positiva sobre a rotulação visual dos botões, os menus contextuais e os fluxos de navegação desenhados no WeFIND. Cabe pontuar que esse índice reflete a avaliação autônoma dos participantes sobre o conjunto global do roteiro, não dispensando avaliações futuras com cronometragem em laboratório para observação detalhada de microinterações.
 
-Em relação à avaliação quantitativa de usabilidade apurada pelo protocolo SUS, o cálculo individual das respostas aos dez itens demonstrou elevada consistência. A média aritmética geral obtida pelo WeFIND atingiu a marca de 93,33 pontos, com pontuações individuais situadas entre 85,0 e 100,0 pontos. O \hyperref[quadro:escores_sus]{Quadro 6} apresenta a distribuição dos escores anonimizados obtidos para cada respondente (P1 a P12).
+Em relação à avaliação quantitativa de usabilidade apurada pelo protocolo SUS, o cálculo individual das respostas aos dez itens resultou em escores elevados. A média aritmética geral obtida pelo WeFIND atingiu a marca de 93,33 pontos, com pontuações individuais situadas entre 85,0 e 100,0 pontos. O \hyperref[quadro:escores_sus]{Quadro 6} apresenta a distribuição dos escores anonimizados obtidos para cada respondente (P1 a P12).
 
 \begin{table}[H]
     \centering
@@ -72,7 +80,7 @@ Em relação à avaliação quantitativa de usabilidade apurada pelo protocolo S
     \renewcommand{\arraystretch}{1.15}
     \begin{tabular}{|c|r|c|r|c|r|}
         \hline
-        \multicolumn{6}{|c|}{\textbf{Quadro 6: Escores individuais do questionário baseado na SUS}} \\ \hline
+        \multicolumn{6}{|c|}{\textbf{Quadro 6: Escores individuais da Escala de Usabilidade do Sistema}} \\ \hline
         \textbf{Participante} & \textbf{Escore} &
         \textbf{Participante} & \textbf{Escore} &
         \textbf{Participante} & \textbf{Escore} \\ \hline
@@ -85,7 +93,7 @@ Em relação à avaliação quantitativa de usabilidade apurada pelo protocolo S
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{table}
 
-Na literatura especializada de usabilidade (SAURO; LEWIS, 2022), sistemas computacionais que alcançam escores médios superiores a 68 pontos situam-se acima da média mercadológica, enquanto pontuações que superam a barreira de 80,3 pontos classificam o produto no nível de excelência máxima (Grau A), correspondendo ao percentil mais elevado de satisfação e intuitividade de produtos digitais. O resultado de 93,33 pontos obtido pelo WeFIND consolida o acerto das diretrizes ergonômicas adotadas na concepção das telas e componentes visuais.
+Na literatura especializada de usabilidade (SAURO; LEWIS, 2022), sistemas computacionais que alcançam escores médios superiores a 68 pontos situam-se acima da média mercadológica, enquanto pontuações que superam a barreira de 80,3 pontos classificam o produto no nível de excelência máxima (Grau A), correspondendo ao percentil mais elevado de satisfação e intuitividade de produtos digitais. O resultado de 93,33 pontos obtido pelo WeFIND indica percepção positiva dos participantes sobre a facilidade e a satisfação de uso, sem permitir concluir, isoladamente, que as diretrizes adotadas sejam superiores a outras alternativas.
 
 Para identificar as dimensões específicas da experiência que mais se destacaram, calcularam-se as médias aritméticas das notas brutas atribuídas a cada uma das dez afirmações do questionário, em escala de 1,00 a 5,00 pontos. O \hyperref[quadro:medias_itens_sus]{Quadro 7} sintetiza as médias apuradas. Para as afirmações de conotação negativa (itens pares), médias próximas a 1,00 representam baixa concordância com problemas operacionais, sinalizando um comportamento desejável da interface.
 
@@ -112,7 +120,7 @@ Para identificar as dimensões específicas da experiência que mais se destacar
     \fonte{Dados da pesquisa (Google Forms, 2026)}
 \end{table}
 
-Os resultados do \hyperref[quadro:medias_itens_sus]{Quadro 7} revelam indicadores positivos expressivos. O item 7 (facilidade de aprendizado) alcançou a nota máxima unânime de 5,00 pontos, confirmando que o usuário consegue operar os recursos básicos da aplicação sem requerer treinamento prévio. A facilidade geral de uso (item 3) registrou média de 4,92, acompanhada por notas elevadas na integração funcional (4,83) e no sentimento de segurança e confiança durante o manuseio (4,83). Por sua vez, as proposições negativas confirmaram a ausência de atritos: a necessidade de suporte técnico para operar o aplicativo (item 4) e a sensação de embaraço ou dificuldade (item 8) registraram média mínima de 1,00 ponto.
+Os resultados do \hyperref[quadro:medias_itens_sus]{Quadro 7} revelam indicadores positivos expressivos. O item 7 (facilidade de aprendizado) alcançou a nota máxima unânime de 5,00 pontos, sugerindo que os participantes conseguiram operar os recursos básicos da aplicação sem perceber necessidade de treinamento prévio. A facilidade geral de uso (item 3) registrou média de 4,92, acompanhada por notas elevadas na integração funcional (4,83) e no sentimento de segurança e confiança durante o manuseio (4,83). Por sua vez, as proposições negativas apresentaram médias baixas: a necessidade de suporte técnico para operar o aplicativo (item 4) e a sensação de embaraço ou dificuldade (item 8) registraram média mínima de 1,00 ponto.
 
 A análise das questões abertas complementou as métricas numéricas, trazendo relatos espontâneos sobre pontos fortes e aspectos a aperfeiçoar. Como principais pontos positivos, os participantes ressaltaram a eficácia dos recursos de geolocalização e o mapa interativo, elogiando a seleção intuitiva de pontos no mapa, a visualização dos animais registrados nas imediações e a possibilidade de indicar com precisão visual onde um animal foi avistado. Foram destacados também o formulário guiado com seletores predefinidos para características físicas, a inclusão ágil de imagens da galeria, a facilidade dos filtros de busca e a integração coerente entre publicações, rotas cartográficas e o canal privativo de mensagens.
 
