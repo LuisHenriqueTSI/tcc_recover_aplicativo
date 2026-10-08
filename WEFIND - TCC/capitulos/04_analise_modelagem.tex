@@ -132,16 +132,14 @@ Para representar o sistema de forma clara, optou-se por criar um diagrama de cas
     \fonte{Autoria própria (2026)}
 \end{figure}
 
-O diagrama sintetiza o escopo funcional central por meio de três atores: o visitante, que consulta ocorrências e seus detalhes; o usuário autenticado, que pode publicar e atualizar ocorrências, registrar avistamentos, trocar mensagens e denunciar conteúdo; e o administrador, responsável por analisar denúncias e moderar publicações. A generalização entre usuário autenticado e visitante indica que, além das ações que exigem autenticação, o primeiro também pode consultar ocorrências disponíveis publicamente.
+O diagrama sintetiza o escopo funcional central por meio de três atores: o usuário visitante, o usuário autenticado e o administrador. O visitante pode visualizar publicações, consultar seus detalhes, visualizar os animais no mapa, efetuar login e realizar cadastro. O usuário autenticado herda as possibilidades de consulta do visitante e passa a manter mensagens privadas, cadastro e perfil de usuário, comentários, publicações, avistamentos e notificações. O administrador é responsável por manter a moderação e as denúncias.
 
-Os casos de uso foram agrupados por objetivo, em vez de representar cada operação de cadastro como uma elipse independente. A consulta compreende a visualização em lista ou mapa e o acesso aos detalhes (RF03 e RF06); a busca reúne os filtros por espécie, situação, características e distância (RF07); e a publicação reúne o registro de ocorrência perdida ou encontrada, incluindo o local informado (RF04), além da edição, do encerramento ou da exclusão pelo autor (RF05). A correspondência entre publicações perdidas e encontradas, com apresentação de uma sugestão baseada em similaridade, corresponde ao RF17. A renovação da publicação e sua expiração após o período de vigência correspondem ao RF16. O caso de compartilhamento de publicação também abrange a geração e divulgação do cartaz associado à ocorrência (RF15). O registro e a consulta de avistamentos correspondem aos RF09 e RF10. A comunicação privada e as notificações relacionadas à ocorrência correspondem aos RF11 e RF12. Por fim, a denúncia e a análise administrativa correspondem aos RF13 e RF14.
-
-Recursos complementares implementados, como adoção, cadastro preventivo de animais, QR code preventivo e ranking, não são detalhados no diagrama por não fazerem parte do escopo funcional central definido para esta análise.
+As relações de extensão e inclusão indicam como algumas ações complementam os fluxos principais. A visualização de publicações pode ser complementada pela atualização da localização; os detalhes da publicação podem incluir o envio de mensagem, o compartilhamento da publicação, a informação sobre o tutor de terceiro e o traçado de rota até o animal. A manutenção de publicação inclui a seleção da localização no mapa e pode ser estendida pela informação de tutor de terceiro. O registro de avistamento também inclui a seleção da localização no mapa, enquanto o cadastro e o login aparecem como ações relacionadas ao acesso autenticado. A elipse ``Manter Comentário'' representa, no diagrama, a manutenção de relatos associados às publicações; no escopo textual dos requisitos, esse fluxo é detalhado como registro e manutenção de avistamentos (RF09 e RF10). Os demais requisitos, como notificações, compartilhamento, moderação e manutenção do ciclo de vida das publicações, são detalhados no Quadro 2 e podem estar agrupados em elipses de maior abrangência.
 
 
 \subsubsection{Diagrama de Classes de Domínio}
 
-O diagrama de classes de domínio organiza as entidades da aplicação, seus atributos, operações e relações. A Figura~\ref{fig:diagrama_classes} retoma a versão integral do diagrama, com as classes do núcleo e dos recursos complementares implementados.
+O diagrama de classes de domínio organiza as entidades da aplicação, seus atributos, operações e relações. A Figura~\ref{fig:diagrama_classes} apresenta uma visão resumida do modelo implementado, concentrada nas entidades diretamente relacionadas aos fluxos de publicação, avistamento, comunicação e moderação.
 
 \begin{figure}[H]
     \centering
@@ -149,13 +147,13 @@ O diagrama de classes de domínio organiza as entidades da aplicação, seus atr
     \label{fig:diagrama_classes}
     \vspace{0.3cm}
     \includegraphics[trim=12mm 95mm 12mm 8mm, clip, width=0.99\textwidth]{imagens/02_modelagem/figura08_diagrama_classes.pdf}
-    \vspace{0.1cm}
+    \vspace{0.8cm}
     \fonte{Autoria própria (2026)}
 \end{figure}
 
 \enlargethispage{2\baselineskip}
-No núcleo do modelo, \textit{Usuario} representa as contas e \textit{Publicacao} representa as ocorrências de animais perdidos ou encontrados, incluindo sua localização e imagens. A classe \textit{Avistamento} registra relatos associados a uma publicação. \textit{Conversa} e \textit{Mensagem} representam a comunicação privada contextualizada pela ocorrência; \textit{Notificacao} registra os avisos destinados ao usuário; e \textit{Denuncia} dá suporte ao fluxo de análise administrativa. A geração do cartaz de divulgação está associada à publicação que lhe fornece os dados.
+No modelo, \textit{Usuario} representa as contas e concentra os dados e operações de autenticação, perfil e participação na plataforma. \textit{Publicacao} representa os registros de animais, reunindo categoria, situação, descrição, localização, características e operações de criação, edição, encerramento, renovação e compartilhamento. A classe \textit{Avistamento} registra relatos associados a uma publicação, enquanto \textit{FotoPublicacao} organiza as imagens vinculadas a esse registro.
 
-O diagrama também apresenta classes de recursos complementares presentes na implementação, como \textit{Pet}, \textit{PerfilVoluntarioLar}, \textit{Reivindicacao}, \textit{Recompensa} e \textit{HistoriaFeliz}. A inclusão dessas classes documenta a estrutura implementada, sem alterar a delimitação do escopo funcional central definida pelos requisitos.
+A comunicação privada é representada pelas classes \textit{Conversa} e \textit{Mensagem}. A classe \textit{Denuncia} apoia o envio e o tratamento administrativo de denúncias relacionadas às publicações. A classe \textit{Devolucao} representa o fluxo de solicitação e resposta relacionado à devolução ou à entrega do animal, conforme o estado indicado no modelo. As associações e multiplicidades apresentadas na figura indicam os vínculos entre usuários, publicações, avistamentos, imagens, conversas, mensagens, devoluções e denúncias; os métodos foram mantidos na figura para evidenciar as principais operações de cada entidade.
 
 Com os requisitos funcionais formalizados e a modelagem de classes de domínio consolidada, o Capítulo 5 apresenta a solução proposta com o aplicativo WeFIND, detalhando a concepção da ferramenta, sua arquitetura e as decisões técnicas adotadas.
