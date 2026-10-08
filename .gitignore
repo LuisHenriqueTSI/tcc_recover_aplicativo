@@ -52,6 +52,9 @@ WEFIND - TCC/build/
 # generated native folders
 /ios
 /android
+# APKs are distributed separately from the source repository.
+/landing-page/downloads/*.apk
+/landing-page/downloads/*.zip
 # LaTeX auxiliary files
 *.aux
 *.log
