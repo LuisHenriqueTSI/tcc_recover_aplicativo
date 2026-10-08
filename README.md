@@ -2,6 +2,18 @@
 
 Aplicativo mobile React Native/Expo do sistema **WeFIND** - Plataforma Comunitária e Inteligente de Animais Perdidos e Encontrados.
 
+## 🌐 Acesso ao WeFIND
+
+Conheça o aplicativo e acesse as instruções completas de instalação pela landing page oficial:
+
+**[Acessar a landing page do WeFIND](https://luishenriquetsi.github.io/wefind/)**
+
+O APK para Android está disponível para download direto na GitHub Release:
+
+**[Baixar o WeFIND v2.0 (.apk)](https://github.com/LuisHenriqueTSI/wefind/releases/download/v2.0/WeFIND_v2.0.apk)**
+
+Para instalar o aplicativo, faça o download pelo celular Android e siga as instruções apresentadas na landing page. Como o APK é distribuído para avaliação do projeto, o Android pode exibir um aviso do Google Play Protect durante a instalação.
+
 ## 🛠️ Correções recentes
 
 * **Rota no mapa para visitantes:** o botão "Ver Rota no Mapa" agora direciona usuários não autenticados diretamente para a tela pública do mapa, evitando o erro de navegação causado pela tentativa de acessar a rota protegida `MainApp`.
