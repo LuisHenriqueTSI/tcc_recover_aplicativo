@@ -14,6 +14,12 @@ O APK para Android está disponível para download direto na GitHub Release:
 
 Para instalar o aplicativo, faça o download pelo celular Android e siga as instruções apresentadas na landing page. Como o APK é distribuído para avaliação do projeto, o Android pode exibir um aviso do Google Play Protect durante a instalação.
 
+### Configuração local e segurança
+
+As credenciais do Supabase e a chave do Google Maps não ficam versionadas neste repositório. Para executar ou gerar uma nova versão do aplicativo, configure-as em um arquivo `.env` local, conforme os exemplos de configuração do projeto.
+
+Antes de distribuir uma nova versão, aplique a migração [`20261008020000_harden_public_data_access.sql`](./supabase/migrations/20261008020000_harden_public_data_access.sql) no SQL Editor do projeto Supabase. Ela remove o acesso anônimo às tabelas de perfis, animais e avistamentos e exige autenticação para consultar avistamentos.
+
 ## 🛠️ Correções recentes
 
 * **Rota no mapa para visitantes:** o botão "Ver Rota no Mapa" agora direciona usuários não autenticados diretamente para a tela pública do mapa, evitando o erro de navegação causado pela tentativa de acessar a rota protegida `MainApp`.
